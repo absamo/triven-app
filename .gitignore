@@ -22,6 +22,10 @@ cookies*.txt-*
 # Docker volumes
 ollama_data/
 
+# JavaScript files (compiled output)
+*.js
+*.js.map
+
 # Logs
 *.log
 npm-debug.log*
