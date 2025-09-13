@@ -1,0 +1,15 @@
+.statTitle {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  color: var(--mantine-color-gray-7);
+}
+
+.statValue {
+  font-size: var(--mantine-font-size-lg);
+  font-weight: 700;
+}
+
+.statDescription {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-gray-6);
+}

@@ -1,0 +1,97 @@
+/* Modern sidebar navigation styles matching the elegant design */
+.control {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+
+  &:hover {
+    background-color: light-dark(rgba(14, 165, 233, 0.08), rgba(14, 165, 233, 0.15));
+  }
+
+  &[data-active="true"] {
+    background-color: light-dark(rgba(14, 165, 233, 0.12), rgba(14, 165, 233, 0.20));
+  }
+}
+
+.label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.4;
+  color: light-dark(#64748b, var(--mantine-color-gray-4));
+  flex: 1;
+  margin-left: 14px;
+  letter-spacing: -0.01em;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: light-dark(#64748b, var(--mantine-color-gray-4));
+  flex-shrink: 0;
+}
+
+.sublink {
+  display: block;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 450;
+  font-size: 14px;
+  line-height: 1.4;
+  color: light-dark(#94a3b8, var(--mantine-color-gray-5));
+  padding: 10px 16px 10px 52px;
+  margin: 0;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  position: relative;
+  letter-spacing: -0.005em;
+
+  &:hover {
+    background-color: light-dark(rgba(14, 165, 233, 0.06), rgba(14, 165, 233, 0.12));
+    color: var(--mantine-color-teal-6);
+  }
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  color: inherit;
+  text-decoration: none;
+  min-height: 44px;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.selected {
+  color: var(--mantine-color-teal-6) !important;
+  font-weight: 600;
+
+  .icon {
+    color: var(--mantine-color-teal-6);
+  }
+
+  .control {
+    background-color: light-dark(rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.25));
+    border-left: 3px solid var(--mantine-color-teal-6);
+  }
+}
+
+.active {
+  color: light-dark(#1e293b, var(--mantine-color-white));
+
+  .icon {
+    color: light-dark(#1e293b, var(--mantine-color-white));
+  }
+}
+
+.chevron {
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  color: light-dark(#94a3b8, var(--mantine-color-gray-5));
+  margin-left: auto;
+}

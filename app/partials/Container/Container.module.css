@@ -1,0 +1,31 @@
+/* .container {
+  padding: 20px;
+  border-radius: var(--mantine-radius-md);
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-7)
+  );
+  margin-bottom: 30px;
+} */
+
+.filterContainer {
+  /* padding: 50px; */
+  height: 60px;
+  border-radius: var(--mantine-radius-md);
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-7)
+  );
+}
+
+.tableContainer {
+  /* padding: 50px; */
+  margin-top: 20px;
+  padding: 20px;
+  height: calc(100% - 160px);
+  border-radius: var(--mantine-radius-md);
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-7)
+  );
+}

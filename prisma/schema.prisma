@@ -1,0 +1,1498 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+  binaryTargets   = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id                 String             @id @default(cuid())
+  name               String             @unique @db.VarChar(200)
+  sandbox            Boolean            @default(false)
+  active             Boolean            @default(true)
+  phone              String?
+  locationId         String?            @unique
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime?          @updatedAt
+  agencies           Agency[]
+  backorders         Backorder[]
+  bills              Bill[]
+  category           Category[]
+  location           Location?          @relation(fields: [locationId], references: [id])
+  currencies         Currency[]
+  customers          Customer[]
+  invoices           Invoice[]
+  notifications      Notification[]
+  paymentsMade       PaymentMade[]
+  paymentsReceived   PaymentReceived[]
+  products           Product[]
+  purchaseOrders     PurchaseOrder[]
+  purchaseReceives   PurchaseReceive[]
+  roles              Role[]
+  salesOrders        SalesOrder[]
+  site               Site[]
+  stockAdjustments   StockAdjustment[]
+  suppliers          Supplier[]
+  TransferOrder      TransferOrder[]
+  unitOfMeasures     UnitOfMeasure[]
+  members            User[]
+  inventoryAnomalies InventoryAnomaly[]
+  businessInsights   BusinessInsight[]
+  workflowTemplates  WorkflowTemplate[]
+  approvalRequests   ApprovalRequest[]
+}
+
+model Currency {
+  id           String     @id @default(cuid())
+  isoCode      String
+  currencyCode String
+  currencyName String
+  countryName  String
+  symbol       String?
+  order        Int
+  base         Boolean    @default(false)
+  companyId    String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt
+  agencies     Agency[]
+  company      Company    @relation(fields: [companyId], references: [id])
+  suppliers    Supplier[]
+}
+
+model User {
+  id                       String                   @id @default(cuid())
+  active                   Boolean                  @default(true)
+  email                    String                   @unique
+  stripeCustomerId         String?                  @unique
+  companyId                String?
+  roleId                   String?
+  agencyId                 String?
+  isOnline                 Boolean                  @default(false)
+  lastOnlineAt             DateTime?
+  siteId                   String?
+  status                   UserStatus
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime?                @updatedAt
+  name                     String?
+  emailVerified            Boolean                  @default(false)
+  image                    String?
+  bills                    Bill[]
+  invoices                 Invoice[]
+  notifications            Notification[]
+  productCreatedBy         Product[]                @relation("productCreatedBy")
+  productUpdatedBy         Product[]                @relation("productUpdatedBy")
+  profile                  Profile?
+  roleCreatedBy            Role[]                   @relation("roleCreatedBy")
+  roleUpdatedBy            Role[]                   @relation("roleUpdatedBy")
+  stockAdjustments         StockAdjustment[]
+  stockAdjustmentHistories StockAdjustmentHistory[]
+  subscriptions            Subscription?
+  accounts                 Account[]
+  sessions                 Session[]
+  agency                   Agency?                  @relation(fields: [agencyId], references: [id])
+  company                  Company?                 @relation(fields: [companyId], references: [id])
+  role                     Role?                    @relation(fields: [roleId], references: [id])
+  site                     Site?                    @relation(fields: [siteId], references: [id])
+  receivedInvitations      Invitation[]             @relation("InvitationInvitee")
+
+  // Workflow & Approval Relations
+  createdWorkflowTemplates WorkflowTemplate[]      @relation("WorkflowTemplateCreatedBy")
+  assignedWorkflowSteps    WorkflowStep[]          @relation("WorkflowStepAssigneeUser")
+  triggeredWorkflows       WorkflowInstance[]      @relation("WorkflowInstanceTriggeredBy")
+  assignedStepExecutions   WorkflowStepExecution[] @relation("WorkflowStepExecutionAssignedTo")
+  requestedApprovals       ApprovalRequest[]       @relation("ApprovalRequestRequestedBy")
+  assignedApprovals        ApprovalRequest[]       @relation("ApprovalRequestAssignedTo")
+  approvalComments         ApprovalComment[]       @relation("ApprovalCommentAuthor")
+
+  @@map("user")
+}
+
+model Role {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  editable    Boolean   @default(false)
+  companyId   String?
+  permissions String[]
+  createdById String?
+  updatedById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  company     Company?  @relation(fields: [companyId], references: [id])
+  createdBy   User?     @relation("roleCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User?     @relation("roleUpdatedBy", fields: [updatedById], references: [id])
+  users       User[]
+
+  // Workflow & Approval Relations
+  assignedWorkflowSteps WorkflowStep[]    @relation("WorkflowStepAssigneeRole")
+  assignedApprovals     ApprovalRequest[] @relation("ApprovalRequestAssignedRole")
+
+  @@unique([name, companyId])
+}
+
+model Plan {
+  id            String         @id @unique
+  name          String
+  description   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  prices        Price[]
+  subscriptions Subscription[]
+}
+
+model Price {
+  id            String         @id @unique
+  planId        String
+  amount        Int
+  currency      String
+  interval      String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  plan          Plan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id                 String   @id @unique
+  userId             String   @unique
+  planId             String
+  priceId            String
+  interval           String
+  status             String
+  currentPeriodStart Int
+  currentPeriodEnd   Int
+  trialStart         Int
+  trialEnd           Int
+  cancelAtPeriodEnd  Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  plan               Plan     @relation(fields: [planId], references: [id])
+  price              Price    @relation(fields: [priceId], references: [id])
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Profile {
+  id        String    @id @default(cuid())
+  avatar    String?
+  firstName String
+  lastName  String
+  phone     String?
+  userId    String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Invitation {
+  id        String           @id @default(cuid())
+  email     String
+  token     String           @unique
+  validity  DateTime?
+  inviteeId String?
+  inviterId String
+  status    InvitationStatus
+  createdAt DateTime         @default(now())
+  updatedAt DateTime?        @updatedAt
+  invitee   User?            @relation("InvitationInvitee", fields: [inviteeId], references: [id])
+}
+
+model Location {
+  id                String     @id @default(cuid())
+  address           String?
+  city              String
+  state             String?
+  postalCode        String?
+  country           String
+  companyId         String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime?  @updatedAt
+  agency            Agency?
+  company           Company?
+  billingsAdresses  Customer[] @relation("BillingsAdresses")
+  shippingaddresses Customer[] @relation("Shippingaddresses")
+  shipment          Shipment?
+  site              Site?
+  supplier          Supplier?
+}
+
+model Customer {
+  id                                 String            @id @default(cuid())
+  firstName                          String            @db.VarChar(200)
+  lastName                           String            @db.VarChar(200)
+  email                              String
+  phone                              String?
+  companyName                        String?
+  billingAddressId                   String
+  shippingAddressId                  String
+  hasPortalAccess                    Boolean           @default(false)
+  companyId                          String
+  agencyId                           String
+  useBillingAddressAsShippingAddress Boolean           @default(false)
+  siteId                             String
+  createdAt                          DateTime          @default(now())
+  updatedAt                          DateTime?         @updatedAt
+  agency                             Agency            @relation(fields: [agencyId], references: [id])
+  billingAddress                     Location          @relation("BillingsAdresses", fields: [billingAddressId], references: [id])
+  company                            Company           @relation(fields: [companyId], references: [id])
+  shippingAddress                    Location          @relation("Shippingaddresses", fields: [shippingAddressId], references: [id])
+  site                               Site              @relation(fields: [siteId], references: [id])
+  backorders                         Backorder[]
+  paymentsReceived                   PaymentReceived[]
+  salesOrders                        SalesOrder[]
+}
+
+model Shipment {
+  id                    String         @id @default(cuid())
+  saleId                String?
+  shippingCarrier       String
+  trackingNumber        String
+  shipmentStatus        String
+  estimatedDeliveryDate DateTime?
+  purchaseOrderId       String?
+  locationId            String         @unique
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime?      @updatedAt
+  location              Location       @relation(fields: [locationId], references: [id])
+  purchaseOrder         PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+}
+
+model PaymentMade {
+  id               String         @id @default(cuid())
+  paymentReference String
+  paymentNumber    String
+  amountReceived   Float
+  balanceDue       Float
+  purchaseOrderId  String?
+  billId           String?
+  companyId        String
+  paymentDate      DateTime
+  status           PaymentStatus
+  paymentMethod    PaymentMethod
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime?      @updatedAt
+  bill             Bill?          @relation(fields: [billId], references: [id])
+  company          Company        @relation(fields: [companyId], references: [id])
+  purchaseOrder    PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+}
+
+model Invoice {
+  id               String            @id @default(cuid())
+  invoiceReference String
+  invoiceNumber    String
+  invoiceDate      DateTime
+  dueDate          DateTime
+  userId           String?
+  companyId        String
+  salesOrderId     String
+  status           InvoiceStatus
+  notes            String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime?         @updatedAt
+  customerId       String?
+  company          Company           @relation(fields: [companyId], references: [id])
+  salesOrder       SalesOrder        @relation(fields: [salesOrderId], references: [id])
+  user             User?             @relation(fields: [userId], references: [id])
+  paymentsReceived PaymentReceived[]
+}
+
+model Bill {
+  id              String        @id @default(cuid())
+  billReference   String
+  billNumber      String
+  billDate        DateTime
+  dueDate         DateTime
+  userId          String?
+  companyId       String
+  purchaseOrderId String
+  status          BillStatus
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime?     @updatedAt
+  company         Company       @relation(fields: [companyId], references: [id])
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  user            User?         @relation(fields: [userId], references: [id])
+  paymentsMade    PaymentMade[]
+}
+
+model PaymentReceived {
+  id               String        @id @default(cuid())
+  paymentReference String
+  paymentNumber    String
+  amountReceived   Float
+  balanceDue       Float
+  customerId       String
+  paymentDate      DateTime
+  companyId        String
+  invoiceId        String
+  notes            String?
+  status           PaymentStatus
+  paymentMethod    PaymentMethod
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime?     @updatedAt
+  company          Company       @relation(fields: [companyId], references: [id])
+  customer         Customer      @relation(fields: [customerId], references: [id])
+  invoice          Invoice       @relation(fields: [invoiceId], references: [id])
+}
+
+model ReturnOrder {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model SalesOrder {
+  id                   String           @id @default(cuid())
+  customerId           String
+  status               SalesOrderStatus
+  orderDate            DateTime
+  salesOrderReference  String
+  salesOrderNumber     String
+  expectedShipmentDate DateTime?
+  agencyId             String
+  companyId            String
+  siteId               String
+  paymentTerms         PaymentTerms
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime?        @updatedAt
+  invoices             Invoice[]
+  agency               Agency           @relation(fields: [agencyId], references: [id])
+  company              Company          @relation(fields: [companyId], references: [id])
+  customer             Customer         @relation(fields: [customerId], references: [id])
+  site                 Site             @relation(fields: [siteId], references: [id])
+  salesOrderItems      SalesOrderItem[]
+  backorder            Backorder? // One backorder created from this sales order
+}
+
+model SalesOrderItem {
+  id            String               @id @default(cuid())
+  salesOrderId  String
+  productId     String
+  quantity      Int
+  tax           Float?
+  rate          Float
+  amount        Float
+  status        SalesOrderItemStatus
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime?            @updatedAt
+  product       Product              @relation(fields: [productId], references: [id])
+  salesOrder    SalesOrder           @relation(fields: [salesOrderId], references: [id])
+  backorderItem BackorderItem? // One backorder item created from this sales order item
+}
+
+model PurchaseOrder {
+  id                     String              @id @default(cuid())
+  status                 PurchaseOrderStatus
+  paymentTerms           PaymentTerms
+  purchaseOrderNumber    String
+  purchaseOrderReference String
+  reference              String?
+  orderDate              DateTime
+  expectedDeliveryDate   DateTime?
+  supplierId             String
+  agencyId               String
+  companyId              String
+  notes                  String?
+  siteId                 String
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime?           @updatedAt
+  bills                  Bill[]
+  paymentsMade           PaymentMade[]
+  agency                 Agency              @relation(fields: [agencyId], references: [id])
+  company                Company             @relation(fields: [companyId], references: [id])
+  site                   Site                @relation(fields: [siteId], references: [id])
+  supplier               Supplier            @relation(fields: [supplierId], references: [id])
+  purchaseOrderItems     PurchaseOrderItem[]
+  purchaseReceives       PurchaseReceive[]
+  shipments              Shipment[]
+}
+
+model PurchaseOrderItem {
+  id              String         @id @default(cuid())
+  purchaseOrderId String?
+  quantity        Int
+  amount          Float
+  productId       String
+  tax             Float?
+  rate            Float
+  received        Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime?      @updatedAt
+  product         Product        @relation(fields: [productId], references: [id])
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+}
+
+model Category {
+  id                    String          @id @default(cuid())
+  name                  String          @db.VarChar(200)
+  description           String?
+  companyId             String
+  active                Boolean         @default(true)
+  allowedAttributeTypes AttributeType[]
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime?       @updatedAt
+  company               Company         @relation(fields: [companyId], references: [id])
+  products              Product[]
+
+  @@index([name])
+}
+
+model Attribute {
+  id        String        @id @default(cuid())
+  type      AttributeType
+  productId String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime?     @updatedAt
+  product   Product?      @relation(fields: [productId], references: [id])
+}
+
+model Product {
+  id                           String                        @id @default(cuid())
+  sku                          String?
+  name                         String
+  description                  String?
+  costPrice                    Float
+  sellingPrice                 Float
+  brand                        String?                       @db.VarChar(100)
+  tags                         String[]
+  companyId                    String
+  categoryId                   String
+  active                       Boolean                       @default(true)
+  returnable                   Boolean                       @default(true)
+  trackable                    Boolean                       @default(true)
+  adjustedQuantity             Int                           @default(0)
+  openingStock                 Int
+  openingValue                 Float
+  availableQuantity            Int
+  physicalStockOnHand          Int
+  accountingStockOnHand        Int
+  barcode                      String
+  reorderPoint                 Int?
+  safetyStockLevel             Int?
+  Length                       Float?
+  Width                        Float?
+  Height                       Float?
+  Weight                       Float?
+  agencyId                     String
+  siteId                       String
+  status                       ProductStatus
+  unitOfMeasureId              String?
+  unit                         ProductUnit
+  attributeTypes               AttributeType[]
+  createdby                    String
+  updatedBy                    String?
+  createdAt                    DateTime                      @default(now())
+  updatedAt                    DateTime?                     @updatedAt
+  images                       Asset[]
+  attributes                   Attribute[]
+  backorderItems               BackorderItem[]
+  notifications                Notification[]
+  agency                       Agency                        @relation(fields: [agencyId], references: [id])
+  category                     Category                      @relation(fields: [categoryId], references: [id])
+  company                      Company                       @relation(fields: [companyId], references: [id])
+  productCreatedBy             User                          @relation("productCreatedBy", fields: [createdby], references: [id])
+  site                         Site                          @relation(fields: [siteId], references: [id])
+  uom                          UnitOfMeasure?                @relation(fields: [unitOfMeasureId], references: [id])
+  productUpdatedBy             User?                         @relation("productUpdatedBy", fields: [updatedBy], references: [id])
+  purchaseOrderItems           PurchaseOrderItem[]
+  purchaseReceiveItems         PurchaseReceiveItem[]
+  salesOrderItems              SalesOrderItem[]
+  stockAdjustmentHistories     StockAdjustmentHistory[]
+  transferOrderItems           TransferOrderItem[]
+  stockAdjustments             StockAdjustment[]             @relation("ProductToStockAdjustment")
+  suppliers                    Supplier[]                    @relation("ProductToSupplier")
+  demandForecasts              DemandForecast[]
+  autoReorderRule              AutoReorderRule?
+  purchaseOrderRecommendations PurchaseOrderRecommendation[]
+
+  @@index([companyId])
+}
+
+model Asset {
+  id         String    @id @default(cuid())
+  name       String
+  path       String
+  imagekitId String? // ImageKit's file ID for management operations
+  type       String    @default("image")
+  productId  String
+  primary    Boolean
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
+  product    Product   @relation(fields: [productId], references: [id])
+}
+
+model UnitOfMeasure {
+  id        String    @id @default(cuid())
+  name      String
+  favorite  Boolean   @default(false)
+  companyId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  products  Product[]
+  company   Company   @relation(fields: [companyId], references: [id])
+}
+
+model PurchaseReceive {
+  id                       String                @id @default(cuid())
+  purchaseOrderId          String
+  purchaseReceiveNumber    String
+  purchaseReceiveReference String
+  receivedQuantity         Int
+  receivedDate             DateTime
+  notes                    String?
+  companyId                String
+  status                   PurchaseOrderStatus
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime?             @updatedAt
+  company                  Company               @relation(fields: [companyId], references: [id])
+  purchaseOrder            PurchaseOrder         @relation(fields: [purchaseOrderId], references: [id])
+  purchaseReceiveItems     PurchaseReceiveItem[]
+}
+
+model PurchaseReceiveItem {
+  id                String          @id @default(cuid())
+  purchaseReceiveId String
+  receivedQuantity  Int
+  orderedQuantity   Int
+  productId         String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime?       @updatedAt
+  purchaseOrderId   String?
+  product           Product         @relation(fields: [productId], references: [id])
+  purchaseReceive   PurchaseReceive @relation(fields: [purchaseReceiveId], references: [id])
+}
+
+model StockAdjustment {
+  id              String           @id @default(cuid())
+  reference       String?
+  stockMovementId String?
+  notes           String?
+  date            DateTime
+  createdById     String
+  companyId       String
+  siteId          String
+  status          AdjustmentStatus @default(Pending)
+  reason          AdjustmentReason
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime?        @updatedAt
+  company         Company          @relation(fields: [companyId], references: [id])
+  createdBy       User             @relation(fields: [createdById], references: [id])
+  site            Site             @relation(fields: [siteId], references: [id])
+  products        Product[]        @relation("ProductToStockAdjustment")
+}
+
+model StockAdjustmentHistory {
+  id                    String    @id @default(cuid())
+  openingStock          Int
+  adjustedQuantity      Int
+  physicalStockOnHand   Int
+  accountingStockOnHand Int
+  reference             String?
+  createdById           String
+  productId             String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime? @updatedAt
+  createdBy             User      @relation(fields: [createdById], references: [id])
+  product               Product   @relation(fields: [productId], references: [id])
+}
+
+model Supplier {
+  id                           String                        @id @default(cuid())
+  name                         String                        @db.VarChar(200)
+  email                        String
+  phone                        String
+  companyId                    String
+  active                       Boolean?                      @default(true)
+  locationId                   String?                       @unique
+  companyName                  String?
+  currencyId                   String
+  createdAt                    DateTime                      @default(now())
+  updatedAt                    DateTime?                     @updatedAt
+  purchaseOrders               PurchaseOrder[]
+  company                      Company                       @relation(fields: [companyId], references: [id])
+  currency                     Currency                      @relation(fields: [currencyId], references: [id])
+  location                     Location?                     @relation(fields: [locationId], references: [id])
+  products                     Product[]                     @relation("ProductToSupplier")
+  purchaseOrderRecommendations PurchaseOrderRecommendation[]
+}
+
+model Agency {
+  id             String          @id @default(cuid())
+  name           String
+  currencyId     String
+  companyId      String
+  locationId     String          @unique
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime?       @updatedAt
+  company        Company         @relation(fields: [companyId], references: [id])
+  currency       Currency        @relation(fields: [currencyId], references: [id])
+  location       Location        @relation(fields: [locationId], references: [id])
+  backorders     Backorder[]
+  customers      Customer[]
+  products       Product[]
+  purchaseOrders PurchaseOrder[]
+  salesOrders    SalesOrder[]
+  sites          Site[]
+  users          User[]
+
+  @@index([companyId])
+}
+
+model Site {
+  id               String            @id @default(cuid())
+  name             String
+  companyId        String?
+  locationId       String?           @unique
+  agencyId         String?
+  active           Boolean           @default(true)
+  default          Boolean           @default(false)
+  salesOrderId     String?
+  type             SiteType
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime?         @updatedAt
+  backorders       Backorder[]
+  customers        Customer[]
+  products         Product[]
+  purchaseOrders   PurchaseOrder[]
+  salesOrders      SalesOrder[]
+  section          Section[]
+  agency           Agency?           @relation(fields: [agencyId], references: [id])
+  company          Company?          @relation(fields: [companyId], references: [id])
+  location         Location?         @relation(fields: [locationId], references: [id])
+  stockAdjustments StockAdjustment[]
+  siteFrom         TransferOrder[]   @relation("siteFrom")
+  siteTo           TransferOrder[]   @relation("siteTo")
+  users            User[]
+}
+
+model TransferOrder {
+  id                     String              @id @default(cuid())
+  transferOrderReference String
+  transferOrderNumber    String
+  transferOrderDate      DateTime
+  companyId              String
+  status                 TransferOrderStatus
+  reason                 TransferOrderReason
+  otherReason            String?
+  siteFromId             String
+  siteToId               String
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime?           @updatedAt
+  company                Company             @relation(fields: [companyId], references: [id])
+  siteFrom               Site                @relation("siteFrom", fields: [siteFromId], references: [id])
+  siteTo                 Site                @relation("siteTo", fields: [siteToId], references: [id])
+  transferOrderItems     TransferOrderItem[]
+}
+
+model TransferOrderItem {
+  id              String        @id @default(cuid())
+  transferOrderId String
+  quantity        Int
+  productId       String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime?     @updatedAt
+  product         Product       @relation(fields: [productId], references: [id])
+  transferOrder   TransferOrder @relation(fields: [transferOrderId], references: [id])
+}
+
+model Backorder {
+  id                  String          @id @default(cuid())
+  backorderReference  String
+  backorderNumber     String
+  customerId          String
+  salesOrderId        String?         @unique // Link to originating sales order
+  status              BackorderStatus
+  originalOrderDate   DateTime
+  expectedFulfillDate DateTime?
+  agencyId            String
+  companyId           String
+  siteId              String
+  notes               String?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime?       @updatedAt
+  agency              Agency          @relation(fields: [agencyId], references: [id])
+  company             Company         @relation(fields: [companyId], references: [id])
+  customer            Customer        @relation(fields: [customerId], references: [id])
+  site                Site            @relation(fields: [siteId], references: [id])
+  salesOrder          SalesOrder?     @relation(fields: [salesOrderId], references: [id])
+  backorderItems      BackorderItem[]
+}
+
+model BackorderItem {
+  id                String              @id @default(cuid())
+  backorderId       String
+  productId         String
+  salesOrderItemId  String?             @unique // Link to originating sales order item
+  orderedQuantity   Int
+  fulfilledQuantity Int                 @default(0)
+  remainingQuantity Int
+  rate              Float
+  amount            Float
+  status            BackorderItemStatus
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime?           @updatedAt
+  backorder         Backorder           @relation(fields: [backorderId], references: [id])
+  product           Product             @relation(fields: [productId], references: [id])
+  salesOrderItem    SalesOrderItem?     @relation(fields: [salesOrderItemId], references: [id])
+}
+
+model Section {
+  id        String    @id @default(cuid())
+  name      String
+  siteId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  site      Site      @relation(fields: [siteId], references: [id])
+}
+
+model Notification {
+  id          String             @id @default(cuid())
+  status      NotificationStatus
+  message     String
+  companyId   String
+  productId   String
+  createdById String
+  read        Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime?          @updatedAt
+  company     Company            @relation(fields: [companyId], references: [id])
+  createdBy   User               @relation(fields: [createdById], references: [id])
+  product     Product            @relation(fields: [productId], references: [id])
+
+  @@index([createdAt])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@map("account")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+  @@map("verification")
+}
+
+// AI Features Models
+model DemandForecast {
+  id              String    @id @default(cuid())
+  productId       String
+  forecastDate    DateTime
+  predictedDemand Int
+  confidenceLevel Float // 0-1 confidence score
+  factors         Json // seasonality, trends, external factors
+  actualDemand    Int? // filled after the date passes
+  accuracy        Float? // calculated after actual vs predicted
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId, forecastDate])
+}
+
+model AutoReorderRule {
+  id               String   @id @default(cuid())
+  productId        String
+  isActive         Boolean  @default(true)
+  minStockLevel    Int // AI-calculated dynamic reorder point
+  maxStockLevel    Int // AI-calculated max stock
+  supplierLeadTime Int // days
+  safetyStockDays  Int // AI-calculated safety stock
+  lastUpdated      DateTime @updatedAt
+  createdAt        DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([productId])
+}
+
+model PurchaseOrderRecommendation {
+  id             String                @id @default(cuid())
+  productId      String
+  supplierId     String
+  recommendedQty Int
+  urgencyLevel   RecommendationUrgency
+  reasoning      String // AI explanation
+  estimatedCost  Float
+  isAccepted     Boolean               @default(false)
+  isProcessed    Boolean               @default(false)
+  createdAt      DateTime              @default(now())
+  expiresAt      DateTime
+
+  product  Product  @relation(fields: [productId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+}
+
+model InventoryAnomaly {
+  id                 String          @id @default(cuid())
+  type               AnomalyType
+  severity           AnomalySeverity
+  description        String
+  affectedProducts   String[] // Array of product IDs
+  recommendedActions String[]
+  confidence         Float // 0-1 confidence score
+  isResolved         Boolean         @default(false)
+  companyId          String
+  metadata           Json // Additional context data
+  createdAt          DateTime        @default(now())
+  resolvedAt         DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, createdAt])
+}
+
+model BusinessInsight {
+  id        String      @id @default(cuid())
+  companyId String
+  content   String // AI-generated insight content
+  type      InsightType
+  date      DateTime
+  metadata  Json // Additional business data used to generate insight
+  isViewed  Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, date])
+}
+
+enum UserRole {
+  Admin
+  Manager
+  Salesperson
+  WarehouseStaff
+  Customer
+  Supplier
+  Viewer
+}
+
+enum UserStatus {
+  Pending
+  Registered
+  Cancelled
+  PendingBusinessSetup
+}
+
+enum InvitationStatus {
+  Invited
+  Accepted
+  Cancelled
+}
+
+enum AttributeType {
+  Color
+  Size
+  Confirmation
+  Weight
+  Height
+  Length
+  Width
+  Volume
+  Barcode
+}
+
+enum ProductStatus {
+  Available
+  OutOfStock
+  LowStock
+  OnOrder
+  Archived
+  Reserved
+  Discontinued
+  InTransit
+  Damaged
+  Critical
+}
+
+enum ProductUnit {
+  Box
+  Centimeter
+  Dozen
+  Pieces
+  Foot
+  Gram
+  Inch
+  Kilogram
+  Meter
+  Milligram
+  Milliliter
+  Liters
+  Ounce
+  Pack
+  Pound
+}
+
+enum AdjustmentReason {
+  DamagedItems
+  ExcessStock
+  QualityControl
+  InternalTransfer
+  WriteOff
+  ReturnSupplier
+  UnaccountedInventory
+  Demo
+  LostItems
+  Purchase
+  Sale
+  Return
+  Refund
+}
+
+enum AdjustmentStatus {
+  Pending
+  Approved
+  Completed
+}
+
+enum MovementType {
+  AccountingStock
+  PhysicalStock
+}
+
+enum NotificationStatus {
+  Available
+  LowStock
+  OutOfStock
+  RestockReminder
+  NewOrder
+  NewSale
+  NewReturn
+  OrderShipped
+  OrderDelayed
+  Critical
+  ExpiredProduct
+  PriceChange
+  WeeklySummary
+}
+
+enum PurchaseOrderStatus {
+  Pending
+  Issued
+  Received
+  PartiallyReceived
+  Cancelled
+}
+
+enum SalesOrderStatus {
+  Pending
+  Issued
+  PartiallyShipped
+  Shipped
+  Delivered
+  PartiallyDelivered
+  Cancelled
+  Returned
+}
+
+enum SalesOrderItemStatus {
+  Pending
+  Issued
+  PartiallyShipped
+  Shipped
+  Delivered
+  PartiallyDelivered
+  Cancelled
+  Returned
+}
+
+enum PaymentMethod {
+  Cash
+  CreditCard
+  DebitCard
+  BankTransfer
+  Cheque
+}
+
+enum PaymentStatus {
+  Paid
+  PartiallyPaid
+  Overdue
+  Cancelled
+  Unpaid
+  Refunded
+  Locked
+  Overpaid
+}
+
+enum ShipmentStatus {
+  Pending
+  Confirmed
+  InTransit
+  OutForDelivery
+  Delivered
+  Returned
+  Cancelled
+}
+
+enum InvoiceStatus {
+  Pending
+  Sent
+  Paid
+  PartiallyPaid
+  Overdue
+  Cancelled
+  Unpaid
+  Refunded
+  CustomerViewed
+  Locked
+  Overpaid
+}
+
+enum BillStatus {
+  Unbilled
+  Sent
+  Paid
+  PartiallyPaid
+  Overdue
+  Cancelled
+  Unpaid
+  Refunded
+  CustomerViewed
+  Locked
+  Overpaid
+}
+
+enum PaymentTerms {
+  Net15
+  Net30
+  Net45
+  Net60
+  DueEndOfMonth
+  DueEndOfNextMonth
+  DueOnReceipt
+  PaymentInAdvance
+  DueOnDate
+}
+
+enum StoreType {
+  Retail
+  Wholesale
+}
+
+enum SiteType {
+  Warehouse
+  Store
+}
+
+enum TransferOrderStatus {
+  Pending
+  Confirmed
+  InTransit
+  Delivered
+  Returned
+  Cancelled
+}
+
+enum TransferOrderReason {
+  DamagedItems
+  ExcessStock
+  QualityControl
+  InternalTransfer
+  WriteOff
+  ReturnSupplier
+  UnaccountedInventory
+  Demo
+  LostItems
+  Purchase
+  Sale
+  Return
+  Refund
+  Other
+}
+
+enum BackorderStatus {
+  Pending
+  Partial
+  Fulfilled
+  Cancelled
+}
+
+enum BackorderItemStatus {
+  Pending
+  PartiallyFulfilled
+  Fulfilled
+  Cancelled
+}
+
+// AI Features Enums
+enum RecommendationUrgency {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum AnomalyType {
+  stock_discrepancy
+  demand_spike
+  supplier_delay
+  quality_issue
+  unusual_sales_pattern
+  inventory_shrinkage
+  price_anomaly
+  seasonal_variance
+  inventory_imbalance
+}
+
+enum AnomalySeverity {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum InsightType {
+  daily_summary
+  weekly_report
+  monthly_analysis
+  inventory_optimization
+  sales_trend
+  supplier_performance
+  customer_behavior
+  cost_analysis
+  profitability_insight
+  demand_prediction
+}
+
+// Workflow & Approval System Models
+model WorkflowTemplate {
+  id                String              @id @default(cuid())
+  name              String
+  description       String?
+  triggerType       WorkflowTriggerType
+  triggerConditions Json? // Conditions that trigger this workflow
+  isActive          Boolean             @default(true)
+  companyId         String
+  createdById       String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime?           @updatedAt
+
+  company   Company            @relation(fields: [companyId], references: [id])
+  createdBy User               @relation("WorkflowTemplateCreatedBy", fields: [createdById], references: [id])
+  steps     WorkflowStep[]
+  instances WorkflowInstance[]
+
+  @@index([companyId, isActive])
+}
+
+model WorkflowStep {
+  id                 String               @id @default(cuid())
+  workflowTemplateId String
+  stepNumber         Int
+  name               String
+  description        String?
+  stepType           WorkflowStepType
+  assigneeType       ApprovalAssigneeType
+  assigneeRoleId     String?
+  assigneeUserId     String?
+  conditions         Json? // Conditions for this step to execute
+  autoApprove        Boolean              @default(false)
+  timeoutHours       Int? // Auto-approve after timeout
+  isRequired         Boolean              @default(true)
+  allowParallel      Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime?            @updatedAt
+
+  workflowTemplate WorkflowTemplate        @relation(fields: [workflowTemplateId], references: [id], onDelete: Cascade)
+  assigneeRole     Role?                   @relation("WorkflowStepAssigneeRole", fields: [assigneeRoleId], references: [id])
+  assigneeUser     User?                   @relation("WorkflowStepAssigneeUser", fields: [assigneeUserId], references: [id])
+  executions       WorkflowStepExecution[]
+
+  @@unique([workflowTemplateId, stepNumber])
+  @@index([workflowTemplateId, stepNumber])
+}
+
+model WorkflowInstance {
+  id                 String             @id @default(cuid())
+  workflowTemplateId String
+  entityType         WorkflowEntityType
+  entityId           String
+  status             WorkflowStatus
+  currentStepNumber  Int?
+  triggeredBy        String
+  data               Json // Entity data snapshot
+  metadata           Json? // Additional context
+  startedAt          DateTime           @default(now())
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  notes              String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime?          @updatedAt
+
+  workflowTemplate WorkflowTemplate        @relation(fields: [workflowTemplateId], references: [id])
+  triggeredByUser  User                    @relation("WorkflowInstanceTriggeredBy", fields: [triggeredBy], references: [id])
+  stepExecutions   WorkflowStepExecution[]
+  approvalRequests ApprovalRequest[]
+
+  @@index([entityType, entityId])
+  @@index([status, startedAt])
+}
+
+model WorkflowStepExecution {
+  id                 String             @id @default(cuid())
+  workflowInstanceId String
+  workflowStepId     String
+  status             WorkflowStepStatus
+  assignedTo         String?
+  startedAt          DateTime           @default(now())
+  completedAt        DateTime?
+  timeoutAt          DateTime?
+  notes              String?
+  decision           WorkflowDecision?
+  metadata           Json?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime?          @updatedAt
+
+  workflowInstance WorkflowInstance  @relation(fields: [workflowInstanceId], references: [id], onDelete: Cascade)
+  workflowStep     WorkflowStep      @relation(fields: [workflowStepId], references: [id])
+  assignedToUser   User?             @relation("WorkflowStepExecutionAssignedTo", fields: [assignedTo], references: [id])
+  approvalRequests ApprovalRequest[] // Approval requests created by this step execution
+
+  @@index([workflowInstanceId, startedAt])
+}
+
+model ApprovalRequest {
+  id                 String              @id @default(cuid())
+  workflowInstanceId String?
+  stepExecutionId    String? // Link to the workflow step execution that created this approval
+  entityType         ApprovalEntityType
+  entityId           String
+  requestType        ApprovalRequestType
+  status             ApprovalStatus
+  priority           ApprovalPriority    @default(Medium)
+  requestedBy        String
+  assignedTo         String?
+  assignedRole       String?
+  title              String
+  description        String?
+  data               Json // Entity data for approval
+  conditions         Json? // Specific approval conditions
+  requestedAt        DateTime            @default(now())
+  reviewedAt         DateTime?
+  completedAt        DateTime?
+  expiresAt          DateTime?
+  notes              String?
+  decision           ApprovalDecision?
+  decisionReason     String?
+  companyId          String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime?           @updatedAt
+
+  workflowInstance WorkflowInstance?      @relation(fields: [workflowInstanceId], references: [id])
+  stepExecution    WorkflowStepExecution? @relation(fields: [stepExecutionId], references: [id])
+  requestedByUser  User                   @relation("ApprovalRequestRequestedBy", fields: [requestedBy], references: [id])
+  assignedToUser   User?                  @relation("ApprovalRequestAssignedTo", fields: [assignedTo], references: [id])
+  assignedToRole   Role?                  @relation("ApprovalRequestAssignedRole", fields: [assignedRole], references: [id])
+  company          Company                @relation(fields: [companyId], references: [id])
+  comments         ApprovalComment[]
+
+  @@index([status, assignedTo])
+  @@index([entityType, entityId])
+  @@index([companyId, requestedAt])
+}
+
+model ApprovalComment {
+  id                String    @id @default(cuid())
+  approvalRequestId String
+  authorId          String
+  comment           String
+  isInternal        Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime? @updatedAt
+
+  approvalRequest ApprovalRequest @relation(fields: [approvalRequestId], references: [id], onDelete: Cascade)
+  author          User            @relation("ApprovalCommentAuthor", fields: [authorId], references: [id])
+
+  @@index([approvalRequestId, createdAt])
+}
+
+// Workflow & Approval Enums
+enum WorkflowTriggerType {
+  manual
+  purchase_order_create
+  purchase_order_threshold
+  sales_order_create
+  sales_order_threshold
+  stock_adjustment_create
+  transfer_order_create
+  invoice_create
+  bill_create
+  customer_create
+  supplier_create
+  product_create
+  low_stock_alert
+  high_value_transaction
+  bulk_operation
+  scheduled
+  custom_condition
+}
+
+enum WorkflowStepType {
+  approval
+  notification
+  data_validation
+  automatic_action
+  conditional_logic
+  parallel_approval
+  sequential_approval
+  escalation
+  integration
+  custom
+}
+
+enum WorkflowEntityType {
+  purchase_order
+  sales_order
+  stock_adjustment
+  transfer_order
+  invoice
+  bill
+  customer
+  supplier
+  product
+  payment_made
+  payment_received
+  backorder
+  custom
+}
+
+enum WorkflowStatus {
+  pending
+  in_progress
+  completed
+  cancelled
+  failed
+  timeout
+  escalated
+}
+
+enum WorkflowStepStatus {
+  pending
+  assigned
+  in_progress
+  completed
+  skipped
+  failed
+  timeout
+  escalated
+}
+
+enum WorkflowDecision {
+  approved
+  rejected
+  escalated
+  delegated
+  more_info_required
+}
+
+enum ApprovalAssigneeType {
+  user
+  role
+  creator
+  manager
+  department_head
+  custom_logic
+}
+
+enum ApprovalEntityType {
+  purchase_order
+  sales_order
+  stock_adjustment
+  transfer_order
+  invoice
+  bill
+  customer
+  supplier
+  product
+  payment_made
+  payment_received
+  backorder
+  budget_change
+  price_change
+  discount_approval
+  refund_request
+  return_authorization
+  custom
+}
+
+enum ApprovalRequestType {
+  create
+  update
+  delete
+  approve
+  reject
+  threshold_breach
+  exception_handling
+  custom
+}
+
+enum ApprovalStatus {
+  pending
+  in_review
+  approved
+  rejected
+  escalated
+  expired
+  cancelled
+  more_info_required
+}
+
+enum ApprovalPriority {
+  Low
+  Medium
+  High
+  Critical
+  Urgent
+}
+
+enum ApprovalDecision {
+  approved
+  rejected
+  escalated
+  delegated
+  more_info_required
+  conditional_approval
+}

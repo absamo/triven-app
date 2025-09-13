@@ -1,0 +1,4 @@
+name,description,category,sellingPrice,physicalStockOnHand,reorderLevel,minStockLevel,unitOfMeasure,barcode,status
+"Sample Product 1","Description for sample product 1","Electronics",29.99,100,20,10,"pcs","1234567890123","available"
+"Sample Product 2","Description for sample product 2","Clothing",19.99,50,15,5,"pcs","2345678901234","available"
+"Sample Product 3","Description for sample product 3","Books",12.99,75,10,5,"pcs","3456789012345","lowstock"

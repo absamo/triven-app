@@ -1,0 +1,95 @@
+.main {
+  min-height: 100dvh;
+  transition: all 300ms ease-in-out;
+}
+
+.appShell {
+  min-height: 100vh;
+}
+
+.header {
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  height: 70px;
+}
+
+.navbar {
+  transition: width 300ms ease;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
+}
+
+.navbar.mini {
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+}
+
+.container {
+  /* padding: 30px; */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border-radius: var(--mantine-radius-md);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 150ms ease;
+}
+
+.navToggleButton {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  transition: all 300ms ease;
+}
+
+.navToggleButton:hover {
+  background-color: var(--mantine-color-blue-0);
+  transform: scale(1.05);
+}
+
+.trialAlert {
+  border-radius: var(--mantine-radius-md);
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Toggle button positioned at the bottom of navbar */
+.toggleButton {
+  position: absolute;
+  bottom: 20px;
+  right: -20px;
+  z-index: 1001;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: light-dark(linear-gradient(135deg, #ffffff 0%, #f8fafc 100%), var(--mantine-color-dark-6));
+  border: 2px solid light-dark(#e2e8f0, var(--mantine-color-dark-4));
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.1),
+    0 3px 8px rgba(0, 0, 0, 0.06),
+    2px 0 8px rgba(0, 0, 0, 0.06);
+  color: light-dark(#64748b, var(--mantine-color-gray-4));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    color: var(--mantine-color-teal-6);
+    background: var(--mantine-color-teal-6);
+    color: white;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+/* Icon styles for the toggle button */
+.toggleIcon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

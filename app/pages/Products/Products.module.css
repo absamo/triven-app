@@ -1,0 +1,24 @@
+.container {
+  padding: 20px;
+  margin-top: 30px;
+  border-radius: var(--mantine-radius-md);
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-7)
+  );
+  transition: box-shadow 150ms ease, transform 100ms ease;
+}
+
+.root {
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-7)
+  );
+}
+
+.panel {
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-7)
+  );
+}

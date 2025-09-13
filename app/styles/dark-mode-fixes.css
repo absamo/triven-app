@@ -1,0 +1,90 @@
+/* Global Dark Mode Fixes */
+
+/* Ensure all Paper components respond to color scheme */
+.mantine-Paper-root {
+    background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6)) !important;
+    color: light-dark(var(--mantine-color-black), var(--mantine-color-white)) !important;
+}
+
+/* Ensure all Card components respond to color scheme */
+.mantine-Card-root {
+    background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6)) !important;
+    color: light-dark(var(--mantine-color-black), var(--mantine-color-white)) !important;
+    border-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4)) !important;
+}
+
+
+[data-mantine-color-scheme="light"] .mantine-Paper-root {
+    background-color: var(--mantine-color-white) !important;
+    color: var(--mantine-color-black) !important;
+}
+
+/* Override any hardcoded dark backgrounds in dashboard cards */
+.mantine-Paper-root[style*="background"],
+.mantine-Card-root[style*="background"] {
+    background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6)) !important;
+}
+
+/* Ensure text color is correct */
+.mantine-Text-root {
+    color: inherit;
+}
+
+/* Fix dimmed text visibility in dark mode */
+[data-mantine-color-scheme="dark"] .mantine-Text-root[data-dimmed] {
+    color: var(--mantine-color-gray-3) !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-Text-root[c="dimmed"] {
+    color: var(--mantine-color-gray-3) !important;
+}
+
+/* Override any hardcoded dimmed colors */
+[data-mantine-color-scheme="dark"] .mantine-Text-root[style*="color: dimmed"],
+[data-mantine-color-scheme="dark"] .mantine-Text-root[style*="color:#6B7280"],
+[data-mantine-color-scheme="dark"] .mantine-Text-root[style*="color: #6B7280"] {
+    color: var(--mantine-color-gray-3) !important;
+}
+
+/* Fix border colors */
+.mantine-Paper-root,
+.mantine-Card-root {
+    border-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4)) !important;
+}
+
+/* Fix navigation elements */
+.mantine-NavLink-root {
+    color: light-dark(var(--mantine-color-black), var(--mantine-color-white)) !important;
+}
+
+.mantine-NavLink-root:hover {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-5)) !important;
+}
+
+/* Fix AppShell navbar */
+.mantine-AppShell-navbar {
+    background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7)) !important;
+    border-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4)) !important;
+}
+
+/* Fix AppShell main */
+.mantine-AppShell-main {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8)) !important;
+}
+
+/* Fix common Mantine text colors for dark mode */
+[data-mantine-color-scheme="dark"] .mantine-Text-root[c="gray.6"],
+[data-mantine-color-scheme="dark"] .mantine-Text-root[c="gray.7"],
+[data-mantine-color-scheme="dark"] .mantine-Text-root[c="gray.8"] {
+    color: var(--mantine-color-gray-3) !important;
+}
+
+/* Fix label colors in dark mode */
+[data-mantine-color-scheme="dark"] .mantine-InputWrapper-label {
+    color: var(--mantine-color-gray-2) !important;
+}
+
+/* Fix placeholder colors in dark mode */
+[data-mantine-color-scheme="dark"] .mantine-Input-input::placeholder {
+    color: var(--mantine-color-gray-5) !important;
+}

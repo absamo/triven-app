@@ -1,0 +1,166 @@
+/* Modern sidebar navigation container */
+.navbar {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px 12px 20px;
+  background: light-dark(#ffffff, var(--mantine-color-dark-7));
+  height: 100%;
+  position: relative;
+
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+  }
+}
+
+.miniNavbar {
+  padding: 16px 12px;
+  background: light-dark(#ffffff, var(--mantine-color-dark-7));
+  border-right: 1px solid light-dark(#e2e8f0, var(--mantine-color-dark-4));
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* Mini navbar link styles */
+.link {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: light-dark(#64748b, var(--mantine-color-gray-4));
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  margin-bottom: 8px;
+
+  &:hover {
+    color: var(--mantine-color-teal-6);
+    background-color: light-dark(rgba(14, 165, 233, 0.08), rgba(14, 165, 233, 0.15));
+    transform: scale(1.05);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background-color: var(--mantine-color-teal-6);
+    border-radius: 2px;
+    transition: height 0.2s ease;
+  }
+}
+
+.menuitem {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: light-dark(#64748b, var(--mantine-color-gray-4));
+  font-weight: 500;
+  letter-spacing: -0.005em;
+
+  &:hover {
+    color: var(--mantine-color-teal-6);
+    background-color: light-dark(rgba(14, 165, 233, 0.06), rgba(14, 165, 233, 0.12));
+  }
+}
+
+.active {
+  color: light-dark(#1e293b, var(--mantine-color-white));
+
+  &::after {
+    height: 24px;
+  }
+}
+
+.selected {
+  color: var(--mantine-color-teal-6) !important;
+  background-color: light-dark(rgba(14, 165, 233, 0.12), rgba(14, 165, 233, 0.20));
+  font-weight: 600;
+
+  &::after {
+    height: 32px;
+  }
+}
+
+/* Toggle button styles for expanded navbar */
+.toggleButton {
+  position: absolute;
+  bottom: 20px;
+  right: 16px;
+  z-index: 1000;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: light-dark(linear-gradient(135deg, #ffffff 0%, #f8fafc 100%), var(--mantine-color-dark-6));
+  border: 1px solid light-dark(#e2e8f0, var(--mantine-color-dark-4));
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+  color: light-dark(#64748b, var(--mantine-color-gray-4));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    background: var(--mantine-color-teal-6);
+    color: white;
+    transform: scale(1.1);
+    box-shadow:
+      0 6px 20px rgba(14, 165, 233, 0.25),
+      0 2px 8px rgba(14, 165, 233, 0.15);
+    border-color: var(--mantine-color-teal-6);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Toggle button styles for mini navbar */
+.toggleButtonMini {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: light-dark(linear-gradient(135deg, #ffffff 0%, #f8fafc 100%), var(--mantine-color-dark-6));
+  border: 2px solid light-dark(#e2e8f0, var(--mantine-color-dark-4));
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.1),
+    0 3px 6px rgba(0, 0, 0, 0.05);
+  color: light-dark(#64748b, var(--mantine-color-gray-4));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: var(--mantine-color-teal-6);
+    color: white;
+    transform: scale(1.15) rotate(180deg);
+    box-shadow:
+      0 8px 25px rgba(14, 165, 233, 0.3),
+      0 3px 10px rgba(14, 165, 233, 0.2);
+    border-color: var(--mantine-color-teal-6);
+  }
+
+  &:active {
+    transform: scale(1.05) rotate(180deg);
+  }
+}
+
+/* Icon styles for toggle buttons */
+.toggleIcon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggleIconExpanded {
+  transform: rotate(0deg);
+}
+
+.toggleIconMini {
+  transform: rotate(180deg);
+}

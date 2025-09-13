@@ -1,0 +1,70 @@
+import dayjs from "dayjs"
+import { redirect } from "react-router"
+import { USER_STATUSES } from "~/app/common/constants"
+import type { INotification } from "~/app/common/validations/notificationSchema"
+import { getBetterAuthUser } from "~/app/services/better-auth.server"
+import { getNotifications } from "~/app/services/notifications.server"
+import type { Route } from "./+types/main"
+import Layout from "./Layout"
+
+type LoaderData = {
+  user: {
+    email: string
+    role: { name: string; permissions: string[] }
+    image?: string
+    profile: { firstName: string; lastName: string; avatar?: string }
+    currentPlan: string
+    planStatus: string
+    trialPeriodDays: number
+  }
+  notifications: INotification[]
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  // Get better-auth user with linked business data
+  const user = await getBetterAuthUser(request)
+
+  if (!user) {
+    return redirect("/")
+  }
+
+  // Check if user needs business setup
+  if (user.status === USER_STATUSES.PENDING_BUSINESS_SETUP) {
+    return redirect("/auth/business-setup")
+  }
+
+  // Check if user has the necessary business relationships
+  if (!user.role || !user.company || !user.agency) {
+    return redirect("/auth/business-setup")
+  }
+
+  const notifications = ((await getNotifications(request, { read: false })) ||
+    []) as unknown as INotification[]
+
+  const trialing = user.subscriptions?.[0]?.status === "trialing"
+  const trialPeriodDays = trialing
+    ? dayjs(user.subscriptions[0]?.trialEnd * 1000).diff(dayjs(), "days")
+    : undefined
+
+  return {
+    user: {
+      email: user.email,
+      role: { name: user.role.name, permissions: user.role.permissions },
+      image: user.image,
+      profile: {
+        firstName: user.profile?.firstName || '',
+        lastName: user.profile?.lastName || '',
+        avatar: user.profile?.avatar,
+      },
+      currentPlan: user.subscriptions?.[0]?.planId || "free",
+      planStatus: user.subscriptions?.[0]?.status || "active",
+      trialPeriodDays: trialPeriodDays || 0,
+    },
+    notifications,
+  }
+}
+
+export default function MainLayout({ loaderData }: Route.ComponentProps) {
+  const { user, notifications } = loaderData as LoaderData
+  return <Layout user={user} notifications={notifications} />
+}

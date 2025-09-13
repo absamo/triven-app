@@ -1,0 +1,12 @@
+.totalRow {
+    background-color: light-dark(#fffef7, var(--mantine-color-gray-8));
+    border-top: rem(1px) solid light-dark(var(--mantine-color-yellow-1), var(--mantine-color-gray-6));
+}
+
+.totalCell {
+    background-color: light-dark(#fffef7, var(--mantine-color-gray-8));
+}
+
+.errorText {
+    color: var(--mantine-color-red-6) !important;
+}

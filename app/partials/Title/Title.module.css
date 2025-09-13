@@ -1,0 +1,23 @@
+.title {
+  position: sticky;
+  top: 70px;
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+}
+
+.nonSticky {
+  position: relative;
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+}
+
+.backButton {
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-4));
+  transition: color 0.2s ease-in-out;
+}
+
+.backButton:hover {
+  color: light-dark(var(--mantine-color-teal-6), var(--mantine-color-teal-4));
+}

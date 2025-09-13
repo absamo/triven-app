@@ -1,0 +1,1474 @@
+/* Beautiful Glassy Pricing Page Design */
+.root {
+    min-height: 100vh;
+    background: light-dark(linear-gradient(180deg, #fafafa 0%, #ffffff 20%, #f8fffe 60%, #f0fdf4 100%),
+            linear-gradient(180deg, var(--mantine-color-dark-9) 0%, #0a0a0a 20%, #0a1a1a 60%, #0a1f1a 100%));
+    position: relative;
+    overflow: hidden;
+    animation: backgroundShift 20s ease-in-out infinite;
+    transition: background 0.3s ease;
+}
+
+@keyframes backgroundShift {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.rootLight {
+    background: linear-gradient(180deg, #fafafa 0%, #ffffff 20%, #f8fffe 60%, #f0fdf4 100%);
+}
+
+/* Animated Background Elements */
+.backgroundElements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.backgroundElements::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        light-dark(radial-gradient(circle at 20% 20%, rgba(var(--mantine-color-teal-3-rgb), 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 20% 20%, rgba(var(--mantine-color-teal-7-rgb), 0.15) 0%, transparent 50%)),
+        light-dark(radial-gradient(circle at 80% 80%, rgba(var(--mantine-color-blue-3-rgb), 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(var(--mantine-color-blue-7-rgb), 0.12) 0%, transparent 50%)),
+        light-dark(radial-gradient(circle at 50% 10%, rgba(var(--mantine-color-cyan-2-rgb), 0.06) 0%, transparent 60%),
+            radial-gradient(circle at 50% 10%, rgba(var(--mantine-color-cyan-8-rgb), 0.1) 0%, transparent 60%));
+    animation: floatingOrbs 25s ease-in-out infinite;
+}
+
+@keyframes floatingOrbs {
+
+    0%,
+    100% {
+        background-position: 0% 0%, 100% 100%, 50% 0%;
+        opacity: 0.8;
+    }
+
+    33% {
+        background-position: 30% 30%, 70% 80%, 80% 20%;
+        opacity: 1;
+    }
+
+    66% {
+        background-position: 80% 20%, 20% 60%, 20% 80%;
+        opacity: 0.9;
+    }
+}
+
+.lightModeOrb1 {
+    position: absolute;
+    top: 10%;
+    left: 20%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(var(--mantine-color-teal-4-rgb), 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(80px);
+    animation: float 12s ease-in-out infinite;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.lightModeOrb2 {
+    position: absolute;
+    bottom: 20%;
+    right: 15%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(var(--mantine-color-blue-4-rgb), 0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: float 8s ease-in-out infinite reverse;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.neonOrb {
+    position: absolute;
+    top: 15%;
+    left: 25%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(var(--mantine-color-teal-6-rgb), 0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(100px);
+    animation: float 15s ease-in-out infinite;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.neonOrb2 {
+    position: absolute;
+    bottom: 25%;
+    right: 20%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(var(--mantine-color-blue-6-rgb), 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(80px);
+    animation: float 10s ease-in-out infinite reverse;
+    transition: opacity 0.3s ease-in-out;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translate(0px, 0px) scale(1);
+        opacity: 0.8;
+    }
+
+    33% {
+        transform: translate(30px, -30px) scale(1.1);
+        opacity: 1;
+    }
+
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+        opacity: 0.9;
+    }
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Header Section */
+.headerSection {
+    animation: fadeInUp 1s ease-out;
+}
+
+/* Billing Toggle */
+.billingToggle {
+    background: light-dark(rgba(255, 255, 255, 0.85),
+            rgba(var(--mantine-color-dark-6-rgb), 0.85));
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid light-dark(rgba(var(--mantine-color-gray-2-rgb), 0.5),
+            rgba(var(--mantine-color-dark-4-rgb), 0.6));
+    border-radius: 20px;
+    box-shadow: light-dark(0 8px 32px rgba(0, 0, 0, 0.08),
+            0 8px 32px rgba(0, 0, 0, 0.3));
+    padding: 1rem 2rem;
+    animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+.billingToggleLight {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(var(--mantine-color-gray-2-rgb), 0.6);
+}
+
+.billingLabel {
+    color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-3));
+    font-weight: 600;
+}
+
+.billingLabelDark {
+    color: var(--mantine-color-gray-7);
+}
+
+.customSwitch {
+    --switch-track-bg: light-dark(rgba(var(--mantine-color-gray-3-rgb), 0.3),
+            rgba(var(--mantine-color-dark-4-rgb), 0.5));
+}
+
+/* Plans Grid */
+.plansGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Card Animations */
+.cardContent {
+    animation: cardSlideIn 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.cardContent:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.cardContent:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.cardContent:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Buttons */
+.popularButton {
+    background: light-dark(linear-gradient(135deg, var(--mantine-color-teal-6) 0%, var(--mantine-color-teal-8) 100%),
+            linear-gradient(135deg, var(--mantine-color-teal-5) 0%, var(--mantine-color-teal-7) 100%));
+    border: none;
+    color: var(--mantine-color-white);
+    font-weight: 700;
+    border-radius: 12px;
+    box-shadow: light-dark(0 8px 25px rgba(var(--mantine-color-teal-6-rgb), 0.3),
+            0 8px 25px rgba(var(--mantine-color-teal-5-rgb), 0.4));
+    transition: all 0.3s ease;
+    animation: buttonGlow 3s ease-in-out infinite;
+}
+
+.popularButton:hover {
+    transform: translateY(-2px);
+    box-shadow: light-dark(0 12px 35px rgba(var(--mantine-color-teal-6-rgb), 0.4),
+            0 12px 35px rgba(var(--mantine-color-teal-5-rgb), 0.5));
+}
+
+@keyframes buttonGlow {
+
+    0%,
+    100% {
+        box-shadow: light-dark(0 8px 25px rgba(var(--mantine-color-teal-6-rgb), 0.3),
+                0 8px 25px rgba(var(--mantine-color-teal-5-rgb), 0.4));
+    }
+
+    50% {
+        box-shadow: light-dark(0 12px 35px rgba(var(--mantine-color-teal-6-rgb), 0.5),
+                0 12px 35px rgba(var(--mantine-color-teal-5-rgb), 0.6));
+    }
+}
+
+.ctaButton {
+    background: light-dark(rgba(255, 255, 255, 0.8),
+            rgba(var(--mantine-color-dark-7-rgb), 0.8));
+    border: 2px solid light-dark(rgba(var(--mantine-color-teal-6-rgb), 0.3),
+            rgba(var(--mantine-color-teal-4-rgb), 0.4));
+    color: light-dark(var(--mantine-color-teal-7), var(--mantine-color-teal-3));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.ctaButton:hover {
+    transform: translateY(-2px);
+    border-color: light-dark(rgba(var(--mantine-color-teal-6-rgb), 0.5),
+            rgba(var(--mantine-color-teal-4-rgb), 0.6));
+    background: light-dark(rgba(255, 255, 255, 0.95),
+            rgba(var(--mantine-color-dark-6-rgb), 0.95));
+}
+
+.ctaButtonLight {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(var(--mantine-color-teal-6-rgb), 0.4);
+    color: var(--mantine-color-teal-7);
+}
+
+.contactButton {
+    background: light-dark(rgba(255, 255, 255, 0.8),
+            rgba(var(--mantine-color-dark-7-rgb), 0.8));
+    border: 2px solid light-dark(rgba(var(--mantine-color-gray-4-rgb), 0.3),
+            rgba(var(--mantine-color-gray-6-rgb), 0.4));
+    color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-3));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.contactButton:hover {
+    transform: translateY(-2px);
+    border-color: light-dark(rgba(var(--mantine-color-gray-4-rgb), 0.5),
+            rgba(var(--mantine-color-gray-6-rgb), 0.6));
+    background: light-dark(rgba(255, 255, 255, 0.95),
+            rgba(var(--mantine-color-dark-6-rgb), 0.95));
+}
+
+.contactButtonLight {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(var(--mantine-color-gray-4-rgb), 0.4);
+    color: var(--mantine-color-gray-7);
+}
+
+.popularCard {
+    transform: scale(1.05);
+    border: 2px solid #00ff88;
+    box-shadow:
+        0 25px 50px rgba(0, 255, 136, 0.15),
+        0 0 0 1px rgba(0, 255, 136, 0.3),
+        0 0 60px rgba(0, 255, 136, 0.2);
+    background: rgba(0, 255, 136, 0.03);
+}
+
+.popularBadge {
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    color: #000000;
+    padding: 6px 20px;
+    border-radius: 0 0 12px 12px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+}
+
+.neonOrb {
+    position: absolute;
+    top: 10%;
+    left: 20%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(0, 255, 136, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(60px);
+    transition: opacity 0.3s ease-in-out;
+}
+
+.neonOrb2 {
+    position: absolute;
+    bottom: 20%;
+    right: 15%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(0, 255, 136, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(40px);
+    transition: opacity 0.3s ease-in-out;
+}
+
+.grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.03;
+    background-image:
+        linear-gradient(rgba(0, 255, 136, 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 136, 0.5) 1px, transparent 1px);
+    background-size: 50px 50px;
+    transition: opacity 0.3s ease-in-out;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px) scale(1);
+    }
+
+    50% {
+        transform: translateY(-30px) scale(1.05);
+    }
+}
+
+@keyframes gridMove {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(50px, 50px);
+    }
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+    padding: 2rem 0;
+}
+
+/* Header Section */
+.headerSection {
+    text-align: center;
+    margin-bottom: 5rem;
+    padding: 1rem 0;
+    overflow: visible;
+}
+
+
+.mainTitle {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    color: #ffffff;
+    text-align: center;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    margin: 2rem 0 1.5rem 0;
+    background: linear-gradient(135deg, #ffffff 0%, #00ff88 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 40px rgba(0, 255, 136, 0.3);
+    overflow: visible;
+    min-height: auto;
+    height: auto;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: #a1a1aa;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Billing Toggle */
+.billingToggle {
+    margin: 3rem 0;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+
+.billingToggleLight {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: none;
+}
+
+.billingToggleLight:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.billingLabel {
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.billingLabel.billingLabelDark {
+    color: #000000;
+}
+
+.billingSwitch {
+    margin: 0 1rem;
+    transform: scale(1.2);
+}
+
+/* Custom switch styling */
+.customSwitch :global(.mantine-Switch-track[data-checked]) {
+    background-color: var(--neon-green) !important;
+    border-color: var(--neon-green) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.4) !important;
+}
+
+.customSwitch :global(.mantine-Switch-thumb[data-checked]) {
+    background-color: #000000 !important;
+    border-color: var(--neon-green) !important;
+}
+
+.savingsBadge {
+    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    color: #000000;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+}
+
+/* Plans Grid */
+.plansGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin: 4rem 0;
+    align-items: start;
+}
+
+.planCard {
+    background: rgba(15, 15, 15, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 2rem;
+    position: relative;
+
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+}
+
+.planCard:hover {
+    transform: translateY(-8px);
+    border-color: rgba(0, 255, 136, 0.3);
+    box-shadow:
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 255, 136, 0.2),
+        0 0 40px rgba(0, 255, 136, 0.1);
+}
+
+.freeCard {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.popularCard {
+    transform: scale(1.05);
+    border: 2px solid #00ff88;
+    box-shadow:
+        0 25px 50px rgba(0, 255, 136, 0.15),
+        0 0 0 1px rgba(0, 255, 136, 0.3),
+        0 0 60px rgba(0, 255, 136, 0.2);
+    background: rgba(0, 255, 136, 0.03);
+}
+
+.popularBadge {
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    color: #000000;
+    padding: 6px 20px;
+    border-radius: 0 0 12px 12px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+}
+
+.cardContent {
+    position: relative;
+    z-index: 1;
+}
+
+/* Plan Header */
+.planHeader {
+    align-items: flex-start;
+}
+
+.planIcon {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.popularIcon {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: rgba(0, 255, 136, 0.3);
+    color: #00ff88;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+}
+
+.planName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+}
+
+.planDescription {
+    color: #a1a1aa;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Pricing Section */
+.pricingSection {
+    padding: 1.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.price {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.priceUnit {
+    color: #71717a;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.priceBilling {
+    color: #a1a1aa;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+.savings {
+    color: #00ff88;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+/* Plan Stats */
+.planStats {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.statItem {
+    padding: 0.5rem 0;
+}
+
+.statItem:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.statIcon {
+    color: #71717a;
+}
+
+.statLabel {
+    color: #a1a1aa;
+    font-size: 0.875rem;
+}
+
+.statValue {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Features Section */
+.featuresSection {
+    padding-top: 1rem;
+}
+
+.featuresTitle {
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.featuresList {
+    list-style: none;
+}
+
+.checkIcon {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    color: #00ff88;
+}
+
+.featureItem {
+    color: #d4d4d8;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    padding-left: 0.5rem;
+}
+
+/* CTA Button */
+.ctaButton {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+    height: 50px;
+    border-radius: 12px;
+
+    text-transform: none;
+    letter-spacing: 0.01em;
+    margin-top: 1rem;
+}
+
+.ctaButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.ctaButtonLight {
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: #000000;
+}
+
+.ctaButtonLight:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.popularButton {
+    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    border: none;
+    color: #000000;
+}
+
+.popularButton:hover {
+    background: linear-gradient(135deg, #00cc6a 0%, #00aa55 100%);
+    transform: translateY(-2px);
+}
+
+.contactButton {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-weight: 600;
+
+    background: transparent;
+}
+
+.contactButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+}
+
+.contactButtonLight {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: #000000;
+    background: transparent;
+}
+
+.contactButtonLight:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Enterprise Section */
+.enterpriseSection {
+    background: rgba(15, 15, 15, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    text-align: center;
+}
+
+.enterpriseIcon {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    color: #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.enterpriseTitle {
+    color: #ffffff;
+    font-weight: 700;
+    margin: 1rem 0;
+}
+
+.enterpriseDescription {
+    color: #a1a1aa;
+    max-width: 500px;
+    margin: 0 auto 2rem auto;
+    line-height: 1.6;
+}
+
+.enterpriseButton {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-weight: 600;
+
+    background: transparent;
+}
+
+.enterpriseButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 255, 136, 0.5);
+    color: #00ff88;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .popularCard {
+        transform: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .plansGrid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .planCard {
+        padding: 1.5rem;
+    }
+
+    .mainTitle {
+        font-size: 3rem;
+    }
+
+    .price {
+        font-size: 2.5rem;
+    }
+
+    .billingToggle {
+        padding: 1rem;
+        margin: 2rem auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .mainTitle {
+        font-size: 2.5rem;
+    }
+
+    .price {
+        font-size: 2rem;
+    }
+
+    .planCard {
+        padding: 1rem;
+    }
+
+    .plansGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Entrance Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.planCard {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.planCard:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.planCard:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.planCard:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+/* Custom color scheme for triven theme */
+:root {
+    --neon-green: #00ff88;
+    --neon-green-dark: #00cc6a;
+    --neon-bg: rgba(0, 255, 136, 0.1);
+    --dark-bg: #0a0a0a;
+    --card-bg: rgba(15, 15, 15, 0.8);
+}
+
+/* Sticky Plans Header - Perfect Alignment */
+.stickyPlansHeader {
+    position: fixed;
+    top: 80px;
+    /* Adjust based on your header height */
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background: light-dark(rgba(255, 255, 255, 0.95),
+            rgba(15, 15, 15, 0.95));
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid light-dark(rgba(0, 0, 0, 0.1),
+            rgba(255, 255, 255, 0.1));
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    padding: 1rem 0;
+    transform: translateY(-100%);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+.stickyPlansVisible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.stickyPlansContainer {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    /* Fixed height for the sticky container with description */
+}
+
+.stickyPlanItem {
+    position: absolute;
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    background: light-dark(rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.05));
+    border: 1px solid light-dark(rgba(0, 0, 0, 0.1),
+            rgba(255, 255, 255, 0.1));
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    top: 0;
+    height: 120px;
+    justify-content: center;
+}
+
+.stickyPlansVisible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.stickyPlanItem {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    border-radius: 16px;
+    background: light-dark(rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.05));
+    border: 1px solid light-dark(rgba(0, 0, 0, 0.1),
+            rgba(255, 255, 255, 0.1));
+
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+
+}
+
+.stickyPlanItem:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.stickyPlanItem:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.stickyPlanItem:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.stickyPlanItem:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(var(--neon-green-rgb), 0.2);
+    border-color: light-dark(rgba(var(--neon-green-rgb), 0.3),
+            rgba(var(--neon-green-rgb), 0.2));
+}
+
+.stickyPlanIcon {}
+
+.stickyPlanName {
+    line-height: 1.2;
+    margin-bottom: 2px;
+
+}
+
+.stickyPlanPrice {
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+
+}
+
+.stickyPopularBadge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, var(--neon-green) 0%, var(--neon-green-dark) 100%);
+    color: #000000;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    box-shadow:
+        0 4px 15px rgba(var(--neon-green-rgb), 0.4),
+        0 0 0 2px rgba(255, 255, 255, 0.2);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow:
+            0 4px 15px rgba(var(--neon-green-rgb), 0.4),
+            0 0 0 2px rgba(255, 255, 255, 0.2);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow:
+            0 6px 20px rgba(var(--neon-green-rgb), 0.6),
+            0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* Enhanced plan cards animation when sticky is visible */
+.stickyPlansVisible~.plansGrid .planCard {
+    animation: highlightPlan 0.8s ease-out forwards;
+}
+
+@keyframes highlightPlan {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Responsive adjustments for sticky header */
+@media (max-width: 1200px) {
+    .stickyPlansHeader {
+        padding: 0.75rem 0;
+    }
+
+    .stickyPlanItem {
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stickyPlansHeader {
+        top: 70px;
+        /* Adjust for mobile header height */
+        padding: 0.5rem 0;
+    }
+
+    .stickyPlanItem {
+        padding: 0.5rem 0.75rem;
+        margin: 0 0.25rem;
+    }
+
+    .stickyPlanName {
+        font-size: 0.75rem;
+    }
+
+    .stickyPlanPrice {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stickyPlansHeader {
+        top: 64px;
+    }
+
+    .stickyPlanItem {
+        padding: 0.4rem 0.6rem;
+    }
+}
+
+/* Sticky Plans Header - All Plans */
+.stickyPlansHeader {
+    position: fixed;
+    top: 80px;
+    /* Adjust based on your header height */
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background: light-dark(rgba(255, 255, 255, 0.95),
+            rgba(15, 15, 15, 0.95));
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid light-dark(rgba(0, 0, 0, 0.1),
+            rgba(255, 255, 255, 0.1));
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    padding: 1rem 0;
+    transform: translateY(-100%);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+.stickyPlansVisible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.stickyPlanItem {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    border-radius: 16px;
+    background: light-dark(rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.05));
+    border: 1px solid light-dark(rgba(0, 0, 0, 0.1),
+            rgba(255, 255, 255, 0.1));
+
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.stickyPlanItem:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.stickyPlanItem:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.stickyPlanItem:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.stickyPlanItem:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(var(--neon-green-rgb), 0.2);
+    border-color: light-dark(rgba(var(--neon-green-rgb), 0.3),
+            rgba(var(--neon-green-rgb), 0.2));
+}
+
+.stickyPlanIcon {}
+
+.stickyPlanName {
+    line-height: 1.2;
+    margin-bottom: 2px;
+
+}
+
+.stickyPlanPrice {
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+
+}
+
+.stickyPopularBadge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, var(--neon-green) 0%, var(--neon-green-dark) 100%);
+    color: #000000;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    box-shadow:
+        0 4px 15px rgba(var(--neon-green-rgb), 0.4),
+        0 0 0 2px rgba(255, 255, 255, 0.2);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow:
+            0 4px 15px rgba(var(--neon-green-rgb), 0.4),
+            0 0 0 2px rgba(255, 255, 255, 0.2);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow:
+            0 6px 20px rgba(var(--neon-green-rgb), 0.6),
+            0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* Enhanced plan cards animation when sticky is visible */
+.stickyPlansVisible~.plansGrid .planCard {
+    animation: highlightPlan 0.8s ease-out forwards;
+}
+
+@keyframes highlightPlan {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Responsive adjustments for sticky header */
+@media (max-width: 1200px) {
+    .stickyPlansHeader {
+        padding: 0.75rem 0;
+    }
+
+    .stickyPlanItem {
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stickyPlansHeader {
+        top: 70px;
+        /* Adjust for mobile header height */
+        padding: 0.5rem 0;
+    }
+
+    .stickyPlanItem {
+        padding: 0.5rem 0.75rem;
+        margin: 0 0.25rem;
+    }
+
+    .stickyPlanName {
+        font-size: 0.75rem;
+    }
+
+    .stickyPlanPrice {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stickyPlansHeader {
+        top: 64px;
+    }
+
+    .stickyPlanItem {
+        padding: 0.4rem 0.6rem;
+    }
+}
+
+/* New Animations for Individual Plan Sticky */
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes popularPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow:
+            0 6px 20px rgba(var(--neon-green-rgb), 0.4),
+            0 0 0 3px rgba(255, 255, 255, 0.2);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow:
+            0 8px 25px rgba(var(--neon-green-rgb), 0.6),
+            0 0 0 4px rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* Enhanced plan cards animation when individual sticky is visible */
+.stickyPlanVisible~.plansGrid .planCard {
+    animation: subtleHighlight 0.8s ease-out forwards;
+}
+
+@keyframes subtleHighlight {
+    0% {
+        transform: scale(1);
+        box-shadow: inherit;
+    }
+
+    50% {
+        transform: scale(1.01);
+        box-shadow:
+            0 20px 40px rgba(0, 0, 0, 0.1),
+            0 0 0 1px rgba(var(--neon-green-rgb), 0.1);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: inherit;
+    }
+}
+
+/* Responsive adjustments for individual plan sticky header */
+@media (max-width: 1200px) {
+    .stickyPlanHeader {
+        padding: 0.75rem 0;
+    }
+
+    .stickyActivePlan {
+        padding: 0.75rem 1.5rem;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stickyPlanHeader {
+        top: 70px;
+        /* Adjust for mobile header height */
+        padding: 0.5rem 0;
+    }
+
+    .stickyActivePlan {
+        padding: 0.75rem 1rem;
+        gap: 1rem;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .stickyActiveName {
+        font-size: 0.9rem;
+    }
+
+    .stickyActivePrice {
+        font-size: 1.1rem;
+    }
+
+    .stickyActiveCTA {
+        min-width: 120px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stickyPlanHeader {
+        top: 64px;
+    }
+
+    .stickyActivePlan {
+        padding: 0.5rem 0.75rem;
+        margin: 0 1rem;
+    }
+
+    .stickyActivePopularBadge {
+        top: -8px;
+        right: -8px;
+        padding: 4px 8px;
+        font-size: 0.6rem;
+    }
+}
+
+/* Sticky Plans Grid Layout - Match plans section width */
+.stickyPlansGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    align-items: start;
+}
+
+/* Responsive adjustments for sticky grid */
+@media (max-width: 1200px) {
+    .stickyPlansGrid {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stickyPlansGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stickyPlansGrid {
+        gap: 0.75rem;
+    }
+}
+
+/* Sticky Plan Description Styling */
+.stickyPlanDescription {
+    line-height: 1.3;
+    margin-bottom: 4px;
+
+    font-size: 0.75rem;
+    opacity: 0.8;
+}

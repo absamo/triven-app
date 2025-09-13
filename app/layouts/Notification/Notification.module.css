@@ -1,0 +1,156 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+  border-radius: var(--mantine-radius-lg);
+  overflow: hidden;
+}
+
+.card {
+  position: relative;
+  cursor: default;
+  overflow: hidden;
+  padding: var(--mantine-spacing-md);
+  margin: 0 var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-md);
+  transition: all 150ms ease;
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  border: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+
+  &:hover {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+    border-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+    transform: translateY(-1px);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    background-color: light-dark(var(--mantine-color-gray-4), var(--mantine-color-gray-6));
+    border-radius: 0 2px 2px 0;
+  }
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.productInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.productName {
+  color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-gray-0));
+  line-height: 1.3;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.productSku {
+  font-size: 11px;
+  opacity: 0.7;
+  font-family: var(--mantine-font-family-monospace);
+  background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+  padding: 1px 6px;
+  border-radius: var(--mantine-radius-sm);
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.statusMessage {
+  margin-top: 4px;
+  font-style: italic;
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-gray-4));
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.cardMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  border-top: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+  padding-top: 8px;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+  padding: var(--mantine-spacing-lg);
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+  backdrop-filter: blur(10px);
+}
+
+.unreadCard {
+  background-color: light-dark(var(--mantine-color-blue-0), var(--mantine-color-dark-6));
+  border-color: light-dark(var(--mantine-color-blue-2), var(--mantine-color-blue-8));
+
+  &::before {
+    background-color: light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-4));
+  }
+
+  &:hover {
+    background-color: light-dark(var(--mantine-color-blue-1), var(--mantine-color-dark-5));
+    transform: translateY(-1px);
+  }
+}
+
+.markAsRead {
+  color: light-dark(var(--mantine-color-blue-5), var(--mantine-color-white));
+}
+
+.dates {
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  font-weight: 600;
+  font-size: 11px;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-3));
+  margin: var(--mantine-spacing-sm) var(--mantine-spacing-sm) var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Status-specific border colors */
+.criticalStatus::before {
+  background-color: light-dark(var(--mantine-color-orange-5), var(--mantine-color-orange-6)) !important;
+}
+
+.lowStockStatus::before {
+  background-color: light-dark(var(--mantine-color-yellow-6), var(--mantine-color-yellow-5)) !important;
+}
+
+.outOfStockStatus::before {
+  background-color: light-dark(var(--mantine-color-red-5), var(--mantine-color-red-6)) !important;
+}
+
+.restockReminderStatus::before {
+  background-color: light-dark(var(--mantine-color-blue-5), var(--mantine-color-blue-6)) !important;
+}
+
+.expiredProductStatus::before {
+  background-color: light-dark(var(--mantine-color-grape-5), var(--mantine-color-grape-6)) !important;
+}
+
+.expiringProductStatus::before {
+  background-color: light-dark(var(--mantine-color-orange-5), var(--mantine-color-orange-6)) !important;
+}

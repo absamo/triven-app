@@ -1,0 +1,104 @@
+:root {
+  --app-border-radius: 8px;
+  --app-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  --transition-speed: 0.2s;
+}
+
+html,
+body {
+  font-family: var(--mantine-font-family);
+  scroll-behavior: smooth;
+}
+
+/* Styles globaux */
+.card-shadow {
+  box-shadow: var(--app-shadow);
+  transition: box-shadow var(--transition-speed) ease;
+}
+
+.card-shadow:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.page-title {
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.action-button {
+  transition: transform var(--transition-speed) ease;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+}
+
+/* Animation d'entrée pour les contenus */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Espacements cohérents */
+.margin-bottom-sm {
+  margin-bottom: 8px;
+}
+
+.margin-bottom-md {
+  margin-bottom: 16px;
+}
+
+.margin-bottom-lg {
+  margin-bottom: 24px;
+}
+
+.margin-bottom-xl {
+  margin-bottom: 32px;
+}
+
+/* Styles pour les statuts */
+.status-active {
+  color: var(--mantine-color-green-6);
+}
+
+.status-pending {
+  color: var(--mantine-color-orange-6);
+}
+
+.status-inactive {
+  color: var(--mantine-color-red-6);
+}
+
+/* Zones de défilement personnalisées */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}

@@ -1,0 +1,188 @@
+.formContainer {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    background: light-dark(#ffffff, var(--mantine-color-dark-6));
+    border: 1px solid light-dark(rgba(var(--mantine-color-gray-3-rgb), 0.4),
+            rgba(var(--mantine-color-dark-4-rgb), 0.4));
+    border-radius: 1.25rem;
+    box-shadow: light-dark(0 12px 40px rgba(0, 0, 0, 0.08),
+            0 12px 40px rgba(0, 0, 0, 0.4));
+    position: relative;
+    z-index: 2;
+
+    &:hover::after {
+        opacity: 1;
+    }
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    /* margin-bottom: 1.5rem; */
+    color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-gray-1));
+}
+
+.highlight {
+    color: light-dark(var(--mantine-color-teal-7), var(--mantine-color-teal-3));
+    background: light-dark(linear-gradient(135deg, var(--mantine-color-teal-6) 0%, var(--mantine-color-teal-8) 100%),
+            linear-gradient(135deg, var(--mantine-color-teal-4) 0%, var(--mantine-color-teal-2) 100%));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* Fallback for browsers that don't support background-clip */
+    @supports not (background-clip: text) {
+        background: none;
+        color: light-dark(var(--mantine-color-teal-7), var(--mantine-color-teal-3));
+    }
+}
+
+.form {
+    width: 100%;
+}
+
+.submitButton {
+    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    border: 1px solid rgba(0, 255, 136, 0.5);
+    color: #000000;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.submitButton:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, #00cc6a 0%, #00aa55 100%);
+    border-color: rgba(0, 255, 136, 0.7);
+    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.submitButton:disabled {
+    opacity: 0.6;
+    transform: none;
+    background: linear-gradient(135deg, #cccccc 0%, #999999 100%);
+    border-color: rgba(204, 204, 204, 0.5);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.privacyNote {
+    text-align: center;
+    font-size: 0.875rem;
+    color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-gray-4));
+    margin-top: 1rem;
+}
+
+.privacyLink {
+    color: light-dark(var(--mantine-color-teal-7), var(--mantine-color-teal-3));
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.privacyLink:hover {
+    text-decoration: underline;
+    color: light-dark(var(--mantine-color-teal-8), var(--mantine-color-teal-2));
+}
+
+.successMessage {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    background: light-dark(#ffffff, var(--mantine-color-dark-6));
+    border: 1px solid light-dark(rgba(var(--mantine-color-teal-3-rgb), 0.4),
+            rgba(var(--mantine-color-teal-6-rgb), 0.3));
+    border-radius: 1.25rem;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    box-shadow: light-dark(0 12px 40px rgba(var(--mantine-color-teal-6-rgb), 0.15),
+            0 12px 40px rgba(var(--mantine-color-teal-5-rgb), 0.25));
+    text-align: center;
+    position: relative;
+    z-index: 2;
+
+    /* Add success glow effect */
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: light-dark(radial-gradient(circle at 50% 30%, rgba(var(--mantine-color-teal-3-rgb), 0.1) 0%, transparent 70%),
+                radial-gradient(circle at 50% 30%, rgba(var(--mantine-color-teal-6-rgb), 0.05) 0%, transparent 70%));
+        border-radius: inherit;
+        pointer-events: none;
+        z-index: -1;
+    }
+}
+
+.successMessage h3 {
+    color: light-dark(var(--mantine-color-teal-7), var(--mantine-color-teal-3));
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.successMessage p {
+    color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-3));
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.link {
+    color: light-dark(var(--mantine-color-teal-7), var(--mantine-color-teal-3));
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.link:hover {
+    text-decoration: underline;
+    color: light-dark(var(--mantine-color-teal-8), var(--mantine-color-teal-2));
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+
+    .formContainer,
+    .successMessage {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    .title {
+        font-size: 1.25rem;
+    }
+}
+
+/* Enhanced focus states for form inputs */
+.formContainer :global(.mantine-TextInput-input:focus),
+.formContainer :global(.mantine-Select-input:focus),
+.formContainer :global(.mantine-Textarea-input:focus) {
+    border-color: light-dark(var(--mantine-color-teal-6), var(--mantine-color-teal-4)) !important;
+    box-shadow: light-dark(0 0 0 2px rgba(var(--mantine-color-teal-6-rgb), 0.1),
+            0 0 0 2px rgba(var(--mantine-color-teal-4-rgb), 0.2)) !important;
+}
+
+/* Style form labels */
+.formContainer :global(.mantine-InputWrapper-label) {
+    color: light-dark(var(--mantine-color-gray-8), var(--mantine-color-gray-2)) !important;
+    font-weight: 500;
+}
+
+/* Style form inputs */
+.formContainer :global(.mantine-TextInput-input),
+.formContainer :global(.mantine-Select-input),
+.formContainer :global(.mantine-Textarea-input) {
+    background: light-dark(rgba(255, 255, 255, 0.8),
+            rgba(var(--mantine-color-dark-5-rgb), 0.8)) !important;
+    border-color: light-dark(rgba(var(--mantine-color-gray-4-rgb), 0.5),
+            rgba(var(--mantine-color-dark-3-rgb), 0.5)) !important;
+    color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-gray-1)) !important;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}

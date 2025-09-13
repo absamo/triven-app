@@ -1,0 +1,105 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="dashboardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#0f766e;stop-opacity:0.1" />
+    </linearGradient>
+    <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#14b8a6;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#0f766e;stop-opacity:0.3" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="transparent"/>
+  
+  <!-- Main Dashboard Container -->
+  <rect x="50" y="80" width="700" height="440" rx="20" fill="white" stroke="#e2e8f0" stroke-width="2" opacity="0.95"/>
+  
+  <!-- Header Bar -->
+  <rect x="50" y="80" width="700" height="60" rx="20" fill="url(#dashboardGradient)"/>
+  <circle cx="90" cy="110" r="6" fill="#ef4444"/>
+  <circle cx="110" cy="110" r="6" fill="#f59e0b"/>
+  <circle cx="130" cy="110" r="6" fill="#10b981"/>
+  
+  <!-- Dashboard Title -->
+  <text x="200" y="115" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#1e293b">Inventory Analytics Dashboard</text>
+  
+  <!-- AI Badge -->
+  <rect x="580" y="95" width="60" height="30" rx="15" fill="#14b8a6" opacity="0.1"/>
+  <text x="610" y="113" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#0f766e" text-anchor="middle">AI</text>
+  
+  <!-- Stock Level Cards -->
+  <rect x="80" y="170" width="160" height="80" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="90" y="190" font-family="system-ui, sans-serif" font-size="12" fill="#64748b">Total Stock</text>
+  <text x="90" y="220" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#0f766e">24,847</text>
+  <text x="90" y="240" font-family="system-ui, sans-serif" font-size="12" fill="#10b981">+12% ↗</text>
+  
+  <rect x="260" y="170" width="160" height="80" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="270" y="190" font-family="system-ui, sans-serif" font-size="12" fill="#64748b">Low Stock Items</text>
+  <text x="270" y="220" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#ef4444">23</text>
+  <text x="270" y="240" font-family="system-ui, sans-serif" font-size="12" fill="#ef4444">Needs attention</text>
+  
+  <rect x="440" y="170" width="160" height="80" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="450" y="190" font-family="system-ui, sans-serif" font-size="12" fill="#64748b">Revenue Today</text>
+  <text x="450" y="220" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#0f766e">$47.2K</text>
+  <text x="450" y="240" font-family="system-ui, sans-serif" font-size="12" fill="#10b981">+8% ↗</text>
+  
+  <!-- Chart Area -->
+  <rect x="80" y="280" width="340" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="90" y="300" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1e293b">Inventory Forecast</text>
+  
+  <!-- Chart Lines -->
+  <polyline points="100,450 140,420 180,400 220,380 260,390 300,360 340,340 380,320" 
+            fill="none" stroke="#14b8a6" stroke-width="3" opacity="0.8"/>
+  <polyline points="100,460 140,440 180,435 220,425 260,430 300,410 340,395 380,385" 
+            fill="none" stroke="#0f766e" stroke-width="2" opacity="0.6"/>
+  
+  <!-- Chart Fill -->
+  <polygon points="100,450 140,420 180,400 220,380 260,390 300,360 340,340 380,320 380,470 100,470" 
+           fill="url(#chartGradient)" opacity="0.3"/>
+  
+  <!-- Data Points -->
+  <circle cx="180" cy="400" r="4" fill="#14b8a6" filter="url(#glow)"/>
+  <circle cx="260" cy="390" r="4" fill="#14b8a6" filter="url(#glow)"/>
+  <circle cx="340" cy="340" r="4" fill="#14b8a6" filter="url(#glow)"/>
+  
+  <!-- AI Insights Panel -->
+  <rect x="440" y="280" width="280" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="450" y="300" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#1e293b">AI Insights</text>
+  
+  <!-- AI Suggestion Cards -->
+  <rect x="460" y="320" width="240" height="40" rx="8" fill="white" stroke="#14b8a6" stroke-width="1" opacity="0.8"/>
+  <circle cx="480" cy="340" r="6" fill="#14b8a6" opacity="0.2"/>
+  <text x="495" y="335" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">Restock Recommendation</text>
+  <text x="495" y="350" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#1e293b">Order 500 units of Product A</text>
+  
+  <rect x="460" y="375" width="240" height="40" rx="8" fill="white" stroke="#0f766e" stroke-width="1" opacity="0.8"/>
+  <circle cx="480" cy="395" r="6" fill="#0f766e" opacity="0.2"/>
+  <text x="495" y="390" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">Demand Forecast</text>
+  <text x="495" y="405" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#1e293b">30% increase expected next week</text>
+  
+  <rect x="460" y="430" width="240" height="40" rx="8" fill="white" stroke="#06b6d4" stroke-width="1" opacity="0.8"/>
+  <circle cx="480" cy="450" r="6" fill="#06b6d4" opacity="0.2"/>
+  <text x="495" y="445" font-family="system-ui, sans-serif" font-size="11" fill="#64748b">Cost Optimization</text>
+  <text x="495" y="460" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#1e293b">Switch supplier to save $2.1K</text>
+  
+  <!-- Floating Data Elements -->
+  <g opacity="0.6">
+    <!-- Floating boxes representing inventory items -->
+    <rect x="620" y="50" width="30" height="30" rx="6" fill="#14b8a6" opacity="0.1" stroke="#14b8a6" stroke-width="1"/>
+    <rect x="660" y="70" width="25" height="25" rx="5" fill="#0f766e" opacity="0.1" stroke="#0f766e" stroke-width="1"/>
+    <rect x="550" y="40" width="35" height="35" rx="7" fill="#06b6d4" opacity="0.1" stroke="#06b6d4" stroke-width="1"/>
+    
+    <!-- Connection lines -->
+    <line x1="635" y1="65" x2="575" y2="57" stroke="#14b8a6" stroke-width="1" opacity="0.3" stroke-dasharray="3,3"/>
+    <line x1="672" y1="82" x2="650" y2="75" stroke="#0f766e" stroke-width="1" opacity="0.3" stroke-dasharray="3,3"/>
+  </g>
+</svg>

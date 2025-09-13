@@ -1,0 +1,29 @@
+import { rem } from "@mantine/core"
+
+interface LvIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+  size?: number | string
+}
+
+export default function LvIcon({ size = 20, style, ...others }: LvIconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="512"
+      height="512"
+      style={{ width: rem(size), height: rem(size), ...style }}
+      {...others}
+      viewBox="0 0 512 512"
+    >
+      <mask id="a">
+        <circle cx="256" cy="256" r="256" fill="#fff" />
+      </mask>
+      <g mask="url(#a)">
+        <path
+          fill="#a2001d"
+          d="M0 0h512v189.2l-38.5 70 38.5 63.6V512H0V322.8l39.4-63L0 189.1z"
+        />
+        <path fill="#eee" d="M0 189.2h512v133.6H0z" />
+      </g>
+    </svg>
+  )
+}

@@ -1,0 +1,2 @@
+export { TableActionsMenu } from './TableActionsMenu';
+

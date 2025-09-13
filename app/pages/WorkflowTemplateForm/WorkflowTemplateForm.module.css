@@ -1,0 +1,150 @@
+.errorBorder {
+    border: 2px solid light-dark(var(--mantine-color-red-6), var(--mantine-color-red-4));
+}
+
+.errorText {
+    color: light-dark(var(--mantine-color-red-7), var(--mantine-color-red-4));
+}
+
+.noStepsContainer {
+    text-align: center;
+    padding: 2rem;
+    background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
+    border: 2px dashed light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+    border-radius: var(--mantine-radius-md);
+    transition: all 0.2s ease;
+}
+
+.noStepsContainer:hover {
+    border-color: light-dark(var(--mantine-color-gray-4), var(--mantine-color-dark-3));
+    background: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6));
+}
+
+.stepsHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+}
+
+.stepsTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-gray-1));
+}
+
+.stepsCount {
+    background: light-dark(var(--mantine-color-blue-1), var(--mantine-color-blue-9));
+    color: light-dark(var(--mantine-color-blue-7), var(--mantine-color-blue-2));
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--mantine-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.addStepButton {
+    background: light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-7));
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--mantine-radius-md);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.addStepButton:hover {
+    background: light-dark(var(--mantine-color-blue-7), var(--mantine-color-blue-6));
+    transform: translateY(-1px);
+}
+
+.stepCard {
+    background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+    border: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+    border-radius: var(--mantine-radius-md);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.stepCard:hover {
+    border-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-3));
+    box-shadow: 0 4px 12px light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.2));
+    transform: translateY(-2px);
+}
+
+.stepHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+    width: 100%;
+    min-height: 2.5rem;
+}
+
+.stepNumber {
+    background: light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-7));
+    color: white;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+}
+
+.stepActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dragHandle {
+    cursor: grab;
+    padding: 0.25rem;
+    border-radius: var(--mantine-radius-sm);
+    transition: background-color 0.2s ease;
+}
+
+.dragHandle:hover {
+    background: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+}
+
+.dragHandle:active {
+    cursor: grabbing;
+}
+
+.stepTypeIcon {
+    padding: 0.5rem;
+    border-radius: var(--mantine-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.removeButton {
+    background: light-dark(var(--mantine-color-red-1), var(--mantine-color-red-9));
+    color: light-dark(var(--mantine-color-red-7), var(--mantine-color-red-3));
+    border: none;
+    padding: 0.5rem;
+    border-radius: var(--mantine-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.removeButton:hover {
+    background: light-dark(var(--mantine-color-red-2), var(--mantine-color-red-8));
+    transform: scale(1.05);
+}
