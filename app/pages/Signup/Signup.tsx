@@ -15,6 +15,7 @@ import {
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { IconBrandGoogle, IconExclamationCircle, IconLock, IconMail, IconUser } from "@tabler/icons-react"
+import classNames from "classnames"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useState } from "react"
 import { useTranslation } from 'react-i18next'
@@ -24,6 +25,7 @@ import { z } from "zod"
 import { BackButton, Logo } from "~/app/components"
 import PasswordStrengthIndicator from "~/app/components/PasswordStrengthIndicator"
 import { authClient } from "~/app/lib/auth.client"
+import classes from "./Signup.module.css"
 
 export default function SignupPage() {
     const { t } = useTranslation(['auth', 'common'])
@@ -121,28 +123,16 @@ export default function SignupPage() {
         }
     }
 
-    const backgroundGradient = colorScheme === 'dark'
-        ? 'linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #2c2e33 100%)'
-        : 'linear-gradient(135deg, #e6fffa 0%, #b3f5ec 50%, #dbeafe 100%)'
-
     return (
-        <div style={{
-            minHeight: '100vh',
-            width: '100vw',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: backgroundGradient,
-            padding: theme.spacing.lg,
-            boxSizing: 'border-box',
-            position: 'relative'
-        }}>
+        <div
+            className={`${classes.container} signup-container`}
+        >
             {/* Back Button */}
             <BackButton to="/" position="top-left">
                 Back to Home
             </BackButton>
 
-            <div style={{ width: '100%', maxWidth: 600 }}>
+            <div className={classes.paperWrapper}>
                 {/* Logo */}
                 <Center>
                     <Logo mb={-15} />
@@ -153,10 +143,7 @@ export default function SignupPage() {
                     shadow="xl"
                     p={40}
                     radius="lg"
-                    style={{
-                        width: '100%',
-                        background: 'white'
-                    }}
+                    className={`${classes.paper} signup-paper`}
                 >
                     {/* Welcome Header */}
                     <Center mb={8}>
@@ -285,14 +272,17 @@ export default function SignupPage() {
                                     type="submit"
                                     fullWidth
                                     size="md"
-                                    radius="md"
                                     loading={isLoading}
                                     styles={{
                                         root: {
                                             height: 48,
-                                            backgroundColor: 'var(--mantine-color-green-8)',
+                                            backgroundColor: theme.colors.brand[5],
+                                            border: 'none',
+                                            fontWeight: 500,
                                             '&:hover': {
-                                                backgroundColor: 'var(--mantine-color-green-9)'
+                                                backgroundColor: theme.colors.brand[6],
+                                                transform: 'translateY(-1px)',
+                                                boxShadow: theme.shadows.md
                                             }
                                         }
                                     }}
@@ -302,11 +292,18 @@ export default function SignupPage() {
                             </Stack>
                         </form>
 
-                        <Divider label={t('auth:or')} labelPosition="center" />
+                        <Divider
+                            label={t('auth:or')}
+                            labelPosition="center"
+                            className={classNames(
+                                classes.divider,
+                                classes.dividerLabelDynamic
+                            )}
+                        />
 
                         {/* Google Sign Up Button */}
                         <Button
-                            variant="outline"
+                            variant="light"
                             size="md"
                             radius="md"
                             fullWidth
@@ -316,10 +313,16 @@ export default function SignupPage() {
                             styles={{
                                 root: {
                                     height: 48,
-                                    borderColor: '#E5E7EB',
-                                    color: '#374151',
+                                    backgroundColor: `light-dark(${theme.colors.gray[1]}, ${theme.colors.dark[5]})`,
+                                    borderColor: `light-dark(${theme.colors.gray[4]}, ${theme.colors.dark[3]})`,
+                                    border: '1px solid',
+                                    color: `light-dark(${theme.colors.gray[9]}, ${theme.colors.gray[0]})`,
+                                    fontWeight: 500,
                                     '&:hover': {
-                                        backgroundColor: '#F9FAFB'
+                                        backgroundColor: `light-dark(${theme.colors.gray[2]}, ${theme.colors.dark[4]})`,
+                                        borderColor: `light-dark(${theme.colors.gray[5]}, ${theme.colors.dark[2]})`,
+                                        transform: 'translateY(-1px)',
+                                        boxShadow: theme.shadows.md
                                     }
                                 }
                             }}

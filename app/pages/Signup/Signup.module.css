@@ -3,3 +3,44 @@
   font-weight: 500;
   margin-right: 8px;
 }
+
+.container {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mantine-spacing-lg);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.paperWrapper {
+  width: 100%;
+  max-width: 600px;
+}
+
+.paper {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.divider {
+  border-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.dividerLabelLight :global(.mantine-Divider-label) {
+  background-color: #ffffff;
+  color: var(--mantine-color-gray-6);
+}
+
+.dividerLabelDark :global(.mantine-Divider-label) {
+  background-color: #242424;
+  color: var(--mantine-color-gray-4);
+}
+
+/* Override Mantine's CSS variables instead of fighting their !important */
+.dividerLabelDynamic {
+  --mantine-color-dark-6: light-dark(#ffffff, #242424);
+}

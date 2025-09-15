@@ -2,3 +2,22 @@
   font-family: Greycliff CF, var(--mantine-font-family);
   font-weight: 500;
 }
+
+.divider {
+  border-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.dividerLabelLight :global(.mantine-Divider-label) {
+  background-color: #ffffff;
+  color: var(--mantine-color-gray-6);
+}
+
+.dividerLabelDark :global(.mantine-Divider-label) {
+  background-color: #242424;
+  color: var(--mantine-color-gray-4);
+}
+
+/* Override Mantine's CSS variables instead of fighting their !important */
+.dividerLabelDynamic {
+  --mantine-color-dark-6: light-dark(#ffffff, #242424);
+}

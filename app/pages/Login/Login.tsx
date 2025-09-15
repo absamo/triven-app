@@ -15,6 +15,7 @@ import {
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { IconAlertCircle, IconBrandGoogle, IconLock, IconMail } from "@tabler/icons-react"
+import classNames from "classnames"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useState } from "react"
 import { useTranslation } from 'react-i18next'
@@ -23,6 +24,7 @@ import { z } from "zod"
 
 import { BackButton, Logo } from "~/app/components"
 import { authClient } from "~/app/lib/auth.client"
+import classes from "./Login.module.css"
 
 
 
@@ -252,11 +254,18 @@ export default function LoginPage() {
                             </Stack>
                         </form>
 
-                        <Divider label={t('auth:or')} labelPosition="center" />
+                        <Divider
+                            label={t('auth:or')}
+                            labelPosition="center"
+                            className={classNames(
+                                classes.divider,
+                                classes.dividerLabelDynamic
+                            )}
+                        />
 
                         {/* Google Sign In Button */}
                         <Button
-                            variant="outline"
+                            variant="light"
                             size="md"
                             fullWidth
                             leftSection={<IconBrandGoogle size={18} />}
@@ -265,13 +274,16 @@ export default function LoginPage() {
                             styles={{
                                 root: {
                                     height: 48,
-                                    borderColor: `light-dark(${theme.colors.gray[3]}, ${theme.colors.dark[4]})`,
-                                    color: `light-dark(${theme.colors.gray[8]}, ${theme.colors.gray[0]})`,
+                                    backgroundColor: `light-dark(${theme.colors.gray[1]}, ${theme.colors.dark[5]})`,
+                                    borderColor: `light-dark(${theme.colors.gray[4]}, ${theme.colors.dark[3]})`,
+                                    border: '1px solid',
+                                    color: `light-dark(${theme.colors.gray[9]}, ${theme.colors.gray[0]})`,
                                     fontWeight: 500,
                                     '&:hover': {
-                                        backgroundColor: `light-dark(${theme.colors.gray[0]}, ${theme.colors.dark[6]})`,
+                                        backgroundColor: `light-dark(${theme.colors.gray[2]}, ${theme.colors.dark[4]})`,
+                                        borderColor: `light-dark(${theme.colors.gray[5]}, ${theme.colors.dark[2]})`,
                                         transform: 'translateY(-1px)',
-                                        boxShadow: theme.shadows.sm
+                                        boxShadow: theme.shadows.md
                                     }
                                 }
                             }}
