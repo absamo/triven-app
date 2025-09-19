@@ -75,7 +75,7 @@ export default function CurrencySettings({
                 <Flag />
                 <Stack gap={0}>
                   <Text fz="sm">{curency.currencyCode}</Text>
-                  <Text fz="xs" opacity={0.6}>
+                  <Text fz="xs" c="dimmed">
                     {curency.countryName}
                   </Text>
                 </Stack>
@@ -106,7 +106,7 @@ export default function CurrencySettings({
                             <IconStar
                               size={16}
                               stroke={1.5}
-                              color={theme.colors.blue[5]}
+                              color="var(--mantine-color-blue-filled)"
                             />
                           }
                         >
