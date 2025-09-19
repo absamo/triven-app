@@ -30,6 +30,8 @@ import {
 } from "@tabler/icons-react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router"
+import { PLANS } from "~/app/modules/stripe/plans"
 import classes from "./Pricing.module.css"
 
 interface PricingPlan {
@@ -56,6 +58,7 @@ interface PricingPlan {
 
 export default function PricingPage() {
     const { t } = useTranslation(["pricing", "common"])
+    const navigate = useNavigate()
     const [isYearly, setIsYearly] = useState(false)
     const [isClient, setIsClient] = useState(false)
     const [showStickyPlans, setShowStickyPlans] = useState(false)
@@ -65,6 +68,11 @@ export default function PricingPage() {
 
     // Use a default theme for SSR, actual theme for client
     const isDark = isClient ? colorScheme === 'dark' : false // Default to light for SSR
+
+    const handlePlanSelection = (planId: string) => {
+        // Navigate to signup with the selected plan as a query parameter
+        navigate(`/signup?plan=${planId}`)
+    }
 
     // Set client flag after hydration
     useEffect(() => {
@@ -148,7 +156,7 @@ export default function PricingPage() {
 
     const pricingPlans: PricingPlan[] = [
         {
-            id: "standard",
+            id: PLANS.STANDARD,
             name: t("pricing:standard"),
             description: t("pricing:standardDescription"),
             monthlyPrice: 29,
@@ -181,7 +189,7 @@ export default function PricingPage() {
             color: "gray",
         },
         {
-            id: "professional",
+            id: PLANS.PROFESSIONAL,
             name: t("pricing:professional"),
             description: t("pricing:professionalDescription"),
             monthlyPrice: 39,
@@ -210,7 +218,7 @@ export default function PricingPage() {
             color: "neon",
         },
         {
-            id: "premium",
+            id: PLANS.PREMIUM,
             name: t("pricing:premium"),
             description: t("pricing:premiumDescription"),
             monthlyPrice: 99,
@@ -668,6 +676,7 @@ export default function PricingPage() {
                                         rightSection={<IconArrowRight size={16} />}
                                         fullWidth
                                         radius="md"
+                                        onClick={() => handlePlanSelection(plan.id)}
                                         className={
                                             isPopular
                                                 ? classes.popularButton

@@ -48,6 +48,7 @@ import { Link } from "react-router"
 import ScrollToTop from '~/app/components/ScrollToTop'
 import FrIcon from '~/app/components/SvgIcons/FrIcon'
 import UsIcon from '~/app/components/SvgIcons/UsIcon'
+import { CURRENCIES, INTERVALS, PLANS } from "~/app/modules/stripe/plans"
 import PublicLayout from "~/app/pages/PublicLayout"
 import classes from "./Home.module.css"
 
@@ -112,9 +113,19 @@ export default function HomePage() {
     useEffect(() => {
     }, [])
 
+    // Function to handle plan selection and redirect to signup
+    const handlePlanSelection = (planId: string) => {
+        const interval = isYearly ? INTERVALS.YEARLY : INTERVALS.MONTHLY
+        const currency = CURRENCIES.USD // Default to USD, can be changed based on user location
+
+        // Redirect to signup with plan parameters
+        const signupUrl = `/signup?plan=${planId}&interval=${interval}&currency=${currency}&trial=14`
+        window.location.href = signupUrl
+    }
+
     const pricingPlans: PricingPlan[] = [
         {
-            id: "standard",
+            id: PLANS.STANDARD, // Use the actual plan ID from our Stripe configuration
             name: "Standard",
             description: "Perfect for small businesses getting started with inventory management",
             monthlyPrice: 29,
@@ -147,7 +158,7 @@ export default function HomePage() {
             color: "gray",
         },
         {
-            id: "professional",
+            id: PLANS.PROFESSIONAL, // Use the actual plan ID from our Stripe configuration
             name: "Professional",
             description: "Advanced features for growing businesses with complex needs",
             monthlyPrice: 39,
@@ -176,7 +187,7 @@ export default function HomePage() {
             color: "neon",
         },
         {
-            id: "premium",
+            id: PLANS.PREMIUM, // Use the actual plan ID from our Stripe configuration
             name: "Premium",
             description: "Enterprise-grade solutions for large organizations",
             monthlyPrice: 99,
@@ -842,8 +853,6 @@ export default function HomePage() {
 
                                                 {/* CTA Button */}
                                                 <Button
-                                                    component={Link}
-                                                    to="/signup"
                                                     size="lg"
                                                     variant={isPopular ? "filled" : "outline"}
                                                     color={isPopular ? "neon" : "gray"}
@@ -858,8 +867,9 @@ export default function HomePage() {
                                                             fontWeight: 600
                                                         }
                                                     } : undefined}
+                                                    onClick={() => handlePlanSelection(plan.id)}
                                                 >
-                                                    {t('pricing:startFreeTrial')}
+                                                    Start 14-Day Free Trial
                                                 </Button>
                                             </Stack>
                                         </Card>

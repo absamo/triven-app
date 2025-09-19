@@ -17,6 +17,7 @@ import {
 } from "~/app/common/constants"
 import { createEan13 } from "~/app/common/helpers/inventories"
 import { auth } from "~/app/lib/auth"
+import { PRICING_PLANS } from "~/app/modules/stripe/plans"
 
 // Set faker seed for consistent demo data
 faker.seed(123)
@@ -2704,6 +2705,102 @@ async function createUnitOfMeasures(companyId: string) {
   return unitOfMeasures
 }
 
+async function createSubscriptionPlans() {
+  console.log("💳 Creating subscription plans...")
+
+  const plans = []
+
+  for (const [planKey, planData] of Object.entries(PRICING_PLANS)) {
+    // Create the plan
+    const plan = await prisma.plan.create({
+      data: {
+        id: planData.id,
+        name: planData.name,
+        description: planData.description,
+      },
+    })
+
+    // Create prices for each interval and currency
+    const prices = []
+    for (const [interval, currencyPrices] of Object.entries(planData.prices)) {
+      for (const [currency, amount] of Object.entries(currencyPrices)) {
+        const price = await prisma.price.create({
+          data: {
+            id: planData.stripePriceIds[interval as keyof typeof planData.stripePriceIds][currency as keyof typeof currencyPrices],
+            planId: plan.id,
+            amount: amount,
+            currency: currency,
+            interval: interval,
+          },
+        })
+        prices.push(price)
+      }
+    }
+
+    plans.push({ plan, prices })
+    console.log(`   ✅ Created plan: ${planData.name} with ${prices.length} prices`)
+  }
+
+  console.log(`✅ Created ${plans.length} subscription plans with trial support`)
+  return plans
+}
+
+async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
+  console.log("💳 Creating demo subscription for admin user...")
+
+  const adminUser = users.find(u => u.email === "admin@flowtech.com")
+  if (!adminUser) {
+    console.log("⚠️  Admin user not found, skipping subscription creation")
+    return
+  }
+
+  // Find the Standard plan monthly USD price
+  const standardPlan = subscriptionPlans.find(sp => sp.plan.id === PRICING_PLANS.standard.id)
+  if (!standardPlan) {
+    console.log("⚠️  Standard plan not found, skipping subscription creation")
+    console.log("Available plans:", subscriptionPlans.map(sp => sp.plan.id))
+    return
+  }
+
+  const monthlyUSDPrice = standardPlan.prices.find((p: any) =>
+    p.interval === 'month' && p.currency.toUpperCase() === 'USD'
+  )
+
+  if (!monthlyUSDPrice) {
+    console.log("⚠️  Monthly USD price for Standard plan not found, skipping subscription creation")
+    return
+  }
+
+  // Create subscription for admin user
+  const now = new Date()
+  const trialStart = Math.floor(now.getTime() / 1000) // Convert to Unix timestamp
+  const trialEnd = Math.floor((now.getTime() + 14 * 24 * 60 * 60 * 1000) / 1000) // 14 days from now
+  const currentPeriodStart = trialStart
+  const currentPeriodEnd = Math.floor((now.getTime() + 30 * 24 * 60 * 60 * 1000) / 1000) // 30 days from now
+
+  const subscription = await prisma.subscription.create({
+    data: {
+      id: `demo_sub_${adminUser.id}`, // Unique ID for the demo subscription
+      userId: adminUser.id,
+      planId: standardPlan.plan.id,
+      priceId: monthlyUSDPrice.id,
+      status: 'trialing',
+      currentPeriodStart,
+      currentPeriodEnd,
+      trialStart,
+      trialEnd,
+      interval: 'month',
+      cancelAtPeriodEnd: false,
+    },
+    include: {
+      price: true,
+    }
+  })
+
+  console.log(`✅ Created demo subscription for admin user: ${subscription.planId} (${subscription.status})`)
+  return subscription
+}
+
 async function seed() {
   console.log("🌱 Starting comprehensive seed process...")
 
@@ -2714,60 +2811,67 @@ async function seed() {
     // 2. Create company structure
     const { company, currencies, locations } = await createCompanyStructure()
 
-    // 3. Create agencies and sites
+    // 3. Create subscription plans (independent of company)
+    const subscriptionPlans = await createSubscriptionPlans()
+
+    // 4. Create agencies and sites
     const { agencies, sites } = await createAgenciesAndSites(company, currencies, locations)
 
-    // 4. Create roles
+    // 5. Create roles
     const roles = await createRoles(company.id)
 
-    // 5. Create users manually since better-auth can't handle custom fields
+    // 6. Create users manually since better-auth can't handle custom fields
     const users = await createUsers(company, roles, agencies, sites)
 
-    // 6. Create categories
+    // 7. Create demo subscription for admin user
+    await createDemoSubscription(users, subscriptionPlans)
+
+    // 8. Create categories
     const categories = await createCategories(company.id)
 
-    // 7. Create suppliers
+    // 8. Create suppliers
     const suppliers = await createSuppliers(company, currencies, locations)
 
-    // 8. Create unit of measures
+    // 9. Create unit of measures
     const unitOfMeasures = await createUnitOfMeasures(company.id)
 
-    // 9. Create products
+    // 10. Create products
     const products = await createProducts(company, categories, agencies, sites, users)
 
-    // 10. Create customers
+    // 11. Create customers
     const customers = await createCustomers(company, agencies, sites, locations)
 
-    // 11. Create purchase orders
+    // 12. Create purchase orders
     const purchaseOrders = await createPurchaseOrders(company, suppliers, agencies, sites, products)
 
-    // 12. Create sales orders
+    // 13. Create sales orders
     const salesOrders = await createSalesOrders(company, customers, agencies, sites, products)
 
-    // 13. Create backorders
+    // 14. Create backorders
     const backorders = await createBackorders(company, customers, agencies, sites, products)
 
-    // 14. Create invoices and payments
+    // 15. Create invoices and payments
     const { invoices, paymentsReceived } = await createInvoicesAndPayments(company, salesOrders, users)
 
-    // 15. Create bills and payments
+    // 16. Create bills and payments
     const { bills, paymentsMade } = await createBillsAndPayments(company, purchaseOrders, users)
 
-    // 15. Create stock adjustments
+    // 17. Create stock adjustments
     const stockAdjustments = await createStockAdjustments(company, products, sites, users)
 
-    // 16. Create transfer orders
+    // 18. Create transfer orders
     const transferOrders = await createTransferOrders(company, sites, products)
 
-    // 17. Create notifications
+    // 19. Create notifications
     const notifications = await createNotifications(company, products, users)
 
-    // 18. Create workflow templates and approvals
+    // 20. Create workflow templates and approvals
     const { workflowTemplates, approvalRequests } = await createWorkflowTemplatesAndApprovals(company, roles, users, transferOrders)
 
     console.log("✅ Seed completed successfully!")
     console.log("\n📊 Summary:")
     console.log(`   Company: ${company.name}`)
+    console.log(`   Subscription Plans: ${subscriptionPlans.length}`)
     console.log(`   Users: ${users.length}`)
     console.log(`   Agencies: ${agencies.length}`)
     console.log(`   Sites: ${sites.length}`)
@@ -2813,6 +2917,14 @@ async function seed() {
     console.log("   - Multi-step approval chains with role-based assignments")
     console.log("   - 4 demo approval requests with different statuses")
     console.log("   - Automatic timeout and escalation support")
+
+    console.log("\n💳 Subscription Plans:")
+    console.log("   - Standard Plan: $29/month, $19/year (500 orders, 3 users, 1 agency, 2 sites)")
+    console.log("   - Professional Plan: $39/month, $29/year (1,000 orders, 10 users, 2 agencies, 4 sites)")
+    console.log("   - Premium Plan: $99/month, $79/year (unlimited orders, 20 users, 4 agencies, 8 sites)")
+    console.log("   - All plans include 14-day free trial")
+    console.log("   - Integrated with Stripe for secure payment processing")
+    console.log("   - Automatic subscription management and billing")
 
   } catch (error) {
     console.error("❌ Seed failed:", error)

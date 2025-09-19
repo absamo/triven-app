@@ -1,5 +1,5 @@
 import { prisma } from "~/app/db.server"
-import { type Interval, PRICING_PLANS } from "~/app/modules/stripe/plans"
+import { PRICING_PLANS, getStripePriceId, type Currency, type Interval, type Plan } from "~/app/modules/stripe/plans"
 import { stripe } from "~/app/modules/stripe/stripe.server"
 // import { getLocaleCurrency, HOST_URL } from "#app/utils/misc.server"
 import { ERRORS } from "~/app/common/errors"
@@ -176,11 +176,13 @@ export async function createSubscriptionCheckout({
   planId,
   planInterval,
   currency,
+  trialDays = 14,
 }: {
   userId: string
-  planId: string
-  planInterval: string
-  currency: string
+  planId: Plan
+  planInterval: Interval
+  currency: Currency
+  trialDays?: number
 }) {
   const user = await prisma.user.findUnique({ where: { id: userId } })
 
@@ -193,24 +195,26 @@ export async function createSubscriptionCheckout({
 
   if (subscription) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
 
-  const plan = await prisma.plan.findUnique({
-    where: { id: planId },
-    include: { prices: true },
-  })
-  const currentPrice = plan?.prices.find(
-    (price) => price.interval === planInterval && price.currency === currency
-  )
+  // Get the Stripe price ID directly using our utility function
+  const stripePriceId = getStripePriceId(planId, planInterval, currency)
 
-  if (!currentPrice) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
-
-  const checkout = await stripe.checkout.sessions.create({
+  const checkoutSessionData: any = {
     customer: user.stripeCustomerId,
-    line_items: [{ price: currentPrice.id, quantity: 1 }],
+    line_items: [{ price: stripePriceId, quantity: 1 }],
     mode: "subscription",
     payment_method_types: ["card"],
     success_url: `${process.env.BASE_URL}/dashboard`,
     cancel_url: `${process.env.BASE_URL}/signup`,
-  })
+  }
+
+  // Add trial period if specified
+  if (trialDays && trialDays > 0) {
+    checkoutSessionData.subscription_data = {
+      trial_period_days: trialDays,
+    }
+  }
+
+  const checkout = await stripe.checkout.sessions.create(checkoutSessionData)
 
   if (!checkout) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
   return checkout.url
@@ -231,10 +235,12 @@ export async function getAllInvoices(subscriptionId: string) {
  * Retrieves an upcoming invoice for a subscription.
  */
 export async function getUpcomingInvoice(subscriptionId: string) {
-  const upcomingInvoice = await stripe.invoices.retrieveUpcoming({
-    subscription: subscriptionId,
-  })
-  return upcomingInvoice
+  // TODO: Fix Stripe API method name
+  // const upcomingInvoice = await stripe.invoices.retrieveUpcoming({
+  //   subscription: subscriptionId,
+  // })
+  // return upcomingInvoice
+  return null
 }
 
 // /**
