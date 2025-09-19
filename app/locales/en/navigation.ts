@@ -82,6 +82,9 @@ export default {
     darkMode: 'Dark Mode',
     trial: 'Trial',
     user: 'User',
+    upgrade: 'Upgrade',
+    upgradePlan: 'Upgrade Plan',
+    upgradeNow: 'Upgrade Now',
 
     // Breadcrumbs
     breadcrumbSeparator: '/',

@@ -82,6 +82,9 @@ export default {
     darkMode: 'Mode Sombre',
     trial: 'Essai',
     user: 'Utilisateur',
+    upgrade: 'Mettre à niveau',
+    upgradePlan: 'Mettre à niveau le plan',
+    upgradeNow: 'Mettre à niveau maintenant',
 
     // Breadcrumbs
     breadcrumbSeparator: '/',
