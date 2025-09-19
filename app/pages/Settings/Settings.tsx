@@ -70,22 +70,28 @@ export default function Settings({
     {
       id: "billing",
       icon: () => <IconCreditCard color={theme.colors.violet[6]} size={17} />,
-      label: t('settings:subscriptions', 'Subscriptions'),
-      description: t('settings:manageSubscriptions', 'Manage your subscription and billing settings'),
+      label: t('common:subscriptions', 'Subscriptions'),
+      description: t('common:manageSubscriptions', 'Manage your subscription and billing settings'),
       content: () => (
         <Grid align="center" className={classes.row} p={10}>
           <Grid.Col span={2}>
             <Text fz="xs" opacity={0.6}>
-              {t('settings:yourCurrentPlan', 'Your current plan')}
+              {t('common:yourCurrentPlan', 'Your current plan')}
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
             <Text fz="sm" tt={"capitalize"}>
-              {billing?.currentPlan} {t('settings:plan', 'plan')}
+              {billing?.currentPlan || 'Free'} {t('common:plan', 'plan')}
             </Text>
             <Text fz="xs" opacity={0.6}>
-              {currencySymbol}
-              {Number(billing?.amount / 100).toFixed(2)} {t('settings:billedEveryMonth', 'billed every month')}
+              {billing?.amount ? (
+                <>
+                  {currencySymbol}
+                  {Number(billing.amount / 100).toFixed(2)} {t('common:billedEveryMonth', 'billed every month')}
+                </>
+              ) : (
+                t('common:noActiveBilling', 'No active billing')
+              )}
             </Text>
           </Grid.Col>
           <Grid.Col span={12}>
@@ -93,12 +99,12 @@ export default function Settings({
           </Grid.Col>
           <Grid.Col span={2}>
             <Text fz="xs" opacity={0.6}>
-              {t('settings:status', 'Status')}
+              {t('common:status', 'Status')}
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
-            <Badge size="xs" variant="light">
-              {billing?.planStatus}
+            <Badge size="xs" variant="light" color={billing?.planStatus ? "green" : "gray"}>
+              {billing?.planStatus || t('common:noActiveSubscription', 'No Active Subscription')}
             </Badge>
           </Grid.Col>
           <Grid.Col span={12}>
@@ -106,13 +112,19 @@ export default function Settings({
           </Grid.Col>
           <Grid.Col span={2}>
             <Text fz="xs" opacity={0.6}>
-              {t('settings:renews', 'Renews')}
+              {t('common:renews', 'Renews')}
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
             <Text fz="xs">
-              {t('settings:nextInvoiceDue', 'Next invoice due on')}{" "}
-              {dayjs(billing.trialEnd).format("MMM DD, YYYY")}
+              {billing?.trialEnd ? (
+                <>
+                  {t('common:nextInvoiceDue', 'Next invoice due on')}{" "}
+                  {dayjs(billing.trialEnd * 1000).format("MMM DD, YYYY")}
+                </>
+              ) : (
+                t('common:noRenewalDate', 'No renewal date available')
+              )}
             </Text>
           </Grid.Col>
 

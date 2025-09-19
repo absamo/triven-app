@@ -76,4 +76,16 @@ export default {
     defaultCurrencies: 'Devises par défaut',
     otherCurrencies: 'Autres devises',
     nothingFound: 'Aucun résultat',
+
+    // Settings
+    subscriptions: 'Abonnements',
+    manageSubscriptions: 'Gérez vos paramètres d\'abonnement et de facturation',
+    yourCurrentPlan: 'Votre forfait actuel',
+    plan: 'forfait',
+    billedEveryMonth: 'facturé chaque mois',
+    noActiveBilling: 'Aucune facturation active',
+    noActiveSubscription: 'Aucun Abonnement Actif',
+    renews: 'Renouvelle',
+    nextInvoiceDue: 'Prochaine facture due le',
+    noRenewalDate: 'Aucune date de renouvellement disponible',
 } satisfies typeof import("../en/common").default;

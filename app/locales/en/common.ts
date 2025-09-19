@@ -76,4 +76,16 @@ export default {
     defaultCurrencies: 'Default currencies',
     otherCurrencies: 'Other currencies',
     nothingFound: 'Nothing found',
+
+    // Settings
+    subscriptions: 'Subscriptions',
+    manageSubscriptions: 'Manage your subscription and billing settings',
+    yourCurrentPlan: 'Your current plan',
+    plan: 'plan',
+    billedEveryMonth: 'billed every month',
+    noActiveBilling: 'No active billing',
+    noActiveSubscription: 'No Active Subscription',
+    renews: 'Renews',
+    nextInvoiceDue: 'Next invoice due on',
+    noRenewalDate: 'No renewal date available',
 };

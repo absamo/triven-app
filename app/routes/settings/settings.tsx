@@ -56,32 +56,56 @@ export const loader: LoaderFunction = async ({
   let currentsubscription = {}
 
   if (subscription) {
-    invoices = await (
-      await getAllInvoices(subscription?.id)
-    ).map((invoice: any) => {
-      return {
-        id: invoice.id,
-        amountPaid: invoice.amount_paid,
-        amountDue: invoice.amount_due,
-        currency: invoice.currency,
-        effectiveAt: invoice.effective_at,
-        status: invoice.status,
-        periodStart: invoice.period_start,
-        periodEnd: invoice.period_end,
-        attempted: invoice.attempted,
-        billingReason: invoice.billing_reason,
-        customerName: invoice.customer_name,
-        customerEmail: invoice.customer_email,
-        customerAddress: {
-          city: invoice.customer_address?.city,
-          country: invoice.customer_address?.country,
-          line1: invoice.customer_address?.line1,
-          postalCode: invoice.customer_address?.postal_code,
-          state: invoice.customer_address?.state,
-        },
-        customerPhone: invoice.customer_phone,
+    // Check if this is a demo subscription (starts with 'demo_sub_')
+    const isDemoSubscription = subscription.id.startsWith('demo_sub_')
+
+    if (!isDemoSubscription) {
+      // Only call Stripe APIs for real subscriptions
+      invoices = await (
+        await getAllInvoices(subscription?.id)
+      ).map((invoice: any) => {
+        return {
+          id: invoice.id,
+          amountPaid: invoice.amount_paid,
+          amountDue: invoice.amount_due,
+          currency: invoice.currency,
+          effectiveAt: invoice.effective_at,
+          status: invoice.status,
+          periodStart: invoice.period_start,
+          periodEnd: invoice.period_end,
+          attempted: invoice.attempted,
+          billingReason: invoice.billing_reason,
+          customerName: invoice.customer_name,
+          customerEmail: invoice.customer_email,
+          customerAddress: {
+            city: invoice.customer_address?.city,
+            country: invoice.customer_address?.country,
+            line1: invoice.customer_address?.line1,
+            postalCode: invoice.customer_address?.postal_code,
+            state: invoice.customer_address?.state,
+          },
+          customerPhone: invoice.customer_phone,
+        }
+      })
+
+      upcomingInvoice = await getUpcomingInvoice(subscription?.id)
+    } else {
+      // For demo subscriptions, use mock data
+      invoices = []
+      upcomingInvoice = {
+        amount_due: subscription.price?.amount || 0,
+        currency: subscription.price?.currency || 'USD',
+        period_start: subscription.currentPeriodStart,
+        period_end: subscription.currentPeriodEnd,
+        billing_reason: 'subscription_create',
+        status: 'draft',
+        next_payment_attempt: subscription.currentPeriodEnd,
+        customer_name: 'Demo Customer',
+        customer_email: 'demo@example.com',
+        customer_address: {},
+        customer_phone: null,
       }
-    })
+    }
 
     currentsubscription = {
       currentPlan: subscription.planId || "Free",
@@ -95,8 +119,6 @@ export const loader: LoaderFunction = async ({
       currency: subscription.price?.currency,
       status: subscription.status,
     }
-
-    upcomingInvoice = await getUpcomingInvoice(subscription?.id)
   }
 
   return {
