@@ -6,19 +6,17 @@ import {
   Menu,
   Stack,
   Text,
-  UnstyledButton,
-  useMantineTheme,
+  UnstyledButton
 } from "@mantine/core";
-import { IconDotsVertical, IconStar, IconTrash } from "@tabler/icons-react";
+import { IconDotsVertical, IconPlus, IconStar, IconTrash } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Form, useSubmit } from "react-router";
 
+import { useState } from "react";
 import { getCurrencyFlag } from "~/app/common/helpers/isoCountryCurrency";
 import { type ICurrency } from "~/app/common/validations/currencySchema";
+import Currency from "~/app/components/Currency";
 import classes from "./CurrencySettings.module.css";
-// import SettingsTitle from "./SettingsTitle"
-import { useDisclosure } from "@mantine/hooks";
-import CurrencyForm from "./CurrencyForm";
 
 interface CurrencySettingsProps {
   currencies: ICurrency[]
@@ -28,13 +26,9 @@ export default function CurrencySettings({
   currencies,
 }: CurrencySettingsProps) {
   const { t } = useTranslation(['settings', 'common']);
-  const [opened, { open, close }] = useDisclosure(false)
+  const [selectedCurrency, setSelectedCurrency] = useState<any>(null);
 
-  const handleClick = () => {
-    open()
-  }
-
-  const submit = useSubmit()
+  const submit = useSubmit();
 
   const handleSubmit = (
     event: React.FormEvent<HTMLFormElement>,
@@ -52,14 +46,53 @@ export default function CurrencySettings({
     formData.append("id", curency.id as string)
     formData.append("action", action)
 
-    submit(formData, { method: "post", action: "/api/currencies" })
+    submit(formData, { method: "post" })
   }
 
-  const theme = useMantineTheme()
+  const handleAddCurrency = () => {
+    if (!selectedCurrency) return
+
+    const formData = new FormData()
+    formData.append("currencyCode", selectedCurrency.currencyCode)
+    formData.append("currencyName", selectedCurrency.currencyName || selectedCurrency.currencyCode)
+    formData.append("countryName", selectedCurrency.countryName || "")
+    formData.append("isoCode", selectedCurrency.isoCode || "")
+    formData.append("order", (currencies.length + 1).toString())
+
+    submit(formData, { method: "post" })
+
+    // Reset form
+    setSelectedCurrency(null)
+  }
+
+  const handleCurrencyChange = (currency: any) => {
+    setSelectedCurrency(currency)
+  }
+
+
 
   return (
     <>
-      <Stack mt={10} gap="xs">
+      {/* Add Currency Form - Always visible like Backorder items */}
+      <Group mt="md" mb="md" align="end">
+        <Currency
+          onChange={handleCurrencyChange}
+          name="currencyCode"
+          value={selectedCurrency?.isoCode || null}
+          placeholder={t('settings:selectCurrencyToAdd', 'Select a currency to add')}
+          inputProps={{ style: { flex: 1 } }}
+          hideLabel
+        />
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={handleAddCurrency}
+          disabled={!selectedCurrency}
+        >
+          {t('settings:addCurrency', 'Add currency')}
+        </Button>
+      </Group>
+
+      <Stack gap="xs">
         {currencies.map((curency: ICurrency) => {
           const Flag = getCurrencyFlag(curency.isoCode as string) as React.FC
 
@@ -79,14 +112,14 @@ export default function CurrencySettings({
                     {curency.countryName}
                   </Text>
                 </Stack>
-                {curency.base && (
-                  <Badge size="xs" variant="outline" color="green" ml={50}>
-                    {t('settings:base', 'Base')}
-                  </Badge>
-                )}
               </Group>
 
-              {!curency.base && (
+              {/* Right side - Badge for base currency or Menu for others */}
+              {curency.base ? (
+                <Badge size="xs" variant="outline" color="green">
+                  {t('settings:base', 'Base')}
+                </Badge>
+              ) : (
                 <Group className={classes.currencyIcon}>
                   <Menu withArrow position="bottom-end">
                     <Menu.Target>
@@ -134,21 +167,6 @@ export default function CurrencySettings({
           )
         })}
       </Stack>
-
-      <Group justify="end" mt="md">
-        <Button
-          onClick={handleClick}
-          className={classes.editButton}
-          size="compact-md"
-        >
-          {t('settings:addCurrency', 'Add currency')}
-        </Button>
-      </Group>
-      <CurrencyForm
-        opened={opened}
-        onClose={close}
-        order={currencies.length + 1}
-      />
     </>
   )
 }

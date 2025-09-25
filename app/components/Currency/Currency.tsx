@@ -39,6 +39,8 @@ export default function Currency({
   value: valueProp = null,
   onChange = () => { },
   restrictToCompanyCurrencies = false,
+  hideLabel = false,
+  placeholder,
   inputProps,
 }: {
   name?: string
@@ -48,6 +50,8 @@ export default function Currency({
   companyCurrencies?: ICurrency[]
   onChange?: (currency: CurrencyProps) => void
   restrictToCompanyCurrencies?: boolean
+  hideLabel?: boolean
+  placeholder?: string
   inputProps?: { [key: string]: any }
 }) {
   const { t } = useTranslation('common')
@@ -101,11 +105,11 @@ export default function Currency({
     ? defaultCurrencies.find((item) => item.isoCode === value)
     : [...defaultCurrencies, ...otherCurrencies].find((item) => item.isoCode === value)
 
-  const SelectOption = ({ currencyCode, countryName, flag }: Partial<CurrencyProps>) => {
+  const SelectOption = ({ currencyCode, countryName, flag, placeholder: customPlaceholder }: Partial<CurrencyProps> & { placeholder?: string }) => {
     if (!currencyCode) {
       return (
         <Text c="dimmed" size="sm">
-          {t('searchCurrency')}
+          {customPlaceholder || t('searchCurrency')}
         </Text>
       )
     }
@@ -184,7 +188,7 @@ export default function Currency({
       >
         <Combobox.Target>
           <InputBase
-            label={t('currency')}
+            label={hideLabel ? undefined : t('currency')}
             required={required}
             error={error}
             component="button"
@@ -198,7 +202,7 @@ export default function Currency({
             name={name}
             {...inputProps}
           >
-            <SelectOption {...selectedOption} />
+            <SelectOption {...selectedOption} placeholder={placeholder} />
           </InputBase>
         </Combobox.Target>
 

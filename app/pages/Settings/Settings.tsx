@@ -1,11 +1,10 @@
 import {
-  Accordion,
   Badge,
   Divider,
   Grid,
-  Group,
+  Tabs,
   Text,
-  useMantineTheme,
+  useMantineTheme
 } from "@mantine/core"
 import {
   IconCreditCard,
@@ -51,22 +50,11 @@ export default function Settings({
   permissions = [],
 }: SettingsProps) {
   const { t } = useTranslation(['settings', 'common']);
-  const canCreate = permissions.includes("create:settings")
-  const canUpdate = permissions.includes("update:settings")
 
   const theme = useMantineTheme()
   const currencySymbol = CURRENCY_SYMBOLS[billing?.currency?.toUpperCase()]
 
   const settings = [
-    {
-      id: "currency",
-      icon: () => (
-        <IconPremiumRights color={theme.colors.violet[6]} size={17} />
-      ),
-      label: t('settings:currencies', 'Currencies'),
-      description: t('settings:manageCurrencies', 'Manage your currencies'),
-      content: () => <CurrencySettings currencies={currencies} />,
-    },
     {
       id: "billing",
       icon: () => <IconCreditCard color={theme.colors.violet[6]} size={17} />,
@@ -81,7 +69,7 @@ export default function Settings({
           </Grid.Col>
           <Grid.Col span={10}>
             <Text fz="sm" tt={"capitalize"}>
-              {billing?.currentPlan || 'Free'} {t('common:plan', 'plan')}
+              {billing?.currentPlan || 'Standard'} {t('common:plan', 'plan')}
             </Text>
             <Text fz="xs" opacity={0.6}>
               {billing?.amount ? (
@@ -127,98 +115,38 @@ export default function Settings({
               )}
             </Text>
           </Grid.Col>
-
-          {/* <Stack gap={0}>
-            <Text fz="xs" opacity={0.6}>
-              {billing.interval} billing cycle
-            </Text>
-            <Badge size="xs" variant="light">
-              {billing.cancelAtPeriodEnd
-                ? "Cancel at period end"
-                : "Auto renew"}
-            </Badge>
-          </Stack> */}
-
-          {/* {!curency.base && (
-        <Group className={classes.currencyIcon}>
-          <Menu withArrow position="bottom-end">
-            <Menu.Target>
-              <UnstyledButton>
-                <IconDotsVertical size={16} stroke={1.5} />
-              </UnstyledButton>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Form
-                onSubmit={(event) =>
-                  handleSubmit(event, curency, "update")
-                }
-              >
-                <Menu.Item
-                  type="submit"
-                  leftSection={
-                    <IconStar
-                      size={16}
-                      stroke={1.5}
-                      color={theme.colors.blue[5]}
-                    />
-                  }
-                >
-                  Set as base curency
-                </Menu.Item>
-              </Form>
-              <Form
-                onSubmit={(event) =>
-                  handleSubmit(event, curency, "delete")
-                }
-              >
-                <Menu.Item
-                  color="red"
-                  leftSection={<IconTrash size={16} stroke={1.5} />}
-                  type="submit"
-                >
-                  Remove currency
-                </Menu.Item>
-              </Form>
-            </Menu.Dropdown>
-          </Menu>
-        </Group>
-      )} */}
         </Grid>
       ),
     },
+    {
+      id: "currency",
+      icon: () => (
+        <IconPremiumRights color={theme.colors.violet[6]} size={17} />
+      ),
+      label: t('settings:currencies', 'Currencies'),
+      description: t('settings:manageCurrencies', 'Manage your currencies'),
+      content: () => <CurrencySettings currencies={currencies} />,
+    },
   ]
-
-  const items = settings.map(
-    ({ id, label, icon: Icon, description, content: Content }) => (
-      <Accordion.Item value={id} key={label}>
-        <Accordion.Control>
-          <Group wrap="nowrap">
-            <Icon />
-            <div>
-              <Text size="sm">{label}</Text>
-              <Text size="xs" c="dimmed">
-                {description}
-              </Text>
-            </div>
-          </Group>
-        </Accordion.Control>
-        <Accordion.Panel>
-          <Content />
-        </Accordion.Panel>
-      </Accordion.Item>
-    )
-  )
 
   return (
     <>
       <Text className={classes.title}>{t('settings:title', 'Settings')}</Text>
-      <Accordion
-        chevronPosition="right"
-        variant="contained"
-        classNames={{ item: classes.root, panel: classes.panel }}
-      >
-        {items}
-      </Accordion>
+      <Tabs defaultValue="billing" variant="outline" radius="md">
+        <Tabs.List>
+          {settings.map(({ id, label, icon: Icon }) => (
+            <Tabs.Tab value={id} key={id} leftSection={<Icon />}>
+              {label}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+
+        {settings.map(({ id, content: Content }) => (
+          <Tabs.Panel value={id} key={id} pt="md">
+            <Content />
+          </Tabs.Panel>
+        ))}
+      </Tabs>
     </>
   )
 }

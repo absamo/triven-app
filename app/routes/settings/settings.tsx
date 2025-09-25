@@ -9,7 +9,9 @@ import { type ICurrency } from "~/app/common/validations/currencySchema"
 import Settings from "~/app/pages/Settings"
 import {
   createCurrency,
+  deleteCurrency,
   getCurrenciesByCompany,
+  updateCurrencyBase,
 } from "~/app/services/settings.server"
 
 import { prisma } from "~/app/db.server"
@@ -108,7 +110,7 @@ export const loader: LoaderFunction = async ({
     }
 
     currentsubscription = {
-      currentPlan: subscription.planId || "Free",
+      currentPlan: subscription.planId || "Standard",
       currentPeriodStart: subscription.currentPeriodStart,
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
@@ -152,7 +154,20 @@ export const action: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const formData = await request.formData()
+  const action = formData.get("action") as string
 
+  // Handle currency base update and delete actions
+  if (action === "update") {
+    const currencyId = formData.get("id") as string
+    return await updateCurrencyBase(currencyId, request)
+  }
+
+  if (action === "delete") {
+    const currencyId = formData.get("id") as string
+    return await deleteCurrency(currencyId, request)
+  }
+
+  // Handle currency creation (default action)
   const currencyCode = formData.get("currencyCode") as ICurrency["currencyCode"]
   const currencyName = formData.get("currencyName") as ICurrency["currencyName"]
   const countryName = formData.get("countryName") as ICurrency["countryName"]
