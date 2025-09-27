@@ -1,0 +1,147 @@
+/* Stripe Payment Component Styles */
+.paymentForm {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.cardIcon {
+    box-shadow:
+        0 8px 25px rgba(var(--mantine-color-teal-6-rgb), 0.3),
+        0 4px 10px rgba(var(--mantine-color-blue-6-rgb), 0.2);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.paymentTitle {
+    background: linear-gradient(135deg,
+            light-dark(var(--mantine-color-teal-7), var(--mantine-color-teal-4)) 0%,
+            light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-5)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+.amount {
+    font-size: 1.8rem;
+    color: light-dark(var(--mantine-color-teal-7), var(--mantine-color-teal-4));
+}
+
+.paymentElement {
+    background: light-dark(rgba(var(--mantine-color-gray-0-rgb), 0.8),
+            rgba(var(--mantine-color-dark-6-rgb), 0.8));
+    border: 1px solid light-dark(rgba(var(--mantine-color-gray-3-rgb), 0.4),
+            rgba(var(--mantine-color-dark-4-rgb), 0.4));
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.paymentElement:hover {
+    border-color: light-dark(rgba(var(--mantine-color-teal-4-rgb), 0.5),
+            rgba(var(--mantine-color-teal-6-rgb), 0.5));
+    box-shadow:
+        0 4px 15px rgba(var(--mantine-color-teal-6-rgb), 0.1);
+}
+
+.securityNotice {
+    opacity: 0.8;
+    font-size: 0.85rem;
+}
+
+.payButton {
+    box-shadow:
+        0 8px 25px rgba(var(--mantine-color-teal-6-rgb), 0.3),
+        0 4px 10px rgba(var(--mantine-color-blue-6-rgb), 0.2);
+    border: none;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    animation: buttonGlow 3s ease-in-out infinite;
+}
+
+.payButton:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 35px rgba(var(--mantine-color-teal-6-rgb), 0.4),
+        0 6px 15px rgba(var(--mantine-color-blue-6-rgb), 0.3);
+}
+
+.payButton:disabled {
+    animation: none;
+    opacity: 0.7;
+    transform: none;
+}
+
+/* Animations */
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+@keyframes buttonGlow {
+
+    0%,
+    100% {
+        box-shadow:
+            0 8px 25px rgba(var(--mantine-color-teal-6-rgb), 0.3),
+            0 4px 10px rgba(var(--mantine-color-blue-6-rgb), 0.2);
+    }
+
+    50% {
+        box-shadow:
+            0 12px 35px rgba(var(--mantine-color-teal-6-rgb), 0.5),
+            0 6px 15px rgba(var(--mantine-color-blue-6-rgb), 0.4);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .paymentForm {
+        padding: 0 1rem;
+    }
+
+    .amount {
+        font-size: 1.5rem;
+    }
+
+    .paymentTitle {
+        font-size: 1.3rem;
+    }
+}
+
+/* Custom styling for Stripe elements */
+:global(.StripeElement) {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid light-dark(var(--mantine-color-gray-3),
+            var(--mantine-color-dark-4));
+    background: light-dark(var(--mantine-color-white),
+            var(--mantine-color-dark-7));
+    transition: all 0.3s ease;
+}
+
+:global(.StripeElement:focus) {
+    border-color: var(--mantine-color-teal-6);
+    box-shadow: 0 0 0 2px rgba(var(--mantine-color-teal-6-rgb), 0.2);
+}
+
+:global(.StripeElement--invalid) {
+    border-color: var(--mantine-color-red-6);
+}
+
+:global(.StripeElement--webkit-autofill) {
+    background-color: light-dark(#fefde5, #404040);
+}

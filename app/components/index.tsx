@@ -8,7 +8,9 @@ import Form from "./Form"
 import Logo from "./Logo"
 import Notification from "./Notification"
 import ProductImportModal from "./ProductImportModal"
+import StripePayment from "./StripePayment"
 import { ThemeToggle } from "./ThemeToggle"
+import TrialExpirationModal from "./TrialExpirationModal"
 
 // Table components
 export { TableActionsMenu } from "./TableActionsMenu"
@@ -22,5 +24,5 @@ export type { OptimizedImageProps } from "./OptimizedImage"
 // Skeleton components
 export * from "./Skeletons"
 
-export { ApprovalActionModal, AuthIconBadge, BackButton, CategoryImportModal, Currency, DemoRequestForm, Form, Logo, Notification, ProductImportModal, ThemeToggle }
+export { ApprovalActionModal, AuthIconBadge, BackButton, CategoryImportModal, Currency, DemoRequestForm, Form, Logo, Notification, ProductImportModal, StripePayment, ThemeToggle, TrialExpirationModal }
 

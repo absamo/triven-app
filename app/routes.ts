@@ -25,6 +25,10 @@ export default [
     // Better-auth wildcard route to handle all auth endpoints
     route("api/auth/*", "routes/api/auth/$.tsx"),
     route("api/demo-request", "routes/api/demo-request.tsx"),
+    route("api/config", "routes/api/api.config.ts"),
+    route("api/payment-intent", "routes/api/api.payment-intent.ts"),
+    route("api/subscription-create", "routes/api.subscription-create.ts"),
+    route("api/webhook", "routes/api.webhook.tsx"),
     route("api/check-user-status", "routes/api/check-user-status.ts"),
     route("api/update-online-status", "routes/api/update-online-status.ts"),
     route("api/team-online-status", "routes/api/team-online-status.ts"),

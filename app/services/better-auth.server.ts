@@ -36,7 +36,14 @@ export interface BetterAuthUser {
         id: string
         name: string
     } | null
-    subscriptions: any[]
+    subscriptions: {
+        id: string
+        planId: string
+        status: string
+        trialEnd: number
+        currentPeriodStart: number
+        currentPeriodEnd: number
+    } | null
     status: string
     isOnline: boolean
     lastOnlineAt: Date | null
@@ -132,7 +139,14 @@ export async function getBetterAuthUser(request: Request): Promise<BetterAuthUse
                     id: user?.site.id,
                     name: user?.site.name
                 } : null,
-                subscriptions: Array.isArray(user?.subscriptions) ? user?.subscriptions : [],
+                subscriptions: user?.subscriptions ? {
+                    id: user.subscriptions.id,
+                    planId: user.subscriptions.planId,
+                    status: user.subscriptions.status,
+                    trialEnd: user.subscriptions.trialEnd,
+                    currentPeriodStart: user.subscriptions.currentPeriodStart,
+                    currentPeriodEnd: user.subscriptions.currentPeriodEnd
+                } : null,
                 status: user?.status || 'INCOMPLETE_SETUP',
                 isOnline: user?.isOnline || false,
                 lastOnlineAt: user?.lastOnlineAt || null,
@@ -173,7 +187,14 @@ export async function getBetterAuthUser(request: Request): Promise<BetterAuthUse
                 id: user.site.id,
                 name: user.site.name
             } : null,
-            subscriptions: Array.isArray(user.subscriptions) ? user.subscriptions : [],
+            subscriptions: user.subscriptions ? {
+                id: user.subscriptions.id,
+                planId: user.subscriptions.planId,
+                status: user.subscriptions.status,
+                trialEnd: user.subscriptions.trialEnd,
+                currentPeriodStart: user.subscriptions.currentPeriodStart,
+                currentPeriodEnd: user.subscriptions.currentPeriodEnd
+            } : null,
             status: user.status,
             isOnline: user.isOnline,
             lastOnlineAt: user.lastOnlineAt
@@ -307,7 +328,14 @@ export async function getUserByEmail(email: string) {
             id: user.site.id,
             name: user.site.name
         } : null,
-        subscriptions: Array.isArray(user.subscriptions) ? user.subscriptions : [],
+        subscriptions: user.subscriptions ? {
+            id: user.subscriptions.id,
+            planId: user.subscriptions.planId,
+            status: user.subscriptions.status,
+            trialEnd: user.subscriptions.trialEnd,
+            currentPeriodStart: user.subscriptions.currentPeriodStart,
+            currentPeriodEnd: user.subscriptions.currentPeriodEnd
+        } : null,
         status: user.status,
         isOnline: user.isOnline,
         lastOnlineAt: user.lastOnlineAt

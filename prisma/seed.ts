@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker"
 import { PrismaClient } from "@prisma/client"
 
+import Stripe from "stripe"
 import {
   APPROVAL_ASSIGNEE_TYPES,
   APPROVAL_ENTITY_TYPES,
@@ -18,6 +19,11 @@ import {
 import { createEan13 } from "~/app/common/helpers/inventories"
 import { auth } from "~/app/lib/auth"
 import { PRICING_PLANS } from "~/app/modules/stripe/plans"
+
+// Initialize Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-07-30.basil',
+})
 
 // Set faker seed for consistent demo data
 faker.seed(123)
@@ -2705,13 +2711,133 @@ async function createUnitOfMeasures(companyId: string) {
   return unitOfMeasures
 }
 
-async function createSubscriptionPlans() {
-  console.log("💳 Creating subscription plans...")
+async function createStripeProducts() {
+  console.log("🏭 Creating Stripe products...")
+
+  const stripeProducts = []
+
+  for (const [planKey, planData] of Object.entries(PRICING_PLANS)) {
+    try {
+      // Check if product already exists in Stripe
+      let product
+      try {
+        product = await stripe.products.retrieve(planData.stripeProductId)
+        console.log(`   📦 Product already exists: ${planData.name} (${product.id})`)
+      } catch (error) {
+        // Product doesn't exist, create it
+        product = await stripe.products.create({
+          id: planData.stripeProductId,
+          name: planData.name,
+          description: planData.description,
+          type: 'service',
+        })
+        console.log(`   ✅ Created Stripe product: ${planData.name} (${product.id})`)
+      }
+
+      // Create prices for each interval and currency
+      const stripePrices = []
+      for (const [interval, currencyPrices] of Object.entries(planData.prices)) {
+        for (const [currency, amount] of Object.entries(currencyPrices)) {
+          const priceId = planData.stripePriceIds[interval as keyof typeof planData.stripePriceIds][currency as keyof typeof currencyPrices]
+
+          try {
+            // Check if price already exists
+            const existingPrice = await stripe.prices.retrieve(priceId)
+            console.log(`   💰 Price already exists: ${planData.name} ${interval} ${currency} (${existingPrice.id})`)
+            stripePrices.push(existingPrice)
+          } catch (error) {
+            // Price doesn't exist, create it
+            const price = await stripe.prices.create({
+              product: product.id,
+              unit_amount: amount,
+              currency: currency.toLowerCase(),
+              recurring: {
+                interval: interval as 'month' | 'year',
+              },
+            })
+            console.log(`   ✅ Created Stripe price: ${planData.name} ${interval} ${currency} $${amount / 100} (${price.id})`)
+            stripePrices.push(price)
+
+            // Note: We'll use the generated Stripe price ID, not the predefined one
+            console.log(`   ℹ️  Price ID generated: ${price.id} (instead of predefined ${priceId})`)
+          }
+        }
+      }
+
+      stripeProducts.push({ product, prices: stripePrices })
+    } catch (error) {
+      console.error(`❌ Failed to create Stripe product ${planData.name}:`, error)
+    }
+  }
+
+  console.log(`✅ Created/verified ${stripeProducts.length} Stripe products with prices`)
+  return stripeProducts
+}
+
+async function createStripeCustomers(users: any[]) {
+  console.log("👥 Creating Stripe customer for admin user only...")
+
+  const stripeCustomers = []
+
+  // Find only the admin user
+  const adminUser = users.find(u => u.email === "admin@flowtech.com")
+  if (!adminUser) {
+    console.log("⚠️  Admin user not found, skipping Stripe customer creation")
+    return []
+  }
+
+  try {
+    // Check if admin user already has a Stripe customer ID
+    if (adminUser.stripeCustomerId) {
+      try {
+        const customer = await stripe.customers.retrieve(adminUser.stripeCustomerId)
+        console.log(`   👤 Admin customer already exists: ${adminUser.email} (${customer.id})`)
+        stripeCustomers.push(customer)
+        return stripeCustomers
+      } catch (error) {
+        console.log(`   ⚠️  Stripe customer ${adminUser.stripeCustomerId} not found for ${adminUser.email}, creating new one`)
+      }
+    }
+
+    // Create new Stripe customer for admin only
+    const customer = await stripe.customers.create({
+      email: adminUser.email,
+      name: adminUser.profile ? `${adminUser.profile.firstName} ${adminUser.profile.lastName}` : undefined,
+      metadata: {
+        userId: adminUser.id,
+      },
+    })
+
+    // Update admin user with Stripe customer ID
+    await prisma.user.update({
+      where: { id: adminUser.id },
+      data: { stripeCustomerId: customer.id }
+    })
+
+    console.log(`   ✅ Created Stripe customer for admin: ${adminUser.email} (${customer.id})`)
+    stripeCustomers.push(customer)
+  } catch (error) {
+    console.error(`❌ Failed to create Stripe customer for admin ${adminUser.email}:`, error)
+  }
+
+  console.log(`✅ Created/verified ${stripeCustomers.length} Stripe customer (admin only)`)
+  return stripeCustomers
+}
+
+async function createSubscriptionPlans(stripeProducts: any[]) {
+  console.log("💳 Creating subscription plans in database...")
 
   const plans = []
 
   for (const [planKey, planData] of Object.entries(PRICING_PLANS)) {
-    // Create the plan
+    // Find the corresponding Stripe product
+    const stripeProduct = stripeProducts.find(sp => sp.product.id === planData.stripeProductId)
+    if (!stripeProduct) {
+      console.log(`⚠️  Stripe product not found for ${planData.name}, skipping`)
+      continue
+    }
+
+    // Create the plan in database
     const plan = await prisma.plan.create({
       data: {
         id: planData.id,
@@ -2720,28 +2846,26 @@ async function createSubscriptionPlans() {
       },
     })
 
-    // Create prices for each interval and currency
+    // Create prices in database using actual Stripe price IDs
     const prices = []
-    for (const [interval, currencyPrices] of Object.entries(planData.prices)) {
-      for (const [currency, amount] of Object.entries(currencyPrices)) {
-        const price = await prisma.price.create({
-          data: {
-            id: planData.stripePriceIds[interval as keyof typeof planData.stripePriceIds][currency as keyof typeof currencyPrices],
-            planId: plan.id,
-            amount: amount,
-            currency: currency,
-            interval: interval,
-          },
-        })
-        prices.push(price)
-      }
+    for (const stripePrice of stripeProduct.prices) {
+      const price = await prisma.price.create({
+        data: {
+          id: stripePrice.id, // Use actual Stripe price ID
+          planId: plan.id,
+          amount: stripePrice.unit_amount,
+          currency: stripePrice.currency.toUpperCase(),
+          interval: stripePrice.recurring?.interval || 'month',
+        },
+      })
+      prices.push(price)
     }
 
     plans.push({ plan, prices })
     console.log(`   ✅ Created plan: ${planData.name} with ${prices.length} prices`)
   }
 
-  console.log(`✅ Created ${plans.length} subscription plans with trial support`)
+  console.log(`✅ Created ${plans.length} subscription plans in database`)
   return plans
 }
 
@@ -2811,19 +2935,25 @@ async function seed() {
     // 2. Create company structure
     const { company, currencies, locations } = await createCompanyStructure()
 
-    // 3. Create subscription plans (independent of company)
-    const subscriptionPlans = await createSubscriptionPlans()
+    // 3. Create Stripe products and prices
+    const stripeProducts = await createStripeProducts()
 
-    // 4. Create agencies and sites
+    // 4. Create subscription plans (dependent on Stripe products)
+    const subscriptionPlans = await createSubscriptionPlans(stripeProducts)
+
+    // 5. Create agencies and sites
     const { agencies, sites } = await createAgenciesAndSites(company, currencies, locations)
 
-    // 5. Create roles
+    // 6. Create roles
     const roles = await createRoles(company.id)
 
-    // 6. Create users manually since better-auth can't handle custom fields
+    // 7. Create users manually since better-auth can't handle custom fields
     const users = await createUsers(company, roles, agencies, sites)
 
-    // 7. Create demo subscription for admin user
+    // 8. Create Stripe customers for users
+    await createStripeCustomers(users)
+
+    // 9. Create demo subscription for admin user
     await createDemoSubscription(users, subscriptionPlans)
 
     // 8. Create categories

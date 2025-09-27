@@ -41,9 +41,9 @@ export async function loader({ request }: Route.LoaderArgs) {
   const notifications = ((await getNotifications(request, { read: false })) ||
     []) as unknown as INotification[]
 
-  const trialing = user.subscriptions?.[0]?.status === "trialing"
-  const trialPeriodDays = trialing
-    ? dayjs(user.subscriptions[0]?.trialEnd * 1000).diff(dayjs(), "days")
+  const trialing = user.subscriptions?.status === "trialing"
+  const trialPeriodDays = trialing && user.subscriptions?.trialEnd
+    ? dayjs(user.subscriptions.trialEnd * 1000).diff(dayjs(), "days")
     : undefined
 
   return {
@@ -56,8 +56,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         lastName: user.profile?.lastName || '',
         avatar: user.profile?.avatar,
       },
-      currentPlan: user.subscriptions?.[0]?.planId || "Standard",
-      planStatus: user.subscriptions?.[0]?.status || "trialing",
+      currentPlan: user.subscriptions?.planId || "Standard",
+      planStatus: user.subscriptions?.status || "trialing",
       trialPeriodDays: trialPeriodDays || 0,
     },
     notifications,

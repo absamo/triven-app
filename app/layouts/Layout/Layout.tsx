@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Alert,
   AppShell,
   Burger,
   Center,
@@ -9,14 +8,12 @@ import {
   LoadingOverlay,
   Overlay,
   ScrollArea,
-  Text,
   useMantineTheme
 } from "@mantine/core"
-import { useDisclosure, useMediaQuery } from "@mantine/hooks"
+import { useDisclosure } from "@mantine/hooks"
 import {
   IconChevronLeft,
-  IconChevronRight,
-  IconInfoCircle,
+  IconChevronRight
 } from "@tabler/icons-react"
 import clsx from "clsx"
 import dayjs from "dayjs"
@@ -25,6 +22,7 @@ import { Outlet, useNavigation } from "react-router"
 import type { INotification } from "~/app/common/validations/notificationSchema"
 import type { IProfile } from "~/app/common/validations/profileSchema"
 import type { IRole } from "~/app/common/validations/roleSchema"
+import { TrialExpirationModal } from "~/app/components"
 import ScrollToTop from "~/app/components/ScrollToTop"
 import { FormProvider, useFormContext } from "~/app/contexts/FormContext"
 import { useSessionBasedOnlineStatus } from "~/app/lib/hooks/useSessionBasedOnlineStatus"
@@ -110,11 +108,10 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     }
   }
 
-  // const theme = useMantineTheme()
   const theme = useMantineTheme()
-  const isSmallScreen = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
 
   const trialing = user.planStatus === "trialing"
+  const trialExpired = trialing && user.trialPeriodDays <= 0
 
   return (
     <>
@@ -216,33 +213,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
             </Center>
           ) : (
             <>
-              {trialing && (
-                <Alert
-                  variant="light"
-                  color={user.trialPeriodDays > 0 ? "orange" : "red"}
-                  icon={<IconInfoCircle />}
-                  mb={20}
-                >
-                  {user.trialPeriodDays > 0 ? (
-                    <Text size="sm">
-                      Your trial expires in{" "}
-                      <strong>{user.trialPeriodDays} days</strong>. To maintain
-                      access to all features, upgrade your plan to
-                      <Text tt="capitalize" size="sm" component="span">
-                        <strong> {user.currentPlan}</strong>
-                      </Text>
-                    </Text>
-                  ) : (
-                    <Text size="sm">
-                      Your trial has expired. To maintain access to all
-                      features, upgrade your plan to
-                      <Text tt="capitalize" size="sm" component="span">
-                        <strong> {user.currentPlan}</strong>
-                      </Text>
-                    </Text>
-                  )}
-                </Alert>
-              )}
               <Container
                 fluid
                 className={classes.container}
@@ -270,6 +240,12 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
       </div>
 
       {isOverlayOpened && <Overlay backgroundOpacity={0.2} fixed />}
+
+      {/* Trial Expiration Modal - blocks access when trial has expired */}
+      <TrialExpirationModal
+        opened={trialExpired}
+        currentPlan={user.currentPlan}
+      />
     </>
   )
 }

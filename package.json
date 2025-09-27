@@ -24,7 +24,8 @@
     "ollama:logs": "docker-compose logs -f ollama",
     "ollama:restart": "docker-compose restart ollama",
     "ollama:down": "docker-compose down ollama",
-    "ollama:build": "docker-compose build ollama"
+    "ollama:build": "docker-compose build ollama",
+    "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhook"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -43,6 +44,8 @@
     "@react-router/node": "^7.8.2",
     "@react-router/serve": "^7.8.2",
     "@remix-run/form-data-parser": "^0.10.1",
+    "@stripe/react-stripe-js": "^4.0.2",
+    "@stripe/stripe-js": "^7.9.0",
     "@tabler/icons-react": "^3.31.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/classnames": "^2.3.4",
