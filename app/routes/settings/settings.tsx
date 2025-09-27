@@ -127,7 +127,7 @@ export const loader: LoaderFunction = async ({
     defaultCurrencies,
     subscription: currentsubscription,
     invoices,
-    upcomingInvoice: {
+    upcomingInvoice: upcomingInvoice ? {
       amountDue: upcomingInvoice.amount_due,
       currency: upcomingInvoice.currency,
       periodStart: upcomingInvoice.period_start,
@@ -145,7 +145,7 @@ export const loader: LoaderFunction = async ({
         state: upcomingInvoice.customer_address?.state,
       },
       customerPhone: upcomingInvoice.customer_phone,
-    },
+    } : null,
     permissions,
   }
 }
@@ -189,7 +189,7 @@ export default function SettingsRoute({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { subscription, permissions, defaultCurrencies } = loaderData as unknown as {
+  const { subscription, permissions, defaultCurrencies, upcomingInvoice } = loaderData as unknown as {
     subscription: {
       currentPlan: string
       currentPeriodStart: number
@@ -202,6 +202,19 @@ export default function SettingsRoute({
       currency: string
       status: string
     }
+    upcomingInvoice: {
+      amountDue: number
+      currency: string
+      periodStart: number
+      periodEnd: number
+      billingReason: string
+      status: string
+      nextPayment_attempt: number
+      customerName: string
+      customerEmail: string
+      customerAddress: any
+      customerPhone: string
+    } | null
     permissions: string[]
     defaultCurrencies: ICurrency[]
   }
