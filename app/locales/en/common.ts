@@ -87,5 +87,6 @@ export default {
     noActiveSubscription: 'No Active Subscription',
     renews: 'Renews',
     nextInvoiceDue: 'Next invoice due on',
+    trialEndsOn: 'Trial ends on',
     noRenewalDate: 'No renewal date available',
 };

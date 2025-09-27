@@ -8,16 +8,6 @@ import {
 } from "@mantine/core"
 import {
   IconCreditCard,
-  // IconBuildingBank,
-  // IconRepeat,
-  // IconReceiptRefund,
-  // IconReceipt,
-  // IconReceiptTax,
-  // IconReport,
-  // IconCashBanknote,
-  // IconCoin,
-  // IconEdit,
-  // IconPencil,
   IconPremiumRights,
 } from "@tabler/icons-react"
 import dayjs from "dayjs"
@@ -105,9 +95,14 @@ export default function Settings({
           </Grid.Col>
           <Grid.Col span={10}>
             <Text fz="xs">
-              {billing?.trialEnd ? (
+              {billing?.currentPeriodEnd ? (
                 <>
                   {t('common:nextInvoiceDue', 'Next invoice due on')}{" "}
+                  {dayjs(billing.currentPeriodEnd * 1000).format("MMM DD, YYYY")}
+                </>
+              ) : billing?.trialEnd ? (
+                <>
+                  {t('common:trialEndsOn', 'Trial ends on')}{" "}
                   {dayjs(billing.trialEnd * 1000).format("MMM DD, YYYY")}
                 </>
               ) : (
