@@ -2,7 +2,6 @@ import {
   ActionIcon,
   Avatar,
   Badge,
-  Button,
   Divider,
   Flex,
   Group,
@@ -14,7 +13,7 @@ import {
 } from "@mantine/core"
 
 import { useMantineColorScheme } from "@mantine/core"
-import { IconBell, IconCheck, IconChevronDown, IconChevronUp, IconCrown, IconLogout, IconMoon, IconSparkles, IconSun, IconUserEdit } from "@tabler/icons-react"
+import { IconBell, IconCheck, IconChevronDown, IconChevronUp, IconLogout, IconMoon, IconSparkles, IconSun, IconUserEdit } from "@tabler/icons-react"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router"
@@ -24,7 +23,6 @@ import type { IRole } from "~/app/common/validations/roleSchema"
 import { Logo } from "~/app/components"
 import FrIcon from '~/app/components/SvgIcons/FrIcon'
 import UsIcon from '~/app/components/SvgIcons/UsIcon'
-import { useUpgrade } from "~/app/lib/hooks/useUpgrade"
 import Notification from "../Notification"
 import classes from "./Header.module.css"
 interface HeaderProps {
@@ -58,9 +56,6 @@ export default function Header({
   const [realTimeNotifications, setRealTimeNotifications] = useState<INotification[]>(notifications)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const eventSourceRef = useRef<EventSource | null>(null)
-
-  // Upgrade functionality
-  const { navigateToPricing, canUpgrade, shouldShowUpgrade, getNextPlan } = useUpgrade()
 
   // Real-time notification count
   const countNotifications = ((realTimeNotifications as INotification[]) || []).filter(
@@ -122,14 +117,7 @@ export default function Header({
     };
   }, []);
 
-
   const trialing = user.planStatus === "trialing"
-  const showUpgradeButton = shouldShowUpgrade(user.planStatus) && canUpgrade(user.currentPlan)
-  const nextPlan = getNextPlan(user.currentPlan)
-
-  const handleUpgradeClick = () => {
-    navigateToPricing()
-  }
 
   return (
     <div className={classes.header}>
@@ -153,32 +141,6 @@ export default function Header({
 
         {/* Right side content */}
         <Flex align="center" gap="md" h="100%">
-          {/* Upgrade Button - Show for eligible users */}
-          {showUpgradeButton && (
-            <Tooltip label={trialing ? t('navigation:upgradeNow') : t('navigation:upgradePlan')} position="bottom">
-              <Button
-                variant="light"
-                color="yellow"
-                size="sm"
-                leftSection={<IconCrown size={16} />}
-                onClick={handleUpgradeClick}
-                className={classes.upgradeButton}
-                styles={{
-                  root: {
-                    textTransform: 'capitalize',
-                  },
-                }}
-              >
-                {trialing
-                  ? t('navigation:upgrade')
-                  : nextPlan
-                    ? `${t('navigation:upgrade')} to ${nextPlan.charAt(0).toUpperCase() + nextPlan.slice(1)}`
-                    : t('navigation:upgrade')
-                }
-              </Button>
-            </Tooltip>
-          )}
-
           {/* AI Assistant and Notification Bell */}
           <Flex align="center" justify="center" gap="md">
             <Tooltip label="AI Assistant" position="bottom">

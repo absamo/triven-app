@@ -85,6 +85,8 @@ export default {
     upgrade: 'Upgrade',
     upgradePlan: 'Upgrade Plan',
     upgradeNow: 'Upgrade Now',
+    trialExpiresIn1Day: 'Your trial expires in 1 day',
+    trialExpiresInDays: 'Your trial expires in {{days}} days',
 
     // Breadcrumbs
     breadcrumbSeparator: '/',

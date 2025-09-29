@@ -12,6 +12,7 @@ import inventory from "./inventory";
 import invoices from "./invoices";
 import navigation from "./navigation";
 import notifications from "./notifications";
+import payment from "./payment";
 import paymentsReceived from "./paymentsReceived";
 import pricing from "./pricing";
 import purchaseOrders from "./purchaseOrders";
@@ -25,4 +26,4 @@ import workflowHistory from "./workflow-history";
 import workflowTemplates from "./workflow-templates";
 import workflows from "./workflows";
 
-export default { translation, dashboard, navigation, auth, common, inventory, teams, forms, notifications, assistant, pricing, backorders, salesOrders, invoices, paymentsReceived, suppliers, purchaseOrders, roles, agencies, sites, approvals, workflowHistory, workflowTemplates, workflows, home } satisfies Resource;
+export default { translation, dashboard, navigation, auth, common, inventory, teams, forms, notifications, payment, assistant, pricing, backorders, salesOrders, invoices, paymentsReceived, suppliers, purchaseOrders, roles, agencies, sites, approvals, workflowHistory, workflowTemplates, workflows, home } satisfies Resource;

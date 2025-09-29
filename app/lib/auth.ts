@@ -287,7 +287,7 @@ export const auth = betterAuth({
     },
     secret: process.env.BETTER_AUTH_SECRET || process.env.SESSION_SECRET!,
     baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-    trustedOrigins: ["http://localhost:5173", "http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
+    trustedOrigins: ["http://localhost:5173", "http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "http://localhost:3004"],
 })
 
 export type Session = typeof auth.$Infer.Session

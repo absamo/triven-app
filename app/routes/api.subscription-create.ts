@@ -96,26 +96,66 @@ export async function action({ request }: ActionFunctionArgs) {
             })
         }
 
-        // Step 1: Create the subscription in Stripe  
-        // Use 'default_incomplete' to create subscription with invoice that requires payment
-        const subscription = await stripe.subscriptions.create({
-            customer: stripeCustomerId,
-            items: [{
-                price: priceId,
-            }],
-            payment_behavior: 'default_incomplete',
-            payment_settings: {
-                save_default_payment_method: 'on_subscription',
-                payment_method_types: ['card'],
-            },
-            expand: ['latest_invoice.confirmation_secret'],
-            metadata: {
-                userId: user.id,
-                planId,
-                interval,
-                type: 'subscription_creation'
-            },
+        // Check if user has existing subscription for upgrade vs new subscription
+        const existingSubscription = await prisma.subscription.findUnique({
+            where: { userId: user.id },
         })
+
+        let subscription: any
+        let isUpgrade = false
+
+        if (existingSubscription && existingSubscription.status === 'active') {
+            // This is an upgrade - modify existing subscription with prorating
+            isUpgrade = true
+            console.log(`🔄 Upgrading existing subscription ${existingSubscription.id}`)
+
+            // Get existing Stripe subscription
+            const stripeSubscription = await stripe.subscriptions.retrieve(existingSubscription.id)
+            const subscriptionItemId = stripeSubscription.items.data[0].id
+
+            // Update subscription with prorating
+            subscription = await stripe.subscriptions.update(existingSubscription.id, {
+                items: [{
+                    id: subscriptionItemId,
+                    price: priceId,
+                }],
+                proration_behavior: 'create_prorations', // Enable prorating
+                payment_behavior: 'default_incomplete',
+                payment_settings: {
+                    save_default_payment_method: 'on_subscription',
+                    payment_method_types: ['card'],
+                },
+                expand: ['latest_invoice.confirmation_secret'],
+                metadata: {
+                    userId: user.id,
+                    planId,
+                    interval,
+                    type: 'subscription_upgrade'
+                },
+            })
+        } else {
+            // This is a new subscription
+            console.log(`🆕 Creating new subscription for user ${user.id}`)
+
+            subscription = await stripe.subscriptions.create({
+                customer: stripeCustomerId,
+                items: [{
+                    price: priceId,
+                }],
+                payment_behavior: 'default_incomplete',
+                payment_settings: {
+                    save_default_payment_method: 'on_subscription',
+                    payment_method_types: ['card'],
+                },
+                expand: ['latest_invoice.confirmation_secret'],
+                metadata: {
+                    userId: user.id,
+                    planId,
+                    interval,
+                    type: 'subscription_creation'
+                },
+            })
+        }
 
         const invoice = subscription.latest_invoice as any
         const clientSecret = invoice?.confirmation_secret?.client_secret
@@ -202,6 +242,7 @@ export async function action({ request }: ActionFunctionArgs) {
             amount,
             currency: dbPrice.currency.toUpperCase(),
             planName: plan.name,
+            isUpgrade,
         })
 
     } catch (error) {

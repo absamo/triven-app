@@ -20,6 +20,7 @@ import {
 import { loadStripe } from "@stripe/stripe-js"
 import { IconCreditCard, IconLock, IconShieldCheck } from "@tabler/icons-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import classes from "./StripePayment.module.css"
 
 // We'll pass the publishable key as a prop instead of accessing env directly
@@ -51,6 +52,7 @@ function PaymentForm({
     const stripe = useStripe()
     const elements = useElements()
     const { colorScheme } = useMantineColorScheme()
+    const { t } = useTranslation(['payment', 'common'])
     const [isLoading, setIsLoading] = useState(false)
 
     const handleSubmit = async (event: React.FormEvent) => {
@@ -74,17 +76,17 @@ function PaymentForm({
 
         if (error) {
             console.error('Payment error:', error)
-            onError(error.message || 'Payment failed')
+            onError(error.message || t('payment:paymentError'))
             notifications.show({
-                title: 'Payment Failed',
-                message: error.message || 'Something went wrong with your payment',
+                title: t('payment:paymentFailed'),
+                message: error.message || t('payment:paymentError'),
                 color: 'red',
             })
         } else {
             onSuccess()
             notifications.show({
-                title: 'Payment Successful!',
-                message: `Welcome to ${planName}! Your account has been upgraded.`,
+                title: t('payment:paymentSuccessful'),
+                message: t('payment:welcomeMessage', { planName }),
                 color: 'green',
             })
         }
@@ -115,11 +117,11 @@ function PaymentForm({
                     </Center>
 
                     <Title order={3} ta="center" mb="md" className={classes.paymentTitle}>
-                        Complete Your Upgrade
+                        {t('payment:upgrade')}
                     </Title>
 
                     <Text ta="center" c="dimmed" size="sm">
-                        Upgrade to <Text span fw={500} tt="capitalize">{planName}</Text>
+                        {t('payment:upgradeTo', { planName })}
                     </Text>
                 </div>
 
@@ -147,7 +149,7 @@ function PaymentForm({
                         <IconShieldCheck size={14} />
                     </ThemeIcon>
                     <Text size="xs" c="dimmed">
-                        Your payment information is secure and encrypted
+                        {t('payment:securePayment')}
                     </Text>
                 </Group>
 
@@ -163,12 +165,12 @@ function PaymentForm({
                     className={classes.payButton}
                     leftSection={isLoading ? <Loader size="sm" /> : <IconLock size={20} />}
                 >
-                    {isLoading ? 'Processing...' : `Pay ${formatAmount(amount, currency)}`}
+                    {isLoading ? t('payment:processing') : t('payment:pay', { amount: formatAmount(amount, currency) })}
                 </Button>
 
                 {/* Additional Info */}
                 <Text ta="center" size="xs" c="dimmed">
-                    You can cancel your subscription at any time from your account settings
+                    {t('payment:cancelAnytime')}
                 </Text>
             </Stack>
         </form>
@@ -185,6 +187,7 @@ export default function StripePayment({
     onError
 }: StripePaymentProps) {
     const { colorScheme } = useMantineColorScheme()
+    const { t } = useTranslation('payment')
     const stripePromise = getStripePromise(publishableKey)
 
     const appearance = {
@@ -229,7 +232,7 @@ export default function StripePayment({
             <Center p="xl">
                 <Stack gap="md" align="center">
                     <Loader size="lg" />
-                    <Text c="dimmed">Setting up payment...</Text>
+                    <Text c="dimmed">{t('setupPayment')}</Text>
                 </Stack>
             </Center>
         )

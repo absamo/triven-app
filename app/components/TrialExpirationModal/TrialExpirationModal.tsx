@@ -12,6 +12,7 @@ import {
 import { notifications } from "@mantine/notifications"
 import { IconCrown, IconLock } from "@tabler/icons-react"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useFetcher } from "react-router"
 import { CURRENCIES, INTERVALS, PLANS } from "~/app/modules/stripe/plans"
 import StripePayment from "../StripePayment"
@@ -38,6 +39,7 @@ export default function TrialExpirationModal({
     currentPlan
 }: TrialExpirationModalProps) {
     const { colorScheme } = useMantineColorScheme()
+    const { t } = useTranslation(['payment', 'common'])
     const configFetcher = useFetcher<ConfigData>()
     const paymentFetcher = useFetcher<PaymentData>()
     const [showPayment, setShowPayment] = useState(false)
@@ -71,20 +73,20 @@ export default function TrialExpirationModal({
             if ('error' in paymentFetcher.data) {
                 // Handle error
                 const error = (paymentFetcher.data as any).error
-                let errorMessage = 'Unable to setup payment. Please try again.'
+                let errorMessage: string = t('payment:unableToSetupPayment')
 
                 if (typeof error === 'string') {
                     if (error.includes('Authentication required')) {
-                        errorMessage = 'Authentication required. Please refresh the page and try again.'
+                        errorMessage = t('payment:authenticationRequired')
                     } else if (error.includes('Invalid plan configuration')) {
-                        errorMessage = 'Invalid payment configuration. Please contact support.'
+                        errorMessage = t('payment:invalidPaymentConfig')
                     } else if (error.includes('User not found')) {
-                        errorMessage = 'User session expired. Please refresh the page and try again.'
+                        errorMessage = t('payment:userSessionExpired')
                     }
                 }
 
                 notifications.show({
-                    title: 'Setup Failed',
+                    title: t('payment:setupFailed'),
                     message: errorMessage,
                     color: 'red',
                 })
@@ -108,7 +110,7 @@ export default function TrialExpirationModal({
 
     const handlePaymentError = (error: string) => {
         notifications.show({
-            title: 'Payment Failed',
+            title: t('payment:paymentFailed'),
             message: error,
             color: 'red',
         })
@@ -164,18 +166,17 @@ export default function TrialExpirationModal({
 
                         {/* Title */}
                         <Title order={2} ta="center" mb="md" className={classes.title}>
-                            Trial Period Expired
+                            {t('payment:trialPeriodExpired')}
                         </Title>
 
                         {/* Main Message */}
                         <Text ta="center" size="lg" mb="xl" className={classes.message}>
-                            You cannot access Triven please upgrade
+                            {t('payment:cannotAccessTriven')}
                         </Text>
 
                         {/* Description */}
                         <Text ta="center" c="dimmed" mb="xl" size="sm">
-                            Your free trial has ended. Upgrade to continue enjoying all the powerful
-                            inventory management features that make your business more efficient.
+                            {t('payment:trialEndedMessage')}
                         </Text>
 
                         {/* Action Buttons */}
@@ -191,11 +192,11 @@ export default function TrialExpirationModal({
                                 loading={isLoadingPayment}
                                 disabled={isLoadingPayment}
                             >
-                                {isLoadingPayment ? 'Setting up payment...' : `Upgrade to ${currentPlan}`}
+                                {isLoadingPayment ? t('payment:setupPayment') : t('payment:upgradeTo', { planName: currentPlan })}
                             </Button>
 
                             <Text ta="center" size="xs" c="dimmed">
-                                Choose from flexible pricing plans that fit your business needs
+                                {t('payment:flexiblePricing')}
                             </Text>
                         </Stack>
                     </>
@@ -216,7 +217,7 @@ export default function TrialExpirationModal({
                             <Center p="xl">
                                 <Stack gap="md" align="center">
                                     <Loader size="lg" />
-                                    <Text c="dimmed">Loading payment form...</Text>
+                                    <Text c="dimmed">{t('payment:loadingPaymentForm')}</Text>
                                 </Stack>
                             </Center>
                         )}

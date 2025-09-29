@@ -72,22 +72,34 @@ export function useUpgrade(options: UseUpgradeOptions = {}) {
         navigate("/pricing")
     }
 
-    const getNextPlan = (currentPlan: string): Plan | null => {
+    const getNextPlan = (currentPlan: string, planStatus?: string): Plan | null => {
+        // If user is on trial, they should upgrade to the same plan but paid
+        if (planStatus === "trialing") {
+            return currentPlan.toLowerCase() as Plan
+        }
+
+        // For active paid plans, upgrade to the next tier
         switch (currentPlan.toLowerCase()) {
             case PLANS.STANDARD:
                 return PLANS.PROFESSIONAL
             case PLANS.PROFESSIONAL:
                 return PLANS.PREMIUM
             case PLANS.PREMIUM:
-            case "free":
             default:
-                return PLANS.STANDARD
+                return null // Premium users can't upgrade further
         }
     }
 
-    const canUpgrade = (currentPlan: string): boolean => {
+    const canUpgrade = (currentPlan: string, planStatus?: string): boolean => {
         const plan = currentPlan.toLowerCase()
-        return plan === "free" || plan === PLANS.STANDARD || plan === PLANS.PROFESSIONAL
+
+        // Trial users can always upgrade to paid version
+        if (planStatus === "trialing") {
+            return true
+        }
+
+        // Paid users can upgrade to next tier
+        return plan === PLANS.STANDARD || plan === PLANS.PROFESSIONAL
     }
 
     const shouldShowUpgrade = (planStatus: string): boolean => {

@@ -1,4 +1,5 @@
 import { PAYMENT_METHODS, PAYMENT_STATUSES } from "~/app/common/constants"
+import { PLANS, type Plan } from "~/app/modules/stripe/plans"
 
 export function getPaymentMethodLabel(paymentMethod: string, t?: (key: string, fallback?: string) => string) {
   switch (paymentMethod) {
@@ -59,4 +60,40 @@ export function getPaymentStatusLabel(status: string | undefined, t?: (key: stri
     default:
       return { label: t ? t('common:unknown', 'Unknown') : "Unknown", color: "gray" }
   }
+}
+
+// Subscription helper functions
+export function getNextPlan(currentPlan: string, planStatus?: string): Plan | null {
+  // If user is on trial, they should upgrade to the same plan but paid
+  if (planStatus === "trialing") {
+    return currentPlan.toLowerCase() as Plan
+  }
+
+  // For active paid plans, upgrade to the next tier
+  switch (currentPlan.toLowerCase()) {
+    case PLANS.STANDARD:
+      return PLANS.PROFESSIONAL
+    case PLANS.PROFESSIONAL:
+      return PLANS.PREMIUM
+    case PLANS.PREMIUM:
+    default:
+      return null // Premium users can't upgrade further
+  }
+}
+
+export function canUpgrade(currentPlan: string, planStatus?: string): boolean {
+  const plan = currentPlan.toLowerCase()
+
+  // Trial users can always upgrade to paid version
+  if (planStatus === "trialing") {
+    return true
+  }
+
+  // Paid users can upgrade to next tier
+  return plan === PLANS.STANDARD || plan === PLANS.PROFESSIONAL
+}
+
+export function shouldShowUpgrade(planStatus: string): boolean {
+  // Show upgrade for trialing users or users on lower plans
+  return planStatus === "trialing" || planStatus === "active"
 }

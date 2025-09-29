@@ -85,6 +85,8 @@ export default {
     upgrade: 'Mettre à niveau',
     upgradePlan: 'Mettre à niveau le plan',
     upgradeNow: 'Mettre à niveau maintenant',
+    trialExpiresIn1Day: 'Votre essai expire dans 1 jour',
+    trialExpiresInDays: 'Votre essai expire dans {{days}} jours',
 
     // Breadcrumbs
     breadcrumbSeparator: '/',

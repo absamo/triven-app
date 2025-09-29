@@ -147,6 +147,9 @@ export const loader: LoaderFunction = async ({
       customerPhone: upcomingInvoice.customer_phone,
     } : null,
     permissions,
+    config: {
+      stripePublicKey: process.env.STRIPE_PUBLIC_KEY || '',
+    },
   }
 }
 
@@ -155,6 +158,37 @@ export const action: ActionFunction = async ({
 }: ActionFunctionArgs) => {
   const formData = await request.formData()
   const action = formData.get("action") as string
+
+  // Handle upgrade subscription action
+  if (action === "upgrade") {
+    const planId = formData.get("planId") as string
+    const interval = formData.get("interval") as string
+    const currency = formData.get("currency") as string
+
+    // Forward to the subscription-create API
+    const subscriptionResponse = await fetch(`${new URL(request.url).origin}/api/subscription-create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': request.headers.get('Cookie') || '',
+      },
+      body: JSON.stringify({
+        planId,
+        interval,
+        currency,
+      }),
+    })
+
+    const subscriptionData = await subscriptionResponse.json()
+
+    if (!subscriptionResponse.ok) {
+      return {
+        error: subscriptionData.error || 'Failed to create subscription'
+      }
+    }
+
+    return subscriptionData
+  }
 
   // Handle currency base update and delete actions
   if (action === "update") {
@@ -189,7 +223,7 @@ export default function SettingsRoute({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { subscription, permissions, defaultCurrencies, upcomingInvoice } = loaderData as unknown as {
+  const { subscription, permissions, defaultCurrencies, upcomingInvoice, config } = loaderData as unknown as {
     subscription: {
       currentPlan: string
       currentPeriodStart: number
@@ -217,6 +251,9 @@ export default function SettingsRoute({
     } | null
     permissions: string[]
     defaultCurrencies: ICurrency[]
+    config: {
+      stripePublicKey: string
+    }
   }
 
   return (
@@ -235,6 +272,7 @@ export default function SettingsRoute({
         currency: subscription?.currency,
       }}
       permissions={permissions}
+      config={config}
     />
   )
 }
