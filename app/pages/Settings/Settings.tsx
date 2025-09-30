@@ -1,10 +1,8 @@
 import {
   Badge,
   Button,
-  Center,
   Divider,
   Grid,
-  Loader,
   Modal,
   Stack,
   Tabs,
@@ -21,20 +19,12 @@ import {
 import dayjs from "dayjs"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useFetcher } from "react-router"
 import { canUpgrade, getNextPlan, shouldShowUpgrade } from "~/app/common/helpers/payment"
 import { type ICurrency } from "~/app/common/validations/currencySchema"
 import StripePayment from "~/app/components/StripePayment"
-import { CURRENCIES, CURRENCY_SYMBOLS, INTERVALS } from "~/app/modules/stripe/plans"
+import { CURRENCY_SYMBOLS, INTERVALS, getPlanPrice } from "~/app/modules/stripe/plans"
 import CurrencySettings from "./CurrencySettings"
 import classes from "./Settings.module.css"
-
-interface PaymentData {
-  clientSecret: string
-  amount: number
-  currency: string
-  planName: string
-}
 
 interface SettingsProps {
   currencies: ICurrency[]
@@ -62,57 +52,41 @@ export default function Settings({
   permissions = [],
   config,
 }: SettingsProps) {
-  const { t } = useTranslation(['settings', 'common', 'payment']);
+  const { t } = useTranslation(['common', 'payment']);
   const { colorScheme } = useMantineColorScheme()
   const theme = useMantineTheme()
   const currencySymbol = CURRENCY_SYMBOLS[billing?.currency?.toUpperCase()]
-  const paymentFetcher = useFetcher<PaymentData>()
 
   // Modal and payment state
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showPayment, setShowPayment] = useState(false)
+  const [targetPlan, setTargetPlan] = useState<string | null>(null)
+  // No local payment intent data; StripePayment handles deferred creation
 
-  // Handle upgrade button click - just show modal without triggering payment setup
+  // Handle upgrade button click - open modal and wait for manual payment setup
   const handleUpgrade = () => {
-    const nextPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus)
-    if (!nextPlan) return
+    let nextPlanId: string | null = null
 
+    if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
+      nextPlanId = billing?.currentPlan || 'standard'
+    } else {
+      const upcomingPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus)
+      if (!upcomingPlan) return
+      nextPlanId = upcomingPlan
+    }
+
+    if (!nextPlanId) {
+      return
+    }
+
+    setTargetPlan(nextPlanId)
+    setShowPayment(true)
     setShowUpgradeModal(true)
   }
 
-  // Handle fetcher state changes
-  const handleFetcherStateChange = () => {
-    if (paymentFetcher.state === 'idle' && paymentFetcher.data) {
-      if ('error' in paymentFetcher.data) {
-        // Handle error
-        const error = (paymentFetcher.data as any).error
-        let errorMessage: string = t('payment:unableToSetupPayment')
+  // Payment form is shown immediately in the modal
 
-        if (typeof error === 'string') {
-          if (error.includes('Authentication required')) {
-            errorMessage = t('payment:authenticationRequired')
-          } else if (error.includes('Invalid plan configuration')) {
-            errorMessage = t('payment:invalidPaymentConfig')
-          } else if (error.includes('User not found')) {
-            errorMessage = t('payment:userSessionExpired')
-          }
-        }
-
-        notifications.show({
-          title: t('payment:setupFailed'),
-          message: errorMessage,
-          color: 'red',
-        })
-        setShowUpgradeModal(false)
-        setShowPayment(false)
-      }
-    }
-  }
-
-  // Call handler when fetcher state changes
-  if (paymentFetcher.state === 'idle' && paymentFetcher.data && showPayment && showUpgradeModal) {
-    handleFetcherStateChange()
-  }
+  // No useEffect – intent will be created by StripePayment on Pay
 
   // Payment handlers
   const handlePaymentSuccess = async () => {
@@ -125,7 +99,7 @@ export default function Settings({
 
   const handlePaymentError = (error: string) => {
     notifications.show({
-      title: t('payment:paymentFailed'),
+      title: t('paymentFailed', 'Payment Failed'),
       message: error,
       color: 'red',
     })
@@ -137,37 +111,51 @@ export default function Settings({
   const handleModalClose = () => {
     setShowUpgradeModal(false)
     setShowPayment(false)
-    // Reset any fetcher data if present to ensure clean state
+    setTargetPlan(null)
   }
 
   // Determine loading state
-  const isLoadingPayment = paymentFetcher.state !== 'idle'
+  const isLoadingPayment = false
+  const isTrialOrIncomplete = billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete'
+  const resolvedTargetPlan = isTrialOrIncomplete
+    ? targetPlan || billing?.currentPlan || 'standard'
+    : targetPlan || getNextPlan(billing?.currentPlan || '', billing?.planStatus) || ''
+  const displayTargetPlan = resolvedTargetPlan || 'standard'
+  const displayInterval = billing?.interval || INTERVALS.MONTHLY
+  const displayCurrency = (billing?.currency || 'USD').toUpperCase()
+  const displayAmount = (() => {
+    try {
+      return getPlanPrice(displayTargetPlan as any, displayInterval as any, displayCurrency as any)
+    } catch {
+      return 0
+    }
+  })()
 
   const settings = [
     {
       id: "billing",
       icon: () => <IconCreditCard color={theme.colors.violet[6]} size={17} />,
-      label: t('common:subscriptions', 'Subscriptions'),
-      description: t('common:manageSubscriptions', 'Manage your subscription and billing settings'),
+      label: t('subscriptions', 'Subscriptions'),
+      description: t('manageSubscriptions', 'Manage your subscription and billing settings'),
       content: () => (
         <Grid align="center" className={classes.row} p={10}>
           <Grid.Col span={2}>
             <Text fz="xs" opacity={0.6}>
-              {t('common:yourCurrentPlan', 'Your current plan')}
+              {t('yourCurrentPlan', 'Your current plan')}
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
             <Text fz="sm" tt={"capitalize"}>
-              {billing?.currentPlan || 'Standard'} {t('common:plan', 'plan')}
+              {billing?.currentPlan || 'standard'} {t('plan', 'plan')}
             </Text>
             <Text fz="xs" opacity={0.6}>
               {billing?.amount ? (
                 <>
                   {currencySymbol}
-                  {Number(billing.amount / 100).toFixed(2)} {t('common:billedEveryMonth', 'billed every month')}
+                  {Number(billing.amount / 100).toFixed(2)} {t('billedEveryMonth', 'billed every month')}
                 </>
               ) : (
-                t('common:noActiveBilling', 'No active billing')
+                t('noActiveBilling', 'No active billing')
               )}
             </Text>
           </Grid.Col>
@@ -176,12 +164,12 @@ export default function Settings({
           </Grid.Col>
           <Grid.Col span={2}>
             <Text fz="xs" opacity={0.6}>
-              {t('common:status', 'Status')}
+              {t('status', 'Status')}
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
             <Badge size="xs" variant="light" color={billing?.planStatus ? "green" : "gray"}>
-              {billing?.planStatus || t('common:noActiveSubscription', 'No Active Subscription')}
+              {billing?.planStatus || t('noActiveSubscription', 'No Active Subscription')}
             </Badge>
           </Grid.Col>
           <Grid.Col span={12}>
@@ -189,23 +177,23 @@ export default function Settings({
           </Grid.Col>
           <Grid.Col span={2}>
             <Text fz="xs" opacity={0.6}>
-              {t('common:renews', 'Renews')}
+              {t('renews', 'Renews')}
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
             <Text fz="xs">
               {billing?.trialEnd && billing?.planStatus === 'trialing' ? (
                 <>
-                  {t('common:trialEndsOn', 'Trial ends on')}{" "}
+                  {t('trialEndsOn', 'Trial ends on')}{" "}
                   {dayjs(billing.trialEnd * 1000).format("MMM DD, YYYY")}
                 </>
               ) : billing?.currentPeriodEnd ? (
                 <>
-                  {t('common:nextInvoiceDue', 'Next invoice due on')}{" "}
+                  {t('nextInvoiceDue', 'Next invoice due on')}{" "}
                   {dayjs(billing.currentPeriodEnd * 1000).format("MMM DD, YYYY")}
                 </>
               ) : (
-                t('common:noRenewalDate', 'No renewal date available')
+                t('noRenewalDate', 'No renewal date available')
               )}
             </Text>
           </Grid.Col>
@@ -216,7 +204,7 @@ export default function Settings({
               </Grid.Col>
               <Grid.Col span={2}>
                 <Text fz="xs" opacity={0.6}>
-                  {t('common:upgrade', 'Upgrade')}
+                  {t('upgrade', 'Upgrade')}
                 </Text>
               </Grid.Col>
               <Grid.Col span={10}>
@@ -228,12 +216,16 @@ export default function Settings({
                   loading={isLoadingPayment}
                   onClick={handleUpgrade}
                 >
-                  {getNextPlan(billing?.currentPlan || '', billing?.planStatus)
-                    ? billing?.planStatus === 'trialing'
-                      ? `Subscribe to ${getNextPlan(billing?.currentPlan || '', billing?.planStatus)}`
-                      : `${t('common:upgradeTo', 'Upgrade to')} ${getNextPlan(billing?.currentPlan || '', billing?.planStatus)}`
-                    : t('common:viewPlans', 'View Plans')
-                  }
+                  {(() => {
+                    if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
+                      return `Subscribe to ${billing?.currentPlan || 'standard'}`
+                    } else {
+                      const nextPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus)
+                      return nextPlan
+                        ? `${t('upgradeTo', 'Upgrade to')} ${nextPlan}`
+                        : t('viewPlans', 'View Plans')
+                    }
+                  })()}
                 </Button>
               </Grid.Col>
             </>
@@ -246,15 +238,15 @@ export default function Settings({
       icon: () => (
         <IconPremiumRights color={theme.colors.violet[6]} size={17} />
       ),
-      label: t('settings:currencies', 'Currencies'),
-      description: t('settings:manageCurrencies', 'Manage your currencies'),
+      label: t('currency', 'Currencies'),
+      description: t('manageCurrencies', 'Manage your currencies'),
       content: () => <CurrencySettings currencies={currencies} />,
     },
   ]
 
   return (
     <>
-      <Text className={classes.title}>{t('settings:title', 'Settings')}</Text>
+      <Text className={classes.title}>{t('title', 'Settings')}</Text>
       <Tabs defaultValue="billing" variant="outline" radius="md">
         <Tabs.List>
           {settings.map(({ id, label, icon: Icon }) => (
@@ -276,8 +268,10 @@ export default function Settings({
         opened={showUpgradeModal}
         onClose={handleModalClose}
         centered
-        size={showPayment ? "lg" : "md"}
-        title={showPayment ? t('payment:upgradeToTitle', { planName: getNextPlan(billing?.currentPlan || '', billing?.planStatus) }) : t('common:upgrade')}
+        size="lg"
+        title={isTrialOrIncomplete
+          ? `Subscribe to ${displayTargetPlan}`
+          : `${t('upgrade', 'Upgrade')} to ${displayTargetPlan}`}
         overlayProps={{
           backgroundOpacity: 0.55,
           blur: 8,
@@ -295,110 +289,54 @@ export default function Settings({
           },
         }}
       >
-        {!showPayment ? (
-          paymentFetcher.state !== 'idle' ? (
-            // Loading payment setup
-            <Center p="xl">
-              <Stack gap="md" align="center">
-                <Loader size="lg" />
-                <Text c="dimmed">{t('payment:setupPayment')}</Text>
-              </Stack>
-            </Center>
-          ) : (
-            // Confirmation screen - show before payment setup
-            <Stack gap="lg" p="md">
-              <Stack gap="sm" p="md" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)', borderRadius: '8px' }}>
-                <Text size="lg" fw={500} tt="capitalize">
-                  {billing?.planStatus === 'trialing'
-                    ? t('payment:subscribeTo', { planName: getNextPlan(billing?.currentPlan || '', billing?.planStatus) })
-                    : t('payment:upgradeTo', { planName: getNextPlan(billing?.currentPlan || '', billing?.planStatus) })
-                  }
-                </Text>
-                <Text c="dimmed" size="sm">
-                  {billing?.planStatus === 'trialing'
-                    ? t('payment:trialEndsBilling')
-                    : t('payment:proratedDifference')
-                  }
-                </Text>
-              </Stack>
-
-              <Stack gap="sm">
-                <Button
-                  size="md"
-                  color="violet"
-                  onClick={() => {
-                    setShowPayment(true)
-
-                    const nextPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus)
-                    if (!nextPlan) return
-
-                    const formData = new FormData()
-                    formData.append('action', 'upgrade')
-                    formData.append('planId', nextPlan)
-                    formData.append('interval', INTERVALS.MONTHLY)
-                    formData.append('currency', CURRENCIES.USD)
-
-                    paymentFetcher.submit(formData, {
-                      method: 'POST',
-                    })
-                  }}
-                >
-                  {billing?.planStatus === 'trialing'
-                    ? `Subscribe to ${getNextPlan(billing?.currentPlan || '', billing?.planStatus)}`
-                    : `${t('common:upgradeTo', 'Upgrade to')} ${getNextPlan(billing?.currentPlan || '', billing?.planStatus)}`
-                  }
-                </Button>
-                <Button
-                  size="md"
-                  variant="light"
-                  color="gray"
-                  onClick={handleModalClose}
-                >
-                  {t('common:cancel', 'Cancel')}
-                </Button>
-              </Stack>
-            </Stack>
-          )
-        ) : (
-          // Stripe payment form with upgrade message
-          <Stack gap="lg">
-            {/* Upgrade Information */}
-            <Stack gap="sm" p="md" style={{ backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)', borderRadius: '8px' }}>
-              <Text size="lg" fw={500} tt="capitalize">
-                {billing?.planStatus === 'trialing'
-                  ? t('payment:subscribeTo', { planName: getNextPlan(billing?.currentPlan || '', billing?.planStatus) })
-                  : t('payment:upgradeTo', { planName: getNextPlan(billing?.currentPlan || '', billing?.planStatus) })
-                }
-              </Text>
-              <Text c="dimmed" size="sm">
-                {billing?.planStatus === 'trialing'
-                  ? t('payment:trialEndsBilling')
-                  : t('payment:proratedDifference')
-                }
-              </Text>
-            </Stack>
-
-            {/* Payment Form */}
-            {paymentFetcher.data && config && !('error' in paymentFetcher.data) ? (
-              <StripePayment
-                clientSecret={paymentFetcher.data.clientSecret}
-                amount={paymentFetcher.data.amount}
-                currency={paymentFetcher.data.currency}
-                planName={paymentFetcher.data.planName}
-                publishableKey={config.stripePublicKey}
-                onSuccess={handlePaymentSuccess}
-                onError={handlePaymentError}
-              />
-            ) : (
-              <Center p="xl">
-                <Stack gap="md" align="center">
-                  <Loader size="lg" />
-                  <Text c="dimmed">{t('payment:loadingPaymentForm')}</Text>
-                </Stack>
-              </Center>
-            )}
+        <Stack gap="lg">
+          <Stack
+            gap="sm"
+            p="md"
+            style={{
+              backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)',
+              borderRadius: '8px',
+            }}
+          >
+            <Text size="lg" fw={500} tt="capitalize">
+              {isTrialOrIncomplete
+                ? `Subscribe to ${displayTargetPlan}`
+                : `${t('upgradeTo', 'Upgrade to')} ${displayTargetPlan}`}
+            </Text>
+            <Text size="sm" c="dimmed">
+              {t('currentPlanLabel', 'Current plan')}: {billing?.currentPlan || 'standard'}
+              {displayTargetPlan && displayTargetPlan !== (billing?.currentPlan || 'standard')
+                ? ` -> ${displayTargetPlan}`
+                : ''}
+            </Text>
+            <Text c="dimmed" size="sm">
+              {billing?.planStatus === 'trialing'
+                ? t('trialEndsBilling', 'Your trial will end and billing will start immediately.')
+                : billing?.planStatus === 'incomplete'
+                  ? t('completeSubscription', 'Complete your subscription to continue using all features.')
+                  : t('proratedDifference', "You'll be charged the prorated difference for the remainder of your billing cycle.")
+              }
+            </Text>
           </Stack>
-        )}
+
+          {config ? (
+            <StripePayment
+              amount={displayAmount}
+              currency={displayCurrency}
+              planName={displayTargetPlan}
+              publishableKey={config.stripePublicKey}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+              planId={displayTargetPlan}
+              interval={displayInterval}
+              createPaymentPath={'/api/subscription-create'}
+            />
+          ) : (
+            <Text c="red" size="sm" ta="center">
+              {t('missingPaymentConfiguration', 'Unable to load payment form. Please contact support.')}
+            </Text>
+          )}
+        </Stack>
       </Modal>
     </>
   )

@@ -110,7 +110,7 @@ export const loader: LoaderFunction = async ({
     }
 
     currentsubscription = {
-      currentPlan: subscription.planId || "Standard",
+      currentPlan: subscription.planId?.toLowerCase() || "standard",
       currentPeriodStart: subscription.currentPeriodStart,
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
@@ -190,6 +190,37 @@ export const action: ActionFunction = async ({
     return subscriptionData
   }
 
+  // Handle setup-payment action
+  if (action === "setup-payment") {
+    const planId = formData.get("planId") as string
+    const interval = formData.get("interval") as string
+    const currency = formData.get("currency") as string
+
+    // Forward to the subscription-create API
+    const subscriptionResponse = await fetch(`${new URL(request.url).origin}/api/subscription-create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': request.headers.get('Cookie') || '',
+      },
+      body: JSON.stringify({
+        planId,
+        interval,
+        currency,
+      }),
+    })
+
+    const subscriptionData = await subscriptionResponse.json()
+
+    if (!subscriptionResponse.ok) {
+      return {
+        error: subscriptionData.error || 'Failed to setup payment'
+      }
+    }
+
+    return subscriptionData
+  }
+
   // Handle currency base update and delete actions
   if (action === "update") {
     const currencyId = formData.get("id") as string
@@ -201,22 +232,29 @@ export const action: ActionFunction = async ({
     return await deleteCurrency(currencyId, request)
   }
 
-  // Handle currency creation (default action)
-  const currencyCode = formData.get("currencyCode") as ICurrency["currencyCode"]
-  const currencyName = formData.get("currencyName") as ICurrency["currencyName"]
-  const countryName = formData.get("countryName") as ICurrency["countryName"]
-  const isoCode = formData.get("isoCode") as ICurrency["isoCode"]
-  const order = JSON.parse(
-    formData.get("order") as string
-  ) as ICurrency["order"]
+  // Handle currency creation (default action) - only if we have currency data
+  if (action === "create" || (!action && formData.get("currencyCode"))) {
+    const currencyCode = formData.get("currencyCode") as ICurrency["currencyCode"]
+    const currencyName = formData.get("currencyName") as ICurrency["currencyName"]
+    const countryName = formData.get("countryName") as ICurrency["countryName"]
+    const isoCode = formData.get("isoCode") as ICurrency["isoCode"]
+    const order = JSON.parse(
+      formData.get("order") as string
+    ) as ICurrency["order"]
 
-  return await createCurrency(request, {
-    currencyCode,
-    currencyName,
-    countryName,
-    isoCode,
-    order,
-  })
+    return await createCurrency(request, {
+      currencyCode,
+      currencyName,
+      countryName,
+      isoCode,
+      order,
+    })
+  }
+
+  // If no valid action is found, return an error
+  return {
+    error: "Invalid action"
+  }
 }
 
 export default function SettingsRoute({

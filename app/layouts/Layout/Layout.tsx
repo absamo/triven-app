@@ -121,6 +121,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
   const trialing = user.planStatus === "trialing"
   const trialExpired = trialing && user.trialPeriodDays <= 0
+  const incompleteSubscription = user.planStatus === "incomplete"
   const hasActiveTrialBanner = trialing && user.trialPeriodDays > 0
   const showUpgradeCta = shouldShowUpgrade(user.planStatus) && canUpgrade(user.currentPlan, user.planStatus)
 
@@ -292,6 +293,14 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
       <TrialExpirationModal
         opened={trialExpired}
         currentPlan={user.currentPlan}
+        mode="trial-expired"
+      />
+
+      {/* Incomplete Subscription Modal - blocks access when subscription is incomplete */}
+      <TrialExpirationModal
+        opened={incompleteSubscription}
+        currentPlan={user.currentPlan}
+        mode="incomplete-subscription"
       />
     </>
   )

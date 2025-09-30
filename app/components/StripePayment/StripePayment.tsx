@@ -27,13 +27,19 @@ import classes from "./StripePayment.module.css"
 const getStripePromise = (publishableKey: string) => loadStripe(publishableKey)
 
 interface StripePaymentProps {
-    clientSecret: string
+    // When present, render in attached-intent mode
+    clientSecret?: string
+    // Always required for display and for deferred mode
     amount: number
     currency: string
     planName: string
     publishableKey: string
     onSuccess: () => void
     onError: (error: string) => void
+    // Deferred-mode fields (optional). If clientSecret is not provided, we will create it on submit.
+    planId?: string
+    interval?: string // 'month' | 'year'
+    createPaymentPath?: string // endpoint to post to; defaults to '/api/subscription-create'
 }
 
 function PaymentForm({
@@ -41,17 +47,24 @@ function PaymentForm({
     currency,
     planName,
     onSuccess,
-    onError
+    onError,
+    clientSecret,
+    planId,
+    interval,
+    createPaymentPath,
 }: {
     amount: number
     currency: string
     planName: string
     onSuccess: () => void
     onError: (error: string) => void
+    clientSecret?: string
+    planId?: string
+    interval?: string
+    createPaymentPath?: string
 }) {
     const stripe = useStripe()
     const elements = useElements()
-    const { colorScheme } = useMantineColorScheme()
     const { t } = useTranslation(['payment', 'common'])
     const [isLoading, setIsLoading] = useState(false)
 
@@ -64,8 +77,59 @@ function PaymentForm({
 
         setIsLoading(true)
 
+        // First, validate the PaymentElement fields. Required for deferred flows
+        const { error: submitError } = await elements.submit()
+        if (submitError) {
+            console.error('Payment form validation error:', submitError)
+            const message = submitError.message || t('payment:paymentError')
+            onError(message)
+            notifications.show({
+                title: t('payment:paymentFailed'),
+                message,
+                color: 'red',
+            })
+            setIsLoading(false)
+            return
+        }
+
+        let secret = clientSecret
+
+        // Deferred mode: create PaymentIntent only when user clicks Pay
+        if (!secret) {
+            try {
+                const endpoint = createPaymentPath || '/api/subscription-create'
+                // Prefer JSON to match API signature used elsewhere in the app
+                const payload = {
+                    planId,
+                    interval,
+                    currency,
+                }
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                })
+                const data = await res.json()
+                if (!res.ok || !data?.clientSecret) {
+                    throw new Error(data?.error || 'Failed to create payment')
+                }
+                secret = data.clientSecret as string
+            } catch (err: any) {
+                const message = err?.message || t('payment:paymentError')
+                onError(message)
+                notifications.show({
+                    title: t('payment:paymentFailed'),
+                    message,
+                    color: 'red',
+                })
+                setIsLoading(false)
+                return
+            }
+        }
+
         const { error } = await stripe.confirmPayment({
             elements,
+            clientSecret: secret,
             confirmParams: {
                 return_url: `${window.location.origin}/dashboard`,
             },
@@ -184,10 +248,12 @@ export default function StripePayment({
     planName,
     publishableKey,
     onSuccess,
-    onError
+    onError,
+    planId,
+    interval,
+    createPaymentPath = '/api/subscription-create',
 }: StripePaymentProps) {
     const { colorScheme } = useMantineColorScheme()
-    const { t } = useTranslation('payment')
     const stripePromise = getStripePromise(publishableKey)
 
     const appearance = {
@@ -222,21 +288,9 @@ export default function StripePayment({
         },
     }
 
-    const options = {
-        clientSecret,
-        appearance,
-    }
-
-    if (!clientSecret) {
-        return (
-            <Center p="xl">
-                <Stack gap="md" align="center">
-                    <Loader size="lg" />
-                    <Text c="dimmed">{t('setupPayment')}</Text>
-                </Stack>
-            </Center>
-        )
-    }
+    const options = clientSecret
+        ? { clientSecret, appearance }
+        : ({ mode: 'payment', amount, currency: currency.toLowerCase(), appearance } as any)
 
     return (
         <Elements stripe={stripePromise} options={options}>
@@ -246,6 +300,10 @@ export default function StripePayment({
                 planName={planName}
                 onSuccess={onSuccess}
                 onError={onError}
+                clientSecret={clientSecret}
+                planId={planId}
+                interval={interval}
+                createPaymentPath={createPaymentPath}
             />
         </Elements>
     )

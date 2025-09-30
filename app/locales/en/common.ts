@@ -78,8 +78,11 @@ export default {
     nothingFound: 'Nothing found',
 
     // Settings
+    title: 'Settings',
     subscriptions: 'Subscriptions',
     manageSubscriptions: 'Manage your subscription and billing settings',
+    manageCurrencies: 'Manage your currencies',
+    completeSubscription: 'Complete your subscription to continue using all features.',
     yourCurrentPlan: 'Your current plan',
     plan: 'plan',
     billedEveryMonth: 'billed every month',

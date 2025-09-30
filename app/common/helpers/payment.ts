@@ -64,8 +64,8 @@ export function getPaymentStatusLabel(status: string | undefined, t?: (key: stri
 
 // Subscription helper functions
 export function getNextPlan(currentPlan: string, planStatus?: string): Plan | null {
-  // If user is on trial, they should upgrade to the same plan but paid
-  if (planStatus === "trialing") {
+  // If user is on trial or has incomplete subscription, they should upgrade to the same plan but paid
+  if (planStatus === "trialing" || planStatus === "incomplete") {
     return currentPlan.toLowerCase() as Plan
   }
 
@@ -89,11 +89,16 @@ export function canUpgrade(currentPlan: string, planStatus?: string): boolean {
     return true
   }
 
+  // Incomplete users need to complete their subscription
+  if (planStatus === "incomplete") {
+    return true
+  }
+
   // Paid users can upgrade to next tier
   return plan === PLANS.STANDARD || plan === PLANS.PROFESSIONAL
 }
 
 export function shouldShowUpgrade(planStatus: string): boolean {
-  // Show upgrade for trialing users or users on lower plans
-  return planStatus === "trialing" || planStatus === "active"
+  // Show upgrade for trialing users, incomplete subscriptions, or users on lower plans
+  return planStatus === "trialing" || planStatus === "incomplete" || planStatus === "active"
 }

@@ -26,6 +26,9 @@ export default {
 
     // Trial modal specific
     trialPeriodExpired: 'Trial Period Expired',
+    subscriptionIncomplete: 'Subscription Incomplete',
+    completePaymentRequired: 'Payment required to activate your subscription',
+    incompleteSubscriptionMessage: 'Your subscription is pending payment completion. Complete your payment to continue using all features.',
     trialExpiring: 'Your trial is expiring',
     trialExpired: 'Your trial has expired',
     cannotAccessTriven: 'You cannot access Triven please upgrade',

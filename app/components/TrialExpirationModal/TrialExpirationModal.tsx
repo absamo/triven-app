@@ -21,6 +21,7 @@ import classes from "./TrialExpirationModal.module.css"
 interface TrialExpirationModalProps {
     opened: boolean
     currentPlan: string
+    mode?: 'trial-expired' | 'incomplete-subscription'
 }
 
 interface PaymentData {
@@ -36,7 +37,8 @@ interface ConfigData {
 
 export default function TrialExpirationModal({
     opened,
-    currentPlan
+    currentPlan,
+    mode = 'trial-expired'
 }: TrialExpirationModalProps) {
     const { colorScheme } = useMantineColorScheme()
     const { t } = useTranslation(['payment', 'common'])
@@ -166,17 +168,26 @@ export default function TrialExpirationModal({
 
                         {/* Title */}
                         <Title order={2} ta="center" mb="md" className={classes.title}>
-                            {t('payment:trialPeriodExpired')}
+                            {mode === 'incomplete-subscription'
+                                ? t('payment:subscriptionIncomplete', 'Subscription Incomplete')
+                                : t('payment:trialPeriodExpired')
+                            }
                         </Title>
 
                         {/* Main Message */}
                         <Text ta="center" size="lg" mb="xl" className={classes.message}>
-                            {t('payment:cannotAccessTriven')}
+                            {mode === 'incomplete-subscription'
+                                ? t('payment:completePaymentRequired', 'Payment required to activate your subscription')
+                                : t('payment:cannotAccessTriven')
+                            }
                         </Text>
 
                         {/* Description */}
                         <Text ta="center" c="dimmed" mb="xl" size="sm">
-                            {t('payment:trialEndedMessage')}
+                            {mode === 'incomplete-subscription'
+                                ? t('payment:incompleteSubscriptionMessage', 'Your subscription is pending payment completion. Complete your payment to continue using all features.')
+                                : t('payment:trialEndedMessage')
+                            }
                         </Text>
 
                         {/* Action Buttons */}
