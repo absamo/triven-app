@@ -1,2 +1,1 @@
-export { default } from "./RequestDemo";
-
+export { default } from './RequestDemo'

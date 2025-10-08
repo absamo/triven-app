@@ -6,19 +6,15 @@ import {
   Stack,
   Text,
   Tooltip,
-  UnstyledButton
-} from "@mantine/core";
-import { showNotification } from "@mantine/notifications";
-import {
-  IconEdit,
-  IconExclamationCircle,
-  IconUsers
-} from "@tabler/icons-react";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+  UnstyledButton,
+} from '@mantine/core'
+import { showNotification } from '@mantine/notifications'
+import { IconEdit, IconExclamationCircle, IconUsers } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 
-import type { IRole } from "~/app/common/validations/roleSchema";
-import { Title } from "~/app/partials/Title";
+import type { IRole } from '~/app/common/validations/roleSchema'
+import { Title } from '~/app/partials/Title'
 
 interface RoleProps {
   roles: IRole[]
@@ -26,9 +22,9 @@ interface RoleProps {
 }
 
 export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
-  const { t } = useTranslation(['roles', 'common']);
-  const canCreate = permissions.includes("create:roles")
-  const canUpdate = permissions.includes("update:roles")
+  const { t } = useTranslation(['roles', 'common'])
+  const canCreate = permissions.includes('create:roles')
+  const canUpdate = permissions.includes('update:roles')
 
   const navigate = useNavigate()
 
@@ -38,7 +34,7 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
         showNotification({
           message: t('roles:cannotEditDefaultRoles'),
           autoClose: 2000,
-          color: "red",
+          color: 'red',
           icon: <IconExclamationCircle size="1rem" />,
         })
       } else {
@@ -55,7 +51,7 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
         withBorder
         style={{
           cursor: editable && canUpdate ? 'pointer' : 'default',
-          opacity: !editable ? 0.8 : 1
+          opacity: !editable ? 0.8 : 1,
         }}
       >
         <Group justify="space-between" mb="xs">
@@ -65,16 +61,13 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
 
           {editable && canUpdate && (
             <Tooltip label={t('common:edit', 'Edit')}>
-              <ActionIcon
-                variant="light"
-                color="blue"
-                onClick={handleRoleClick}
-              >
+              <ActionIcon variant="light" color="blue" onClick={handleRoleClick}>
                 <IconEdit size={16} />
               </ActionIcon>
             </Tooltip>
           )}
-        </Group>        <Stack gap="xs">
+        </Group>{' '}
+        <Stack gap="xs">
           <Text size="sm" c="dimmed" lineClamp={2}>
             {description || t('roles:noDescription', 'No description provided')}
           </Text>
@@ -85,13 +78,11 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
               <Text size="xs" c="dimmed">
                 {!editable
                   ? t('roles:builtInRole', 'Built-in role')
-                  : t('roles:customRole', 'Custom role')
-                }
+                  : t('roles:customRole', 'Custom role')}
               </Text>
             </Group>
           </Group>
         </Stack>
-
         {!editable && (
           <UnstyledButton
             onClick={handleRoleClick}
@@ -101,7 +92,7 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
               left: 0,
               right: 0,
               bottom: 0,
-              cursor: 'not-allowed'
+              cursor: 'not-allowed',
             }}
           />
         )}
@@ -111,7 +102,7 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
 
   return (
     <>
-      <Title to={"/roles/create"} canCreate={canCreate}>
+      <Title to={'/roles/create'} canCreate={canCreate}>
         {t('roles:title')}
       </Title>
 
@@ -119,11 +110,7 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
         {t('roles:pageDescription', 'Manage user roles and permissions for your organization')}
       </Text>
 
-      <SimpleGrid
-        cols={{ base: 1, sm: 2, lg: 3 }}
-        spacing="md"
-        mt="md"
-      >
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md" mt="md">
         {roleCards}
       </SimpleGrid>
 

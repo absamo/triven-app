@@ -1,11 +1,11 @@
-import { z } from "zod"
+import { z } from 'zod'
 
-import { profileSchema } from "./profileSchema"
-import { companySchema } from "./companySchema"
+import { profileSchema } from './profileSchema'
+import { companySchema } from './companySchema'
 
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email").min(1, "Email is required"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email('Invalid email').min(1, 'Email is required'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 export const passwordSchema = z.object({
@@ -14,11 +14,9 @@ export const passwordSchema = z.object({
 
 export const signupSchema = z.object({
   id: z.string().optional(),
-  email: z.string().email("Invalid email").min(1, "Email is required"),
+  email: z.string().email('Invalid email').min(1, 'Email is required'),
   company: companySchema.pick({ name: true, location: true }).optional(),
-  profile: profileSchema
-    .pick({ firstName: true, lastName: true, phone: true })
-    .optional(),
+  profile: profileSchema.pick({ firstName: true, lastName: true, phone: true }).optional(),
   userPlan: z.string().optional(),
 })
 

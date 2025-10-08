@@ -1,8 +1,8 @@
-import { USER_ROLES } from "~/app/common/constants"
-import type { IAgency } from "~/app/common/validations/agencySchema"
-import { prisma } from "~/app/db.server"
-import { getBetterAuthUser } from "~/app/services/better-auth.server"
-import type { ISite } from "../common/validations/siteSchema"
+import { USER_ROLES } from '~/app/common/constants'
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import { prisma } from '~/app/db.server'
+import { getBetterAuthUser } from '~/app/services/better-auth.server'
+import type { ISite } from '../common/validations/siteSchema'
 
 export async function getAgencies(request: Request) {
   const user = await getBetterAuthUser(request)
@@ -26,7 +26,7 @@ export async function getAgencies(request: Request) {
   return agencies || []
 }
 
-export async function getAgency(agencyId: IAgency["id"]) {
+export async function getAgency(agencyId: IAgency['id']) {
   const agency = await prisma.agency.findUnique({
     where: { id: agencyId },
     include: {
@@ -55,7 +55,7 @@ export async function createAgency(request: Request, agency: IAgency) {
   if (foundAgency) {
     return {
       errors: {
-        name: "An agency already exists with this name",
+        name: 'An agency already exists with this name',
       },
     }
   }
@@ -69,8 +69,8 @@ export async function createAgency(request: Request, agency: IAgency) {
 
       location: {
         create: {
-          city: agency.location?.city || "",
-          country: agency.location?.country || "",
+          city: agency.location?.city || '',
+          country: agency.location?.country || '',
           address: agency.location?.address,
           postalCode: agency.location?.postalCode,
         },
@@ -83,9 +83,9 @@ export async function createAgency(request: Request, agency: IAgency) {
 
   return {
     notification: {
-      message: "Site created successfully",
-      status: "Success",
-      redirectTo: "/agencies",
+      message: 'Site created successfully',
+      status: 'Success',
+      redirectTo: '/agencies',
     },
   }
 }
@@ -108,7 +108,7 @@ export async function updateAgency(request: Request, agency: IAgency) {
   if (foundAgency) {
     return {
       errors: {
-        name: "An agency already exists with this name",
+        name: 'An agency already exists with this name',
       },
     }
   }
@@ -139,9 +139,9 @@ export async function updateAgency(request: Request, agency: IAgency) {
 
   return {
     notification: {
-      message: "Site updated successfully",
-      status: "Success",
-      redirectTo: "/agencies",
+      message: 'Site updated successfully',
+      status: 'Success',
+      redirectTo: '/agencies',
     },
   }
 }

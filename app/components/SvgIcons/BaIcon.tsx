@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface BaIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface BaIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function BaIcon({ size = 20, style, ...others }: BaIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#ffda44"
-          d="M0 0h445.3l33.9 255-33.9 257-323.7-134.3L0 66.8z"
-        />
+        <path fill="#ffda44" d="M0 0h445.3l33.9 255-33.9 257-323.7-134.3L0 66.8z" />
         <path fill="#0052b4" d="M0 66.8V512h445.4z" />
         <path fill="#0052b4" d="M445.3 0H512v512h-66.7z" />
         <path

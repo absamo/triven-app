@@ -1,3 +1,3 @@
-import AuthIconBadge from "./AuthIconBadge";
+import AuthIconBadge from './AuthIconBadge'
 
-export default AuthIconBadge;
+export default AuthIconBadge

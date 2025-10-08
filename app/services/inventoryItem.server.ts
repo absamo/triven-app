@@ -1,11 +1,8 @@
-import { nanoid } from "nanoid"
+import { nanoid } from 'nanoid'
 
-import {
-  getInventoryCollection,
-  queryInventoryByFilter,
-} from "~/app/utils/chroma"
-import { generateEmbedding } from "~/app/utils/embedding"
-import { prisma } from "../db.server"
+import { getInventoryCollection, queryInventoryByFilter } from '~/app/utils/chroma'
+import { generateEmbedding } from '~/app/utils/embedding'
+import { prisma } from '../db.server'
 
 export async function CreateInventoryItem(item: {
   name: string
@@ -14,13 +11,10 @@ export async function CreateInventoryItem(item: {
   reorderLevel: number
 }) {
   const embedding = await generateEmbedding(
-    item.description ||
-    item.name ||
-    item.quantity.toString() ||
-    item.reorderLevel.toString()
+    item.description || item.name || item.quantity.toString() || item.reorderLevel.toString()
   )
 
-  const inventoryCollection = await getInventoryCollection("inventory-items")
+  const inventoryCollection = await getInventoryCollection('inventory-items')
 
   inventoryCollection.add({
     ids: [nanoid()],
@@ -43,7 +37,7 @@ export async function CreateInventoryItem(item: {
 
 export async function searchSimilarItems(query: string) {
   const result = await queryInventoryByFilter({
-    collectionName: "inventory-items",
+    collectionName: 'inventory-items',
     query: query,
     //filter: { quantity: { $gt: 0 } }, // Example filter
   } as any) // Type assertion to bypass type checking for the filter

@@ -8,23 +8,24 @@ import {
   Tabs,
   Text,
   useMantineColorScheme,
-  useMantineTheme
-} from "@mantine/core"
-import { notifications } from "@mantine/notifications"
+  useMantineTheme,
+} from '@mantine/core'
+import { notifications } from '@mantine/notifications'
+import { IconArrowUp, IconCreditCard, IconPremiumRights } from '@tabler/icons-react'
+import dayjs from 'dayjs'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  IconArrowUp,
-  IconCreditCard,
-  IconPremiumRights,
-} from "@tabler/icons-react"
-import dayjs from "dayjs"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { canUpgrade, getNextPlan, shouldShowUpgrade } from "~/app/common/helpers/payment"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import StripePayment from "~/app/components/StripePayment"
-import { CURRENCY_SYMBOLS, INTERVALS, getPlanPrice } from "~/app/modules/stripe/plans"
-import CurrencySettings from "./CurrencySettings"
-import classes from "./Settings.module.css"
+  canUpgrade,
+  getNextPlan,
+  getTranslatedPlanLabel,
+  shouldShowUpgrade,
+} from '~/app/common/helpers/payment'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import StripePayment from '~/app/components/StripePayment'
+import { CURRENCY_SYMBOLS, INTERVALS, getPlanPrice } from '~/app/modules/stripe/plans'
+import CurrencySettings from './CurrencySettings'
+import classes from './Settings.module.css'
 
 interface SettingsProps {
   currencies: ICurrency[]
@@ -52,7 +53,7 @@ export default function Settings({
   permissions = [],
   config,
 }: SettingsProps) {
-  const { t } = useTranslation(['common', 'payment']);
+  const { t } = useTranslation(['common', 'payment'])
   const { colorScheme } = useMantineColorScheme()
   const theme = useMantineTheme()
   const currencySymbol = CURRENCY_SYMBOLS[billing?.currency?.toUpperCase()]
@@ -91,7 +92,7 @@ export default function Settings({
   // Payment handlers
   const handlePaymentSuccess = async () => {
     // Give enough time for webhook processing to activate the subscription
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    await new Promise((resolve) => setTimeout(resolve, 3000))
 
     // Reload the page to update user data and hide modal
     window.location.reload()
@@ -116,11 +117,12 @@ export default function Settings({
 
   // Determine loading state
   const isLoadingPayment = false
-  const isTrialOrIncomplete = billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete'
+  const isTrialOrIncomplete =
+    billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete'
   const resolvedTargetPlan = isTrialOrIncomplete
-    ? targetPlan || billing?.currentPlan || 'standard'
+    ? targetPlan || billing?.currentPlan
     : targetPlan || getNextPlan(billing?.currentPlan || '', billing?.planStatus) || ''
-  const displayTargetPlan = resolvedTargetPlan || 'standard'
+  const displayTargetPlan = resolvedTargetPlan
   const displayInterval = billing?.interval || INTERVALS.MONTHLY
   const displayCurrency = (billing?.currency || 'USD').toUpperCase()
   const displayAmount = (() => {
@@ -133,7 +135,7 @@ export default function Settings({
 
   const settings = [
     {
-      id: "billing",
+      id: 'billing',
       icon: () => <IconCreditCard color={theme.colors.violet[6]} size={17} />,
       label: t('subscriptions', 'Subscriptions'),
       description: t('manageSubscriptions', 'Manage your subscription and billing settings'),
@@ -145,14 +147,15 @@ export default function Settings({
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
-            <Text fz="sm" tt={"capitalize"}>
-              {billing?.currentPlan || 'standard'} {t('plan', 'plan')}
+            <Text fz="sm">
+              {getTranslatedPlanLabel(billing?.currentPlan, t)} {t('plan', 'plan')}
             </Text>
             <Text fz="xs" opacity={0.6}>
               {billing?.amount ? (
                 <>
                   {currencySymbol}
-                  {Number(billing.amount / 100).toFixed(2)} {t('billedEveryMonth', 'billed every month')}
+                  {Number(billing.amount / 100).toFixed(2)}{' '}
+                  {t('billedEveryMonth', 'billed every month')}
                 </>
               ) : (
                 t('noActiveBilling', 'No active billing')
@@ -168,7 +171,7 @@ export default function Settings({
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
-            <Badge size="xs" variant="light" color={billing?.planStatus ? "green" : "gray"}>
+            <Badge size="xs" variant="light" color={billing?.planStatus ? 'green' : 'gray'}>
               {billing?.planStatus || t('noActiveSubscription', 'No Active Subscription')}
             </Badge>
           </Grid.Col>
@@ -184,60 +187,65 @@ export default function Settings({
             <Text fz="xs">
               {billing?.trialEnd && billing?.planStatus === 'trialing' ? (
                 <>
-                  {t('trialEndsOn', 'Trial ends on')}{" "}
-                  {dayjs(billing.trialEnd * 1000).format("MMM DD, YYYY")}
+                  {t('trialEndsOn', 'Trial ends on')}{' '}
+                  {dayjs(billing.trialEnd * 1000).format('MMM DD, YYYY')}
                 </>
               ) : billing?.currentPeriodEnd ? (
                 <>
-                  {t('nextInvoiceDue', 'Next invoice due on')}{" "}
-                  {dayjs(billing.currentPeriodEnd * 1000).format("MMM DD, YYYY")}
+                  {t('nextInvoiceDue', 'Next invoice due on')}{' '}
+                  {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
                 </>
               ) : (
                 t('noRenewalDate', 'No renewal date available')
               )}
             </Text>
           </Grid.Col>
-          {shouldShowUpgrade(billing?.planStatus) && canUpgrade(billing?.currentPlan || '', billing?.planStatus) && (
-            <>
-              <Grid.Col span={12}>
-                <Divider />
-              </Grid.Col>
-              <Grid.Col span={2}>
-                <Text fz="xs" opacity={0.6}>
-                  {t('upgrade', 'Upgrade')}
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={10}>
-                <Button
-                  size="xs"
-                  variant="light"
-                  color="violet"
-                  leftSection={<IconArrowUp size={14} />}
-                  loading={isLoadingPayment}
-                  onClick={handleUpgrade}
-                >
-                  {(() => {
-                    if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
-                      return `Subscribe to ${billing?.currentPlan || 'standard'}`
-                    } else {
-                      const nextPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus)
-                      return nextPlan
-                        ? `${t('upgradeTo', 'Upgrade to')} ${nextPlan}`
-                        : t('viewPlans', 'View Plans')
-                    }
-                  })()}
-                </Button>
-              </Grid.Col>
-            </>
-          )}
+          {shouldShowUpgrade(billing?.planStatus) &&
+            canUpgrade(billing?.currentPlan || '', billing?.planStatus) && (
+              <>
+                <Grid.Col span={12}>
+                  <Divider />
+                </Grid.Col>
+                <Grid.Col span={2}>
+                  <Text fz="xs" opacity={0.6}>
+                    {t('upgrade', 'Upgrade')}
+                  </Text>
+                </Grid.Col>
+                <Grid.Col span={10}>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="violet"
+                    leftSection={<IconArrowUp size={14} />}
+                    loading={isLoadingPayment}
+                    onClick={handleUpgrade}
+                  >
+                    {(() => {
+                      if (
+                        billing?.planStatus === 'trialing' ||
+                        billing?.planStatus === 'incomplete'
+                      ) {
+                        return `${t('subscribe')} ${getTranslatedPlanLabel(billing?.currentPlan, t)}`
+                      } else {
+                        const nextPlan = getNextPlan(
+                          billing?.currentPlan || '',
+                          billing?.planStatus
+                        )
+                        return nextPlan
+                          ? `${t('upgrade')} ${getTranslatedPlanLabel(nextPlan, t)}`
+                          : t('viewPlans', 'View Plans')
+                      }
+                    })()}
+                  </Button>
+                </Grid.Col>
+              </>
+            )}
         </Grid>
       ),
     },
     {
-      id: "currency",
-      icon: () => (
-        <IconPremiumRights color={theme.colors.violet[6]} size={17} />
-      ),
+      id: 'currency',
+      icon: () => <IconPremiumRights color={theme.colors.violet[6]} size={17} />,
       label: t('currency', 'Currencies'),
       description: t('manageCurrencies', 'Manage your currencies'),
       content: () => <CurrencySettings currencies={currencies} />,
@@ -269,9 +277,7 @@ export default function Settings({
         onClose={handleModalClose}
         centered
         size="lg"
-        title={isTrialOrIncomplete
-          ? `Subscribe to ${displayTargetPlan}`
-          : `${t('upgrade', 'Upgrade')} to ${displayTargetPlan}`}
+        title={t('upgrade', 'Upgrade')}
         overlayProps={{
           backgroundOpacity: 0.55,
           blur: 8,
@@ -279,13 +285,15 @@ export default function Settings({
         styles={{
           content: {
             backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'white',
-            border: colorScheme === 'dark'
-              ? '1px solid var(--mantine-color-dark-5)'
-              : '1px solid var(--mantine-color-gray-2)',
+            border:
+              colorScheme === 'dark'
+                ? '1px solid var(--mantine-color-dark-5)'
+                : '1px solid var(--mantine-color-gray-2)',
             borderRadius: '16px',
-            boxShadow: colorScheme === 'dark'
-              ? '0 20px 60px rgba(0, 0, 0, 0.8)'
-              : '0 20px 60px rgba(0, 0, 0, 0.15)',
+            boxShadow:
+              colorScheme === 'dark'
+                ? '0 20px 60px rgba(0, 0, 0, 0.8)'
+                : '0 20px 60px rgba(0, 0, 0, 0.15)',
           },
         }}
       >
@@ -294,28 +302,25 @@ export default function Settings({
             gap="sm"
             p="md"
             style={{
-              backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)',
+              backgroundColor:
+                colorScheme === 'dark'
+                  ? 'var(--mantine-color-dark-6)'
+                  : 'var(--mantine-color-gray-1)',
               borderRadius: '8px',
             }}
           >
-            <Text size="lg" fw={500} tt="capitalize">
-              {isTrialOrIncomplete
-                ? `Subscribe to ${displayTargetPlan}`
-                : `${t('upgradeTo', 'Upgrade to')} ${displayTargetPlan}`}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {t('currentPlanLabel', 'Current plan')}: {billing?.currentPlan || 'standard'}
-              {displayTargetPlan && displayTargetPlan !== (billing?.currentPlan || 'standard')
-                ? ` -> ${displayTargetPlan}`
-                : ''}
-            </Text>
             <Text c="dimmed" size="sm">
               {billing?.planStatus === 'trialing'
                 ? t('trialEndsBilling', 'Your trial will end and billing will start immediately.')
                 : billing?.planStatus === 'incomplete'
-                  ? t('completeSubscription', 'Complete your subscription to continue using all features.')
-                  : t('proratedDifference', "You'll be charged the prorated difference for the remainder of your billing cycle.")
-              }
+                  ? t(
+                      'completeSubscription',
+                      'Complete your subscription to continue using all features.'
+                    )
+                  : t(
+                      'proratedDifference',
+                      "You'll be charged the prorated difference for the remainder of your billing cycle."
+                    )}
             </Text>
           </Stack>
 
@@ -333,7 +338,10 @@ export default function Settings({
             />
           ) : (
             <Text c="red" size="sm" ta="center">
-              {t('missingPaymentConfiguration', 'Unable to load payment form. Please contact support.')}
+              {t(
+                'missingPaymentConfiguration',
+                'Unable to load payment form. Please contact support.'
+              )}
             </Text>
           )}
         </Stack>

@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface SzIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface SzIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -25,18 +25,12 @@ export default function SzIcon({ size = 20, style, ...others }: SzIconProps) {
         <path fill="#333" d="M0 0h512v144.7H0z" />
         <path fill="#0052b4" d="M0 367.3h512V512H0z" />
         <path fill="#a2001d" d="M0 178h512v156H0z" />
-        <path
-          fill="#ffda44"
-          d="M89.2 244.9h334V267h-334zm44.6-44.6h244.8v22.3H133.8z"
-        />
+        <path fill="#ffda44" d="M89.2 244.9h334V267h-334zm44.6-44.6h244.8v22.3H133.8z" />
         <path
           fill="#eee"
           d="m256.2 189.2-18 65.2 18 68.4c66.8 0 124-66.8 124-66.8s-57.2-66.8-124-66.8z"
         />
-        <path
-          fill="#333"
-          d="M256.2 322.8c-66.8 0-124-66.8-124-66.8s57.2-66.8 124-66.8"
-        />
+        <path fill="#333" d="M256.2 322.8c-66.8 0-124-66.8-124-66.8s57.2-66.8 124-66.8" />
         <path fill="#eee" d="M211.7 233.7h22.2v44.6h-22.2z" />
         <path fill="#333" d="M278.5 233.7h22.2v44.6h-22.2z" />
         <g fill="#0052b4" transform="translate(.2)">

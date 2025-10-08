@@ -9,17 +9,17 @@
  * @returns The formatted number with 2 decimal places
  */
 export function formatMoney(value: number | string | undefined | null): string {
-    if (value === undefined || value === null || value === '') {
-        return '0.00'
-    }
+  if (value === undefined || value === null || value === '') {
+    return '0.00'
+  }
 
-    const numValue = typeof value === 'string' ? parseFloat(value) : value
+  const numValue = typeof value === 'string' ? parseFloat(value) : value
 
-    if (isNaN(numValue)) {
-        return '0.00'
-    }
+  if (isNaN(numValue)) {
+    return '0.00'
+  }
 
-    return numValue.toFixed(2)
+  return numValue.toFixed(2)
 }
 
 /**
@@ -28,9 +28,12 @@ export function formatMoney(value: number | string | undefined | null): string {
  * @param currencySymbol - The currency symbol to prepend
  * @returns The formatted currency string
  */
-export function formatCurrency(value: number | string | undefined | null, currencySymbol: string = '$'): string {
-    const formattedValue = formatMoney(value)
-    return `${currencySymbol}${formattedValue}`
+export function formatCurrency(
+  value: number | string | undefined | null,
+  currencySymbol: string = '$'
+): string {
+  const formattedValue = formatMoney(value)
+  return `${currencySymbol}${formattedValue}`
 }
 
 /**
@@ -39,17 +42,17 @@ export function formatCurrency(value: number | string | undefined | null, curren
  * @returns The parsed and rounded number
  */
 export function parseMoney(value: number | string | undefined | null): number {
-    if (value === undefined || value === null || value === '') {
-        return 0
-    }
+  if (value === undefined || value === null || value === '') {
+    return 0
+  }
 
-    const numValue = typeof value === 'string' ? parseFloat(value) : value
+  const numValue = typeof value === 'string' ? parseFloat(value) : value
 
-    if (isNaN(numValue)) {
-        return 0
-    }
+  if (isNaN(numValue)) {
+    return 0
+  }
 
-    return Math.round(numValue * 100) / 100
+  return Math.round(numValue * 100) / 100
 }
 
 /**
@@ -58,5 +61,5 @@ export function parseMoney(value: number | string | undefined | null): number {
  * @returns The rounded number
  */
 export function roundMoney(value: number): number {
-    return Math.round(value * 100) / 100
+  return Math.round(value * 100) / 100
 }

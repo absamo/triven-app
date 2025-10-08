@@ -12,13 +12,13 @@ import {
   TextInput,
   Title,
   type ComboboxItem,
-} from "@mantine/core"
-import { DatePickerInput } from "@mantine/dates"
-import { IconCalendar, IconSearch } from "@tabler/icons-react"
-import classes from "~/app/partials/PurchaseOrderFilters/PurchaseOrderFilters.module.css"
+} from '@mantine/core'
+import { DatePickerInput } from '@mantine/dates'
+import { IconCalendar, IconSearch } from '@tabler/icons-react'
+import classes from '~/app/partials/PurchaseOrderFilters/PurchaseOrderFilters.module.css'
 
-import { useState, useEffect } from "react"
-import { useFetcher } from "react-router"
+import { useState, useEffect } from 'react'
+import { useFetcher } from 'react-router'
 
 // import { useDebouncedValue } from "@mantine/hooks"
 
@@ -62,9 +62,7 @@ export default function PurchaseOrderFilters({
   const [searchValue, setSearchValue] = useState<string | null>(null)
   //const [debounced] = useDebouncedValue(searchValue, 100)
   const [statusOrders, setStatusOrders] = useState<string[]>([])
-  const [purchaseOrders, setPurchaseOrders] = useState<string[]>(
-    purchaseOrderProps?.values || []
-  )
+  const [purchaseOrders, setPurchaseOrders] = useState<string[]>(purchaseOrderProps?.values || [])
   const [bills, setBills] = useState<string[]>(billsProps?.values || [])
   const [dateValue, setDateValue] = useState<Date | null>(null)
 
@@ -77,7 +75,7 @@ export default function PurchaseOrderFilters({
     bills: string[],
     date: Date | null
   ) => {
-    let params = ""
+    let params = ''
 
     if (search) {
       params += `search=${JSON.stringify(search)}`
@@ -123,40 +121,22 @@ export default function PurchaseOrderFilters({
         fetcher.load(`${route}?bills=${JSON.stringify(bills)}`)
       }
     }
-  }, [
-    data,
-    purchaseOrderProps?.purchaseOrderReference,
-    billsProps?.billReference,
-  ])
+  }, [data, purchaseOrderProps?.purchaseOrderReference, billsProps?.billReference])
 
-  const handleTextInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleTextInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value
     setSearchValue(value)
-    fetchPurchaseOrderData(
-      value,
-      statusOrders,
-      purchaseOrders,
-      bills,
-      dateValue
-    )
+    fetchPurchaseOrderData(value, statusOrders, purchaseOrders, bills, dateValue)
   }
 
   const handleTextInputClick = () => {
-    setSearchValue("")
-    fetchPurchaseOrderData("", statusOrders, purchaseOrders, bills, dateValue)
+    setSearchValue('')
+    fetchPurchaseOrderData('', statusOrders, purchaseOrders, bills, dateValue)
   }
 
   const handleStatusOrderChange = (values: string[]) => {
     setStatusOrders(values)
-    fetchPurchaseOrderData(
-      searchValue,
-      values,
-      purchaseOrders,
-      bills,
-      dateValue
-    )
+    fetchPurchaseOrderData(searchValue, values, purchaseOrders, bills, dateValue)
   }
 
   const handlePurchaseOrderChange = (values: string[]) => {
@@ -166,24 +146,12 @@ export default function PurchaseOrderFilters({
 
   const handleBillChange = (values: string[]) => {
     setBills(values)
-    fetchPurchaseOrderData(
-      searchValue,
-      statusOrders,
-      purchaseOrders,
-      values,
-      dateValue
-    )
+    fetchPurchaseOrderData(searchValue, statusOrders, purchaseOrders, values, dateValue)
   }
 
   const handleDateChange = (date: Date | null) => {
     setDateValue(date)
-    fetchPurchaseOrderData(
-      searchValue,
-      statusOrders,
-      purchaseOrders,
-      bills,
-      date
-    )
+    fetchPurchaseOrderData(searchValue, statusOrders, purchaseOrders, bills, date)
   }
 
   return (
@@ -196,15 +164,13 @@ export default function PurchaseOrderFilters({
             rightSectionWidth={42}
             leftSection={<IconSearch size={18} stroke={1.5} />}
             onChange={handleTextInputChange}
-            value={searchValue || ""}
+            value={searchValue || ''}
             label={searchProps?.description}
             classNames={{
               label: classes.label,
             }}
             rightSection={
-              searchValue ? (
-                <Input.ClearButton onClick={handleTextInputClick} />
-              ) : undefined
+              searchValue ? <Input.ClearButton onClick={handleTextInputClick} /> : undefined
             }
           />
         </Grid.Col>
@@ -213,17 +179,15 @@ export default function PurchaseOrderFilters({
       {purchaseOrderProps && (
         <Grid.Col span={3}>
           <MultiSelect
-            data={purchaseOrderProps?.data.filter(
-              (data) => !purchaseOrders.includes(data)
-            )}
+            data={purchaseOrderProps?.data.filter((data) => !purchaseOrders.includes(data))}
             value={purchaseOrders}
             onChange={handlePurchaseOrderChange}
             label={purchaseOrderProps?.description}
             hidePickedOptions
             comboboxProps={{
               width: 200,
-              position: "bottom-start",
-              shadow: "md",
+              position: 'bottom-start',
+              shadow: 'md',
             }}
             classNames={{
               label: classes.label,
@@ -243,8 +207,8 @@ export default function PurchaseOrderFilters({
             hidePickedOptions
             comboboxProps={{
               width: 200,
-              position: "bottom-start",
-              shadow: "md",
+              position: 'bottom-start',
+              shadow: 'md',
             }}
             classNames={{
               label: classes.label,
@@ -264,8 +228,8 @@ export default function PurchaseOrderFilters({
             hidePickedOptions
             comboboxProps={{
               width: 200,
-              position: "bottom-start",
-              shadow: "md",
+              position: 'bottom-start',
+              shadow: 'md',
             }}
             classNames={{
               label: classes.label,

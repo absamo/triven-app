@@ -1,9 +1,9 @@
-import { Container, Text, Title } from "@mantine/core"
-import { type ErrorResponse } from "react-router"
-import { BackButton } from "~/app/components"
-import classes from "./Error.module.css"
+import { Container, Text, Title } from '@mantine/core'
+import { type ErrorResponse } from 'react-router'
+import { BackButton } from '~/app/components'
+import classes from './Error.module.css'
 
-export function Illustration(props: React.ComponentPropsWithoutRef<"svg">) {
+export function Illustration(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 362 145" {...props}>
       <path
@@ -19,20 +19,17 @@ export default function Error({ error }: { error: ErrorResponse }) {
     case 404:
       return (
         <Container className={classes.root}>
-          <BackButton to="/" position="top-left" color="#ffffff">Back</BackButton>
+          <BackButton to="/" position="top-left" color="#ffffff">
+            Back
+          </BackButton>
           <div className={classes.inner}>
             <Illustration className={classes.image} />
             <div className={classes.content}>
               <Title className={classes.title}>Something is not right...</Title>
-              <Text
-                c="dimmed"
-                size="lg"
-                ta="center"
-                className={classes.description}
-              >
-                Page you are trying to open does not exist. You may have
-                mistyped the address, or the page has been moved to another URL.
-                If you think this is an error contact support.
+              <Text c="dimmed" size="lg" ta="center" className={classes.description}>
+                Page you are trying to open does not exist. You may have mistyped the address, or
+                the page has been moved to another URL. If you think this is an error contact
+                support.
               </Text>
             </div>
           </div>
@@ -42,12 +39,14 @@ export default function Error({ error }: { error: ErrorResponse }) {
       return (
         <div className={classes.error}>
           <Container>
-            <BackButton to="/" position="top-left" color="#ffffff">Back</BackButton>
+            <BackButton to="/" position="top-left" color="#ffffff">
+              Back
+            </BackButton>
             <div className={classes.label}>{error.status}</div>
             <Title className={classes.title}>Access denied</Title>
             <Text size="lg" ta="center" className={classes.description}>
-              You do not have permission to view this page. If you think this is
-              an error contact support.
+              You do not have permission to view this page. If you think this is an error contact
+              support.
             </Text>
           </Container>
         </div>
@@ -57,12 +56,13 @@ export default function Error({ error }: { error: ErrorResponse }) {
       return (
         <div className={classes.error}>
           <Container>
-            <BackButton to="/" position="top-left" color="#ffffff">Back</BackButton>
+            <BackButton to="/" position="top-left" color="#ffffff">
+              Back
+            </BackButton>
             <div className={classes.label}>{error.status}</div>
             <Title className={classes.title}>Bad request</Title>
             <Text size="lg" ta="center" className={classes.description}>
-              The request was invalid. If you think this is an error contact
-              support.
+              The request was invalid. If you think this is an error contact support.
             </Text>
           </Container>
         </div>
@@ -72,14 +72,14 @@ export default function Error({ error }: { error: ErrorResponse }) {
       return (
         <div className={classes.error}>
           <Container>
-            <BackButton to="/" position="top-left" color="#ffffff">Back</BackButton>
+            <BackButton to="/" position="top-left" color="#ffffff">
+              Back
+            </BackButton>
             <div className={classes.label}>500</div>
-            <Title className={classes.title}>
-              Something bad just happened...
-            </Title>
+            <Title className={classes.title}>Something bad just happened...</Title>
             <Text size="lg" ta="center" className={classes.description}>
-              Our servers could not handle your request. Don&apos;t worry, our
-              development team was already notified. Try refreshing the page.
+              Our servers could not handle your request. Don&apos;t worry, our development team was
+              already notified. Try refreshing the page.
             </Text>
           </Container>
         </div>

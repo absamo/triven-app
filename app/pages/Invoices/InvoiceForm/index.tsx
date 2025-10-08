@@ -1,2 +1,2 @@
-import InvoiceForm from "./InvoiceForm"
+import InvoiceForm from './InvoiceForm'
 export default InvoiceForm

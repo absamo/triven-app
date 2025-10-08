@@ -1,9 +1,9 @@
-import type { ActionFunctionArgs } from "react-router"
-import { z } from "zod"
-import { prisma } from "~/app/db.server"
-import { CURRENCIES, INTERVALS, PLANS, PRICING_PLANS } from "~/app/modules/stripe/plans"
-import { stripe } from "~/app/modules/stripe/stripe.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
+import type { ActionFunctionArgs } from 'react-router'
+import { z } from 'zod'
+import { prisma } from '~/app/db.server'
+import { CURRENCIES, INTERVALS, PLANS, PRICING_PLANS } from '~/app/modules/stripe/plans'
+import { stripe } from '~/app/modules/stripe/stripe.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 const subscriptionSchema = z.object({
     planId: z.enum([PLANS.STANDARD, PLANS.PROFESSIONAL, PLANS.PREMIUM]),
@@ -29,16 +29,18 @@ export async function action({ request }: ActionFunctionArgs) {
                 currency: currency.toUpperCase(), // Database stores currency in uppercase
             },
             include: {
-                plan: true
-            }
+                plan: true,
+            },
         })
 
         if (!dbPrice) {
-            console.error(`❌ No price found for plan: ${planId}, interval: ${interval}, currency: ${currency}`)
+            console.error(
+                `❌ No price found for plan: ${planId}, interval: ${interval}, currency: ${currency}`
+            )
             // List available prices for debugging
             const availablePrices = await prisma.price.findMany({
                 where: { planId },
-                select: { interval: true, currency: true, id: true }
+                select: { interval: true, currency: true, id: true },
             })
             console.error(`Available prices for ${planId}:`, availablePrices)
             return Response.json(
@@ -54,14 +56,11 @@ export async function action({ request }: ActionFunctionArgs) {
         // Get user with Stripe customer ID
         const dbUser = await prisma.user.findUnique({
             where: { id: user.id },
-            select: { id: true, email: true, stripeCustomerId: true }
+            select: { id: true, email: true, stripeCustomerId: true },
         })
 
         if (!dbUser) {
-            return Response.json(
-                { error: "User not found" },
-                { status: 404 }
-            )
+            return Response.json({ error: 'User not found' }, { status: 404 })
         }
 
         // Create or get Stripe customer with validation
@@ -92,7 +91,7 @@ export async function action({ request }: ActionFunctionArgs) {
             // Update user with new Stripe customer ID
             await prisma.user.update({
                 where: { id: dbUser.id },
-                data: { stripeCustomerId }
+                data: { stripeCustomerId },
             })
         }
 
@@ -115,106 +114,121 @@ export async function action({ request }: ActionFunctionArgs) {
 
             // Update subscription with prorating
             subscription = await stripe.subscriptions.update(existingSubscription.id, {
-                items: [{
-                    id: subscriptionItemId,
-                    price: priceId,
-                }],
+                items: [
+                    {
+                        id: subscriptionItemId,
+                        price: priceId,
+                    },
+                ],
                 proration_behavior: 'create_prorations', // Enable prorating
                 payment_behavior: 'default_incomplete',
                 payment_settings: {
                     save_default_payment_method: 'on_subscription',
                     payment_method_types: ['card'],
                 },
-                expand: ['latest_invoice.confirmation_secret'],
+                expand: ['latest_invoice.payment_intent'],
                 metadata: {
                     userId: user.id,
                     planId,
                     interval,
-                    type: 'subscription_upgrade'
+                    type: 'subscription_upgrade',
                 },
             })
         } else {
-            // This is a new subscription
+            // Create new subscription with proper Stripe defaults
             console.log(`🆕 Creating new subscription for user ${user.id}`)
 
             subscription = await stripe.subscriptions.create({
                 customer: stripeCustomerId,
-                items: [{
-                    price: priceId,
-                }],
+                items: [{ price: priceId }],
                 payment_behavior: 'default_incomplete',
                 payment_settings: {
                     save_default_payment_method: 'on_subscription',
-                    payment_method_types: ['card'],
                 },
-                expand: ['latest_invoice.confirmation_secret'],
+                collection_method: 'charge_automatically',
+                expand: ['latest_invoice.payment_intent'],
                 metadata: {
                     userId: user.id,
                     planId,
                     interval,
-                    type: 'subscription_creation'
                 },
             })
         }
 
         const invoice = subscription.latest_invoice as any
-        const clientSecret = invoice?.confirmation_secret?.client_secret
+        const paymentIntent = invoice?.payment_intent
+        let clientSecret = paymentIntent?.client_secret
 
         console.log('🔍 Subscription created:', {
             id: subscription.id,
             status: subscription.status,
-            invoice: invoice ? {
-                id: invoice.id,
-                status: invoice.status,
-                has_confirmation_secret: !!invoice.confirmation_secret,
-                client_secret: clientSecret ? 'Present' : 'Missing'
-            } : 'NO_INVOICE'
+            invoice: invoice
+                ? {
+                    id: invoice.id,
+                    status: invoice.status,
+                    amount_due: invoice.amount_due,
+                    payment_intent: paymentIntent ? paymentIntent.id : 'NO_PAYMENT_INTENT',
+                }
+                : 'NO_INVOICE',
         })
 
-        if (!clientSecret) {
-            console.error('❌ No client secret found for subscription:', subscription.id)
-            console.error('❌ Invoice details:', {
-                id: invoice?.id || 'NO_ID',
-                status: invoice?.status || 'NO_STATUS',
-                confirmation_secret: invoice?.confirmation_secret || 'NO_SECRET'
-            })
-            // Clean up the incomplete subscription
-            await stripe.subscriptions.cancel(subscription.id)
-            return Response.json(
-                { error: "Failed to create payment setup for subscription" },
-                { status: 500 }
-            )
-        }
+        // For charge_automatically subscriptions, if no PaymentIntent is created,
+        // create a standalone PaymentIntent for immediate payment collection
+        if (!clientSecret && invoice && invoice.amount_due > 0) {
+            console.log(`💳 Creating standalone PaymentIntent for immediate payment`)
 
-        console.log(`✅ Created subscription ${subscription.id} with client secret using price ${dbPrice.id}`)
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: invoice.amount_due,
+                currency: invoice.currency || currency.toLowerCase(),
+                customer: stripeCustomerId,
+                automatic_payment_methods: { enabled: true },
+                metadata: {
+                    subscriptionId: subscription.id,
+                    userId: user.id,
+                    invoiceId: invoice.id,
+                    type: 'subscription_payment',
+                },
+            })
+
+            clientSecret = paymentIntent.client_secret
+            console.log(`✅ Created standalone PaymentIntent ${paymentIntent.id} for subscription`)
+        }
+        if (!clientSecret) {
+            console.error('❌ No client secret available for payment')
+            await stripe.subscriptions.cancel(subscription.id)
+            return Response.json({ error: 'Unable to set up payment for subscription' }, { status: 500 })
+        }
+        console.log(
+            `✅ Created subscription ${subscription.id} with PaymentIntent using price ${dbPrice.id}`
+        )
 
         // Extract subscription period information with proper defaults
-        // Cast to any to access Stripe properties since TypeScript definitions might not match exactly
         const stripeSubscription = subscription as any
-        const currentPeriodStart = stripeSubscription.current_period_start || Math.floor(Date.now() / 1000)
-        const currentPeriodEnd = stripeSubscription.current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000) // 30 days from now
+        const currentPeriodStart =
+            stripeSubscription.current_period_start || Math.floor(Date.now() / 1000)
+        const currentPeriodEnd =
+            stripeSubscription.current_period_end ||
+            Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
         const trialStart = stripeSubscription.trial_start || 0
-        // For paid subscriptions, set trialEnd to 0 to indicate no longer in trial
-        const trialEnd = 0 // This removes trial status when upgrading to paid subscription
+        const trialEnd = 0
 
         console.log('🔍 Subscription periods:', {
             currentPeriodStart,
             currentPeriodEnd,
             trialStart,
             trialEnd: trialEnd,
-            note: 'trialEnd set to 0 for paid subscription - user no longer in trial'
+            note: 'trialEnd set to 0 for paid subscription - user no longer in trial',
         })
 
-        // Step 2: Store the subscription in database as 'incomplete' initially
-        // The webhook will update it to 'active' when payment succeeds
+        // Store the subscription in database as 'incomplete' initially
         await prisma.subscription.upsert({
             where: { userId: user.id },
             update: {
                 id: subscription.id,
                 planId,
-                priceId: dbPrice.id, // Use actual Stripe price ID from database
+                priceId: dbPrice.id,
                 interval,
-                status: 'incomplete', // Will be updated by webhook when payment succeeds
+                status: 'incomplete',
                 currentPeriodStart,
                 currentPeriodEnd,
                 cancelAtPeriodEnd: false,
@@ -225,9 +239,9 @@ export async function action({ request }: ActionFunctionArgs) {
                 id: subscription.id,
                 userId: user.id,
                 planId,
-                priceId: dbPrice.id, // Use actual Stripe price ID from database
+                priceId: dbPrice.id,
                 interval,
-                status: 'incomplete', // Will be updated by webhook when payment succeeds
+                status: 'incomplete',
                 currentPeriodStart,
                 currentPeriodEnd,
                 cancelAtPeriodEnd: false,
@@ -244,12 +258,8 @@ export async function action({ request }: ActionFunctionArgs) {
             planName: plan.name,
             isUpgrade,
         })
-
     } catch (error) {
         console.error('❌ Subscription creation error:', error)
-        return Response.json(
-            { error: "Failed to create subscription" },
-            { status: 500 }
-        )
+        return Response.json({ error: 'Failed to create subscription' }, { status: 500 })
     }
 }

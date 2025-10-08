@@ -1,1 +1,1 @@
-export { default } from './CookieNotice';
+export { default } from './CookieNotice'

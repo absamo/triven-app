@@ -1,6 +1,12 @@
-import { Group, Paper, Stack, Text, ThemeIcon, Title, Tooltip } from "@mantine/core"
-import { IconArrowDownRight, IconArrowUpRight, IconInfoCircle, IconReceipt, IconReceiptOff } from "@tabler/icons-react"
-import { useTranslation } from "react-i18next"
+import { Group, Paper, Stack, Text, ThemeIcon, Title, Tooltip } from '@mantine/core'
+import {
+  IconArrowDownRight,
+  IconArrowUpRight,
+  IconInfoCircle,
+  IconReceipt,
+  IconReceiptOff,
+} from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 
 interface FinanceStatsProps {
   finances: {
@@ -19,12 +25,13 @@ export default function FinanceStats({ finances }: FinanceStatsProps) {
   const DiffIcon = positiveFlow ? IconArrowUpRight : IconArrowDownRight
 
   // Calculate percentages for progress bar
-  const totalCashMovement = Math.abs(finances.recentPaymentsReceived) + Math.abs(finances.recentPaymentsMade)
-  const incomingPercentage = totalCashMovement > 0 ? (finances.recentPaymentsReceived / totalCashMovement) * 100 : 50
+  const totalCashMovement =
+    Math.abs(finances.recentPaymentsReceived) + Math.abs(finances.recentPaymentsMade)
+  const incomingPercentage =
+    totalCashMovement > 0 ? (finances.recentPaymentsReceived / totalCashMovement) * 100 : 50
 
   return (
     <Paper withBorder p="md" radius="md" mb={0} shadow="sm">
-
       <Group justify="space-between" align="flex-start" mb="md">
         <Title order={5}>{t('financialOverview')}</Title>
       </Group>
@@ -37,7 +44,9 @@ export default function FinanceStats({ finances }: FinanceStatsProps) {
             </ThemeIcon>
             <Text fw={500}>{t('pendingInvoices')}</Text>
           </Group>
-          <Text fw={700} size="lg">{finances.pendingInvoices}</Text>
+          <Text fw={700} size="lg">
+            {finances.pendingInvoices}
+          </Text>
         </Group>
 
         <Group justify="space-between" wrap="nowrap">
@@ -47,11 +56,19 @@ export default function FinanceStats({ finances }: FinanceStatsProps) {
             </ThemeIcon>
             <Text fw={500}>{t('pendingBills')}</Text>
           </Group>
-          <Text fw={700} size="lg">{finances.pendingBills}</Text>
+          <Text fw={700} size="lg">
+            {finances.pendingBills}
+          </Text>
         </Group>
 
         {/* Always show payment metrics */}
-        <Group justify="space-between" wrap="nowrap" mt="xs" pt="xs" style={{ borderTop: '1px solid #e2e8f0' }}>
+        <Group
+          justify="space-between"
+          wrap="nowrap"
+          mt="xs"
+          pt="xs"
+          style={{ borderTop: '1px solid #e2e8f0' }}
+        >
           <Text size="sm" c="dimmed">
             {t('paymentsReceived')}
           </Text>
@@ -69,10 +86,15 @@ export default function FinanceStats({ finances }: FinanceStatsProps) {
           </Text>
         </Group>
 
-        <Group justify="space-between" wrap="nowrap" pt="xs" style={{ borderTop: '1px solid #e2e8f0' }}>
+        <Group
+          justify="space-between"
+          wrap="nowrap"
+          pt="xs"
+          style={{ borderTop: '1px solid #e2e8f0' }}
+        >
           <Group gap="xs">
             <ThemeIcon
-              color={finances.cashflow >= 0 ? "green" : "red"}
+              color={finances.cashflow >= 0 ? 'green' : 'red'}
               variant="light"
               size="sm"
               radius="md"
@@ -94,11 +116,7 @@ export default function FinanceStats({ finances }: FinanceStatsProps) {
               <IconInfoCircle size="1rem" style={{ color: '#6c757d', cursor: 'pointer' }} />
             </Tooltip>
           </Group>
-          <Text
-            fw={700}
-            size="sm"
-            c={finances.cashflow >= 0 ? "green" : "red"}
-          >
+          <Text fw={700} size="sm" c={finances.cashflow >= 0 ? 'green' : 'red'}>
             ${finances.cashflow.toLocaleString()}
           </Text>
         </Group>

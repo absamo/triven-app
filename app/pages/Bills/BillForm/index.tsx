@@ -1,2 +1,2 @@
-import BillForm from "./BillForm"
+import BillForm from './BillForm'
 export default BillForm

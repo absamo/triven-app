@@ -1,1 +1,1 @@
-export { default } from './CategoryImportModal';
+export { default } from './CategoryImportModal'

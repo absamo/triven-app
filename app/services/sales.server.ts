@@ -1,19 +1,22 @@
-import type { Prisma, SalesOrderStatus } from "@prisma/client"
-import { type ISalesOrder } from "~/app/common/validations/salesOrderSchema"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import { emitter } from "~/app/utils/emitter.server"
-import { BACKORDER_ITEM_STATUSES, BACKORDER_STATUSES, INVOICE_STATUSES, SALES_ORDERS_STATUSES } from "../common/constants"
-import { type IProduct } from "../common/validations/productSchema"
-import { getMaxBackorderNumber } from "./backorders.server"
+import type { Prisma, SalesOrderStatus } from '@prisma/client'
+import { type ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { emitter } from '~/app/utils/emitter.server'
+import {
+  BACKORDER_ITEM_STATUSES,
+  BACKORDER_STATUSES,
+  INVOICE_STATUSES,
+  SALES_ORDERS_STATUSES,
+} from '../common/constants'
+import { type IProduct } from '../common/validations/productSchema'
+import { getMaxBackorderNumber } from './backorders.server'
 
 export async function getSalesOrders(
   request: Request,
   { salesOrderId }: { salesOrderId?: string } = {}
 ) {
-  const user = await requireBetterAuthUser(request, ["read:salesOrders"])
-
-
+  const user = await requireBetterAuthUser(request, ['read:salesOrders'])
 
   const salesOrders = await prisma.salesOrder.findMany({
     where: { companyId: user.companyId as string, id: salesOrderId },
@@ -32,7 +35,7 @@ export async function getSalesOrders(
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -40,11 +43,8 @@ export async function getSalesOrders(
   return salesOrders || []
 }
 
-export async function getSalesOrdersByProductId(
-  request: Request,
-  productId: IProduct["id"]
-) {
-  const user = await requireBetterAuthUser(request, ["read:salesOrders"])
+export async function getSalesOrdersByProductId(request: Request, productId: IProduct['id']) {
+  const user = await requireBetterAuthUser(request, ['read:salesOrders'])
 
   const salesOrders = await prisma.salesOrder.findMany({
     where: {
@@ -59,17 +59,16 @@ export async function getSalesOrdersByProductId(
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
-
 
   return salesOrders || []
 }
 
 export async function getSalesOrdersToInvoice(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:salesOrders"])
+  const user = await requireBetterAuthUser(request, ['read:salesOrders'])
 
   const sales = await prisma.salesOrder.findMany({
     where: {
@@ -78,11 +77,7 @@ export async function getSalesOrdersToInvoice(request: Request) {
       invoices: {
         none: {
           status: {
-            in: [
-              INVOICE_STATUSES.PARTIALLYPAID,
-              INVOICE_STATUSES.PAID,
-              INVOICE_STATUSES.OVERPAID,
-            ],
+            in: [INVOICE_STATUSES.PARTIALLYPAID, INVOICE_STATUSES.PAID, INVOICE_STATUSES.OVERPAID],
           },
         },
       },
@@ -92,7 +87,7 @@ export async function getSalesOrdersToInvoice(request: Request) {
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -100,7 +95,7 @@ export async function getSalesOrdersToInvoice(request: Request) {
   return sales || []
 }
 
-export async function getSalesOrder(salesOrderId: ISalesOrder["id"]) {
+export async function getSalesOrder(salesOrderId: ISalesOrder['id']) {
   const salesOrder = await prisma.salesOrder.findUnique({
     where: { id: salesOrderId },
     include: {
@@ -136,7 +131,7 @@ export async function getSalesOrder(salesOrderId: ISalesOrder["id"]) {
         },
         orderBy: [
           {
-            productId: "desc",
+            productId: 'desc',
           },
         ],
       },
@@ -162,9 +157,9 @@ export async function getFilteredSalesOrders(
     salesOrders: string[]
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:salesOrders"])
+  const user = await requireBetterAuthUser(request, ['read:salesOrders'])
 
-  const currentSearch = !!search || search === ""
+  const currentSearch = !!search || search === ''
 
   return (
     (await prisma.salesOrder.findMany({
@@ -172,53 +167,53 @@ export async function getFilteredSalesOrders(
         companyId: user.companyId as string,
         OR: currentSearch
           ? [
-            {
-              salesOrderReference: {
-                contains: search,
-                mode: "insensitive",
+              {
+                salesOrderReference: {
+                  contains: search,
+                  mode: 'insensitive',
+                },
               },
-            },
-            {
-              agency: {
-                name: { contains: search, mode: "insensitive" },
+              {
+                agency: {
+                  name: { contains: search, mode: 'insensitive' },
+                },
               },
-            },
-            {
-              customer: {
-                OR: [
-                  {
-                    firstName: { contains: search, mode: "insensitive" },
-                  },
-                  {
-                    lastName: { contains: search, mode: "insensitive" },
-                  },
-                ],
+              {
+                customer: {
+                  OR: [
+                    {
+                      firstName: { contains: search, mode: 'insensitive' },
+                    },
+                    {
+                      lastName: { contains: search, mode: 'insensitive' },
+                    },
+                  ],
+                },
               },
-            },
-          ]
+            ]
           : undefined,
         AND: [
           {
             status:
               (statuses || []).length > 0
                 ? {
-                  in: statuses as SalesOrderStatus[],
-                }
+                    in: statuses as SalesOrderStatus[],
+                  }
                 : undefined,
           },
           {
             orderDate: date
               ? {
-                gte: date,
-              }
+                  gte: date,
+                }
               : undefined,
           },
           {
             salesOrderReference:
               salesOrders.length > 0
                 ? {
-                  in: salesOrders,
-                }
+                    in: salesOrders,
+                  }
                 : undefined,
           },
         ],
@@ -232,17 +227,15 @@ export async function getFilteredSalesOrders(
       },
       orderBy: [
         {
-          id: "desc",
+          id: 'desc',
         },
       ],
     })) || []
   )
 }
 
-export async function getMaxSalesOrderNumber(
-  request: Request
-): Promise<string> {
-  const user = await requireBetterAuthUser(request, ["read:salesOrders"])
+export async function getMaxSalesOrderNumber(request: Request): Promise<string> {
+  const user = await requireBetterAuthUser(request, ['read:salesOrders'])
 
   const aggregateSalesOrderNumber = await prisma.salesOrder.aggregate({
     where: { companyId: user.companyId as string },
@@ -251,17 +244,13 @@ export async function getMaxSalesOrderNumber(
     },
   })
 
-  const salesOrderNumber =
-    parseInt(aggregateSalesOrderNumber?._max.salesOrderNumber || "00000") + 1
+  const salesOrderNumber = parseInt(aggregateSalesOrderNumber?._max.salesOrderNumber || '00000') + 1
 
-  return salesOrderNumber.toString().padStart(5, "0")
+  return salesOrderNumber.toString().padStart(5, '0')
 }
 
-export async function createSalesOrder(
-  request: Request,
-  salesOrder: ISalesOrder
-) {
-  const user = await requireBetterAuthUser(request, ["create:salesOrders"])
+export async function createSalesOrder(request: Request, salesOrder: ISalesOrder) {
+  const user = await requireBetterAuthUser(request, ['create:salesOrders'])
 
   const foundSalesOrder = await prisma.salesOrder.findFirst({
     where: {
@@ -273,7 +262,7 @@ export async function createSalesOrder(
   if (foundSalesOrder) {
     return {
       errors: {
-        salesOrderReference: "A sales order already exists with this reference",
+        salesOrderReference: 'A sales order already exists with this reference',
       },
     }
   }
@@ -318,37 +307,35 @@ export async function createSalesOrder(
     })
 
     // Emit dashboard update event for real-time updates
-    emitter.emit("dashboard-updates", {
-      action: "sales_order_created",
+    emitter.emit('dashboard-updates', {
+      action: 'sales_order_created',
       salesOrderReference: salesOrder.salesOrderReference,
       itemCount: salesOrder.salesOrderItems?.length || 0,
-      totalAmount: salesOrder.salesOrderItems?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0,
+      totalAmount:
+        salesOrder.salesOrderItems?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0,
       timestamp: Date.now(),
       companyId: user.companyId,
     })
 
     return {
       notification: {
-        message: "Sales order created successfully",
-        status: "Success",
-        redirectTo: "/sales-orders",
+        message: 'Sales order created successfully',
+        status: 'Success',
+        redirectTo: '/sales-orders',
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Sales order could not be created",
-        status: "Error",
+        message: 'Sales order could not be created',
+        status: 'Error',
       },
     }
   }
 }
 
-export async function updateSalesOrder(
-  request: Request,
-  salesOrder: ISalesOrder
-) {
-  const user = await requireBetterAuthUser(request, ["update:salesOrders"])
+export async function updateSalesOrder(request: Request, salesOrder: ISalesOrder) {
+  const user = await requireBetterAuthUser(request, ['update:salesOrders'])
 
   const foundSalesOrder = await prisma.salesOrder.findFirst({
     where: {
@@ -361,7 +348,7 @@ export async function updateSalesOrder(
   if (foundSalesOrder) {
     return {
       errors: {
-        salesOrderReference: "A sales order already exists with this reference",
+        salesOrderReference: 'A sales order already exists with this reference',
       },
     }
   }
@@ -400,27 +387,28 @@ export async function updateSalesOrder(
     })
 
     // Emit dashboard update event for real-time updates
-    emitter.emit("dashboard-updates", {
-      action: "sales_order_updated",
+    emitter.emit('dashboard-updates', {
+      action: 'sales_order_updated',
       salesOrderReference: salesOrder.salesOrderReference,
       itemCount: salesOrder.salesOrderItems?.length || 0,
-      totalAmount: salesOrder.salesOrderItems?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0,
+      totalAmount:
+        salesOrder.salesOrderItems?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0,
       timestamp: Date.now(),
       companyId: user.companyId,
     })
 
     return {
       notification: {
-        message: "Sales order updated successfully",
-        status: "Success",
-        redirectTo: "/sales-orders",
+        message: 'Sales order updated successfully',
+        status: 'Success',
+        redirectTo: '/sales-orders',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Sales order could not be updated",
-        status: "Error",
+        message: 'Sales order could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }
@@ -429,12 +417,9 @@ export async function updateSalesOrder(
 
 export async function updateSalesOrderStatus(
   request: Request,
-  {
-    salesOrderId,
-    status,
-  }: { salesOrderId: ISalesOrder["id"]; status: ISalesOrder["status"] }
+  { salesOrderId, status }: { salesOrderId: ISalesOrder['id']; status: ISalesOrder['status'] }
 ) {
-  const user = await requireBetterAuthUser(request, ["update:salesOrders"])
+  const user = await requireBetterAuthUser(request, ['update:salesOrders'])
 
   try {
     const invoices =
@@ -451,8 +436,8 @@ export async function updateSalesOrderStatus(
       return {
         notification: {
           message:
-            "Sales order status could not be cancelled because an invoice has been created for this sales order",
-          status: "Error",
+            'Sales order status could not be cancelled because an invoice has been created for this sales order',
+          status: 'Error',
           autoClose: false,
         },
       }
@@ -467,15 +452,15 @@ export async function updateSalesOrderStatus(
 
     return {
       notification: {
-        message: "Sales order status updated successfully",
-        status: "Success",
+        message: 'Sales order status updated successfully',
+        status: 'Success',
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Sales order status could not be updated",
-        status: "Error",
+        message: 'Sales order status could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }
@@ -485,11 +470,8 @@ export async function updateSalesOrderStatus(
 /**
  * Check stock availability and create backorders for out-of-stock items
  */
-export async function processSalesOrderStockCheck(
-  request: Request,
-  salesOrderId: string
-) {
-  const user = await requireBetterAuthUser(request, ["update:salesOrders"])
+export async function processSalesOrderStockCheck(request: Request, salesOrderId: string) {
+  const user = await requireBetterAuthUser(request, ['update:salesOrders'])
 
   // Get sales order with items and product stock information
   const salesOrder = await prisma.salesOrder.findUnique({
@@ -504,7 +486,7 @@ export async function processSalesOrderStockCheck(
   })
 
   if (!salesOrder) {
-    throw new Error("Sales order not found")
+    throw new Error('Sales order not found')
   }
 
   const outOfStockItems: Array<{
@@ -546,8 +528,8 @@ export async function processSalesOrderStockCheck(
 
   return {
     notification: {
-      message: "Sales order confirmed - all items in stock",
-      status: "Success",
+      message: 'Sales order confirmed - all items in stock',
+      status: 'Success',
     },
   }
 }
@@ -571,7 +553,7 @@ export async function createBackorderFromSalesOrder(
     }>
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["create:backorders"])
+  const user = await requireBetterAuthUser(request, ['create:backorders'])
 
   // Get sales order details
   const salesOrder = await prisma.salesOrder.findUnique({
@@ -580,7 +562,7 @@ export async function createBackorderFromSalesOrder(
   })
 
   if (!salesOrder) {
-    throw new Error("Sales order not found")
+    throw new Error('Sales order not found')
   }
 
   // Generate backorder reference
@@ -634,7 +616,7 @@ export async function createBackorderFromSalesOrder(
     backorderItems,
     notification: {
       message: `Backorder ${backorderReference} successfully created.`,
-      status: "Success",
+      status: 'Success',
     },
   }
 }
@@ -647,7 +629,7 @@ export async function fulfillBackorderItem(
   backorderItemId: string,
   fulfilledQuantity: number
 ) {
-  const user = await requireBetterAuthUser(request, ["update:backorders"])
+  const user = await requireBetterAuthUser(request, ['update:backorders'])
 
   // Update the backorder item
   const backorderItem = await prisma.backorderItem.update({
@@ -671,9 +653,10 @@ export async function fulfillBackorderItem(
   })
 
   // Update backorder item status
-  const newItemStatus = backorderItem.remainingQuantity <= 0
-    ? BACKORDER_ITEM_STATUSES.FULFILLED
-    : BACKORDER_ITEM_STATUSES.PARTIALLY_FULFILLED
+  const newItemStatus =
+    backorderItem.remainingQuantity <= 0
+      ? BACKORDER_ITEM_STATUSES.FULFILLED
+      : BACKORDER_ITEM_STATUSES.PARTIALLY_FULFILLED
 
   await prisma.backorderItem.update({
     where: { id: backorderItemId },
@@ -681,10 +664,8 @@ export async function fulfillBackorderItem(
   })
 
   // Check if all backorder items are fulfilled
-  const allItemsFulfilled = backorderItem.backorder.backorderItems.every(
-    (item: any) => item.id === backorderItemId
-      ? backorderItem.remainingQuantity <= 0
-      : item.remainingQuantity <= 0
+  const allItemsFulfilled = backorderItem.backorder.backorderItems.every((item: any) =>
+    item.id === backorderItemId ? backorderItem.remainingQuantity <= 0 : item.remainingQuantity <= 0
   )
 
   // Update backorder status
@@ -722,8 +703,8 @@ export async function fulfillBackorderItem(
   return {
     backorderItem,
     notification: {
-      message: "Backorder item fulfilled successfully",
-      status: "Success",
+      message: 'Backorder item fulfilled successfully',
+      status: 'Success',
     },
   }
 }
@@ -753,13 +734,23 @@ export async function getSalesOrderBackorderSummary(salesOrderId: string) {
 
   const summary = {
     totalBackorders: backorders.length,
-    pendingBackorders: backorders.filter((bo: any) => bo.status === BACKORDER_STATUSES.PENDING).length,
-    partialBackorders: backorders.filter((bo: any) => bo.status === BACKORDER_STATUSES.PARTIAL).length,
-    fulfilledBackorders: backorders.filter((bo: any) => bo.status === BACKORDER_STATUSES.FULFILLED).length,
-    cancelledBackorders: backorders.filter((bo: any) => bo.status === BACKORDER_STATUSES.CANCELLED).length,
-    totalBackorderedItems: backorders.reduce((total: number, bo: any) => total + bo.backorderItems.length, 0),
-    totalBackorderedValue: backorders.reduce((total: number, bo: any) =>
-      total + bo.backorderItems.reduce((itemTotal: number, item: any) => itemTotal + item.amount, 0), 0
+    pendingBackorders: backorders.filter((bo: any) => bo.status === BACKORDER_STATUSES.PENDING)
+      .length,
+    partialBackorders: backorders.filter((bo: any) => bo.status === BACKORDER_STATUSES.PARTIAL)
+      .length,
+    fulfilledBackorders: backorders.filter((bo: any) => bo.status === BACKORDER_STATUSES.FULFILLED)
+      .length,
+    cancelledBackorders: backorders.filter((bo: any) => bo.status === BACKORDER_STATUSES.CANCELLED)
+      .length,
+    totalBackorderedItems: backorders.reduce(
+      (total: number, bo: any) => total + bo.backorderItems.length,
+      0
+    ),
+    totalBackorderedValue: backorders.reduce(
+      (total: number, bo: any) =>
+        total +
+        bo.backorderItems.reduce((itemTotal: number, item: any) => itemTotal + item.amount, 0),
+      0
     ),
   }
 

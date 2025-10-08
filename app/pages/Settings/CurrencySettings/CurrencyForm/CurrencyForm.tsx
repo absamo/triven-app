@@ -1,19 +1,16 @@
-import { Grid, Modal } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { zodResolver } from "mantine-form-zod-resolver";
-import { type ReactElement } from "react";
-import { useTranslation } from "react-i18next";
-import { useSubmit } from "react-router";
+import { Grid, Modal } from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { type ReactElement } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSubmit } from 'react-router'
 
-import {
-  type ICurrency,
-  currencySchema,
-} from "~/app/common/validations/currencySchema";
-import Currency from "~/app/components/Currency";
+import { type ICurrency, currencySchema } from '~/app/common/validations/currencySchema'
+import Currency from '~/app/components/Currency'
 
-import Form from "~/app/components/Form";
+import Form from '~/app/components/Form'
 
-type CurrencyProps = Omit<ICurrency, "base" | "symbol"> & {
+type CurrencyProps = Omit<ICurrency, 'base' | 'symbol'> & {
   flag: ReactElement
 }
 
@@ -23,20 +20,16 @@ interface CurrencyFormProps {
   order: number
 }
 
-export default function CurrencyForm({
-  opened,
-  onClose,
-  order,
-}: CurrencyFormProps) {
-  const { t } = useTranslation(['settings', 'common']);
+export default function CurrencyForm({ opened, onClose, order }: CurrencyFormProps) {
+  const { t } = useTranslation(['settings', 'common'])
 
   const form = useForm({
     validate: zodResolver(currencySchema),
     initialValues: {
-      currencyCode: "",
-      currencyName: "",
-      countryName: "",
-      isoCode: "",
+      currencyCode: '',
+      currencyName: '',
+      countryName: '',
+      isoCode: '',
     },
   })
 
@@ -45,13 +38,13 @@ export default function CurrencyForm({
   const handleSubmit = (curency: ICurrency) => {
     const formData = new FormData()
 
-    formData.append("currencyCode", curency.currencyCode)
-    formData.append("currencyName", curency.currencyName || "")
-    formData.append("countryName", curency.countryName || "")
-    formData.append("isoCode", curency.isoCode || "")
-    formData.append("order", order.toString())
+    formData.append('currencyCode', curency.currencyCode)
+    formData.append('currencyName', curency.currencyName || '')
+    formData.append('countryName', curency.countryName || '')
+    formData.append('isoCode', curency.isoCode || '')
+    formData.append('order', order.toString())
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
 
     form.reset()
     onClose()
@@ -87,7 +80,7 @@ export default function CurrencyForm({
                 onChange={handleChange}
                 name="currencyCode"
                 required
-                error={form.getInputProps("currencyCode").error}
+                error={form.getInputProps('currencyCode').error}
               />
             </Grid.Col>
           </Form>

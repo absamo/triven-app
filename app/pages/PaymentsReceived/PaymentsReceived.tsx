@@ -1,23 +1,20 @@
-import { Badge, Menu, Table, Text, UnstyledButton } from "@mantine/core"
-import { IconDotsVertical } from "@tabler/icons-react"
-import dayjs from "dayjs"
+import { Badge, Menu, Table, Text, UnstyledButton } from '@mantine/core'
+import { IconDotsVertical } from '@tabler/icons-react'
+import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
-import { Form, Link, useLocation, useNavigate, useSubmit } from "react-router"
+import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
 
-import { formatCurrency } from "~/app/common/helpers/money"
-import {
-  getPaymentMethodLabel,
-  getPaymentStatusLabel
-} from "~/app/common/helpers/payment"
-import { Title } from "~/app/partials/Title"
+import { formatCurrency } from '~/app/common/helpers/money'
+import { getPaymentMethodLabel, getPaymentStatusLabel } from '~/app/common/helpers/payment'
+import { Title } from '~/app/partials/Title'
 // import InvoicePDF from "~/app/PDF/InvoicePDF"
-import { useForm } from "@mantine/form"
-import { useEffect, useState } from "react"
-import { PAYMENT_STATUSES } from "~/app/common/constants"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import type { IInvoice } from "~/app/common/validations/invoiceSchema"
-import { type IPaymentsReceived } from "~/app/common/validations/paymentsReceivedSchema"
-import { SalesOrderFilters } from "~/app/partials/SalesOrderFilters"
+import { useForm } from '@mantine/form'
+import { useEffect, useState } from 'react'
+import { PAYMENT_STATUSES } from '~/app/common/constants'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import type { IInvoice } from '~/app/common/validations/invoiceSchema'
+import { type IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
+import { SalesOrderFilters } from '~/app/partials/SalesOrderFilters'
 
 interface PaymentsReceivedProps {
   paymentsReceived: IPaymentsReceived[]
@@ -36,7 +33,7 @@ export default function PaymentsReceivedPage({
   permissions = [],
   invoices = [],
 }: PaymentsReceivedProps) {
-  const { t } = useTranslation(['paymentsReceived', 'common']);
+  const { t } = useTranslation(['paymentsReceived', 'common'])
   const [invoiceReference, setInvoiceReference] = useState<string>()
   const [data, setData] = useState<FetcherData | null>(null)
   const location = useLocation()
@@ -46,8 +43,8 @@ export default function PaymentsReceivedPage({
     }
   }, [location.state?.billReference])
 
-  const canCreate = permissions.includes("create:paymentsReceived")
-  const canUpdate = permissions.includes("update:paymentsReceived")
+  const canCreate = permissions.includes('create:paymentsReceived')
+  const canUpdate = permissions.includes('update:paymentsReceived')
 
   const form = useForm()
   const navigate = useNavigate()
@@ -57,17 +54,14 @@ export default function PaymentsReceivedPage({
   const handleSubmit = () => {
     const { status, paymentReceivedId } = form.values
     const formData = new FormData()
-    formData.append("status", JSON.stringify(status))
-    formData.append("paymentReceivedId", paymentReceivedId as string)
-    submit(formData, { method: "post", action: "/payments-received" })
+    formData.append('status', JSON.stringify(status))
+    formData.append('paymentReceivedId', paymentReceivedId as string)
+    submit(formData, { method: 'post', action: '/payments-received' })
   }
 
   const rows = (data?.paymentsReceived || paymentsReceived).map(
     (paymentReceived: IPaymentsReceived) => {
-      const paymentMethod = getPaymentMethodLabel(
-        paymentReceived?.paymentMethod,
-        t
-      )
+      const paymentMethod = getPaymentMethodLabel(paymentReceived?.paymentMethod, t)
 
       const status = getPaymentStatusLabel(paymentReceived?.status, t)
 
@@ -75,23 +69,24 @@ export default function PaymentsReceivedPage({
         <Table.Tr
           key={paymentReceived.id}
           onClick={() => {
-            canUpdate &&
-              navigate(`/payments-received/${paymentReceived.id}/edit`)
+            canUpdate && navigate(`/payments-received/${paymentReceived.id}/edit`)
           }}
         >
           <Table.Td>
-            <Text size="sm">
-              {dayjs(paymentReceived.paymentDate).format("DD-MM-YYYY")}
-            </Text>
+            <Text size="sm">{dayjs(paymentReceived.paymentDate).format('DD-MM-YYYY')}</Text>
           </Table.Td>
           <Table.Td>{paymentReceived.paymentReference}</Table.Td>
           <Table.Td>{paymentReceived.invoice?.invoiceReference}</Table.Td>
           <Table.Td>{paymentMethod.label}</Table.Td>
           <Table.Td>
-            <Text size="sm">{formatCurrency(paymentReceived.balanceDue, currency?.symbol || '$')}</Text>
+            <Text size="sm">
+              {formatCurrency(paymentReceived.balanceDue, currency?.symbol || '$')}
+            </Text>
           </Table.Td>
           <Table.Td>
-            <Text size="sm">{formatCurrency(paymentReceived.amountReceived, currency?.symbol || '$')}</Text>
+            <Text size="sm">
+              {formatCurrency(paymentReceived.amountReceived, currency?.symbol || '$')}
+            </Text>
           </Table.Td>
           <Table.Td>
             <Badge color={status.color} variant="light">
@@ -122,13 +117,10 @@ export default function PaymentsReceivedPage({
                   <Menu.Item
                     type="submit"
                     component={Link}
-                    to={"/invoices"}
+                    to={'/invoices'}
                     state={{
-                      salesOrderReference:
-                        paymentReceived.invoice?.salesOrder
-                          ?.salesOrderReference,
-                      invoiceReference:
-                        paymentReceived.invoice?.invoiceReference,
+                      salesOrderReference: paymentReceived.invoice?.salesOrder?.salesOrderReference,
+                      invoiceReference: paymentReceived.invoice?.invoiceReference,
                     }}
                   >
                     {t('paymentsReceived:viewInvoice', 'View Invoice')}
@@ -142,9 +134,7 @@ export default function PaymentsReceivedPage({
                         status: PAYMENT_STATUSES.CANCELLED,
                       })
                     }}
-                    disabled={
-                      paymentReceived.status === PAYMENT_STATUSES.CANCELLED
-                    }
+                    disabled={paymentReceived.status === PAYMENT_STATUSES.CANCELLED}
                   >
                     {t('paymentsReceived:cancelPaymentReceived', 'Cancel Payment Received')}
                   </Menu.Item>
@@ -159,7 +149,7 @@ export default function PaymentsReceivedPage({
 
   return (
     <>
-      <Title to={"/payments-received/create"} canCreate={canCreate}>
+      <Title to={'/payments-received/create'} canCreate={canCreate}>
         {t('paymentsReceived:title', 'Payments Received')}
       </Title>
       <SalesOrderFilters
@@ -174,7 +164,10 @@ export default function PaymentsReceivedPage({
               label: t('paymentsReceived:partiallyPaid', 'Partially paid'),
             },
             { value: PAYMENT_STATUSES.PAID, label: t('paymentsReceived:paid', 'Paid') },
-            { value: PAYMENT_STATUSES.CANCELLED, label: t('paymentsReceived:cancelled', 'Cancelled') },
+            {
+              value: PAYMENT_STATUSES.CANCELLED,
+              label: t('paymentsReceived:cancelled', 'Cancelled'),
+            },
           ],
 
           description: t('paymentsReceived:filterByStatus', 'Filter by status'),
@@ -193,13 +186,7 @@ export default function PaymentsReceivedPage({
         route="/api/payments-received-search"
         onFilter={setData}
       />
-      <Table
-        verticalSpacing="xs"
-        highlightOnHover={canUpdate}
-        withTableBorder
-        striped
-        mt={35}
-      >
+      <Table verticalSpacing="xs" highlightOnHover={canUpdate} withTableBorder striped mt={35}>
         <Table.Thead fz={12}>
           <Table.Tr>
             <Table.Th>{t('common:date', 'DATE')}</Table.Th>

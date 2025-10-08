@@ -1,5 +1,5 @@
-import { PURCHASE_ORDER_STATUSES } from "~/app/common/constants"
-import type { IPurchaseOrder } from "../validations/purchaseOrderSchema"
+import { PURCHASE_ORDER_STATUSES } from '~/app/common/constants'
+import type { IPurchaseOrder } from '../validations/purchaseOrderSchema'
 
 export function getPurchaseOrderItemsStatusLabel(
   orderedQuantity: number,
@@ -7,34 +7,34 @@ export function getPurchaseOrderItemsStatusLabel(
   cancelled?: boolean
 ) {
   if (cancelled) {
-    return { label: "Cancelled", color: "red" }
+    return { label: 'Cancelled', color: 'red' }
   }
 
   if (orderedQuantity === receivedQuantity) {
-    return { label: "Received", color: "green" }
+    return { label: 'Received', color: 'green' }
   }
 
   if (receivedQuantity > 0 && receivedQuantity < orderedQuantity) {
-    return { label: "Partially Received", color: "orange" }
+    return { label: 'Partially Received', color: 'orange' }
   }
 
-  return { label: "Pending", color: "gray" }
+  return { label: 'Pending', color: 'gray' }
 }
 
-export function getPurchaseOrderStatusLabel(status: IPurchaseOrder["status"]) {
+export function getPurchaseOrderStatusLabel(status: IPurchaseOrder['status']) {
   switch (status) {
     case PURCHASE_ORDER_STATUSES.ISSUED:
-      return { label: "Issued", color: "blue" }
+      return { label: 'Issued', color: 'blue' }
     case PURCHASE_ORDER_STATUSES.PENDING:
-      return { label: "Pending", color: "gray" }
+      return { label: 'Pending', color: 'gray' }
     case PURCHASE_ORDER_STATUSES.PARTIALLY_RECEIVED:
-      return { label: "Partially Received", color: "orange" }
+      return { label: 'Partially Received', color: 'orange' }
     case PURCHASE_ORDER_STATUSES.RECEIVED:
-      return { label: "Received", color: "green" }
+      return { label: 'Received', color: 'green' }
     case PURCHASE_ORDER_STATUSES.CANCELLED:
-      return { label: "Cancelled", color: "red" }
+      return { label: 'Cancelled', color: 'red' }
     default:
-      return { label: "Unknown", color: "red" }
+      return { label: 'Unknown', color: 'red' }
   }
 }
 
@@ -43,10 +43,7 @@ export function getPurchaseOrderStatus(purchaseOrder: IPurchaseOrder): string {
     return PURCHASE_ORDER_STATUSES.ISSUED
   }
 
-  if (
-    purchaseOrder?.purchaseReceives?.length ===
-    purchaseOrder?.purchaseOrderItems?.length
-  ) {
+  if (purchaseOrder?.purchaseReceives?.length === purchaseOrder?.purchaseOrderItems?.length) {
     return PURCHASE_ORDER_STATUSES.RECEIVED
   }
 

@@ -1,23 +1,20 @@
-import { redirect } from "react-router"
+import { redirect } from 'react-router'
 
-import { PRODUCT_STATUSES } from "~/app/common/constants"
-import {
-  getStockNotificationMessage,
-  getStockStatus,
-} from "~/app/common/helpers/inventories"
-import { type IProduct } from "~/app/common/validations/productSchema"
-import { type IStockAdjustment } from "~/app/common/validations/stockAdjustmentsSchema"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import { createAndEmitNotification } from "~/app/services/notificationHelper.server"
-import { emitter } from "~/app/utils/emitter.server"
+import { PRODUCT_STATUSES } from '~/app/common/constants'
+import { getStockNotificationMessage, getStockStatus } from '~/app/common/helpers/inventories'
+import { type IProduct } from '~/app/common/validations/productSchema'
+import { type IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { createAndEmitNotification } from '~/app/services/notificationHelper.server'
+import { emitter } from '~/app/utils/emitter.server'
 
 export async function getStockAdjustments(
   request: Request,
   limit: number = 30,
   offset: number = 0
 ) {
-  const user = await requireBetterAuthUser(request, ["read:stockAdjustments"])
+  const user = await requireBetterAuthUser(request, ['read:stockAdjustments'])
 
   const stockAdjustments = await prisma.stockAdjustment.findMany({
     take: limit,
@@ -39,7 +36,7 @@ export async function getFilteredStockAdjustments(
     dateTo?: string | null
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:stockAdjustments"])
+  const user = await requireBetterAuthUser(request, ['read:stockAdjustments'])
 
   const where: any = {
     companyId: user.companyId!,
@@ -92,9 +89,7 @@ export async function getFilteredStockAdjustments(
   return stockAdjustments || []
 }
 
-export async function getStockAdjustment(
-  stockAdjustmentId: string
-) {
+export async function getStockAdjustment(stockAdjustmentId: string) {
   const stockAdjustment = await prisma.stockAdjustment.findUnique({
     where: { id: stockAdjustmentId },
     include: {
@@ -129,11 +124,8 @@ export async function getStockAdjustment(
   return stockAdjustment
 }
 
-export async function getStockAdjustmentsByProductId(
-  request: Request,
-  productId: IProduct["id"]
-) {
-  const user = await requireBetterAuthUser(request, ["read:stockAdjustments"])
+export async function getStockAdjustmentsByProductId(request: Request, productId: IProduct['id']) {
+  const user = await requireBetterAuthUser(request, ['read:stockAdjustments'])
 
   const stockAdjustments = await prisma.stockAdjustment.findMany({
     where: { companyId: user.companyId!, products: { some: { id: productId } } },
@@ -145,9 +137,9 @@ export async function getStockAdjustmentsByProductId(
 
 export async function createAdjustment(
   request: Request,
-  { products, ...adjustment }: Omit<IStockAdjustment, "site">
+  { products, ...adjustment }: Omit<IStockAdjustment, 'site'>
 ) {
-  const user = await requireBetterAuthUser(request, ["create:stockAdjustments"])
+  const user = await requireBetterAuthUser(request, ['create:stockAdjustments'])
 
   await Promise.all(
     (products || []).map(async (product: IProduct) => {
@@ -164,7 +156,7 @@ export async function createAdjustment(
           adjustedQuantity: product.adjustedQuantity,
           openingStock: product.openingStock,
         } as any,
-      })      // Check status with the new stock levels
+      }) // Check status with the new stock levels
       const status = getStockStatus({
         ...product,
         accountingStockOnHand: newAccountingStock,
@@ -176,9 +168,9 @@ export async function createAdjustment(
       if (newAccountingStock <= product.reorderPoint && notificationMsg) {
         await createAndEmitNotification({
           message: notificationMsg,
-          status: status || "",
-          companyId: user.companyId || "",
-          createdById: user.id || "",
+          status: status || '',
+          companyId: user.companyId || '',
+          createdById: user.id || '',
           productId: product.id,
           read: false,
         })
@@ -189,8 +181,7 @@ export async function createAdjustment(
           openingStock: updatedProduct.openingStock,
           physicalStockOnHand: updatedProduct.physicalStockOnHand,
           accountingStockOnHand:
-            updatedProduct.accountingStockOnHand +
-            updatedProduct.adjustedQuantity,
+            updatedProduct.accountingStockOnHand + updatedProduct.adjustedQuantity,
           adjustedQuantity: updatedProduct.adjustedQuantity,
           createdById: user.id!,
           productId: updatedProduct.id,
@@ -214,11 +205,11 @@ export async function createAdjustment(
   })
 
   // Emit dashboard update event for real-time updates
-  emitter.emit("dashboard-updates", {
-    action: "stock_adjustment_created",
+  emitter.emit('dashboard-updates', {
+    action: 'stock_adjustment_created',
     adjustmentId: adjustment.id,
     productCount: (products || []).length,
-    products: (products || []).map(product => ({
+    products: (products || []).map((product) => ({
       id: product.id,
       name: product.name,
       adjustedQuantity: product.adjustedQuantity,
@@ -228,19 +219,18 @@ export async function createAdjustment(
     companyId: user.companyId!,
   })
 
-  return redirect("/stock-adjustments")
+  return redirect('/stock-adjustments')
 }
 
 export async function updateAdjustment(
   request: Request,
-  { products, ...adjustment }: Omit<IStockAdjustment, "site">
+  { products, ...adjustment }: Omit<IStockAdjustment, 'site'>
 ) {
-  const user = await requireBetterAuthUser(request, ["update:stockAdjustments"])
+  const user = await requireBetterAuthUser(request, ['update:stockAdjustments'])
 
   await Promise.all(
     (products || []).map(async (product: IProduct) => {
-      const stockOnHand =
-        (product.openingStock || 0) + (product.adjustedQuantity || 0)
+      const stockOnHand = (product.openingStock || 0) + (product.adjustedQuantity || 0)
 
       const status = getStockStatus({
         ...product,
@@ -270,9 +260,9 @@ export async function updateAdjustment(
       ) {
         await createAndEmitNotification({
           message: notificationMsg,
-          status: status || "",
-          companyId: user.companyId || "",
-          createdById: user.id || "",
+          status: status || '',
+          companyId: user.companyId || '',
+          createdById: user.id || '',
           productId: product.id,
           read: false,
         })
@@ -308,19 +298,19 @@ export async function updateAdjustment(
   })
 
   // Emit notification with stock adjustment data
-  emitter.emit("notifications", {
-    action: "stock_adjustment_updated",
+  emitter.emit('notifications', {
+    action: 'stock_adjustment_updated',
     adjustmentId: adjustment.id,
     productCount: (products || []).length,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   })
 
   // Emit dashboard update event for real-time updates
-  emitter.emit("dashboard-updates", {
-    action: "stock_adjustment_updated",
+  emitter.emit('dashboard-updates', {
+    action: 'stock_adjustment_updated',
     adjustmentId: adjustment.id,
     productCount: (products || []).length,
-    products: (products || []).map(product => ({
+    products: (products || []).map((product) => ({
       id: product.id,
       name: product.name,
       adjustedQuantity: product.adjustedQuantity,
@@ -330,18 +320,15 @@ export async function updateAdjustment(
     companyId: user.companyId!,
   })
 
-  return redirect("/stock-adjustments")
+  return redirect('/stock-adjustments')
 }
 
-export async function deleteAdjustment(
-  request: Request,
-  adjustmentId: IStockAdjustment["id"]
-) {
-  const user = await requireBetterAuthUser(request, ["delete:stockAdjustments"])
+export async function deleteAdjustment(request: Request, adjustmentId: IStockAdjustment['id']) {
+  const user = await requireBetterAuthUser(request, ['delete:stockAdjustments'])
 
   await prisma.stockAdjustment.delete({
     where: { id: adjustmentId },
   })
 
-  return redirect("/stock-adjustments")
+  return redirect('/stock-adjustments')
 }

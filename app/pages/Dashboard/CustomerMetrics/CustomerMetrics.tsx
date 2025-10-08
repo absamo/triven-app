@@ -1,45 +1,44 @@
-import { DonutChart } from '@mantine/charts';
-import { Grid, Group, Paper, Text, ThemeIcon, Title } from "@mantine/core";
-import { IconUserCog, IconUserPlus, IconUsers } from "@tabler/icons-react";
-import { useTranslation } from "react-i18next";
+import { DonutChart } from '@mantine/charts'
+import { Grid, Group, Paper, Text, ThemeIcon, Title } from '@mantine/core'
+import { IconUserCog, IconUserPlus, IconUsers } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 
 interface CustomerMetricsProps {
   customerMetrics: {
-    newCustomers: number;
-    activeCustomers: number;
+    newCustomers: number
+    activeCustomers: number
     customersByType: {
-      name: string;
-      value: number;
-      color: string;
-    }[];
+      name: string
+      value: number
+      color: string
+    }[]
     customerActivity: {
-      name: string;
-      value: number;
-      color: string;
-    }[];
-  };
+      name: string
+      value: number
+      color: string
+    }[]
+  }
 }
 
 export default function CustomerMetrics({ customerMetrics }: CustomerMetricsProps) {
   const { t } = useTranslation(['dashboard'])
 
-  const hasCustomerData = customerMetrics && (
-    customerMetrics.newCustomers > 0 ||
-    customerMetrics.activeCustomers > 0 ||
-    (customerMetrics.customersByType && customerMetrics.customersByType.some(type => type.value > 0)) ||
-    (customerMetrics.customerActivity && customerMetrics.customerActivity.some(activity => activity.value > 0))
-  )
+  const hasCustomerData =
+    customerMetrics &&
+    (customerMetrics.newCustomers > 0 ||
+      customerMetrics.activeCustomers > 0 ||
+      (customerMetrics.customersByType &&
+        customerMetrics.customersByType.some((type) => type.value > 0)) ||
+      (customerMetrics.customerActivity &&
+        customerMetrics.customerActivity.some((activity) => activity.value > 0)))
 
   return (
     <Paper withBorder p="md" radius="md" mb={0}>
       <Group justify="space-between">
-        <Title order={5} mb="md">{t('dashboard:customerInsights')}</Title>
-        <ThemeIcon
-          color="indigo"
-          variant="light"
-          size="lg"
-          radius="md"
-        >
+        <Title order={5} mb="md">
+          {t('dashboard:customerInsights')}
+        </Title>
+        <ThemeIcon color="indigo" variant="light" size="lg" radius="md">
           <IconUsers size="1.2rem" stroke={1.5} />
         </ThemeIcon>
       </Group>
@@ -57,8 +56,12 @@ export default function CustomerMetrics({ customerMetrics }: CustomerMetricsProp
                   <IconUserPlus size="1.2rem" stroke={1.5} />
                 </ThemeIcon>
                 <div>
-                  <Text fz="xs" c="dimmed">{t('dashboard:newCustomers30Days')}</Text>
-                  <Text fw={700} size="lg">{customerMetrics.newCustomers}</Text>
+                  <Text fz="xs" c="dimmed">
+                    {t('dashboard:newCustomers30Days')}
+                  </Text>
+                  <Text fw={700} size="lg">
+                    {customerMetrics.newCustomers}
+                  </Text>
                 </div>
               </Group>
 
@@ -67,15 +70,21 @@ export default function CustomerMetrics({ customerMetrics }: CustomerMetricsProp
                   <IconUserCog size="1.2rem" stroke={1.5} />
                 </ThemeIcon>
                 <div>
-                  <Text fz="xs" c="dimmed">{t('dashboard:activeCustomers')}</Text>
-                  <Text fw={700} size="lg">{customerMetrics.activeCustomers}</Text>
+                  <Text fz="xs" c="dimmed">
+                    {t('dashboard:activeCustomers')}
+                  </Text>
+                  <Text fw={700} size="lg">
+                    {customerMetrics.activeCustomers}
+                  </Text>
                 </div>
               </Group>
             </Group>
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Title order={6} ta="center" mb="sm">{t('dashboard:customerTypes')}</Title>
+            <Title order={6} ta="center" mb="sm">
+              {t('dashboard:customerTypes')}
+            </Title>
             <DonutChart
               data={customerMetrics.customersByType}
               size={200}
@@ -89,7 +98,9 @@ export default function CustomerMetrics({ customerMetrics }: CustomerMetricsProp
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Title order={6} ta="center" mb="sm">{t('dashboard:engagementLevels')}</Title>
+            <Title order={6} ta="center" mb="sm">
+              {t('dashboard:engagementLevels')}
+            </Title>
             <DonutChart
               data={customerMetrics.customerActivity}
               size={200}
@@ -110,5 +121,5 @@ export default function CustomerMetrics({ customerMetrics }: CustomerMetricsProp
         </div>
       )}
     </Paper>
-  );
+  )
 }

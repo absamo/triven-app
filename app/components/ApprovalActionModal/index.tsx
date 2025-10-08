@@ -1,1 +1,1 @@
-export { default } from './ApprovalActionModal';
+export { default } from './ApprovalActionModal'

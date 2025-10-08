@@ -9,22 +9,32 @@ import {
   Menu,
   Popover,
   Text,
-  Tooltip
-} from "@mantine/core"
+  Tooltip,
+} from '@mantine/core'
 
-import { useMantineColorScheme } from "@mantine/core"
-import { IconBell, IconCheck, IconChevronDown, IconChevronUp, IconLogout, IconMoon, IconSparkles, IconSun, IconUserEdit } from "@tabler/icons-react"
-import { useEffect, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Link, useNavigate } from "react-router"
-import { type INotification } from "~/app/common/validations/notificationSchema"
-import type { IProfile } from "~/app/common/validations/profileSchema"
-import type { IRole } from "~/app/common/validations/roleSchema"
-import { Logo } from "~/app/components"
+import { useMantineColorScheme } from '@mantine/core'
+import {
+  IconBell,
+  IconCheck,
+  IconChevronDown,
+  IconChevronUp,
+  IconLogout,
+  IconMoon,
+  IconSparkles,
+  IconSun,
+  IconUserEdit,
+} from '@tabler/icons-react'
+import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate } from 'react-router'
+import { type INotification } from '~/app/common/validations/notificationSchema'
+import type { IProfile } from '~/app/common/validations/profileSchema'
+import type { IRole } from '~/app/common/validations/roleSchema'
+import { Logo } from '~/app/components'
 import FrIcon from '~/app/components/SvgIcons/FrIcon'
 import UsIcon from '~/app/components/SvgIcons/UsIcon'
-import Notification from "../Notification"
-import classes from "./Header.module.css"
+import Notification from '../Notification'
+import classes from './Header.module.css'
 interface HeaderProps {
   showNotification: (opened: boolean) => void
   user: {
@@ -42,14 +52,9 @@ interface HeaderProps {
 const languages = [
   { code: 'en', name: 'English', flag: UsIcon },
   { code: 'fr', name: 'Français', flag: FrIcon },
-];
+]
 
-
-export default function Header({
-  showNotification,
-  user,
-  notifications,
-}: HeaderProps) {
+export default function Header({ showNotification, user, notifications }: HeaderProps) {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation(['navigation', 'auth', 'common'])
@@ -66,74 +71,71 @@ export default function Header({
   useEffect(() => {
     // Initial fetch to get all notifications (both read and unread)
     fetch('/api/notifications?limit=100&offset=0')
-      .then(response => response.json())
-      .then(result => {
+      .then((response) => response.json())
+      .then((result) => {
         if (result.notifications) {
-          setRealTimeNotifications(result.notifications);
+          setRealTimeNotifications(result.notifications)
         }
       })
-      .catch(error => {
-        console.error('Error fetching initial notifications:', error);
-      });
+      .catch((error) => {
+        console.error('Error fetching initial notifications:', error)
+      })
 
-    const eventSource = new EventSource('/api/notifications-stream');
-    eventSourceRef.current = eventSource;
+    const eventSource = new EventSource('/api/notifications-stream')
+    eventSourceRef.current = eventSource
 
     eventSource.addEventListener('connected', (event) => {
       // Connection established
-    });
+    })
 
     eventSource.addEventListener('notifications', (event) => {
       try {
-        const data = JSON.parse(event.data);
+        const data = JSON.parse(event.data)
 
         if (data.type === 'notifications') {
           // Fetch fresh notification count when there's an update - get all notifications
           fetch('/api/notifications?limit=100&offset=0')
-            .then(response => response.json())
-            .then(result => {
+            .then((response) => response.json())
+            .then((result) => {
               if (result.notifications) {
-                setRealTimeNotifications(result.notifications);
+                setRealTimeNotifications(result.notifications)
               }
             })
-            .catch(error => {
-              console.error('Error fetching updated notifications:', error);
-            });
+            .catch((error) => {
+              console.error('Error fetching updated notifications:', error)
+            })
         }
       } catch (error) {
-        console.error('Error parsing notification SSE data:', error);
+        console.error('Error parsing notification SSE data:', error)
       }
-    });
+    })
 
     eventSource.addEventListener('error', (event) => {
-      console.error('❌ Header: Notification SSE error:', event);
-    });
+      console.error('❌ Header: Notification SSE error:', event)
+    })
 
     // Cleanup on unmount
     return () => {
       if (eventSourceRef.current) {
-        eventSourceRef.current.close();
+        eventSourceRef.current.close()
       }
-    };
-  }, []);
+    }
+  }, [])
 
-  const trialing = user.planStatus === "trialing"
+  const trialing = user.planStatus === 'trialing'
 
   return (
     <div className={classes.header}>
       <Flex align="center" justify="space-between" h="100%" w="100%">
         {/* Logo on the left */}
         <Flex align="center" h="100%">
-          <Logo
-            width={130}
-            variant="auto"
-          />
+          <Logo width={130} variant="auto" />
 
           {/* Plan badge */}
           {user.currentPlan && (
-            <Badge variant="outline" c="cyan" mt={-15} >
-              <Text size="xs" tt="capitalize" fw={"bold"}>
-                {`${user.currentPlan}${trialing ? ` ${t('navigation:trial')}` : ""}`}
+            <Badge variant="outline" c="cyan" mt={-15}>
+              <Text size="xs" tt="capitalize" fw={'bold'}>
+                {`${user.currentPlan}${trialing ? ` ${t('navigation:trial')}` : ''}`}
               </Text>
             </Badge>
           )}
@@ -174,7 +176,7 @@ export default function Header({
                     style={{
                       cursor: 'pointer',
                       overflow: 'visible',
-                      position: 'relative'
+                      position: 'relative',
                     }}
                   >
                     <Indicator
@@ -215,15 +217,8 @@ export default function Header({
               onClose={() => setIsMenuOpen(false)}
             >
               <Menu.Target>
-                <Group
-                  gap="sm"
-                  className={classes.userDropdown}
-                  wrap="nowrap"
-                >
-                  <Tooltip
-                    label={user.email}
-                    offset={{ mainAxis: 5, crossAxis: -11 }}
-                  >
+                <Group gap="sm" className={classes.userDropdown} wrap="nowrap">
+                  <Tooltip label={user.email} offset={{ mainAxis: 5, crossAxis: -11 }}>
                     <Avatar
                       src={user.image || user.profile?.avatar || undefined}
                       name={`${user.profile?.firstName?.charAt(0) || 'U'}${user.profile?.lastName?.charAt(0) || ''}`}
@@ -248,7 +243,9 @@ export default function Header({
                   <Text size="sm">{t('navigation:profile')}</Text>
                 </Menu.Item>
                 <Menu.Item
-                  leftSection={colorScheme === 'dark' ? <IconSun size={15} /> : <IconMoon size={15} />}
+                  leftSection={
+                    colorScheme === 'dark' ? <IconSun size={15} /> : <IconMoon size={15} />
+                  }
                   onClick={toggleColorScheme}
                 >
                   <Text size="sm">
@@ -261,11 +258,7 @@ export default function Header({
                 <Menu.Label>{t('navigation:languages')}</Menu.Label>
                 {languages.map((language) => (
                   <form key={language.code}>
-                    <Menu.Item
-                      type="submit"
-                      name="lng"
-                      value={language.code}
-                    >
+                    <Menu.Item type="submit" name="lng" value={language.code}>
                       <Group gap="sm" justify="space-between" style={{ width: '100%' }}>
                         <Group gap="sm">
                           <div className={classes.languageFlag}>
@@ -273,20 +266,14 @@ export default function Header({
                           </div>
                           <Text size="sm">{language.name}</Text>
                         </Group>
-                        {i18n.language === language.code && (
-                          <IconCheck size={16} />
-                        )}
+                        {i18n.language === language.code && <IconCheck size={16} />}
                       </Group>
                     </Menu.Item>
                   </form>
                 ))}
                 <Menu.Divider />
                 <form action="/logout" method="post">
-                  <Menu.Item
-                    type="submit"
-                    color="red"
-                    leftSection={<IconLogout size={15} />}
-                  >
+                  <Menu.Item type="submit" color="red" leftSection={<IconLogout size={15} />}>
                     <Text size="sm" c="red">
                       {t('auth:logout')}
                     </Text>

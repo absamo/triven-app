@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface TmIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface TmIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -21,10 +21,7 @@ export default function TmIcon({ size = 20, style, ...others }: TmIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#496e2d"
-          d="M0 0h66.8l67.8 32.3L200.3 0H512v512H200.3l-70.2-34.1L66.8 512H0z"
-        />
+        <path fill="#496e2d" d="M0 0h66.8l67.8 32.3L200.3 0H512v512H200.3l-70.2-34.1L66.8 512H0z" />
         <path fill="#d80027" d="M66.8 0h133.5v512H66.8z" />
         <g fill="#eee">
           <path d="M374.4 193.1a78 78 0 0 0-31.9-92.3 78.2 78.2 0 0 1 16.3 4 78 78 0 1 1-52.6 146.6 78.1 78.1 0 0 1-15.1-7.3 78 78 0 0 0 83.3-51zm-69.8-102-11 14.2-16.8-6 10 14.8-10.9 14 17.2-5 10 14.9.6-18 17.2-5-16.9-6z" />
@@ -47,10 +44,7 @@ export default function TmIcon({ size = 20, style, ...others }: TmIconProps) {
           <circle cx="133.6" cy="181.2" r="11.1" />
           <circle cx="133.6" cy="330.8" r="11.1" />
         </g>
-        <path
-          fill="#eee"
-          d="m117.8 434-22.4-16.8v-12l38.2-28 15.8-.1 22.3 16.7v11.5L133.6 434z"
-        />
+        <path fill="#eee" d="m117.8 434-22.4-16.8v-12l38.2-28 15.8-.1 22.3 16.7v11.5L133.6 434z" />
         <path
           fill="#ff9811"
           d="M133.6 377.2h-15.8l-22.4 16.5v11.5h38.2zm0 56.8h15.8l22.3-16.7v-12h-38.1z"

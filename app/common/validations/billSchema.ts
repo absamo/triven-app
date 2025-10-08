@@ -1,16 +1,16 @@
-import { BILL_STATUSES } from "~/app/common/constants"
+import { BILL_STATUSES } from '~/app/common/constants'
 
-import { z } from "zod"
-import dayjs from "dayjs"
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter"
-import { purchaseOrderSchema } from "./purchaseOrderSchema"
+import { z } from 'zod'
+import dayjs from 'dayjs'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import { purchaseOrderSchema } from './purchaseOrderSchema'
 
 dayjs.extend(isSameOrAfter)
 
 export const billSchema = z.object({
   id: z.string().optional(),
-  billReference: z.string().min(1, "Bill reference is required"),
-  purchaseOrderId: z.string().min(1, "Purchase order is required"),
+  billReference: z.string().min(1, 'Bill reference is required'),
+  purchaseOrderId: z.string().min(1, 'Purchase order is required'),
   purchaseOrder: z
     .lazy(() =>
       purchaseOrderSchema.pick({
@@ -32,7 +32,7 @@ export const billSchema = z.object({
       )
     },
     {
-      message: "Bill date is required",
+      message: 'Bill date is required',
     }
   ),
   dueDate: z.coerce.date().refine(
@@ -43,7 +43,7 @@ export const billSchema = z.object({
       )
     },
     {
-      message: "Due date is required",
+      message: 'Due date is required',
     }
   ),
   paymentsMade: z.array(z.any()).optional(),

@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface khIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface khIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function KhIcon({ size = 20, style, ...others }: khIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#0052b4"
-          d="M0 0h512v133.7l-39 121.6 39 123.2V512H0V378.5L34.2 255 0 133.7z"
-        />
+        <path fill="#0052b4" d="M0 0h512v133.7l-39 121.6 39 123.2V512H0V378.5L34.2 255 0 133.7z" />
         <path fill="#d80027" d="M0 133.7h512v244.8H0z" />
         <path
           fill="#eee"

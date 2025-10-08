@@ -1,2 +1,1 @@
-export { default as InventoryOverview } from './InventoryOverview';
-
+export { default as InventoryOverview } from './InventoryOverview'

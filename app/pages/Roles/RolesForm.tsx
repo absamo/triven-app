@@ -1,13 +1,13 @@
-import { Grid, Title as MantineTitle, Paper, Text, TextInput } from "@mantine/core"
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
+import { Grid, Title as MantineTitle, Paper, Text, TextInput } from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
 import { useTranslation } from 'react-i18next'
-import { useSubmit } from "react-router"
+import { useSubmit } from 'react-router'
 
-import { roleSchema, type IRole } from "~/app/common/validations/roleSchema"
-import { Form } from "~/app/components"
-import { Title } from "~/app/partials/Title"
-import RolesPermission from "./RolesPermission"
+import { roleSchema, type IRole } from '~/app/common/validations/roleSchema'
+import { Form } from '~/app/components'
+import { Title } from '~/app/partials/Title'
+import RolesPermission from './RolesPermission'
 
 interface roleFormProps {
   role: IRole
@@ -15,7 +15,7 @@ interface roleFormProps {
 }
 
 export default function RoleForm({ role, errors }: roleFormProps) {
-  const { t } = useTranslation(['roles', 'common']);
+  const { t } = useTranslation(['roles', 'common'])
 
   const form = useForm({
     validate: zodResolver(roleSchema),
@@ -26,26 +26,23 @@ export default function RoleForm({ role, errors }: roleFormProps) {
 
   const submit = useSubmit()
 
-  const handleSubmit = (values: {
-    name: string
-    description?: IRole["description"]
-  }) => {
+  const handleSubmit = (values: { name: string; description?: IRole['description'] }) => {
     const formData = new FormData()
-    formData.append("name", values.name)
-    formData.append("description", values.description || "")
-    formData.append("permissions", JSON.stringify(form.values.permissions))
+    formData.append('name', values.name)
+    formData.append('description', values.description || '')
+    formData.append('permissions', JSON.stringify(form.values.permissions))
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
   }
 
   const handlePermissionsChange = (permissions: string[]) => {
-    form.setFieldValue("permissions", permissions)
+    form.setFieldValue('permissions', permissions)
   }
 
   return (
     <Grid>
       <Grid.Col>
-        <Title backTo={"/roles"}>
+        <Title backTo={'/roles'}>
           {role.id ? t('roles:editRole', 'Edit a role') : t('roles:addRole', 'Add a role')}
         </Title>
         <Form onSubmit={form.onSubmit(handleSubmit)} showSubmitButton={false}>
@@ -54,15 +51,15 @@ export default function RoleForm({ role, errors }: roleFormProps) {
               withAsterisk
               label={t('common:name', 'Name')}
               name="name"
-              {...form.getInputProps("name")}
-              error={form.getInputProps("name").error || errors?.name}
+              {...form.getInputProps('name')}
+              error={form.getInputProps('name').error || errors?.name}
             />
           </Grid.Col>
           <Grid.Col span={6}>
             <TextInput
               label={t('common:description', 'Description')}
               name="description"
-              {...form.getInputProps("description")}
+              {...form.getInputProps('description')}
             />
           </Grid.Col>
           <Grid.Col span={12}>

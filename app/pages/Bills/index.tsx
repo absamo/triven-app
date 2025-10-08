@@ -1,2 +1,2 @@
-import Bills from "./Bills"
+import Bills from './Bills'
 export default Bills

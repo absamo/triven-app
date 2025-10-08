@@ -1,3 +1,3 @@
-import SalesOrderItemForm from "./SalesOrderItemForm"
+import SalesOrderItemForm from './SalesOrderItemForm'
 
 export default SalesOrderItemForm

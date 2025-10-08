@@ -1,3 +1,3 @@
-import PurchaseReceiveItemForm from "./PurchaseReceiveItemForm"
+import PurchaseReceiveItemForm from './PurchaseReceiveItemForm'
 
 export default PurchaseReceiveItemForm

@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface MdIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface MdIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -25,10 +25,7 @@ export default function MdIcon({ size = 20, style, ...others }: MdIconProps) {
           fill="#ff9811"
           d="M345.1 201.4H284a27.8 27.8 0 1 0-55.6 0h-61.2a28.2 28.2 0 0 0 28.3 27.4h-1a27.4 27.4 0 0 0 27.5 27.4c0 13.4 9.6 24.5 22.3 27l-21.6 48.7a88.8 88.8 0 0 0 33.5 6.5 88.8 88.8 0 0 0 33.5-6.5L268.1 283a27.4 27.4 0 0 0 22.3-26.9 27.4 27.4 0 0 0 27.4-27.4h-.9a28.2 28.2 0 0 0 28.3-27.4z"
         />
-        <path
-          fill="#0052b4"
-          d="M256.1 239.3 220 256v33.4l36.2 22.3 36.2-22.3V256z"
-        />
+        <path fill="#0052b4" d="M256.1 239.3 220 256v33.4l36.2 22.3 36.2-22.3V256z" />
         <path fill="#d80027" d="M220 222.6h72.3V256H220z" />
       </g>
     </svg>

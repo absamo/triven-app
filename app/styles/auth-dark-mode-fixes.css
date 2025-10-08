@@ -2,70 +2,70 @@
 
 /* Ensure all auth page papers/containers have proper dark mode backgrounds */
 [data-mantine-color-scheme="dark"] .mantine-Paper-root {
-    border-color: var(--mantine-color-dark-4) !important;
+  border-color: var(--mantine-color-dark-4) !important;
 }
 
 /* Fix auth form inputs for dark mode */
 [data-mantine-color-scheme="dark"] .mantine-TextInput-input,
 [data-mantine-color-scheme="dark"] .mantine-PasswordInput-input {
-    background-color: var(--mantine-color-dark-7) !important;
-    border-color: var(--mantine-color-dark-4) !important;
-    color: var(--mantine-color-gray-0) !important;
+  background-color: var(--mantine-color-dark-7) !important;
+  border-color: var(--mantine-color-dark-4) !important;
+  color: var(--mantine-color-gray-0) !important;
 }
 
 [data-mantine-color-scheme="dark"] .mantine-TextInput-input::placeholder,
 [data-mantine-color-scheme="dark"] .mantine-PasswordInput-input::placeholder {
-    color: var(--mantine-color-gray-5) !important;
+  color: var(--mantine-color-gray-5) !important;
 }
 
 /* Fix auth form labels for dark mode */
 [data-mantine-color-scheme="dark"] .mantine-InputWrapper-label {
-    color: var(--mantine-color-gray-2) !important;
+  color: var(--mantine-color-gray-2) !important;
 }
 
 /* Fix stepper components for dark mode */
 [data-mantine-color-scheme="dark"] .mantine-Stepper-step {
-    background-color: var(--mantine-color-dark-6) !important;
-    border-color: var(--mantine-color-dark-4) !important;
+  background-color: var(--mantine-color-dark-6) !important;
+  border-color: var(--mantine-color-dark-4) !important;
 }
 
 [data-mantine-color-scheme="dark"] .mantine-Stepper-stepIcon {
-    background-color: var(--mantine-color-dark-5) !important;
-    color: var(--mantine-color-gray-3) !important;
+  background-color: var(--mantine-color-dark-5) !important;
+  color: var(--mantine-color-gray-3) !important;
 }
 
 /* Fix auth page dividers */
 [data-mantine-color-scheme="dark"] .mantine-Divider-root {
-    border-color: var(--mantine-color-dark-4) !important;
+  border-color: var(--mantine-color-dark-4) !important;
 }
 
 [data-mantine-color-scheme="dark"] .mantine-Divider-label {
-    background-color: var(--mantine-color-dark-6) !important;
-    color: var(--mantine-color-gray-3) !important;
+  background-color: var(--mantine-color-dark-6) !important;
+  color: var(--mantine-color-gray-3) !important;
 }
 
 /* Fix auth page alerts - but preserve colored alerts */
 [data-mantine-color-scheme="dark"] .mantine-Alert-root {
-    background-color: var(--mantine-color-dark-6) !important;
-    border-color: var(--mantine-color-dark-4) !important;
+  background-color: var(--mantine-color-dark-6) !important;
+  border-color: var(--mantine-color-dark-4) !important;
 }
 
 /* Override for red alerts - force red styling in dark mode with high specificity */
 [data-mantine-color-scheme="dark"] .backorder-error-alert,
 [data-mantine-color-scheme="dark"] .backorder-error-alert.mantine-Alert-root {
-    background-color: #4a1a1a !important;
-    border: 1px solid #c92a2a !important;
-    border-left: 4px solid #c92a2a !important;
+  background-color: #4a1a1a !important;
+  border: 1px solid #c92a2a !important;
+  border-left: 4px solid #c92a2a !important;
 }
 
 [data-mantine-color-scheme="dark"] .backorder-error-alert .mantine-Alert-icon,
 [data-mantine-color-scheme="dark"] .backorder-error-alert.mantine-Alert-root .mantine-Alert-icon {
-    color: #c92a2a !important;
+  color: #c92a2a !important;
 }
 
 /* Fix auth page text colors */
 [data-mantine-color-scheme="dark"] .mantine-Text-root[data-dimmed] {
-    color: var(--mantine-color-gray-3) !important;
+  color: var(--mantine-color-gray-3) !important;
 }
 
 /* Enhanced dimmed text visibility for dark mode */
@@ -75,75 +75,88 @@
 
 /* Fix specific dimmed text scenarios */
 [data-mantine-color-scheme="dark"] .mantine-Text-root {
-    color: inherit;
+  color: inherit;
 }
 
 [data-mantine-color-scheme="dark"] .mantine-Text-root[style*="color"] {
-    color: var(--mantine-color-gray-2) !important;
+  color: var(--mantine-color-gray-2) !important;
 }
 
 /* Fix PinInput components for dark mode */
 [data-mantine-color-scheme="dark"] .mantine-PinInput-input {
-    background-color: var(--mantine-color-dark-7) !important;
-    border-color: var(--mantine-color-dark-4) !important;
-    color: var(--mantine-color-gray-0) !important;
+  background-color: var(--mantine-color-dark-7) !important;
+  border-color: var(--mantine-color-dark-4) !important;
+  color: var(--mantine-color-gray-0) !important;
 }
 
 /* Fix focus states for dark mode */
 [data-mantine-color-scheme="dark"] .mantine-TextInput-input:focus,
 [data-mantine-color-scheme="dark"] .mantine-PasswordInput-input:focus,
 [data-mantine-color-scheme="dark"] .mantine-PinInput-input:focus {
-    border-color: var(--mantine-color-blue-5) !important;
-    background-color: var(--mantine-color-dark-8) !important;
+  border-color: var(--mantine-color-blue-5) !important;
+  background-color: var(--mantine-color-dark-8) !important;
 }
 
 /* Fix checkbox and radio inputs for dark mode */
 [data-mantine-color-scheme="dark"] .mantine-Checkbox-input,
 [data-mantine-color-scheme="dark"] .mantine-Radio-input {
-    background-color: var(--mantine-color-dark-7) !important;
-    border-color: var(--mantine-color-dark-4) !important;
+  background-color: var(--mantine-color-dark-7) !important;
+  border-color: var(--mantine-color-dark-4) !important;
 }
 
 /* Fix select inputs for dark mode */
 [data-mantine-color-scheme="dark"] .mantine-Select-input {
-    background-color: var(--mantine-color-dark-7) !important;
-    border-color: var(--mantine-color-dark-4) !important;
-    color: var(--mantine-color-gray-0) !important;
+  background-color: var(--mantine-color-dark-7) !important;
+  border-color: var(--mantine-color-dark-4) !important;
+  color: var(--mantine-color-gray-0) !important;
 }
 
 [data-mantine-color-scheme="dark"] .mantine-Select-dropdown {
-    background-color: var(--mantine-color-dark-6) !important;
-    border-color: var(--mantine-color-dark-4) !important;
+  background-color: var(--mantine-color-dark-6) !important;
+  border-color: var(--mantine-color-dark-4) !important;
 }
 
 [data-mantine-color-scheme="dark"] .mantine-Select-option {
-    color: var(--mantine-color-gray-0) !important;
+  color: var(--mantine-color-gray-0) !important;
 }
 
 [data-mantine-color-scheme="dark"] .mantine-Select-option:hover {
-    background-color: var(--mantine-color-dark-5) !important;
+  background-color: var(--mantine-color-dark-5) !important;
 }
 
 /* MOST SPECIFIC RULE FOR BACKORDER ERROR ALERT - MUST BE LAST */
-html[data-mantine-color-scheme="dark"] body .backorder-error-alert.mantine-Alert-root.mantine-Alert-root {
-    background-color: rgba(220, 38, 38, 0.1) !important;
-    border: 1px solid rgba(220, 38, 38, 0.3) !important;
-    border-left: 3px solid rgba(220, 38, 38, 0.5) !important;
+html[data-mantine-color-scheme="dark"] body
+  .backorder-error-alert.mantine-Alert-root.mantine-Alert-root {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+  border: 1px solid rgba(220, 38, 38, 0.3) !important;
+  border-left: 3px solid rgba(220, 38, 38, 0.5) !important;
 }
 
-html[data-mantine-color-scheme="dark"] body .backorder-error-alert.mantine-Alert-root .mantine-Alert-icon {
-    color: rgba(248, 113, 113, 0.8) !important;
+html[data-mantine-color-scheme="dark"]
+  body
+  .backorder-error-alert.mantine-Alert-root
+  .mantine-Alert-icon {
+  color: rgba(248, 113, 113, 0.8) !important;
 }
 
 /* SALES ORDER ERROR ALERTS - SUBTLE RED STYLING */
-html[data-mantine-color-scheme="dark"] body .sales-order-error-alert.mantine-Alert-root.mantine-Alert-root,
-html[data-mantine-color-scheme="dark"] body .sales-order-field-error-alert.mantine-Alert-root.mantine-Alert-root {
-    background-color: rgba(220, 38, 38, 0.1) !important;
-    border: 1px solid rgba(220, 38, 38, 0.3) !important;
-    border-left: 3px solid rgba(220, 38, 38, 0.5) !important;
+html[data-mantine-color-scheme="dark"] body
+  .sales-order-error-alert.mantine-Alert-root.mantine-Alert-root,
+html[data-mantine-color-scheme="dark"]
+  body
+  .sales-order-field-error-alert.mantine-Alert-root.mantine-Alert-root {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+  border: 1px solid rgba(220, 38, 38, 0.3) !important;
+  border-left: 3px solid rgba(220, 38, 38, 0.5) !important;
 }
 
-html[data-mantine-color-scheme="dark"] body .sales-order-error-alert.mantine-Alert-root .mantine-Alert-icon,
-html[data-mantine-color-scheme="dark"] body .sales-order-field-error-alert.mantine-Alert-root .mantine-Alert-icon {
-    color: rgba(248, 113, 113, 0.8) !important;
+html[data-mantine-color-scheme="dark"]
+  body
+  .sales-order-error-alert.mantine-Alert-root
+  .mantine-Alert-icon,
+html[data-mantine-color-scheme="dark"]
+  body
+  .sales-order-field-error-alert.mantine-Alert-root
+  .mantine-Alert-icon {
+  color: rgba(248, 113, 113, 0.8) !important;
 }

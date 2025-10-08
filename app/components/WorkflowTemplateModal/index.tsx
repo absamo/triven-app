@@ -1,1 +1,1 @@
-export { default } from './WorkflowTemplateModal';
+export { default } from './WorkflowTemplateModal'

@@ -1,13 +1,15 @@
 .container {
-  border: light-dark(1px solid var(--mantine-color-gray-3),
-      1px solid var(--mantine-color-white));
+  border: light-dark(1px solid var(--mantine-color-gray-3), 1px solid var(--mantine-color-white));
   border-radius: var(--mantine-radius-md);
 }
 
 .dropzoneMain {
   width: 100%;
   height: 100%;
-  border: light-dark(2px dashed var(--mantine-color-gray-4), 2px dashed var(--mantine-color-dark-4));
+  border: light-dark(
+    2px dashed var(--mantine-color-gray-4),
+    2px dashed var(--mantine-color-dark-4)
+  );
   border-radius: 8px;
   background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
   transition: all 0.3s ease;
@@ -33,8 +35,10 @@
 .title {
   font-size: var(--mantine-font-size-md);
   color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-2));
-  border-bottom: light-dark(1px solid var(--mantine-color-gray-3),
-      1px solid var(--mantine-color-white));
+  border-bottom: light-dark(
+    1px solid var(--mantine-color-gray-3),
+    1px solid var(--mantine-color-white)
+  );
 }
 
 /* Updated Image Grid Styles for Mantine Grid System with Dark/Light Theme Support */
@@ -48,7 +52,10 @@
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: light-dark(2px dashed var(--mantine-color-gray-3), 2px dashed var(--mantine-color-dark-4));
+  border: light-dark(
+    2px dashed var(--mantine-color-gray-3),
+    2px dashed var(--mantine-color-dark-4)
+  );
   background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
   width: 100%;
   height: 100%;
@@ -212,7 +219,10 @@
 .dropzoneMain {
   width: 100%;
   height: 100%;
-  border: light-dark(2px dashed var(--mantine-color-gray-4), 2px dashed var(--mantine-color-dark-3));
+  border: light-dark(
+    2px dashed var(--mantine-color-gray-4),
+    2px dashed var(--mantine-color-dark-3)
+  );
   border-radius: 12px;
   background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
   transition: all 0.3s ease;
@@ -231,7 +241,10 @@
 .dropzoneAdditional {
   width: 100%;
   height: 100%;
-  border: light-dark(2px dashed var(--mantine-color-gray-3), 2px dashed var(--mantine-color-dark-4));
+  border: light-dark(
+    2px dashed var(--mantine-color-gray-3),
+    2px dashed var(--mantine-color-dark-4)
+  );
   border-radius: 8px;
   background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
   transition: all 0.3s ease;
@@ -320,5 +333,8 @@
 .imageTooltip {
   background-color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-4)) !important;
   color: light-dark(var(--mantine-color-white), var(--mantine-color-gray-0)) !important;
-  border: light-dark(1px solid var(--mantine-color-gray-4), 1px solid var(--mantine-color-dark-2)) !important;
+  border: light-dark(
+    1px solid var(--mantine-color-gray-4),
+    1px solid var(--mantine-color-dark-2)
+  ) !important;
 }

@@ -1,2 +1,2 @@
-import PurchaseOrderFilters from "./PurchaseOrderFilters"
+import PurchaseOrderFilters from './PurchaseOrderFilters'
 export { PurchaseOrderFilters }

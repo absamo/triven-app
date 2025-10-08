@@ -1,2 +1,1 @@
-export { default } from './WaveLogo';
-
+export { default } from './WaveLogo'

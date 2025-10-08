@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface BiIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface BiIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -26,10 +26,7 @@ export default function BiIcon({ size = 20, style, ...others }: BiIconProps) {
           fill="#d80027"
           d="M47.2 0 256 208.8 464.8 0H47.2zM256 303.2 47.2 512h417.6L256 303.2z"
         />
-        <path
-          fill="#6da544"
-          d="M0 47.2v417.6L208.8 256 0 47.2zm512 0L303.2 256 512 464.8V47.2z"
-        />
+        <path fill="#6da544" d="M0 47.2v417.6L208.8 256 0 47.2zm512 0L303.2 256 512 464.8V47.2z" />
         <circle cx="256" cy="256" r="111.3" fill="#eee" />
         <path
           fill="#d80027"

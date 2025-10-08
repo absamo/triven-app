@@ -1,29 +1,27 @@
-import { Button, Group, Table, Text } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { IconUpload } from "@tabler/icons-react";
-import { useState } from "react";
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from "react-router";
-import type { ICategory } from "~/app/common/validations/categorySchema";
-import { CategoryImportModal } from "~/app/components";
-import { Title } from "~/app/partials/Title";
+import { Button, Group, Table, Text } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
+import { IconUpload } from '@tabler/icons-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
+import type { ICategory } from '~/app/common/validations/categorySchema'
+import { CategoryImportModal } from '~/app/components'
+import { Title } from '~/app/partials/Title'
 
 interface CategoriesProps {
   categories: ICategory[]
   permissions: string[]
 }
 
-export default function Categories({
-  categories = [],
-  permissions = [],
-}: CategoriesProps) {
+export default function Categories({ categories = [], permissions = [] }: CategoriesProps) {
   const { t } = useTranslation(['inventory', 'common'])
   const navigate = useNavigate()
-  const [importModalOpened, { open: openImportModal, close: closeImportModal }] = useDisclosure(false)
+  const [importModalOpened, { open: openImportModal, close: closeImportModal }] =
+    useDisclosure(false)
   const [categoriesList, setCategoriesList] = useState<ICategory[]>(categories)
 
-  const canEdit = permissions.includes("update:categories")
-  const canCreate = permissions.includes("create:categories")
+  const canEdit = permissions.includes('update:categories')
+  const canCreate = permissions.includes('create:categories')
 
   // Handle category import
   const handleImportCategories = (importedCategories: any[]) => {
@@ -34,10 +32,7 @@ export default function Categories({
   }
 
   const rows = categoriesList.map(({ id, name }) => (
-    <Table.Tr
-      key={id}
-      onClick={() => canEdit && navigate(`/categories/${id}/edit`)}
-    >
+    <Table.Tr key={id} onClick={() => canEdit && navigate(`/categories/${id}/edit`)}>
       <Table.Td>
         <Text size="sm">{name}</Text>
       </Table.Td>
@@ -47,7 +42,7 @@ export default function Categories({
   return (
     <>
       <Title
-        to={"/categories/create"}
+        to={'/categories/create'}
         canCreate={canCreate}
         additionalButtons={
           <Group>
@@ -65,13 +60,7 @@ export default function Categories({
         {t('categoryTitle')}
       </Title>
 
-      <Table
-        verticalSpacing="xs"
-        highlightOnHover={canEdit}
-        withTableBorder
-        striped
-        mt={35}
-      >
+      <Table verticalSpacing="xs" highlightOnHover={canEdit} withTableBorder striped mt={35}>
         <Table.Thead fz={12}>
           <Table.Tr>
             <Table.Th>{t('categoryName')}</Table.Th>

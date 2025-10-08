@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface EsIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface EsIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -53,19 +53,8 @@ export default function EsIcon({ size = 20, style, ...others }: EsIconProps) {
           fill="#d80027"
           d="m248 208-8 8h-64l-8-8c0-13 18-24 40-24s40 11 40 24zm-88 16h48v48h-48z"
         />
-        <rect
-          width="20"
-          height="32"
-          x="222"
-          y="232"
-          fill="#d80027"
-          rx="10"
-          ry="10"
-        />
-        <path
-          fill="#ff9811"
-          d="M168 232v8h8v16h-8v8h32v-8h-8v-16h8v-8zm8-16h64v8h-64z"
-        />
+        <rect width="20" height="32" x="222" y="232" fill="#d80027" rx="10" ry="10" />
+        <path fill="#ff9811" d="M168 232v8h8v16h-8v8h32v-8h-8v-16h8v-8zm8-16h64v8h-64z" />
         <g fill="#ffda44">
           <circle cx="186" cy="202" r="6" />
           <circle cx="208" cy="202" r="6" />

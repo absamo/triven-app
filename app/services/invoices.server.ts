@@ -1,11 +1,11 @@
-import type { InvoiceStatus } from "@prisma/client"
-import { type IInvoice } from "~/app/common/validations/invoiceSchema"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import { INVOICE_STATUSES } from "../common/constants"
+import type { InvoiceStatus } from '@prisma/client'
+import { type IInvoice } from '~/app/common/validations/invoiceSchema'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { INVOICE_STATUSES } from '../common/constants'
 
 export async function getInvoices(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:invoices"])
+  const user = await requireBetterAuthUser(request, ['read:invoices'])
 
   const invoices = await prisma.invoice.findMany({
     where: { companyId: user.companyId },
@@ -20,7 +20,7 @@ export async function getInvoices(request: Request) {
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -29,7 +29,7 @@ export async function getInvoices(request: Request) {
 }
 
 export async function getInvoiceToPay(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:invoices"])
+  const user = await requireBetterAuthUser(request, ['read:invoices'])
 
   const invoices = await prisma.invoice.findMany({
     where: {
@@ -65,7 +65,7 @@ export async function getInvoiceToPay(request: Request) {
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -73,7 +73,7 @@ export async function getInvoiceToPay(request: Request) {
   return invoices || []
 }
 
-export async function getInvoice(invoiceId: IInvoice["id"]) {
+export async function getInvoice(invoiceId: IInvoice['id']) {
   const salesOrder = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     include: {
@@ -105,9 +105,9 @@ export async function getFilteredInvoices(
     invoiceDate: Date | null
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:invoices"])
+  const user = await requireBetterAuthUser(request, ['read:invoices'])
 
-  const currentSearch = !!search || search === ""
+  const currentSearch = !!search || search === ''
 
   return (
     (await prisma.invoice.findMany({
@@ -115,50 +115,48 @@ export async function getFilteredInvoices(
         companyId: user.companyId,
         OR: currentSearch
           ? [
-            {
-              salesOrder: {
-                salesOrderReference: {
-                  contains: search,
-                  mode: "insensitive",
+              {
+                salesOrder: {
+                  salesOrderReference: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
                 },
               },
-            },
-            {
-              invoiceReference: {
-                contains: search,
-                mode: "insensitive",
+              {
+                invoiceReference: {
+                  contains: search,
+                  mode: 'insensitive',
+                },
               },
-            },
-          ]
+            ]
           : undefined,
         AND: [
           {
             status:
               statuses.length > 0
                 ? {
-                  in: statuses as InvoiceStatus[],
-                }
+                    in: statuses as InvoiceStatus[],
+                  }
                 : undefined,
           },
           {
             invoiceDate: invoiceDate
               ? {
-                gte: invoiceDate,
-              }
+                  gte: invoiceDate,
+                }
               : undefined,
           },
           {
             salesOrder:
-              salesOrders.length > 0
-                ? { salesOrderReference: { in: salesOrders } }
-                : undefined,
+              salesOrders.length > 0 ? { salesOrderReference: { in: salesOrders } } : undefined,
           },
           {
             invoiceReference:
               invoices.length > 0
                 ? {
-                  in: invoices,
-                }
+                    in: invoices,
+                  }
                 : undefined,
           },
         ],
@@ -181,7 +179,7 @@ export async function getFilteredInvoices(
       },
       orderBy: [
         {
-          id: "desc",
+          id: 'desc',
         },
       ],
     })) || []
@@ -189,7 +187,7 @@ export async function getFilteredInvoices(
 }
 
 export async function getMaxInvoiceNumber(request: Request): Promise<string> {
-  const user = await requireBetterAuthUser(request, ["read:invoices"])
+  const user = await requireBetterAuthUser(request, ['read:invoices'])
 
   const aggregateInvoiceNumber = await prisma.invoice.aggregate({
     where: { companyId: user.companyId },
@@ -198,14 +196,13 @@ export async function getMaxInvoiceNumber(request: Request): Promise<string> {
     },
   })
 
-  const invoiceNumber =
-    parseInt(aggregateInvoiceNumber?._max.invoiceNumber || "00000") + 1
+  const invoiceNumber = parseInt(aggregateInvoiceNumber?._max.invoiceNumber || '00000') + 1
 
-  return invoiceNumber.toString().padStart(5, "0")
+  return invoiceNumber.toString().padStart(5, '0')
 }
 
 export async function createInvoice(request: Request, invoice: IInvoice) {
-  const user = await requireBetterAuthUser(request, ["read:invoices"])
+  const user = await requireBetterAuthUser(request, ['read:invoices'])
 
   const foundInvoice = await prisma.invoice.findFirst({
     where: {
@@ -217,7 +214,7 @@ export async function createInvoice(request: Request, invoice: IInvoice) {
   if (foundInvoice) {
     return {
       errors: {
-        invoiceReference: "An invoice already exists with this reference",
+        invoiceReference: 'An invoice already exists with this reference',
       },
     }
   }
@@ -239,23 +236,23 @@ export async function createInvoice(request: Request, invoice: IInvoice) {
 
     return {
       notification: {
-        message: "Invoice created successfully",
-        status: "Success",
-        redirectTo: "/invoices",
+        message: 'Invoice created successfully',
+        status: 'Success',
+        redirectTo: '/invoices',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Invoice could not be created",
-        status: "Error",
+        message: 'Invoice could not be created',
+        status: 'Error',
       },
     }
   }
 }
 
 export async function updateInvoice(request: Request, invoice: IInvoice) {
-  const user = await requireBetterAuthUser(request, ["read:invoices"])
+  const user = await requireBetterAuthUser(request, ['read:invoices'])
 
   const foundInvoice = await prisma.invoice.findFirst({
     where: {
@@ -268,7 +265,7 @@ export async function updateInvoice(request: Request, invoice: IInvoice) {
   if (foundInvoice) {
     return {
       errors: {
-        salesOrderReference: "An invoice already exists with this reference",
+        salesOrderReference: 'An invoice already exists with this reference',
       },
     }
   }
@@ -287,16 +284,16 @@ export async function updateInvoice(request: Request, invoice: IInvoice) {
 
     return {
       notification: {
-        message: "Invoice updated successfully",
-        status: "Success",
-        redirectTo: "/invoices",
+        message: 'Invoice updated successfully',
+        status: 'Success',
+        redirectTo: '/invoices',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Invoice could not be updated",
-        status: "Error",
+        message: 'Invoice could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }
@@ -309,11 +306,11 @@ export async function updateInvoiceStatus(
     invoiceId,
     status,
   }: {
-    invoiceId: IInvoice["id"]
-    status: IInvoice["status"]
+    invoiceId: IInvoice['id']
+    status: IInvoice['status']
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:invoices"])
+  const user = await requireBetterAuthUser(request, ['read:invoices'])
 
   try {
     const paymentsReceived =
@@ -330,8 +327,8 @@ export async function updateInvoiceStatus(
       return {
         notification: {
           message:
-            "Invoice status could not be cancelled because a payment has been received on this invoice",
-          status: "Error",
+            'Invoice status could not be cancelled because a payment has been received on this invoice',
+          status: 'Error',
           autoClose: false,
         },
       }
@@ -346,15 +343,15 @@ export async function updateInvoiceStatus(
 
     return {
       notification: {
-        message: "Invoice status updated successfully",
-        status: "Success",
+        message: 'Invoice status updated successfully',
+        status: 'Success',
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Invoice status could not be updated",
-        status: "Error",
+        message: 'Invoice status could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }

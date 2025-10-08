@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface NgIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface NgIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function NgIcon({ size = 20, style, ...others }: NgIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#6da544"
-          d="M0 0v512h160l96-64 96 64h160V0H352l-96 64-96-64Z"
-        />
+        <path fill="#6da544" d="M0 0v512h160l96-64 96 64h160V0H352l-96 64-96-64Z" />
         <path fill="#eee" d="M160 0h192v512H160Z" />
       </g>
     </svg>

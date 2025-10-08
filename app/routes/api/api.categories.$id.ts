@@ -1,6 +1,6 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from "react-router";
+import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
 
-import { getCategory } from "~/app/services/categories.server"
+import { getCategory } from '~/app/services/categories.server'
 
 export const loader: LoaderFunction =
   () =>

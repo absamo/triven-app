@@ -1,26 +1,23 @@
-import type { IAgency } from "~/app/common/validations/agencySchema"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import type { ILocation } from "../common/validations/locationSchema"
-import type { ISite } from "../common/validations/siteSchema"
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import type { ILocation } from '../common/validations/locationSchema'
+import type { ISite } from '../common/validations/siteSchema'
 
 export async function getSites(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:sites"])
+  const user = await requireBetterAuthUser(request, ['read:sites'])
 
   const sites = await prisma.site.findMany({
     where: { companyId: user.companyId },
     include: { location: true, agency: true },
-    orderBy: { type: "asc" },
+    orderBy: { type: 'asc' },
   })
 
   return sites || []
 }
 
-export async function getSitesByAgency(
-  request: Request,
-  agencyId: IAgency["id"]
-) {
-  const user = await requireBetterAuthUser(request, ["read:sites"])
+export async function getSitesByAgency(request: Request, agencyId: IAgency['id']) {
+  const user = await requireBetterAuthUser(request, ['read:sites'])
 
   const agency = await prisma.agency.findFirst({
     where: { companyId: user.companyId, id: agencyId },
@@ -30,7 +27,7 @@ export async function getSitesByAgency(
   return agency?.sites || []
 }
 
-export async function getSite(siteId: ISite["id"]) {
+export async function getSite(siteId: ISite['id']) {
   const site = await prisma.site.findUnique({
     where: { id: siteId },
     include: { location: true },
@@ -39,11 +36,8 @@ export async function getSite(siteId: ISite["id"]) {
   return site
 }
 
-export async function createSite(
-  request: Request,
-  site: Omit<ISite, "agency">
-) {
-  const user = await requireBetterAuthUser(request, ["create:sites"])
+export async function createSite(request: Request, site: Omit<ISite, 'agency'>) {
+  const user = await requireBetterAuthUser(request, ['create:sites'])
 
   const foundStore = await prisma.site.findFirst({
     where: {
@@ -55,7 +49,7 @@ export async function createSite(
   if (foundStore) {
     return {
       errors: {
-        name: "A site already exists with this name",
+        name: 'A site already exists with this name',
       },
     }
   }
@@ -75,15 +69,15 @@ export async function createSite(
 
   return {
     notification: {
-      message: "Site created successfully",
-      status: "Success",
-      redirectTo: "/sites",
+      message: 'Site created successfully',
+      status: 'Success',
+      redirectTo: '/sites',
     },
   }
 }
 
 export async function updateSite(request: Request, site: ISite) {
-  const user = await requireBetterAuthUser(request, ["update:sites"])
+  const user = await requireBetterAuthUser(request, ['update:sites'])
 
   const foundStore = await prisma.site.findFirst({
     where: { name: site.name, id: { not: site.id } },
@@ -93,7 +87,7 @@ export async function updateSite(request: Request, site: ISite) {
   if (foundStore) {
     return {
       errors: {
-        name: "A site already exists with this name",
+        name: 'A site already exists with this name',
       },
     }
   }
@@ -109,9 +103,9 @@ export async function updateSite(request: Request, site: ISite) {
 
   let agencyError = null
   if (currentSite?.products && currentSite.products.length > 0) {
-    agencyError = "Cannot update a site that is already in use by products"
+    agencyError = 'Cannot update a site that is already in use by products'
   } else if (currentSite?.users && currentSite.users.length > 0) {
-    agencyError = "Cannot update a site that is already assigned to users"
+    agencyError = 'Cannot update a site that is already assigned to users'
   }
 
   if (
@@ -126,7 +120,7 @@ export async function updateSite(request: Request, site: ISite) {
     return {
       notification: {
         message: agencyError,
-        status: "Error",
+        status: 'Error',
         redirectTo: url,
       },
     }
@@ -145,9 +139,9 @@ export async function updateSite(request: Request, site: ISite) {
 
   return {
     notification: {
-      message: "Site updated successfully",
-      status: "Success",
-      redirectTo: "/sites",
+      message: 'Site updated successfully',
+      status: 'Success',
+      redirectTo: '/sites',
     },
   }
 }

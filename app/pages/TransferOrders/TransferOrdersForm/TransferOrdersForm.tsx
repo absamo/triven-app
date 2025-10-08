@@ -1,24 +1,33 @@
-import { ActionIcon, Alert, Button, Grid, Group, NumberInput, Select, Table, Text, TextInput } from "@mantine/core"
-import { DateInput } from "@mantine/dates"
-import { useForm } from "@mantine/form"
-import { useDisclosure } from "@mantine/hooks"
-import { IconExclamationCircle, IconPlus, IconTrash } from "@tabler/icons-react"
-import { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useSubmit } from "react-router"
-import { TRANSFER_ORDER_REASONS } from "~/app/common/constants"
-import type { IProduct } from "~/app/common/validations/productSchema"
-import type { ISite } from "~/app/common/validations/siteSchema"
-import type { ITransferOrderItem } from "~/app/common/validations/transferOrderItemSchema"
-
 import {
-  type ITransferOrder
-} from "~/app/common/validations/transferOrderSchema"
+  ActionIcon,
+  Alert,
+  Button,
+  Grid,
+  Group,
+  NumberInput,
+  Select,
+  Table,
+  Text,
+  TextInput,
+} from '@mantine/core'
+import { DateInput } from '@mantine/dates'
+import { useForm } from '@mantine/form'
+import { useDisclosure } from '@mantine/hooks'
+import { IconExclamationCircle, IconPlus, IconTrash } from '@tabler/icons-react'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSubmit } from 'react-router'
+import { TRANSFER_ORDER_REASONS } from '~/app/common/constants'
+import type { IProduct } from '~/app/common/validations/productSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
+import type { ITransferOrderItem } from '~/app/common/validations/transferOrderItemSchema'
 
-import { Form } from "~/app/components"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
-import { Title } from "~/app/partials/Title"
-import TransferOrderItemForm from "../TransferOrderItemForm"
+import { type ITransferOrder } from '~/app/common/validations/transferOrderSchema'
+
+import { Form } from '~/app/components'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
+import TransferOrderItemForm from '../TransferOrderItemForm'
 
 interface TransferOrderFormProps {
   transferOrder: ITransferOrder
@@ -35,10 +44,12 @@ export default function TransferOrdersForm({
 }: TransferOrderFormProps) {
   const { t } = useTranslation('inventory')
   const [opened, { open, close }] = useDisclosure(false)
-  const [transferOrderItem, setTransferOrderItem] = useState<ITransferOrderItem>({} as ITransferOrderItem)
+  const [transferOrderItem, setTransferOrderItem] = useState<ITransferOrderItem>(
+    {} as ITransferOrderItem
+  )
 
   // Inline form state
-  const [selectedProduct, setSelectedProduct] = useState<string>("")
+  const [selectedProduct, setSelectedProduct] = useState<string>('')
   const [quantity, setQuantity] = useState<number>(1)
 
   // Helper function to translate transfer order reasons
@@ -80,15 +91,16 @@ export default function TransferOrdersForm({
 
   // Clear inline form when source site changes
   useEffect(() => {
-    setSelectedProduct("")
+    setSelectedProduct('')
     setQuantity(1)
   }, [form.values.siteFromId])
 
   // Filter products for inline form
   const usedProductIds = form.values.transferOrderItems.map((item: any) => item.productId)
-  const availableProducts = products.filter(product =>
-    !usedProductIds.includes(product.id) &&
-    (!form.values.siteFromId || product.siteId === form.values.siteFromId)
+  const availableProducts = products.filter(
+    (product) =>
+      !usedProductIds.includes(product.id) &&
+      (!form.values.siteFromId || product.siteId === form.values.siteFromId)
   )
 
   const productOptions = availableProducts.map((product) => ({
@@ -100,22 +112,24 @@ export default function TransferOrdersForm({
   const addItem = () => {
     if (!selectedProduct) return
 
-    const product = products.find(p => p.id === selectedProduct)
+    const product = products.find((p) => p.id === selectedProduct)
     if (!product) return
 
     const newItem = {
-      transferOrderId: transferOrder.id || "",
+      transferOrderId: transferOrder.id || '',
       productId: selectedProduct,
       quantity,
     }
 
-    form.setFieldValue("transferOrderItems", [
-      ...form.values.transferOrderItems,
-      newItem
-    ].sort((a, b) => a.productId.localeCompare(b.productId)).reverse())
+    form.setFieldValue(
+      'transferOrderItems',
+      [...form.values.transferOrderItems, newItem]
+        .sort((a, b) => a.productId.localeCompare(b.productId))
+        .reverse()
+    )
 
     // Reset form
-    setSelectedProduct("")
+    setSelectedProduct('')
     setQuantity(1)
   }
 
@@ -123,7 +137,7 @@ export default function TransferOrdersForm({
   const removeItem = (index: number) => {
     const items = [...form.values.transferOrderItems]
     items.splice(index, 1)
-    form.setFieldValue("transferOrderItems", items)
+    form.setFieldValue('transferOrderItems', items)
   }
 
   const handleClose = () => {
@@ -139,30 +153,28 @@ export default function TransferOrdersForm({
     transferOrderDate,
   }: ITransferOrder) => {
     const formData = new FormData()
-    formData.append("transferOrderReference", transferOrderReference)
-    formData.append("reason", JSON.stringify(reason))
-    formData.append("siteFromId", siteFromId)
-    formData.append("siteToId", siteToId)
-    formData.append("transferOrderDate", JSON.stringify(transferOrderDate))
+    formData.append('transferOrderReference', transferOrderReference)
+    formData.append('reason', JSON.stringify(reason))
+    formData.append('siteFromId', siteFromId)
+    formData.append('siteToId', siteToId)
+    formData.append('transferOrderDate', JSON.stringify(transferOrderDate))
     formData.append(
-      "transferOrderItems",
+      'transferOrderItems',
       JSON.stringify(
-        form.values.transferOrderItems.map(
-          (transferOrderItem: ITransferOrderItem) => ({
-            quantity: transferOrderItem.quantity,
-            productId: transferOrderItem.productId,
-          })
-        )
+        form.values.transferOrderItems.map((transferOrderItem: ITransferOrderItem) => ({
+          quantity: transferOrderItem.quantity,
+          productId: transferOrderItem.productId,
+        }))
       )
     )
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
   }
 
   return (
     <Grid>
       <Grid.Col>
-        <Title backTo={"/transfer-orders"}>
+        <Title backTo={'/transfer-orders'}>
           {transferOrder.id ? t('editTransferOrder') : t('addTransferOrder')}
         </Title>
         <Form onSubmit={form.onSubmit(handleSubmit)} showSubmitButton={false}>
@@ -171,11 +183,8 @@ export default function TransferOrdersForm({
               withAsterisk
               label={t('reference')}
               name="transferOrderReference"
-              {...form.getInputProps("transferOrderReference")}
-              error={
-                form.getInputProps("transferOrderReference").error ||
-                errors?.name
-              }
+              {...form.getInputProps('transferOrderReference')}
+              error={form.getInputProps('transferOrderReference').error || errors?.name}
             />
           </Grid.Col>
           <Grid.Col span={4}>
@@ -207,7 +216,7 @@ export default function TransferOrdersForm({
                   label: getTransferOrderReasonLabel(TRANSFER_ORDER_REASONS.LOST_ITEMS),
                 },
               ]}
-              {...form.getInputProps("reason")}
+              {...form.getInputProps('reason')}
             />
           </Grid.Col>
           <Grid.Col span={4}>
@@ -216,7 +225,7 @@ export default function TransferOrdersForm({
               label={t('transferOrderDate')}
               name="transferOrderDate"
               minDate={new Date()}
-              {...form.getInputProps("transferOrderDate")}
+              {...form.getInputProps('transferOrderDate')}
             />
           </Grid.Col>
           <Grid.Col span={6}>
@@ -226,22 +235,20 @@ export default function TransferOrdersForm({
               name="siteFromId"
               withAsterisk
               data={form.values.sourceSites
-                .filter(
-                  (sourceSite: ISite) => sourceSite.id !== form.values.siteToId
-                )
+                .filter((sourceSite: ISite) => sourceSite.id !== form.values.siteToId)
                 .map((sourceSite: ISite) => {
                   return {
-                    value: sourceSite.id || "",
+                    value: sourceSite.id || '',
                     label: sourceSite.name,
                   }
                 })}
-              {...form.getInputProps("siteFromId")}
+              {...form.getInputProps('siteFromId')}
               onChange={(value: string) => {
                 const destinationSites = form.values.sourceSites.filter(
                   (site: ISite) => site.id !== value
                 ) as ISite[]
-                form.setFieldValue("destinationSites", destinationSites)
-                form.getInputProps("siteFromId").onChange(value)
+                form.setFieldValue('destinationSites', destinationSites)
+                form.getInputProps('siteFromId').onChange(value)
               }}
             />
           </Grid.Col>
@@ -252,15 +259,13 @@ export default function TransferOrdersForm({
               name="siteToId"
               withAsterisk
               disabled={form.values.destinationSites.length === 0}
-              data={form.values.destinationSites.map(
-                (destinationSite: ISite) => {
-                  return {
-                    value: destinationSite.id || "",
-                    label: destinationSite.name,
-                  }
+              data={form.values.destinationSites.map((destinationSite: ISite) => {
+                return {
+                  value: destinationSite.id || '',
+                  label: destinationSite.name,
                 }
-              )}
-              {...form.getInputProps("siteToId")}
+              })}
+              {...form.getInputProps('siteToId')}
             />
           </Grid.Col>
 
@@ -292,7 +297,7 @@ export default function TransferOrdersForm({
                 />
               </Grid.Col>
               <Grid.Col span="auto">
-                <Group align="end" h={"100%"}>
+                <Group align="end" h={'100%'}>
                   <Button
                     leftSection={<IconPlus size={16} />}
                     onClick={addItem}
@@ -311,9 +316,7 @@ export default function TransferOrdersForm({
                 variant="light"
                 mb="md"
               >
-                <Text size="sm">
-                  No products added yet
-                </Text>
+                <Text size="sm">No products added yet</Text>
               </Alert>
             )}
 
@@ -329,7 +332,7 @@ export default function TransferOrdersForm({
                 </Table.Thead>
                 <Table.Tbody>
                   {form.values.transferOrderItems.map((item, index) => {
-                    const product = products.find(p => p.id === item.productId)
+                    const product = products.find((p) => p.id === item.productId)
                     return (
                       <Table.Tr key={index}>
                         <Table.Td>
@@ -339,11 +342,7 @@ export default function TransferOrdersForm({
                           <Text size="sm">{item.quantity}</Text>
                         </Table.Td>
                         <Table.Td>
-                          <ActionIcon
-                            color="red"
-                            variant="light"
-                            onClick={() => removeItem(index)}
-                          >
+                          <ActionIcon color="red" variant="light" onClick={() => removeItem(index)}>
                             <IconTrash size={16} />
                           </ActionIcon>
                         </Table.Td>
@@ -364,15 +363,13 @@ export default function TransferOrdersForm({
               onClose={handleClose}
               onSubmit={(currentTransferOrderItem: ITransferOrderItem) => {
                 form.setFieldValue(
-                  "transferOrderItems",
+                  'transferOrderItems',
                   [
                     ...form.values.transferOrderItems.filter((item) => {
-                      return (
-                        item.productId !== currentTransferOrderItem.productId
-                      )
+                      return item.productId !== currentTransferOrderItem.productId
                     }),
                     {
-                      transferOrderId: currentTransferOrderItem.transferOrderId || "",
+                      transferOrderId: currentTransferOrderItem.transferOrderId || '',
                       productId: currentTransferOrderItem.productId,
                       quantity: currentTransferOrderItem.quantity,
                     },

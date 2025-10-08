@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface kmIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface kmIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,14 +18,8 @@ export default function KpIcon({ size = 20, style, ...others }: kmIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#0052b4"
-          d="M0 0h512v89l-61.2 165.6L512 423v89H0v-89l62.5-174.6L0 89z"
-        />
-        <path
-          fill="#eee"
-          d="M0 89h512v33.4l-28.1 130L512 389.7V423H0v-33.4L30 255 0 122.4z"
-        />
+        <path fill="#0052b4" d="M0 0h512v89l-61.2 165.6L512 423v89H0v-89l62.5-174.6L0 89z" />
+        <path fill="#eee" d="M0 89h512v33.4l-28.1 130L512 389.7V423H0v-33.4L30 255 0 122.4z" />
         <path fill="#d80027" d="M0 122.4h512v267.2H0z" />
         <circle cx="157.5" cy="256" r="98.5" fill="#eee" />
         <path

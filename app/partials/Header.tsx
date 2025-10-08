@@ -7,10 +7,10 @@ import {
   Burger,
   Drawer,
   ScrollArea,
-} from "@mantine/core"
-import { MantineLogo } from "@mantine/ds"
-import { useDisclosure } from "@mantine/hooks"
-import { Link } from "react-router";
+} from '@mantine/core'
+import { MantineLogo } from '@mantine/ds'
+import { useDisclosure } from '@mantine/hooks'
+import { Link } from 'react-router'
 
 // const useStyles = createStyles((theme) => ({
 //   link: {
@@ -82,26 +82,25 @@ import { Link } from "react-router";
 // }))
 
 export default function HeaderMegaMenu() {
-  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
-    useDisclosure(false)
+  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false)
 
   // const { classes, theme } = useStyles()
 
   return (
     <>
       <Header height={60} px="md">
-        <Group position="apart" sx={{ height: "100%" }}>
+        <Group position="apart" sx={{ height: '100%' }}>
           <MantineLogo size={30} />
 
           <Group
-            sx={{ height: "100%" }}
+            sx={{ height: '100%' }}
             spacing={0}
             // className={classes.hiddenMobile}
           >
             <Link
               // className={classes.link}
               to={{
-                pathname: "/",
+                pathname: '/',
               }}
             >
               Home
@@ -116,7 +115,7 @@ export default function HeaderMegaMenu() {
                 <Link
                   // className={classes.link}
                   to={{
-                    pathname: "/login",
+                    pathname: '/login',
                   }}
                 >
                   Log in
@@ -125,7 +124,7 @@ export default function HeaderMegaMenu() {
               <Button>
                 <Link
                   to={{
-                    pathname: "/signup",
+                    pathname: '/signup',
                   }}
                 >
                   Sign up
@@ -151,7 +150,7 @@ export default function HeaderMegaMenu() {
         // className={classes.hiddenDesktop}
         zIndex={1000000}
       >
-        <ScrollArea sx={{ height: "calc(100vh - 60px)" }} mx="-md">
+        <ScrollArea sx={{ height: 'calc(100vh - 60px)' }} mx="-md">
           <Divider
             my="sm"
             // color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
@@ -160,7 +159,7 @@ export default function HeaderMegaMenu() {
           <Link
             // className={classes.link}
             to={{
-              pathname: "/",
+              pathname: '/',
             }}
           >
             Home
@@ -169,7 +168,7 @@ export default function HeaderMegaMenu() {
           <Link
             // className={classes.link}
             to={{
-              pathname: "/members",
+              pathname: '/members',
             }}
           >
             Members

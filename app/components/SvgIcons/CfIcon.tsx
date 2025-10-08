@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface CfIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface CfIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function CfIcon({ size = 20, style, ...others }: CfIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#ffda44"
-          d="m0 378.4 252.9-28.8L512 378.4V512H322.8L256 481l-66.8 31H0z"
-        />
+        <path fill="#ffda44" d="m0 378.4 252.9-28.8L512 378.4V512H322.8L256 481l-66.8 31H0z" />
         <path fill="#6da544" d="m0 256 249.8-28L512 256v122.4H0z" />
         <path fill="#eee" d="m0 133.6 255.3-28.3L512 133.6V256H0z" />
         <path fill="#0052b4" d="M0 0h189.2L256 30l66.8-30H512v133.6H0z" />

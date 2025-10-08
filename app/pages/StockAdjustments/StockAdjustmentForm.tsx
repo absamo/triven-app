@@ -10,31 +10,31 @@ import {
   Textarea,
   Tooltip,
   rem,
-} from "@mantine/core"
-import { DateInput } from "@mantine/dates"
-import { useForm } from "@mantine/form"
-import { IconHistory, IconTrash } from "@tabler/icons-react"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useFetcher, useSubmit } from "react-router"
+} from '@mantine/core'
+import { DateInput } from '@mantine/dates'
+import { useForm } from '@mantine/form'
+import { IconHistory, IconTrash } from '@tabler/icons-react'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useFetcher, useSubmit } from 'react-router'
 
-import { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 // import Barcode from "react-barcode"
 
-import { type IProduct } from "~/app/common/validations/productSchema"
-import { type ISite } from "~/app/common/validations/siteSchema"
-import { type IStockAdjustmentHistory } from "~/app/common/validations/stockAdjustmentHistorySchema"
-import { Title } from "~/app/partials/Title"
+import { type IProduct } from '~/app/common/validations/productSchema'
+import { type ISite } from '~/app/common/validations/siteSchema'
+import { type IStockAdjustmentHistory } from '~/app/common/validations/stockAdjustmentHistorySchema'
+import { Title } from '~/app/partials/Title'
 
-import { useDisclosure } from "@mantine/hooks"
-import { ADJUSTMENT_REASONS } from "~/app/common/constants"
+import { useDisclosure } from '@mantine/hooks'
+import { ADJUSTMENT_REASONS } from '~/app/common/constants'
 import {
   stockAdjustmentSchema,
   type IStockAdjustment,
-} from "~/app/common/validations/stockAdjustmentsSchema"
-import { Form, Notification } from "~/app/components"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
-import StockAdjustmentHistory from "./StockAdjustmentHistory"
+} from '~/app/common/validations/stockAdjustmentsSchema'
+import { Form, Notification } from '~/app/components'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import StockAdjustmentHistory from './StockAdjustmentHistory'
 
 interface InventoryFormProps {
   adjustment: IStockAdjustment
@@ -43,17 +43,13 @@ interface InventoryFormProps {
   errors?: Record<string, string>
 }
 
-export default function AdjustmentForm({
-  adjustment,
-  sites,
-  products,
-}: InventoryFormProps) {
+export default function AdjustmentForm({ adjustment, sites, products }: InventoryFormProps) {
   const { t } = useTranslation('inventory')
   const { t: tCommon } = useTranslation('common')
 
   const [notification, setNotification] = useState<{
     message: string | null
-    status: "Success" | "Warning" | "Error" | null
+    status: 'Success' | 'Warning' | 'Error' | null
   } | null>(null)
 
   const [stockAdjustmentHistories, setStockAdjustmentHistories] = useState<
@@ -77,13 +73,13 @@ export default function AdjustmentForm({
       reference: adjustment.reference,
       siteId: adjustment.siteId,
       products: adjustment.products || [],
-      barcode: "",
+      barcode: '',
       adjustedQuantity: 0,
     },
   })
 
   useEffect(() => {
-    if (!fetcher.data || fetcher.state === "loading") {
+    if (!fetcher.data || fetcher.state === 'loading') {
       return
     }
 
@@ -97,20 +93,18 @@ export default function AdjustmentForm({
     if (data.error) {
       setNotification({
         message: data.error,
-        status: "Error",
+        status: 'Error',
       })
 
       return
     }
 
-    const foundProduct = form.values.products.find(
-      (p) => p.id === data.product?.id
-    )
+    const foundProduct = form.values.products.find((p) => p.id === data.product?.id)
 
     let message
     if (foundProduct) {
       form.setFieldValue(
-        "products",
+        'products',
         form.values.products.reduce((acc: IProduct[], p: IProduct) => {
           if (p.id === data.product.id) {
             return [
@@ -126,7 +120,7 @@ export default function AdjustmentForm({
       )
       message = t('stockAdjusted')
     } else {
-      form.setFieldValue("products", [
+      form.setFieldValue('products', [
         ...form.values.products.filter((p) => p.id !== data.product.id),
         {
           ...data.product,
@@ -138,62 +132,52 @@ export default function AdjustmentForm({
 
     setNotification({
       message,
-      status: "Success",
+      status: 'Success',
     })
   }, [fetcher, form])
 
   useEffect(() => {
-    let barcode = ""
+    let barcode = ''
 
     const handleScannerInput = (event: KeyboardEvent) => {
       if (event.key in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) {
         barcode += event.key
-      } else if (event.key === "Enter") {
+      } else if (event.key === 'Enter') {
         fetcher.load(`/api/productAdjustment?barcode=${barcode}`)
-        barcode = ""
+        barcode = ''
       }
     }
     fetcher.data = undefined
-    document.addEventListener("keydown", handleScannerInput)
+    document.addEventListener('keydown', handleScannerInput)
   }, [fetcher, notification])
 
   const submit = useSubmit()
 
-  const handleSubmit = ({
-    reference,
-    reason,
-    date,
-    notes,
-    siteId,
-    products,
-  }: IStockAdjustment) => {
+  const handleSubmit = ({ reference, reason, date, notes, siteId, products }: IStockAdjustment) => {
     const form = new FormData()
 
-    form.append("reference", reference || "")
-    form.append("reason", reason)
-    form.append("date", JSON.stringify(date))
-    form.append("notes", notes || "")
-    form.append("siteId", siteId)
-    form.append("products", JSON.stringify(products))
+    form.append('reference', reference || '')
+    form.append('reason', reason)
+    form.append('date', JSON.stringify(date))
+    form.append('notes', notes || '')
+    form.append('siteId', siteId)
+    form.append('products', JSON.stringify(products))
 
     if (adjustedQuantitiesErrors.length === 0) {
-      submit(form, { method: "post" })
+      submit(form, { method: 'post' })
     }
   }
 
   const selectedProductsIds = form.values.products?.map((p) => p.id) ?? []
-  const availableProducts = products.filter(
-    (p) => !selectedProductsIds.includes(p.id)
-  )
+  const availableProducts = products.filter((p) => !selectedProductsIds.includes(p.id))
 
   const productsOptions = availableProducts.map((product: IProduct) => ({
-    value: product.id || "",
+    value: product.id || '',
     label: product.name,
   }))
 
   const rows = form.values.products.map((product: IProduct, _, products) => {
-    const newQuantityOnHand =
-      (product.openingStock || 0) + Number(product.adjustedQuantity || 0)
+    const newQuantityOnHand = (product.openingStock || 0) + Number(product.adjustedQuantity || 0)
     return (
       <Table.Tr key={product.id}>
         <Table.Td>
@@ -212,20 +196,17 @@ export default function AdjustmentForm({
             name="adjustedQuantity"
             value={product.adjustedQuantity}
             onChange={(value: number | string) => {
-              const parsedValue =
-                typeof value === "string" ? parseInt(value) : value
+              const parsedValue = typeof value === 'string' ? parseInt(value) : value
 
               if (isNaN(parsedValue)) {
                 return
               }
-              form.setFieldValue("products", [
+              form.setFieldValue('products', [
                 ...products.map((p: IProduct) => {
                   if (p.id === product.id) {
                     if ((p.openingStock || 0) + parsedValue < 0) {
                       setAdjustedQuantitiesErrors([
-                        ...adjustedQuantitiesErrors.filter(
-                          (error) => error.id !== p.id
-                        ),
+                        ...adjustedQuantitiesErrors.filter((error) => error.id !== p.id),
                         {
                           id: p.id,
                           message: t('invalidQuantity'),
@@ -233,9 +214,7 @@ export default function AdjustmentForm({
                       ] as any)
                     } else {
                       setAdjustedQuantitiesErrors([
-                        ...adjustedQuantitiesErrors.filter(
-                          (error) => error.id !== p.id
-                        ),
+                        ...adjustedQuantitiesErrors.filter((error) => error.id !== p.id),
                       ] as any)
                     }
 
@@ -248,10 +227,7 @@ export default function AdjustmentForm({
                 }),
               ])
             }}
-            error={
-              adjustedQuantitiesErrors.find((error) => error.id === product.id)
-                ?.message
-            }
+            error={adjustedQuantitiesErrors.find((error) => error.id === product.id)?.message}
             w={150}
           />
         </Table.Td>
@@ -265,16 +241,12 @@ export default function AdjustmentForm({
                 variant="subtle"
                 onClick={() => {
                   setStockAdjustmentHistories(
-                    (product.stockAdjustmentHistories ||
-                      []) as IStockAdjustmentHistory[]
+                    (product.stockAdjustmentHistories || []) as IStockAdjustmentHistory[]
                   )
                   open()
                 }}
               >
-                <IconHistory
-                  style={{ width: rem(16), height: rem(16) }}
-                  stroke={1.5}
-                />
+                <IconHistory style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
               </ActionIcon>
             </Tooltip>
           </Group>
@@ -287,17 +259,12 @@ export default function AdjustmentForm({
                 variant="subtle"
                 color="red"
                 onClick={() =>
-                  form.setFieldValue("products", [
-                    ...(form.values.products || []).filter(
-                      (s: IProduct) => s.id !== product.id
-                    ),
+                  form.setFieldValue('products', [
+                    ...(form.values.products || []).filter((s: IProduct) => s.id !== product.id),
                   ])
                 }
               >
-                <IconTrash
-                  style={{ width: rem(16), height: rem(16) }}
-                  stroke={1.5}
-                />
+                <IconTrash style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
               </ActionIcon>
             </Tooltip>
           </Group>
@@ -310,7 +277,7 @@ export default function AdjustmentForm({
     <>
       <Grid>
         <Grid.Col>
-          <Title backTo={"/stock-adjustments"}>
+          <Title backTo={'/stock-adjustments'}>
             {adjustment.id ? t('editStockAdjustment') : t('addStockAdjustment')}
           </Title>
 
@@ -323,11 +290,11 @@ export default function AdjustmentForm({
                 withAsterisk
                 data={sites.map((site) => {
                   return {
-                    value: site.id || "",
+                    value: site.id || '',
                     label: site.name,
                   }
                 })}
-                {...form.getInputProps("siteId")}
+                {...form.getInputProps('siteId')}
               />
             </Grid.Col>
             <Grid.Col span={6}>
@@ -371,7 +338,7 @@ export default function AdjustmentForm({
                     label: t('unaccountedInventory'),
                   },
                 ]}
-                {...form.getInputProps("reason")}
+                {...form.getInputProps('reason')}
               />
             </Grid.Col>
             <Grid.Col span={6}>
@@ -379,7 +346,7 @@ export default function AdjustmentForm({
                 valueFormat="DD/MM/YYYY"
                 label={t('date')}
                 name="date"
-                {...form.getInputProps("date")}
+                {...form.getInputProps('date')}
               />
             </Grid.Col>
             <Grid.Col span={6}>
@@ -387,8 +354,8 @@ export default function AdjustmentForm({
                 withAsterisk
                 label={t('reference')}
                 name="reference"
-                {...form.getInputProps("reference")}
-                error={form.getInputProps("reference").error}
+                {...form.getInputProps('reference')}
+                error={form.getInputProps('reference').error}
               />
             </Grid.Col>
             <Grid.Col>
@@ -397,7 +364,7 @@ export default function AdjustmentForm({
                 name="notes"
                 autosize
                 minRows={4}
-                {...form.getInputProps("notes")}
+                {...form.getInputProps('notes')}
               />
             </Grid.Col>
             <Grid.Col>
@@ -413,12 +380,11 @@ export default function AdjustmentForm({
                   if (!currentProduct) return
 
                   const stockOnHand =
-                    (currentProduct.openingStock !==
-                      currentProduct.accountingStockOnHand
+                    (currentProduct.openingStock !== currentProduct.accountingStockOnHand
                       ? currentProduct.accountingStockOnHand
                       : currentProduct.openingStock) || 0
 
-                  form.setFieldValue("products", [
+                  form.setFieldValue('products', [
                     ...(form.values.products || []).filter(
                       (product: IProduct) => product.id !== productId
                     ),
@@ -430,20 +396,15 @@ export default function AdjustmentForm({
                     },
                   ])
                 }}
-                value={""}
+                value={''}
                 onKeyDown={(e: KeyboardEvent) => {
-                  if (e.key === "Enter") {
+                  if (e.key === 'Enter') {
                     e.preventDefault()
                   }
                   return e
                 }}
               />
-              <Table
-                verticalSpacing="sm"
-                highlightOnHover
-                withTableBorder
-                mt={"md"}
-              >
+              <Table verticalSpacing="sm" highlightOnHover withTableBorder mt={'md'}>
                 <Table.Thead fz={12}>
                   <Table.Tr>
                     <Table.Th>{t('productHeader')}</Table.Th>

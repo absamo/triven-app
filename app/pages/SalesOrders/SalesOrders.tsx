@@ -1,19 +1,19 @@
-import { Badge, Menu, Table, Text } from "@mantine/core"
-import dayjs from "dayjs"
-import { useTranslation } from "react-i18next"
-import { Form, Link, useLocation, useNavigate, useSubmit } from "react-router"
+import { Badge, Menu, Table, Text } from '@mantine/core'
+import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
+import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
 
-import { useForm } from "@mantine/form"
-import { useEffect, useState } from "react"
-import { SALES_ORDERS_STATUSES } from "~/app/common/constants"
-import { formatCurrency } from "~/app/common/helpers/money"
-import { getSalesOrderStatusLabel } from "~/app/common/helpers/sales"
-import type { ICurrency } from "~/app/common/validations/currencySchema"
-import type { ISalesOrderItem } from "~/app/common/validations/salesOrderItemSchema"
-import type { ISalesOrder } from "~/app/common/validations/salesOrderSchema"
-import { TableActionsMenu } from "~/app/components"
-import { SalesOrderFilters } from "~/app/partials/SalesOrderFilters"
-import { Title } from "~/app/partials/Title"
+import { useForm } from '@mantine/form'
+import { useEffect, useState } from 'react'
+import { SALES_ORDERS_STATUSES } from '~/app/common/constants'
+import { formatCurrency } from '~/app/common/helpers/money'
+import { getSalesOrderStatusLabel } from '~/app/common/helpers/sales'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import type { ISalesOrderItem } from '~/app/common/validations/salesOrderItemSchema'
+import type { ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import { TableActionsMenu } from '~/app/components'
+import { SalesOrderFilters } from '~/app/partials/SalesOrderFilters'
+import { Title } from '~/app/partials/Title'
 
 interface SalesOrdersProps {
   salesOrders: ISalesOrder[]
@@ -24,10 +24,7 @@ type FetcherData = {
   salesOrders: ISalesOrder[]
 }
 
-export default function SalesOrdersPage({
-  salesOrders = [],
-  permissions = [],
-}: SalesOrdersProps) {
+export default function SalesOrdersPage({ salesOrders = [], permissions = [] }: SalesOrdersProps) {
   const { t } = useTranslation(['salesOrders', 'common'])
   const [salesOrderReference, setSalesOrderReference] = useState<string>()
   const [data, setData] = useState<FetcherData | null>(null)
@@ -39,8 +36,8 @@ export default function SalesOrdersPage({
     }
   }, [location.state?.salesOrderReference])
 
-  const canCreate = permissions.includes("create:salesOrders")
-  const canUpdate = permissions.includes("update:salesOrders")
+  const canCreate = permissions.includes('create:salesOrders')
+  const canUpdate = permissions.includes('update:salesOrders')
 
   const navigate = useNavigate()
 
@@ -50,141 +47,135 @@ export default function SalesOrdersPage({
 
   const handleSubmit = () => {
     const formData = new FormData()
-    formData.append("status", JSON.stringify(form.values.status))
-    formData.append("salesOrderId", form.values.salesOrderId)
-    submit(formData, { method: "post", action: "/sales-orders" })
+    formData.append('status', JSON.stringify(form.values.status))
+    formData.append('salesOrderId', form.values.salesOrderId)
+    submit(formData, { method: 'post', action: '/sales-orders' })
   }
 
-  const rows = (data?.salesOrders || salesOrders).map(
-    (salesOrder: ISalesOrder) => {
-      const statusObj = salesOrder?.status ? getSalesOrderStatusLabel(salesOrder.status) : { label: '', color: 'gray' }
-      const status = statusObj.label || statusObj.color ? statusObj : { label: '', color: 'gray' }
+  const rows = (data?.salesOrders || salesOrders).map((salesOrder: ISalesOrder) => {
+    const statusObj = salesOrder?.status
+      ? getSalesOrderStatusLabel(salesOrder.status)
+      : { label: '', color: 'gray' }
+    const status = statusObj.label || statusObj.color ? statusObj : { label: '', color: 'gray' }
 
-      // Get translated status label
-      const getTranslatedStatusLabel = (statusValue: string) => {
-        switch (statusValue) {
-          case SALES_ORDERS_STATUSES.PENDING:
-            return t('salesOrders:pending')
-          case SALES_ORDERS_STATUSES.ISSUED:
-            return t('salesOrders:issued')
-          case SALES_ORDERS_STATUSES.SHIPPED:
-            return t('salesOrders:shipped')
-          case SALES_ORDERS_STATUSES.DELIVERED:
-            return t('salesOrders:delivered')
-          case SALES_ORDERS_STATUSES.PARTIALLY_DELIVERED:
-            return t('salesOrders:partiallyDelivered')
-          case SALES_ORDERS_STATUSES.CANCELLED:
-            return t('salesOrders:cancelled')
-          default:
-            return ''
-        }
+    // Get translated status label
+    const getTranslatedStatusLabel = (statusValue: string) => {
+      switch (statusValue) {
+        case SALES_ORDERS_STATUSES.PENDING:
+          return t('salesOrders:pending')
+        case SALES_ORDERS_STATUSES.ISSUED:
+          return t('salesOrders:issued')
+        case SALES_ORDERS_STATUSES.SHIPPED:
+          return t('salesOrders:shipped')
+        case SALES_ORDERS_STATUSES.DELIVERED:
+          return t('salesOrders:delivered')
+        case SALES_ORDERS_STATUSES.PARTIALLY_DELIVERED:
+          return t('salesOrders:partiallyDelivered')
+        case SALES_ORDERS_STATUSES.CANCELLED:
+          return t('salesOrders:cancelled')
+        default:
+          return ''
       }
+    }
 
-      const totalAmount = salesOrder.salesOrderItems?.reduce(
-        (acc: number, item: ISalesOrderItem) => acc + (item.amount || 0),
-        0
-      ) as number
-      const baseCurrency = salesOrder.company?.currencies?.find(
-        (currency: ICurrency) => currency.base
-      )
+    const totalAmount = salesOrder.salesOrderItems?.reduce(
+      (acc: number, item: ISalesOrderItem) => acc + (item.amount || 0),
+      0
+    ) as number
+    const baseCurrency = salesOrder.company?.currencies?.find(
+      (currency: ICurrency) => currency.base
+    )
 
-      return (
-        <Table.Tr
-          key={salesOrder.id}
-          onClick={() => {
-            canUpdate && navigate(`/sales-orders/${salesOrder.id}/edit`)
-          }}
-          style={{ position: 'relative' }}
-          onMouseEnter={() => setHoveredRowId(salesOrder.id ?? null)}
-          onMouseLeave={() => setHoveredRowId(null)}
-        >
-          <Table.Td>
-            <Text size="sm">
-              {dayjs(salesOrder.orderDate).format("DD-MM-YYYY")}
-            </Text>
-          </Table.Td>
-          <Table.Td>{salesOrder.salesOrderReference}</Table.Td>
-          <Table.Td>{`${salesOrder.customer?.firstName} ${salesOrder.customer?.lastName}`}</Table.Td>
-          <Table.Td>{salesOrder.agency?.name}</Table.Td>
-          <Table.Td>
-            <Badge color={status.color} variant="light">
-              {salesOrder.status ? getTranslatedStatusLabel(salesOrder.status) : ''}
-            </Badge>
-          </Table.Td>
+    return (
+      <Table.Tr
+        key={salesOrder.id}
+        onClick={() => {
+          canUpdate && navigate(`/sales-orders/${salesOrder.id}/edit`)
+        }}
+        style={{ position: 'relative' }}
+        onMouseEnter={() => setHoveredRowId(salesOrder.id ?? null)}
+        onMouseLeave={() => setHoveredRowId(null)}
+      >
+        <Table.Td>
+          <Text size="sm">{dayjs(salesOrder.orderDate).format('DD-MM-YYYY')}</Text>
+        </Table.Td>
+        <Table.Td>{salesOrder.salesOrderReference}</Table.Td>
+        <Table.Td>{`${salesOrder.customer?.firstName} ${salesOrder.customer?.lastName}`}</Table.Td>
+        <Table.Td>{salesOrder.agency?.name}</Table.Td>
+        <Table.Td>
+          <Badge color={status.color} variant="light">
+            {salesOrder.status ? getTranslatedStatusLabel(salesOrder.status) : ''}
+          </Badge>
+        </Table.Td>
 
-          <Table.Td>
-            <Text size="sm">{formatCurrency(totalAmount, baseCurrency?.symbol || '$')}</Text>
-          </Table.Td>
-          <Table.Td onClick={(event) => event.stopPropagation()}>
-            <TableActionsMenu
-              itemId={salesOrder.id}
-              hoveredRowId={hoveredRowId}
-            >
-              <Form onSubmit={form.onSubmit(handleSubmit)}>
-                <Menu.Item
-                  type="submit"
-                  disabled={
-                    salesOrder.status === SALES_ORDERS_STATUSES.ISSUED ||
-                    salesOrder.status ===
-                    SALES_ORDERS_STATUSES.PARTIALLY_DELIVERED ||
-                    salesOrder.status === SALES_ORDERS_STATUSES.DELIVERED ||
-                    salesOrder.status === SALES_ORDERS_STATUSES.CANCELLED
-                  }
-                  onClick={() => {
-                    form.setValues({
-                      salesOrderId: salesOrder.id,
-                      status: SALES_ORDERS_STATUSES.ISSUED,
-                    })
-                  }}
-                >
-                  {t('sendOrderToCustomer')}
-                </Menu.Item>
-                <Menu.Item
-                  type="submit"
-                  component={Link}
-                  to={"/invoices"}
+        <Table.Td>
+          <Text size="sm">{formatCurrency(totalAmount, baseCurrency?.symbol || '$')}</Text>
+        </Table.Td>
+        <Table.Td onClick={(event) => event.stopPropagation()}>
+          <TableActionsMenu itemId={salesOrder.id} hoveredRowId={hoveredRowId}>
+            <Form onSubmit={form.onSubmit(handleSubmit)}>
+              <Menu.Item
+                type="submit"
+                disabled={
+                  salesOrder.status === SALES_ORDERS_STATUSES.ISSUED ||
+                  salesOrder.status === SALES_ORDERS_STATUSES.PARTIALLY_DELIVERED ||
+                  salesOrder.status === SALES_ORDERS_STATUSES.DELIVERED ||
+                  salesOrder.status === SALES_ORDERS_STATUSES.CANCELLED
+                }
+                onClick={() => {
+                  form.setValues({
+                    salesOrderId: salesOrder.id,
+                    status: SALES_ORDERS_STATUSES.ISSUED,
+                  })
+                }}
+              >
+                {t('sendOrderToCustomer')}
+              </Menu.Item>
+              <Menu.Item
+                type="submit"
+                component={Link}
+                to={'/invoices'}
                 // state={{
                 //   purchaseOrderReference:
                 //     purchaseOrder.purchaseOrderReference,
                 // }}
-                >
-                  {t('salesOrders:viewInvoices')}
-                </Menu.Item>
-                <Menu.Item
-                  type="submit"
-                  color="red"
-                  disabled={
-                    salesOrder.status === SALES_ORDERS_STATUSES.CANCELLED
-                    // salesOrder.status ===
-                    //   SALES_ORDERS_STATUSES.PARTIALLY_DELIVERED ||
-                    // salesOrder.status === SALES_ORDERS_STATUSES.DELIVERED ||
-                    // salesOrder.status === SALES_ORDERS_STATUSES.CANCELLED ||
-                    // salesOrder.invoices?.some(
-                    //   (invoice: Pick<IInvoice, "status">) =>
-                    //     invoice.status === INVOICE_STATUSES.PAID ||
-                    //     invoice.status === INVOICE_STATUSES.PARTIALLYPAID
-                    // )
-                  }
-                  onClick={() => {
-                    form.setValues({
-                      salesOrderId: salesOrder.id,
-                      status: SALES_ORDERS_STATUSES.CANCELLED,
-                    })
-                  }}
-                >
-                  {t('salesOrders:cancelOrder')}
-                </Menu.Item>
-              </Form>
-            </TableActionsMenu>
-          </Table.Td>
-        </Table.Tr>
-      )
-    }
-  )
+              >
+                {t('salesOrders:viewInvoices')}
+              </Menu.Item>
+              <Menu.Item
+                type="submit"
+                color="red"
+                disabled={
+                  salesOrder.status === SALES_ORDERS_STATUSES.CANCELLED
+                  // salesOrder.status ===
+                  //   SALES_ORDERS_STATUSES.PARTIALLY_DELIVERED ||
+                  // salesOrder.status === SALES_ORDERS_STATUSES.DELIVERED ||
+                  // salesOrder.status === SALES_ORDERS_STATUSES.CANCELLED ||
+                  // salesOrder.invoices?.some(
+                  //   (invoice: Pick<IInvoice, "status">) =>
+                  //     invoice.status === INVOICE_STATUSES.PAID ||
+                  //     invoice.status === INVOICE_STATUSES.PARTIALLYPAID
+                  // )
+                }
+                onClick={() => {
+                  form.setValues({
+                    salesOrderId: salesOrder.id,
+                    status: SALES_ORDERS_STATUSES.CANCELLED,
+                  })
+                }}
+              >
+                {t('salesOrders:cancelOrder')}
+              </Menu.Item>
+            </Form>
+          </TableActionsMenu>
+        </Table.Td>
+      </Table.Tr>
+    )
+  })
 
   return (
     <>
-      <Title to={"/sales-orders/create"} canCreate={canCreate}>
+      <Title to={'/sales-orders/create'} canCreate={canCreate}>
         {t('salesOrders:title')}
       </Title>
 
@@ -220,13 +211,7 @@ export default function SalesOrdersPage({
         route="/api/sales-orders-search"
         onFilter={setData}
       />
-      <Table
-        verticalSpacing="xs"
-        highlightOnHover={canUpdate}
-        withTableBorder
-        striped
-        mt={35}
-      >
+      <Table verticalSpacing="xs" highlightOnHover={canUpdate} withTableBorder striped mt={35}>
         <Table.Thead fz={12}>
           <Table.Tr>
             <Table.Th>{t('salesOrders:orderDate')}</Table.Th>

@@ -1,2 +1,2 @@
-import Agencies from "./Agencies"
+import Agencies from './Agencies'
 export default Agencies

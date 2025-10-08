@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface kyIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface kyIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -28,15 +28,9 @@ export default function KyIcon({ size = 20, style, ...others }: kyIconProps) {
           d="M32 0v32H0v64h32v160h64V96h160V32H96V0Zm96 128 128 128v-31l-97-97z"
         />
         <circle cx="367.3" cy="144.7" r="44.5" fill="#6da544" />
-        <path
-          fill="#d80027"
-          d="M289.4 133.5h155.8l.1 29-76.9 79.7-79.1-79.7z"
-        />
+        <path fill="#d80027" d="M289.4 133.5h155.8l.1 29-76.9 79.7-79.1-79.7z" />
         <path fill="#496e2d" d="M445.2 256zm-155.8 0z" />
-        <path
-          fill="#ffda44"
-          d="M289.4 300.5V345h23.4a77.6 77.6 0 0 0 109 0h23.4v-44.5z"
-        />
+        <path fill="#ffda44" d="M289.4 300.5V345h23.4a77.6 77.6 0 0 0 109 0h23.4v-44.5z" />
         <path
           fill="#338af3"
           d="M289.3 193.7v31.2l8 16.6-7.9 14.5c.1 59.6 77.9 78 77.9 78s78-18.4 78-78l-7.7-13.2 7.7-18v-31.1l-78-10.2z"

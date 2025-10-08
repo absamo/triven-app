@@ -1,3 +1,3 @@
-import SalesTrends from "./SalesTrends";
+import SalesTrends from './SalesTrends'
 
-export default SalesTrends;
+export default SalesTrends

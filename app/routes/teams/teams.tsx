@@ -1,4 +1,9 @@
-import { type ActionFunction, type ActionFunctionArgs, type LoaderFunction, type LoaderFunctionArgs } from "react-router"
+import {
+  type ActionFunction,
+  type ActionFunctionArgs,
+  type LoaderFunction,
+  type LoaderFunctionArgs,
+} from 'react-router'
 
 // import {
 //   Body,
@@ -20,69 +25,73 @@ import { type ActionFunction, type ActionFunctionArgs, type LoaderFunction, type
 // import { render } from "@react-email/render"
 // import sendgrid from "@sendgrid/mail"
 
-import type { ITeam } from "~/app/common/validations/teamSchema"
-import Teams from "~/app/pages/Teams"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import { activateTeamMember, deactivateTeamMember, getTeamMembers, resendInvitation } from "~/app/services/teams.server"
-import type { Route } from "./+types/teams"
+import type { ITeam } from '~/app/common/validations/teamSchema'
+import Teams from '~/app/pages/Teams'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import {
+  activateTeamMember,
+  deactivateTeamMember,
+  getTeamMembers,
+  resendInvitation,
+} from '~/app/services/teams.server'
+import type { Route } from './+types/teams'
 
-export const loader: LoaderFunction = async ({
-  request,
-}: LoaderFunctionArgs) => {
+export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
-  const user = await requireBetterAuthUser(request, ["read:users"])
+  const user = await requireBetterAuthUser(request, ['read:users'])
 
   const teams = await getTeamMembers(request)
 
   return {
     teams,
     currentUser: user,
-    permissions: user?.role?.permissions?.filter(
-      (permission) =>
-        permission === "create:users" ||
-        permission === "update:users" ||
-        permission === "delete:users"
-    ) || [],
+    permissions:
+      user?.role?.permissions?.filter(
+        (permission) =>
+          permission === 'create:users' ||
+          permission === 'update:users' ||
+          permission === 'delete:users'
+      ) || [],
   }
 }
 
 export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
-  const user = await requireBetterAuthUser(request, ["delete:users"])
+  const user = await requireBetterAuthUser(request, ['delete:users'])
   const formData = await request.formData()
-  const actionType = formData.get("actionType") as string
-  const userId = formData.get("userId") as string
+  const actionType = formData.get('actionType') as string
+  const userId = formData.get('userId') as string
 
   if (!actionType || !userId) {
     return {
       notification: {
-        message: "Missing required parameters",
-        status: "Error",
+        message: 'Missing required parameters',
+        status: 'Error',
       },
     }
   }
 
   // Prevent users from deactivating themselves
-  if ((actionType === "deactivate" || actionType === "activate") && userId === user.id) {
+  if ((actionType === 'deactivate' || actionType === 'activate') && userId === user.id) {
     return {
       notification: {
-        message: "You cannot deactivate or reactivate your own account",
-        status: "Error",
+        message: 'You cannot deactivate or reactivate your own account',
+        status: 'Error',
       },
     }
   }
 
   switch (actionType) {
-    case "deactivate":
+    case 'deactivate':
       return await deactivateTeamMember(request, userId)
-    case "activate":
+    case 'activate':
       return await activateTeamMember(request, userId)
-    case "resendInvitation":
+    case 'resendInvitation':
       return await resendInvitation(request, userId)
     default:
       return {
         notification: {
-          message: "Invalid action",
-          status: "Error",
+          message: 'Invalid action',
+          status: 'Error',
         },
       }
   }

@@ -1,5 +1,5 @@
-import { z } from "zod"
-import { ATTRIBUTE_TYPES } from "../constants"
+import { z } from 'zod'
+import { ATTRIBUTE_TYPES } from '../constants'
 
 const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()])
 type Literal = z.infer<typeof literalSchema>

@@ -1,2 +1,1 @@
-export { default } from './ProductImportModal';
-
+export { default } from './ProductImportModal'

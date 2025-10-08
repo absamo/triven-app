@@ -1,2 +1,2 @@
-import PaymentsMadeForm from "./PaymentsMadeForm"
+import PaymentsMadeForm from './PaymentsMadeForm'
 export default PaymentsMadeForm

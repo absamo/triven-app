@@ -1,9 +1,9 @@
-import { BarChart } from "@mantine/charts"
-import { Badge, Group, Paper, Text } from "@mantine/core"
-import { IconDeviceAnalytics } from "@tabler/icons-react"
-import { useTranslation } from "react-i18next"
-import { useSearchParams } from "react-router"
-import classes from "./StatusStats.module.css"
+import { BarChart } from '@mantine/charts'
+import { Badge, Group, Paper, Text } from '@mantine/core'
+import { IconDeviceAnalytics } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router'
+import classes from './StatusStats.module.css'
 
 interface StatusStatsProps {
   stockStatus: {
@@ -19,19 +19,27 @@ export default function StatusStats({ stockStatus }: StatusStatsProps) {
   const [searchParams] = useSearchParams()
 
   // Check if date filters are applied
-  const startDate = searchParams.get("startDate")
-  const endDate = searchParams.get("endDate")
+  const startDate = searchParams.get('startDate')
+  const endDate = searchParams.get('endDate')
   const isDateFiltered = startDate && endDate
 
   // Format date range for display
   const getDateRangeText = () => {
     if (!startDate || !endDate) return null
-    const start = new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    const end = new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const start = new Date(startDate).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    })
+    const end = new Date(endDate).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
     return `${start} - ${end}`
   }
 
-  const totalCount = stockStatus.inStock + stockStatus.lowStock + stockStatus.critical + stockStatus.outOfStock
+  const totalCount =
+    stockStatus.inStock + stockStatus.lowStock + stockStatus.critical + stockStatus.outOfStock
 
   // Transform data for bar chart
   const chartData = [
@@ -42,8 +50,6 @@ export default function StatusStats({ stockStatus }: StatusStatsProps) {
   ]
 
   const hasData = totalCount > 0
-
-
 
   return (
     <Paper
@@ -58,27 +64,23 @@ export default function StatusStats({ stockStatus }: StatusStatsProps) {
     >
       <Group justify="space-between" align="flex-start">
         <Group align="flex-end" gap="xs">
-          <Text fw={700} fz="md">{t('stockStatusOverview')}</Text>
+          <Text fw={700} fz="md">
+            {t('stockStatusOverview')}
+          </Text>
           {isDateFiltered && (
             <Badge variant="light" color="violet" size="sm">
               {getDateRangeText()}
             </Badge>
           )}
         </Group>
-        <IconDeviceAnalytics
-          size="1.4rem"
-          className={classes.icon}
-          stroke={1.5}
-        />
+        <IconDeviceAnalytics size="1.4rem" className={classes.icon} stroke={1.5} />
       </Group>
 
       <Text c="dimmed" fz="sm" mb="md">
         {isDateFiltered
           ? `Product status for items created/updated in ${getDateRangeText()}`
-          : t('currentInventoryStatus')
-        }
+          : t('currentInventoryStatus')}
       </Text>
-
 
       {/* Centered bar chart */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -87,9 +89,7 @@ export default function StatusStats({ stockStatus }: StatusStatsProps) {
             h={180}
             data={chartData}
             dataKey="status"
-            series={[
-              { name: "items", color: "var(--mantine-color-blue-6)" }
-            ]}
+            series={[{ name: 'items', color: 'var(--mantine-color-blue-6)' }]}
             withTooltip
             withYAxis
             tickLine="x"

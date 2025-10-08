@@ -8,30 +8,30 @@ import {
   Text,
   Textarea,
   TextInput,
-} from "@mantine/core"
-import { DateInput } from "@mantine/dates"
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useTranslation } from "react-i18next"
-import { useSubmit } from "react-router"
+} from '@mantine/core'
+import { DateInput } from '@mantine/dates'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useTranslation } from 'react-i18next'
+import { useSubmit } from 'react-router'
 
 import {
   getAmountPaidByInvoice,
   getInvoiceStatusLabel,
   getTotalAmountDueByInvoice,
-} from "~/app/common/helpers/invoice"
-import { formatMoney } from "~/app/common/helpers/money"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import { type ICustomer } from "~/app/common/validations/customerSchema"
-import { type IInvoice } from "~/app/common/validations/invoiceSchema"
+} from '~/app/common/helpers/invoice'
+import { formatMoney } from '~/app/common/helpers/money'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { type ICustomer } from '~/app/common/validations/customerSchema'
+import { type IInvoice } from '~/app/common/validations/invoiceSchema'
 import {
   type IPaymentsReceived,
   paymentsReceivedSchema,
-} from "~/app/common/validations/paymentsReceivedSchema"
-import { Form } from "~/app/components"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
-import { Title } from "~/app/partials/Title"
-import classes from "./PaymentsReceivedForm.module.css"
+} from '~/app/common/validations/paymentsReceivedSchema'
+import { Form } from '~/app/components'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
+import classes from './PaymentsReceivedForm.module.css'
 
 interface PaymentsReceivedFormProps {
   paymentReceived: IPaymentsReceived
@@ -48,7 +48,7 @@ export default function PaymentsReceivedFormProps({
   errors,
   currency,
 }: PaymentsReceivedFormProps) {
-  const { t } = useTranslation(['forms', 'paymentsReceived', 'common']);
+  const { t } = useTranslation(['forms', 'paymentsReceived', 'common'])
 
   const form = useForm({
     validate: zodResolver(paymentsReceivedSchema),
@@ -79,15 +79,15 @@ export default function PaymentsReceivedFormProps({
   }: IPaymentsReceived) => {
     const formData = new FormData()
 
-    formData.append("paymentReference", paymentReference)
-    formData.append("customerId", customerId)
-    formData.append("paymentDate", JSON.stringify(paymentDate))
-    formData.append("paymentMethod", JSON.stringify(paymentMethod))
-    formData.append("notes", notes || "")
-    formData.append("invoiceId", invoiceId)
-    formData.append("amountReceived", JSON.stringify(amountReceived))
+    formData.append('paymentReference', paymentReference)
+    formData.append('customerId', customerId)
+    formData.append('paymentDate', JSON.stringify(paymentDate))
+    formData.append('paymentMethod', JSON.stringify(paymentMethod))
+    formData.append('notes', notes || '')
+    formData.append('invoiceId', invoiceId)
+    formData.append('amountReceived', JSON.stringify(amountReceived))
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
   }
 
   const customerOptions = customers.map((cutomer: ICustomer) => ({
@@ -104,14 +104,16 @@ export default function PaymentsReceivedFormProps({
 
   // const balanceDue = amountDue - amountPaid
 
-  const status = getInvoiceStatusLabel(form.values?.invoice?.status || "")
+  const status = getInvoiceStatusLabel(form.values?.invoice?.status || '')
 
   return (
     <>
       <Grid>
         <Grid.Col>
-          <Title backTo={"/payments-received"}>
-            {paymentReceived.id ? t('forms:editPayment', 'Edit a payment') : t('forms:addPayment', 'Add payment')}
+          <Title backTo={'/payments-received'}>
+            {paymentReceived.id
+              ? t('forms:editPayment', 'Edit a payment')
+              : t('forms:addPayment', 'Add payment')}
           </Title>
 
           <Form onSubmit={form.onSubmit(handleSubmit)} showSubmitButton={false}>
@@ -120,11 +122,8 @@ export default function PaymentsReceivedFormProps({
                 withAsterisk
                 label={t('forms:paymentReference', 'Payment reference')}
                 name="paymentReference"
-                {...form.getInputProps("paymentReference")}
-                error={
-                  form.getInputProps("paymentReference").error ||
-                  errors?.paymentReference
-                }
+                {...form.getInputProps('paymentReference')}
+                error={form.getInputProps('paymentReference').error || errors?.paymentReference}
               />
             </Grid.Col>
             <Grid.Col span={6}>
@@ -134,7 +133,7 @@ export default function PaymentsReceivedFormProps({
                 label={t('forms:paymentDate', 'Payment date')}
                 name="paymentDate"
                 minDate={new Date()}
-                {...form.getInputProps("paymentDate")}
+                {...form.getInputProps('paymentDate')}
               />
             </Grid.Col>
 
@@ -148,13 +147,13 @@ export default function PaymentsReceivedFormProps({
                 name="customerId"
                 disabled={!!paymentReceived.id}
                 onChange={(currentCustomer: string) => {
-                  form.setFieldValue("customerId", currentCustomer)
+                  form.setFieldValue('customerId', currentCustomer)
                   form.setFieldValue(
-                    "customer",
+                    'customer',
                     customers.find(({ id }) => id === currentCustomer)
                   )
                 }}
-                error={form.getInputProps("customerId").error}
+                error={form.getInputProps('customerId').error}
               />
             </Grid.Col>
             <Grid.Col span={6}>
@@ -167,58 +166,51 @@ export default function PaymentsReceivedFormProps({
                 name="invoiceId"
                 disabled={!!paymentReceived.id}
                 onChange={(currentInvoice: string) => {
-                  form.setFieldValue("invoiceId", currentInvoice || "")
+                  form.setFieldValue('invoiceId', currentInvoice || '')
                   form.setFieldValue(
-                    "invoice",
+                    'invoice',
                     (invoices || []).find(({ id }) => id === currentInvoice)
                   )
                 }}
-                error={form.getInputProps("invoiceId").error}
+                error={form.getInputProps('invoiceId').error}
                 description={
                   form.values.invoice && (
-                    <Group
-                      justify="space-between"
-                      component="span"
-                      align="flex-start"
-                    >
+                    <Group justify="space-between" component="span" align="flex-start">
                       <Text c="dimmed" size="xs" component="span">
-                        {t('common:status', 'Sale Order Status')} :{" "}
-                        <Badge
-                          color={status.color}
-                          variant="transparent"
-                          p={0}
-                          component="span"
-                        >
+                        {t('common:status', 'Sale Order Status')} :{' '}
+                        <Badge color={status.color} variant="transparent" p={0} component="span">
                           {status.label}
                         </Badge>
                       </Text>
 
                       <Stack gap={0} component="span">
                         <Text c="dimmed" size="xs" component="span">
-                          {t('paymentsReceived:amountDue', 'Amount Due')} :{" "}
+                          {t('paymentsReceived:amountDue', 'Amount Due')} :{' '}
                           <Text fw="bold" size="xs" component="span">
                             {currency.symbol}
-                            {formatMoney(getTotalAmountDueByInvoice(
-                              form.values.invoice as IInvoice
-                            ))}
+                            {formatMoney(
+                              getTotalAmountDueByInvoice(form.values.invoice as IInvoice)
+                            )}
                           </Text>
                         </Text>
                         <Text c="dimmed" size="xs" component="span">
-                          {t('paymentsReceived:amountPaid', 'Amount Paid')} :{" "}
+                          {t('paymentsReceived:amountPaid', 'Amount Paid')} :{' '}
                           <Text fw="bold" size="xs" component="span">
                             {currency.symbol}
-                            {formatMoney(getAmountPaidByInvoice(
-                              form.values.invoice as IInvoice,
-                              form.values.id,
-                              paymentReceived.amountReceived
-                            ))}
+                            {formatMoney(
+                              getAmountPaidByInvoice(
+                                form.values.invoice as IInvoice,
+                                form.values.id,
+                                paymentReceived.amountReceived
+                              )
+                            )}
                           </Text>
                         </Text>
                       </Stack>
                     </Group>
                   )
                 }
-                inputWrapperOrder={["label", "input", "description", "error"]}
+                inputWrapperOrder={['label', 'input', 'description', 'error']}
                 classNames={{
                   description: classes.description,
                 }}
@@ -233,13 +225,11 @@ export default function PaymentsReceivedFormProps({
                 // disabled={!!paymentReceived.id}
                 hideControls
                 allowNegative={false}
-                {...form.getInputProps("amountReceived")}
+                {...form.getInputProps('amountReceived')}
                 onChange={(amountReceived) => {
                   form
-                    .getInputProps("amountReceived")
-                    .onChange(
-                      amountReceived === "" ? undefined : amountReceived
-                    )
+                    .getInputProps('amountReceived')
+                    .onChange(amountReceived === '' ? undefined : amountReceived)
                 }}
               />
             </Grid.Col>
@@ -250,13 +240,13 @@ export default function PaymentsReceivedFormProps({
                 name="paymentMethod"
                 value={form.values.paymentMethod}
                 data={[
-                  { value: "BankTransfer", label: t('forms:bankTransfer', 'Bank Transfer') },
-                  { value: "Cash", label: t('forms:cash', 'Cash') },
-                  { value: "CreditCard", label: t('forms:creditCard', 'Credit Card') },
-                  { value: "DebitCard", label: t('forms:debitCard', 'Debit Card') },
-                  { value: "Cheque", label: t('forms:cheque', 'Cheque') },
+                  { value: 'BankTransfer', label: t('forms:bankTransfer', 'Bank Transfer') },
+                  { value: 'Cash', label: t('forms:cash', 'Cash') },
+                  { value: 'CreditCard', label: t('forms:creditCard', 'Credit Card') },
+                  { value: 'DebitCard', label: t('forms:debitCard', 'Debit Card') },
+                  { value: 'Cheque', label: t('forms:cheque', 'Cheque') },
                 ]}
-                {...form.getInputProps("paymentMethod")}
+                {...form.getInputProps('paymentMethod')}
               />
             </Grid.Col>
 
@@ -266,7 +256,7 @@ export default function PaymentsReceivedFormProps({
                 name="notes"
                 autosize
                 minRows={4}
-                {...form.getInputProps("notes")}
+                {...form.getInputProps('notes')}
               />
             </Grid.Col>
           </Form>

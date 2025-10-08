@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface SsIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface SsIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function SsIcon({ size = 20, style, ...others }: SsIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#eee"
-          d="M74.1 115 512 156.9v31.5l-42.4 70.3 42.4 64.2v31.5L74.1 386.8z"
-        />
+        <path fill="#eee" d="M74.1 115 512 156.9v31.5l-42.4 70.3 42.4 64.2v31.5L74.1 386.8z" />
         <path fill="#333" d="M0 0h512v156.8H50z" />
         <path fill="#a2001d" d="M150.6 188.3H512v134.5H150.6z" />
         <path fill="#496e2d" d="M50 354.3h462V512H0z" />

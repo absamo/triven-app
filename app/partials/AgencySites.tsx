@@ -1,11 +1,11 @@
-import { Grid, Loader } from "@mantine/core"
+import { Grid, Loader } from '@mantine/core'
 import { useTranslation } from 'react-i18next'
 
-import { useState } from "react"
-import { useFetcher } from "react-router"
-import { type IAgency } from "../common/validations/agencySchema"
-import type { ISite } from "../common/validations/siteSchema"
-import { SearchableSelect } from "./SearchableSelect"
+import { useState } from 'react'
+import { useFetcher } from 'react-router'
+import { type IAgency } from '../common/validations/agencySchema'
+import type { ISite } from '../common/validations/siteSchema'
+import { SearchableSelect } from './SearchableSelect'
 
 interface AgencySitesProps {
   disabled?: boolean
@@ -40,9 +40,7 @@ export function AgencySites({
   let data = fetcher.data as FetcherData
 
   const groupedData = (data?.sites || sites)
-    .sort((a: { type: string }, b: { type: string }) =>
-      a.type.localeCompare(b.type)
-    )
+    .sort((a: { type: string }, b: { type: string }) => a.type.localeCompare(b.type))
     .reverse()
     .reduce(
       (
@@ -81,7 +79,7 @@ export function AgencySites({
             }
           })}
           onChange={(currentAgencyId: string) => {
-            onChange({ agencyId: currentAgencyId || "", siteId: "" })
+            onChange({ agencyId: currentAgencyId || '', siteId: '' })
             setSiteFetched(true)
             fetcher.load(`/api/sites/${currentAgencyId}`)
           }}
@@ -101,13 +99,11 @@ export function AgencySites({
           data={groupedData}
           disabled={disabled || !agencyId}
           onChange={(currentSiteId: string) => {
-            onChange({ agencyId, siteId: currentSiteId || "" })
+            onChange({ agencyId, siteId: currentSiteId || '' })
           }}
           value={siteId}
-          rightSection={
-            fetcher.state === "loading" ? <Loader size={16} /> : null
-          }
-          searchValue={siteFetched ? "" : undefined}
+          rightSection={fetcher.state === 'loading' ? <Loader size={16} /> : null}
+          searchValue={siteFetched ? '' : undefined}
           error={error?.siteId}
         />
       </Grid.Col>

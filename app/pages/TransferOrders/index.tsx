@@ -1,2 +1,2 @@
-import TransferOrders from "./TransferOrders"
+import TransferOrders from './TransferOrders'
 export default TransferOrders

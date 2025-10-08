@@ -3,29 +3,27 @@ import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type ActionFunction,
-} from "react-router"
+} from 'react-router'
 
-import BillForm from "~/app/pages/Bills/BillForm"
-import { Notification } from "~/app/components"
-import { createBill, getMaxBillNumber } from "~/app/services/bills.server"
-import { type IBill } from "~/app/common/validations/billSchema"
-import { getPurchaseOrdersWithoutCancelledBills } from "~/app/services/purchases.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import type { Route } from "./+types/bills.create"
-import type { ICurrency } from "~/app/common/validations/currencySchema"
-import type { IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
+import BillForm from '~/app/pages/Bills/BillForm'
+import { Notification } from '~/app/components'
+import { createBill, getMaxBillNumber } from '~/app/services/bills.server'
+import { type IBill } from '~/app/common/validations/billSchema'
+import { getPurchaseOrdersWithoutCancelledBills } from '~/app/services/purchases.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import type { Route } from './+types/bills.create'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
 
-export const loader: LoaderFunction = async ({
-  request,
-}: LoaderFunctionArgs) => {
+export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
-  const user = await requireBetterAuthUser(request, ["create:bills"])
+  const user = await requireBetterAuthUser(request, ['create:bills'])
 
   const billReference = await getMaxBillNumber(request)
 
   const bill = {
     billReference: `BI-${billReference}`,
-    purchaseOrderId: "",
+    purchaseOrderId: '',
     billDate: new Date(),
     dueDate: new Date(),
     purchaseOrderItems: [],
@@ -33,9 +31,7 @@ export const loader: LoaderFunction = async ({
 
   const purchaseOrders = await getPurchaseOrdersWithoutCancelledBills(request)
 
-  const baseCurrency = user?.company?.currencies?.find(
-    (currency) => currency.base
-  )
+  const baseCurrency = user?.company?.currencies?.find((currency) => currency.base)
 
   return {
     bill,
@@ -44,21 +40,13 @@ export const loader: LoaderFunction = async ({
   }
 }
 
-export const action: ActionFunction = async ({
-  request,
-}: ActionFunctionArgs) => {
+export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData()
-  const billReference = formData.get("billReference") as IBill["billReference"]
-  const billDate = JSON.parse(
-    formData.get("billDate") as string
-  ) as IBill["billDate"]
-  const dueDate = JSON.parse(
-    formData.get("dueDate") as string
-  ) as IBill["dueDate"]
-  const purchaseOrderId = formData.get(
-    "purchaseOrderId"
-  ) as IBill["purchaseOrderId"]
-  const notes = formData.get("notes") as IBill["notes"]
+  const billReference = formData.get('billReference') as IBill['billReference']
+  const billDate = JSON.parse(formData.get('billDate') as string) as IBill['billDate']
+  const dueDate = JSON.parse(formData.get('dueDate') as string) as IBill['dueDate']
+  const purchaseOrderId = formData.get('purchaseOrderId') as IBill['purchaseOrderId']
+  const notes = formData.get('notes') as IBill['notes']
 
   return await createBill(request, {
     billReference,
@@ -69,10 +57,7 @@ export const action: ActionFunction = async ({
   })
 }
 
-export default function BillsCreateRoute({
-  loaderData,
-  actionData,
-}: Route.ComponentProps) {
+export default function BillsCreateRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { bill, currency, purchaseOrders } = loaderData as {
     bill: IBill
     currency: ICurrency
@@ -85,9 +70,7 @@ export default function BillsCreateRoute({
         bill={bill}
         purchaseOrders={purchaseOrders}
         currency={currency}
-        errors={
-          (actionData as unknown as { errors: Record<string, string> })?.errors
-        }
+        errors={(actionData as unknown as { errors: Record<string, string> })?.errors}
       />
       <Notification
         notification={
@@ -95,7 +78,7 @@ export default function BillsCreateRoute({
             actionData as unknown as {
               notification: {
                 message: string | null
-                status: "Success" | "Warning" | "Error" | null
+                status: 'Success' | 'Warning' | 'Error' | null
                 redirectTo?: string | null
                 autoClose?: boolean
               }

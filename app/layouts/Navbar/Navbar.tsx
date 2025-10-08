@@ -5,23 +5,28 @@ import {
   IconGauge,
   IconPackage,
   IconReceipt,
-  IconTruckDelivery
-} from "@tabler/icons-react"
+  IconTruckDelivery,
+} from '@tabler/icons-react'
 
-import { Box, Menu, Stack, Text, Tooltip, UnstyledButton } from "@mantine/core"
-import clsx from "clsx"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Link, useLocation } from "react-router"
-import NavbarLinksGroup from "../NavbarLinksGroup"
-import classes from "./Navbar.module.css"
+import { Box, Menu, Stack, Text, Tooltip, UnstyledButton } from '@mantine/core'
+import clsx from 'clsx'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useLocation } from 'react-router'
+import NavbarLinksGroup from '../NavbarLinksGroup'
+import classes from './Navbar.module.css'
 
 type IMenu = {
   icon: React.FC<any>
   label: string
   active?: boolean
   link?: string
-  sublinks?: { label: string; link: string; active: boolean; badge?: { text: string; color?: string; variant?: string } }[]
+  sublinks?: {
+    label: string
+    link: string
+    active: boolean
+    badge?: { text: string; color?: string; variant?: string }
+  }[]
 }
 
 interface INavbarLinkProps {
@@ -33,11 +38,11 @@ function NavbarLink({ menu, onClick }: INavbarLinkProps) {
   const { icon: Icon, label, link, sublinks, active } = menu
   const [activeMenu, setActiveMenu] = useState(false)
 
-  const locationPath = useLocation().pathname.split("/")[1]
+  const locationPath = useLocation().pathname.split('/')[1]
 
   const selected =
-    locationPath === link?.split("/")[1] ||
-    sublinks?.some((sublink) => sublink.link.split("/")[1] === locationPath)
+    locationPath === link?.split('/')[1] ||
+    sublinks?.some((sublink) => sublink.link.split('/')[1] === locationPath)
 
   return (
     <>
@@ -72,8 +77,7 @@ function NavbarLink({ menu, onClick }: INavbarLinkProps) {
                 key={sublink.label}
                 // onClick={() => onClick(sublink)}
                 className={clsx(classes.menuitem, {
-                  [classes.selected]:
-                    locationPath === sublink.link?.split("/")[1],
+                  [classes.selected]: locationPath === sublink.link?.split('/')[1],
                 })}
               >
                 {sublink.label}
@@ -89,7 +93,7 @@ function NavbarLink({ menu, onClick }: INavbarLinkProps) {
               [classes.selected]: selected,
             })}
             data-active={active || undefined}
-            to={link || ""}
+            to={link || ''}
           >
             <Icon size={20} stroke={1.5} />
           </UnstyledButton>
@@ -111,7 +115,7 @@ export default function Navbar({
   onClick: (menuItem: IMenu) => void
   onToggle?: () => void
 }) {
-  const { t } = useTranslation(['navigation']);
+  const { t } = useTranslation(['navigation'])
   const [selected, setSelected] = useState<boolean>(false)
 
   const handleNavbarLinkClick = (menuItem: IMenu, selected: boolean) => {
@@ -120,28 +124,29 @@ export default function Navbar({
   }
 
   // Permission checks - no need to memoize as includes() is very fast
-  const canViewProducts = permissions.includes("read:products")
-  const canViewStockAdjustments = permissions.includes("read:stockAdjustments")
-  const canViewCategories = permissions.includes("read:categories")
-  const canViewSuppliers = permissions.includes("read:suppliers")
-  const canViewPurchaseOrders = permissions.includes("read:purchaseOrders")
-  const canViewPurchaseReceives = permissions.includes("read:purchaseReceives")
-  const canViewBills = permissions.includes("read:bills")
-  const canViewPaymentsMade = permissions.includes("read:paymentsMade")
-  const canViewCustomers = permissions.includes("read:customers")
-  const canViewSalesOrders = permissions.includes("read:salesOrders")
-  const canViewBackorders = permissions.includes("read:backorders")
-  const canViewInvoices = permissions.includes("read:invoices")
-  const canViewPaymentsReceived = permissions.includes("read:paymentsReceived")
-  const canViewPlans = permissions.includes("read:plans")
-  const canViewSettings = permissions.includes("read:settings")
-  const canViewTeams = permissions.includes("read:users")
-  const canViewRoles = permissions.includes("read:roles")
-  const canViewAgencies = permissions.includes("read:agencies")
-  const canViewSites = permissions.includes("read:sites")
-  const canViewTransferOrders = permissions.includes("read:transferOrders")
-  const canViewAnalytics = permissions.includes("read:analytics")
-  const canViewApprovals = permissions.includes("read:approvals") || permissions.includes("read:workflows")
+  const canViewProducts = permissions.includes('read:products')
+  const canViewStockAdjustments = permissions.includes('read:stockAdjustments')
+  const canViewCategories = permissions.includes('read:categories')
+  const canViewSuppliers = permissions.includes('read:suppliers')
+  const canViewPurchaseOrders = permissions.includes('read:purchaseOrders')
+  const canViewPurchaseReceives = permissions.includes('read:purchaseReceives')
+  const canViewBills = permissions.includes('read:bills')
+  const canViewPaymentsMade = permissions.includes('read:paymentsMade')
+  const canViewCustomers = permissions.includes('read:customers')
+  const canViewSalesOrders = permissions.includes('read:salesOrders')
+  const canViewBackorders = permissions.includes('read:backorders')
+  const canViewInvoices = permissions.includes('read:invoices')
+  const canViewPaymentsReceived = permissions.includes('read:paymentsReceived')
+  const canViewPlans = permissions.includes('read:plans')
+  const canViewSettings = permissions.includes('read:settings')
+  const canViewTeams = permissions.includes('read:users')
+  const canViewRoles = permissions.includes('read:roles')
+  const canViewAgencies = permissions.includes('read:agencies')
+  const canViewSites = permissions.includes('read:sites')
+  const canViewTransferOrders = permissions.includes('read:transferOrders')
+  const canViewAnalytics = permissions.includes('read:analytics')
+  const canViewApprovals =
+    permissions.includes('read:approvals') || permissions.includes('read:workflows')
 
   // Build menu items - no useMemo needed as this needs to update when language changes
   let menuItems = []
@@ -149,7 +154,7 @@ export default function Navbar({
   const dashboardMenu = {
     label: t('navigation:dashboard'),
     icon: IconGauge,
-    link: "/dashboard",
+    link: '/dashboard',
     active: true,
   }
 
@@ -161,7 +166,7 @@ export default function Navbar({
     if (canViewProducts) {
       inventorySublinks.push({
         label: t('navigation:products'),
-        link: "/products",
+        link: '/products',
         active: false,
       })
     }
@@ -169,7 +174,7 @@ export default function Navbar({
     if (canViewCategories) {
       inventorySublinks.push({
         label: t('navigation:categories'),
-        link: "/categories",
+        link: '/categories',
         active: false,
       })
     }
@@ -177,7 +182,7 @@ export default function Navbar({
     if (canViewStockAdjustments) {
       inventorySublinks.push({
         label: t('navigation:stockAdjustments'),
-        link: "/stock-adjustments",
+        link: '/stock-adjustments',
         active: false,
       })
     }
@@ -185,7 +190,7 @@ export default function Navbar({
     if (canViewTransferOrders) {
       inventorySublinks.push({
         label: t('navigation:transferOrders'),
-        link: "/transfer-orders",
+        link: '/transfer-orders',
         active: false,
       })
     }
@@ -204,19 +209,19 @@ export default function Navbar({
 
     workflowSublinks.push({
       label: t('navigation:approvals'),
-      link: "/approvals",
+      link: '/approvals',
       active: false,
     })
 
     workflowSublinks.push({
       label: t('navigation:workflowTemplates'),
-      link: "/workflow-templates",
+      link: '/workflow-templates',
       active: false,
     })
 
     workflowSublinks.push({
       label: t('navigation:workflowHistory'),
-      link: "/workflow-history",
+      link: '/workflow-history',
       active: false,
     })
 
@@ -240,7 +245,7 @@ export default function Navbar({
     if (canViewSuppliers) {
       purchasesSublinks.push({
         label: t('navigation:suppliers'),
-        link: "/suppliers",
+        link: '/suppliers',
         active: false,
       })
     }
@@ -248,7 +253,7 @@ export default function Navbar({
     if (canViewPurchaseOrders) {
       purchasesSublinks.push({
         label: t('navigation:purchaseOrders'),
-        link: "/purchase-orders",
+        link: '/purchase-orders',
         active: false,
       })
     }
@@ -256,7 +261,7 @@ export default function Navbar({
     if (canViewPurchaseReceives) {
       purchasesSublinks.push({
         label: t('navigation:purchaseReceives'),
-        link: "/purchase-receives",
+        link: '/purchase-receives',
         active: false,
       })
     }
@@ -264,7 +269,7 @@ export default function Navbar({
     if (canViewBills) {
       purchasesSublinks.push({
         label: t('navigation:bills'),
-        link: "/bills",
+        link: '/bills',
         active: false,
       })
     }
@@ -272,7 +277,7 @@ export default function Navbar({
     if (canViewPaymentsMade) {
       purchasesSublinks.push({
         label: t('navigation:paymentsMade'),
-        link: "/payments-made",
+        link: '/payments-made',
         active: false,
       })
     }
@@ -297,7 +302,7 @@ export default function Navbar({
     if (canViewCustomers) {
       salesSublinks.push({
         label: t('navigation:customers'),
-        link: "/customers",
+        link: '/customers',
         active: false,
       })
     }
@@ -305,7 +310,7 @@ export default function Navbar({
     if (canViewSalesOrders) {
       salesSublinks.push({
         label: t('navigation:salesOrders'),
-        link: "/sales-orders",
+        link: '/sales-orders',
         active: false,
       })
     }
@@ -313,7 +318,7 @@ export default function Navbar({
     if (canViewBackorders) {
       salesSublinks.push({
         label: t('navigation:backorders'),
-        link: "/backorders",
+        link: '/backorders',
         active: false,
       })
     }
@@ -321,7 +326,7 @@ export default function Navbar({
     if (canViewInvoices) {
       salesSublinks.push({
         label: t('navigation:invoices'),
-        link: "/invoices",
+        link: '/invoices',
         active: false,
       })
     }
@@ -329,7 +334,7 @@ export default function Navbar({
     if (canViewPaymentsReceived) {
       salesSublinks.push({
         label: t('navigation:paymentsReceived'),
-        link: "/payments-received",
+        link: '/payments-received',
         active: false,
       })
     }
@@ -346,7 +351,7 @@ export default function Navbar({
     const analyticsSublinks = [
       {
         label: t('navigation:inventoryOverview'),
-        link: "/analytics/inventoryOverview",
+        link: '/analytics/inventoryOverview',
         active: false,
       },
     ]
@@ -359,19 +364,13 @@ export default function Navbar({
     })
   }
 
-  if (
-    canViewSettings ||
-    canViewTeams ||
-    canViewRoles ||
-    canViewAgencies ||
-    canViewSites
-  ) {
+  if (canViewSettings || canViewTeams || canViewRoles || canViewAgencies || canViewSites) {
     let companySublinks = []
 
     if (canViewPlans) {
       companySublinks.push({
         label: t('navigation:plans'),
-        link: "/plans",
+        link: '/plans',
         active: false,
       })
     }
@@ -379,19 +378,19 @@ export default function Navbar({
     if (canViewSettings) {
       companySublinks.push({
         label: t('navigation:settings'),
-        link: "/settings",
+        link: '/settings',
         active: false,
       })
     }
 
     if (canViewTeams) {
-      companySublinks.push({ label: t('navigation:teams'), link: "/teams", active: false })
+      companySublinks.push({ label: t('navigation:teams'), link: '/teams', active: false })
     }
 
     if (canViewRoles) {
       companySublinks.push({
         label: t('navigation:roles'),
-        link: "/roles",
+        link: '/roles',
         active: false,
       })
     }
@@ -399,7 +398,7 @@ export default function Navbar({
     if (canViewAgencies) {
       companySublinks.push({
         label: t('navigation:agencies'),
-        link: "/agencies",
+        link: '/agencies',
         active: false,
       })
     }
@@ -407,7 +406,7 @@ export default function Navbar({
     if (canViewSites) {
       companySublinks.push({
         label: t('navigation:sites'),
-        link: "/sites",
+        link: '/sites',
         active: false,
       })
     }
@@ -415,13 +414,13 @@ export default function Navbar({
     // AI Assistant menu item - always available
     companySublinks.push({
       label: t('navigation:assistant'),
-      link: "/ai-assistant",
+      link: '/ai-assistant',
       active: false,
       badge: {
-        text: "NEW",
-        color: "green",
-        variant: "outline"
-      }
+        text: 'NEW',
+        color: 'green',
+        variant: 'outline',
+      },
     })
 
     menuItems.push({
@@ -432,22 +431,16 @@ export default function Navbar({
     })
   }
 
-  const locationPath = useLocation().pathname.split("/")[1]
+  const locationPath = useLocation().pathname.split('/')[1]
 
   return (
-    <nav
-      className={clsx(classes.navbar, { [classes.miniNavbar]: showMiniNavbar })}
-    >
+    <nav className={clsx(classes.navbar, { [classes.miniNavbar]: showMiniNavbar })}>
       {showMiniNavbar ? (
         <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Box mt={25} style={{ flex: 1 }}>
             <Stack justify="center" gap={0}>
               {menuItems.map((menuItem: IMenu) => (
-                <NavbarLink
-                  menu={menuItem}
-                  key={menuItem.label}
-                  onClick={onClick}
-                />
+                <NavbarLink menu={menuItem} key={menuItem.label} onClick={onClick} />
               ))}
             </Stack>
           </Box>
@@ -479,12 +472,12 @@ export default function Navbar({
                   active =
                     !selected &&
                     (menuItem.sublinks?.some(
-                      (sublink) => sublink.link.split("/")[1] === locationPath
+                      (sublink) => sublink.link.split('/')[1] === locationPath
                     ) as boolean)
                 }
 
                 // Check if main link is active
-                if (menuItem.link?.split("/")[1] === locationPath) {
+                if (menuItem.link?.split('/')[1] === locationPath) {
                   active = true
                 }
 
@@ -494,13 +487,13 @@ export default function Navbar({
                       menuItem.label === activeMenuItem?.label
                         ? activeMenuItem
                         : {
-                          ...menuItem,
-                          active,
-                          sublinks: menuItem.sublinks?.map((sublink) => ({
-                            ...sublink,
-                            active: sublink.link.split("/")[1] === locationPath,
-                          })),
-                        }
+                            ...menuItem,
+                            active,
+                            sublinks: menuItem.sublinks?.map((sublink) => ({
+                              ...sublink,
+                              active: sublink.link.split('/')[1] === locationPath,
+                            })),
+                          }
                     }
                     key={menuItem.label}
                     onClick={(currentMenu, selected) =>
@@ -535,12 +528,12 @@ export default function Navbar({
                   active =
                     !selected &&
                     (menuItem.sublinks?.some(
-                      (sublink) => sublink.link.split("/")[1] === locationPath
+                      (sublink) => sublink.link.split('/')[1] === locationPath
                     ) as boolean)
                 }
 
                 // Check if main link is active
-                if (menuItem.link?.split("/")[1] === locationPath) {
+                if (menuItem.link?.split('/')[1] === locationPath) {
                   active = true
                 }
 
@@ -551,13 +544,13 @@ export default function Navbar({
                         menuItem.label === activeMenuItem?.label
                           ? activeMenuItem
                           : {
-                            ...menuItem,
-                            active,
-                            sublinks: menuItem.sublinks?.map((sublink) => ({
-                              ...sublink,
-                              active: sublink.link.split("/")[1] === locationPath,
-                            })),
-                          }
+                              ...menuItem,
+                              active,
+                              sublinks: menuItem.sublinks?.map((sublink) => ({
+                                ...sublink,
+                                active: sublink.link.split('/')[1] === locationPath,
+                              })),
+                            }
                       }
                       onClick={(currentMenu, selected) =>
                         handleNavbarLinkClick(currentMenu, selected)
@@ -576,7 +569,8 @@ export default function Navbar({
                   fw={600}
                   mb={12}
                   style={{
-                    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                    fontFamily:
+                      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                     color: 'light-dark(var(--mantine-color-gray-6), var(--mantine-color-gray-4))',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
@@ -593,12 +587,12 @@ export default function Navbar({
                     active =
                       !selected &&
                       (menuItem.sublinks?.some(
-                        (sublink) => sublink.link.split("/")[1] === locationPath
+                        (sublink) => sublink.link.split('/')[1] === locationPath
                       ) as boolean)
                   }
 
                   // Check if main link is active
-                  if (menuItem.link?.split("/")[1] === locationPath) {
+                  if (menuItem.link?.split('/')[1] === locationPath) {
                     active = true
                   }
 
@@ -608,13 +602,13 @@ export default function Navbar({
                         menuItem.label === activeMenuItem?.label
                           ? activeMenuItem
                           : {
-                            ...menuItem,
-                            active,
-                            sublinks: menuItem.sublinks?.map((sublink) => ({
-                              ...sublink,
-                              active: sublink.link.split("/")[1] === locationPath,
-                            })),
-                          }
+                              ...menuItem,
+                              active,
+                              sublinks: menuItem.sublinks?.map((sublink) => ({
+                                ...sublink,
+                                active: sublink.link.split('/')[1] === locationPath,
+                              })),
+                            }
                       }
                       key={menuItem.label}
                       onClick={(currentMenu, selected) =>

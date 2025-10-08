@@ -1,3 +1,3 @@
-import StockAdjustmentHistory from "./StockAdjustmentHistory"
+import StockAdjustmentHistory from './StockAdjustmentHistory'
 
 export default StockAdjustmentHistory

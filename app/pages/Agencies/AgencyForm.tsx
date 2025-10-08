@@ -1,19 +1,16 @@
-import { Grid, MultiSelect, TextInput } from "@mantine/core"
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useTranslation } from "react-i18next"
-import { useSubmit } from "react-router"
+import { Grid, MultiSelect, TextInput } from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useTranslation } from 'react-i18next'
+import { useSubmit } from 'react-router'
 
-import {
-  agencySchema,
-  type IAgency,
-} from "~/app/common/validations/agencySchema"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import { type ILocation } from "~/app/common/validations/locationSchema"
-import { type ISite } from "~/app/common/validations/siteSchema"
-import { Currency, Form } from "~/app/components"
-import { Location } from "~/app/partials/Location"
-import { Title } from "~/app/partials/Title"
+import { agencySchema, type IAgency } from '~/app/common/validations/agencySchema'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { type ILocation } from '~/app/common/validations/locationSchema'
+import { type ISite } from '~/app/common/validations/siteSchema'
+import { Currency, Form } from '~/app/components'
+import { Location } from '~/app/partials/Location'
+import { Title } from '~/app/partials/Title'
 
 interface AgencyFormProps {
   agency: IAgency
@@ -28,7 +25,7 @@ export default function AgenciesForm({
   sites,
   defaultCurrencies,
 }: AgencyFormProps) {
-  const { t } = useTranslation(['agencies', 'forms', 'common']);
+  const { t } = useTranslation(['agencies', 'forms', 'common'])
 
   const form = useForm({
     validate: zodResolver(agencySchema),
@@ -36,17 +33,17 @@ export default function AgenciesForm({
       ...agency,
       sites: agency.sites || [],
       location: agency.location || {
-        name: "",
-        address: "",
-        country: "",
-        city: "",
-        postalCode: "",
+        name: '',
+        address: '',
+        country: '',
+        city: '',
+        postalCode: '',
       },
       currency: agency.currency || {
-        currencyCode: "",
-        currencyName: "",
-        countryName: "",
-        isoCode: "",
+        currencyCode: '',
+        currencyName: '',
+        countryName: '',
+        isoCode: '',
       },
     },
   })
@@ -56,28 +53,28 @@ export default function AgenciesForm({
   const handleSubmit = ({ name, sites }: IAgency) => {
     const formData = new FormData()
 
-    formData.append("name", name)
-    formData.append("sites", JSON.stringify(sites))
+    formData.append('name', name)
+    formData.append('sites', JSON.stringify(sites))
     formData.append(
-      "currency",
+      'currency',
       JSON.stringify({
         ...form.values.currency,
       })
     )
     formData.append(
-      "location",
+      'location',
       JSON.stringify({
         ...form.values.location,
       })
     )
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
   }
 
   return (
     <Grid>
       <Grid.Col>
-        <Title backTo={"/agencies"}>
+        <Title backTo={'/agencies'}>
           {agency.id ? t('agencies:editAgency') : t('agencies:addAgency')}
         </Title>
 
@@ -88,8 +85,8 @@ export default function AgenciesForm({
               label={t('common:name')}
               name="name"
               mt="sm"
-              {...form.getInputProps("name")}
-              error={form.getInputProps("name").error || errors?.name}
+              {...form.getInputProps('name')}
+              error={form.getInputProps('name').error || errors?.name}
             />
           </Grid.Col>
 
@@ -98,7 +95,7 @@ export default function AgenciesForm({
               name="currency.currencyCode"
               value={form.values.currency.currencyCode}
               onChange={(currency: ICurrency) => {
-                form.setFieldValue("currency", {
+                form.setFieldValue('currency', {
                   ...agency.currency,
                   ...currency,
                 })
@@ -106,7 +103,7 @@ export default function AgenciesForm({
               required
               companyCurrencies={defaultCurrencies}
               restrictToCompanyCurrencies
-              error={form.getInputProps("currency.currencyCode").error}
+              error={form.getInputProps('currency.currencyCode').error}
             />
           </Grid.Col>
 
@@ -115,12 +112,12 @@ export default function AgenciesForm({
               checkIconPosition="right"
               label={t('agencies:sites')}
               name="sites"
-              placeholder={form.values.sites.length > 0 ? "" : t('agencies:selectSites')}
+              placeholder={form.values.sites.length > 0 ? '' : t('agencies:selectSites')}
               data={(sites || []).reduce(
                 (acc: { value: string; label: string }[], site: ISite) => {
                   if (!form.values.sites.some((w: ISite) => w.id === site.id)) {
                     acc.push({
-                      value: site.id || "",
+                      value: site.id || '',
                       label: site.name,
                     })
                   }
@@ -130,24 +127,20 @@ export default function AgenciesForm({
               )}
               value={form.values.sites.map((site: ISite) => site.name)}
               onChange={(value) => {
-                const currentsites: ISite[] = (sites || []).filter(
-                  (site: ISite) => {
-                    return (
-                      value.includes(site.name) || value.includes(site.id || "")
-                    )
-                  }
-                ) as ISite[]
+                const currentsites: ISite[] = (sites || []).filter((site: ISite) => {
+                  return value.includes(site.name) || value.includes(site.id || '')
+                }) as ISite[]
 
-                form.getInputProps("sites").onChange(currentsites)
+                form.getInputProps('sites').onChange(currentsites)
               }}
-              error={form.getInputProps("sites").error}
+              error={form.getInputProps('sites').error}
             />
           </Grid.Col>
           <Location
             name="location"
             value={form.values.location as ILocation}
             onChange={(location: ILocation) => {
-              form.setFieldValue("location", location)
+              form.setFieldValue('location', location)
             }}
             errors={form.errors as ILocation}
           />

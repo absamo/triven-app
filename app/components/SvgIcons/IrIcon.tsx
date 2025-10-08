@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface IrIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface IrIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function IrIcon({ size = 20, style, ...others }: IrIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#eee"
-          d="M0 144.7 258.8 39.6 512 144.7v222.6L257 493 0 367.3z"
-        />
+        <path fill="#eee" d="M0 144.7 258.8 39.6 512 144.7v222.6L257 493 0 367.3z" />
         <path
           fill="#6da544"
           d="M0 0v144.7h105.6v-22.2h33.6v22.2h33.3v-22.2h33.6v22.2h33.3v-22.2H273v22.2h33v-22.2h33.6v22.2h33.2v-22.2h33.6v22.2H512V0z"

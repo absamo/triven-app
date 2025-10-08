@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface UaIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface UaIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 

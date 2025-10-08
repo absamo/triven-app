@@ -1,5 +1,5 @@
-import { z } from "zod"
-import { userSchema } from "./userSchema"
+import { z } from 'zod'
+import { userSchema } from './userSchema'
 
 export const stockAdjustmentHistorySchema = z.object({
   id: z.string().optional(),
@@ -14,6 +14,4 @@ export const stockAdjustmentHistorySchema = z.object({
   reference: z.string().optional(),
 })
 
-export type IStockAdjustmentHistory = z.infer<
-  typeof stockAdjustmentHistorySchema
->
+export type IStockAdjustmentHistory = z.infer<typeof stockAdjustmentHistorySchema>

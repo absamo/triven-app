@@ -1,2 +1,2 @@
-import PaymentsReceived from "./PaymentsReceived"
+import PaymentsReceived from './PaymentsReceived'
 export default PaymentsReceived

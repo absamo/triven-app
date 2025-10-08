@@ -1,21 +1,21 @@
-import { Badge, Menu, Table, Text, UnstyledButton } from "@mantine/core"
-import { IconDotsVertical } from "@tabler/icons-react"
-import dayjs from "dayjs"
-import { useTranslation } from "react-i18next"
-import { Form, Link, useLocation, useNavigate, useSubmit } from "react-router"
+import { Badge, Menu, Table, Text, UnstyledButton } from '@mantine/core'
+import { IconDotsVertical } from '@tabler/icons-react'
+import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
+import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
 
-import { INVOICE_STATUSES } from "~/app/common/constants"
-import { getInvoiceStatusLabel } from "~/app/common/helpers/invoice"
-import { formatCurrency } from "~/app/common/helpers/money"
-import type { IInvoice } from "~/app/common/validations/invoiceSchema"
-import { Title } from "~/app/partials/Title"
+import { INVOICE_STATUSES } from '~/app/common/constants'
+import { getInvoiceStatusLabel } from '~/app/common/helpers/invoice'
+import { formatCurrency } from '~/app/common/helpers/money'
+import type { IInvoice } from '~/app/common/validations/invoiceSchema'
+import { Title } from '~/app/partials/Title'
 // import InvoicePDF from "~/app/PDF/InvoicePDF"
-import { useForm } from "@mantine/form"
-import { useEffect, useState } from "react"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import { type IPaymentsReceived } from "~/app/common/validations/paymentsReceivedSchema"
-import type { ISalesOrder } from "~/app/common/validations/salesOrderSchema"
-import { SalesOrderFilters } from "~/app/partials/SalesOrderFilters"
+import { useForm } from '@mantine/form'
+import { useEffect, useState } from 'react'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { type IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
+import type { ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import { SalesOrderFilters } from '~/app/partials/SalesOrderFilters'
 
 interface InvoicesProps {
   invoices: IInvoice[]
@@ -35,8 +35,8 @@ export default function InvoicesPage({
   salesOrders = [],
 }: InvoicesProps) {
   const { t } = useTranslation(['invoices', 'common'])
-  const [salesOrderReference, setSalesOrderReference] = useState<string>("")
-  const [invoiceReference, setInvoiceReference] = useState<string>("")
+  const [salesOrderReference, setSalesOrderReference] = useState<string>('')
+  const [invoiceReference, setInvoiceReference] = useState<string>('')
   const [data, setData] = useState<FetcherData | null>(null)
   const location = useLocation()
   useEffect(() => {
@@ -49,8 +49,8 @@ export default function InvoicesPage({
     }
   }, [location.state?.salesOrderReference, location.state?.invoiceReference])
 
-  const canCreate = permissions.includes("create:invoices")
-  const canUpdate = permissions.includes("update:invoices")
+  const canCreate = permissions.includes('create:invoices')
+  const canUpdate = permissions.includes('update:invoices')
 
   const navigate = useNavigate()
   const form = useForm()
@@ -59,9 +59,9 @@ export default function InvoicesPage({
   const handleSubmit = () => {
     const { status, invoiceId } = form.values
     const formData = new FormData()
-    formData.append("status", JSON.stringify(status))
-    formData.append("invoiceId", invoiceId)
-    submit(formData, { method: "post", action: "/invoices" })
+    formData.append('status', JSON.stringify(status))
+    formData.append('invoiceId', invoiceId)
+    submit(formData, { method: 'post', action: '/invoices' })
   }
 
   const rows = (data?.invoices || invoices).map((invoice: IInvoice) => {
@@ -71,9 +71,10 @@ export default function InvoicesPage({
       (acc, item) => acc + (item.amount || 0),
       0
     ) as number
-    const amountPaid = (
-      (invoice?.paymentsReceived as IPaymentsReceived[]) || []
-    ).reduce((acc, item) => acc + (item.amountReceived || 0), 0) as number
+    const amountPaid = ((invoice?.paymentsReceived as IPaymentsReceived[]) || []).reduce(
+      (acc, item) => acc + (item.amountReceived || 0),
+      0
+    ) as number
 
     return (
       <Table.Tr
@@ -83,9 +84,7 @@ export default function InvoicesPage({
         }}
       >
         <Table.Td>
-          <Text size="sm">
-            {dayjs(invoice.invoiceDate).format("DD-MM-YYYY")}
-          </Text>
+          <Text size="sm">{dayjs(invoice.invoiceDate).format('DD-MM-YYYY')}</Text>
         </Table.Td>
         <Table.Td>{invoice.invoiceReference}</Table.Td>
         <Table.Td>{invoice.salesOrder?.salesOrderReference}</Table.Td>
@@ -124,10 +123,9 @@ export default function InvoicesPage({
                 <Menu.Item
                   type="submit"
                   component={Link}
-                  to={"/sales-orders"}
+                  to={'/sales-orders'}
                   state={{
-                    salesOrderReference:
-                      invoice.salesOrder?.salesOrderReference,
+                    salesOrderReference: invoice.salesOrder?.salesOrderReference,
                   }}
                 >
                   {t('invoices:viewPurchaseOrder')}
@@ -135,7 +133,7 @@ export default function InvoicesPage({
                 <Menu.Item
                   type="submit"
                   component={Link}
-                  to={"/payments-received"}
+                  to={'/payments-received'}
                   state={{
                     invoiceReference: invoice.invoiceReference,
                   }}
@@ -165,7 +163,7 @@ export default function InvoicesPage({
 
   return (
     <>
-      <Title to={"/invoices/create"} canCreate={canCreate}>
+      <Title to={'/invoices/create'} canCreate={canCreate}>
         {t('invoices:title')}
       </Title>
 
@@ -201,13 +199,7 @@ export default function InvoicesPage({
         route="/api/invoices-search"
         onFilter={setData}
       />
-      <Table
-        verticalSpacing="xs"
-        highlightOnHover={canUpdate}
-        withTableBorder
-        striped
-        mt={35}
-      >
+      <Table verticalSpacing="xs" highlightOnHover={canUpdate} withTableBorder striped mt={35}>
         <Table.Thead fz={12}>
           <Table.Tr>
             <Table.Th>{t('invoices:date')}</Table.Th>

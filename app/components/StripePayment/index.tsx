@@ -1,1 +1,1 @@
-export { default } from './StripePayment';
+export { default } from './StripePayment'

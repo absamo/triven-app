@@ -1,12 +1,12 @@
-import { Grid, Modal, TextInput, NumberInput } from "@mantine/core"
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
+import { Grid, Modal, TextInput, NumberInput } from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
 
-import Form from "~/app/components/Form"
+import Form from '~/app/components/Form'
 import {
   purchaseReceiveItemSchema,
   type IPurchaseReceiveItem,
-} from "~/app/common/validations/purchaseReceiveItemSchema"
+} from '~/app/common/validations/purchaseReceiveItemSchema'
 
 interface IPurchaseReceiveItemFormProps {
   purchaseReceiveItem: IPurchaseReceiveItem
@@ -22,7 +22,7 @@ export default function PurchaseReceiveItemForm({
   onSubmit,
 }: IPurchaseReceiveItemFormProps) {
   const form = useForm({
-    mode: "uncontrolled",
+    mode: 'uncontrolled',
     validateInputOnBlur: true,
     validate: zodResolver(purchaseReceiveItemSchema),
     initialValues: {
@@ -38,20 +38,14 @@ export default function PurchaseReceiveItemForm({
 
   const handleSubmit = (currentPurchaseReceiveItem: IPurchaseReceiveItem) => {
     if (currentPurchaseReceiveItem.receivedQuantity < 0) {
-      form.setFieldError(
-        "receivedQuantity",
-        "Received quantity cannot be less than zero"
-      )
+      form.setFieldError('receivedQuantity', 'Received quantity cannot be less than zero')
       return
     }
 
-    if (
-      currentPurchaseReceiveItem.orderedQuantity <
-      currentPurchaseReceiveItem.receivedQuantity
-    ) {
+    if (currentPurchaseReceiveItem.orderedQuantity < currentPurchaseReceiveItem.receivedQuantity) {
       form.setFieldError(
-        "receivedQuantity",
-        "Quantity to receive cannot be greater than ordered quantity"
+        'receivedQuantity',
+        'Quantity to receive cannot be greater than ordered quantity'
       )
       return
     }
@@ -79,7 +73,7 @@ export default function PurchaseReceiveItemForm({
           <Form onSubmit={form.onSubmit(handleSubmit)} fixedBtn={false}>
             <Grid.Col>
               <TextInput
-                label={"Purchase order item"}
+                label={'Purchase order item'}
                 name="product.name"
                 disabled
                 value={purchaseReceiveItem.product?.name}
@@ -99,13 +93,11 @@ export default function PurchaseReceiveItemForm({
               <NumberInput
                 label="Received quantity"
                 name="receivedQuantity"
-                {...form.getInputProps("receivedQuantity")}
+                {...form.getInputProps('receivedQuantity')}
                 onChange={(receivedQuantity) => {
                   form
-                    .getInputProps("receivedQuantity")
-                    .onChange(
-                      receivedQuantity === "" ? undefined : receivedQuantity
-                    )
+                    .getInputProps('receivedQuantity')
+                    .onChange(receivedQuantity === '' ? undefined : receivedQuantity)
                 }}
               />
             </Grid.Col>

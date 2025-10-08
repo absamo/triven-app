@@ -1,3 +1,3 @@
-import StatusStats from "./StatusStats"
+import StatusStats from './StatusStats'
 
 export default StatusStats

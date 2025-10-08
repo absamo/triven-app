@@ -1,1 +1,1 @@
-export { default } from "./FinanceStats"
+export { default } from './FinanceStats'

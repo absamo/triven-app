@@ -1,1 +1,1 @@
-export { default } from './TrialExpirationModal';
+export { default } from './TrialExpirationModal'

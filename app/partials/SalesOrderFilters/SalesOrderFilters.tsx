@@ -1,16 +1,10 @@
-import {
-  Grid,
-  Input,
-  MultiSelect,
-  TextInput,
-  type ComboboxItem,
-} from "@mantine/core"
-import { DatePickerInput } from "@mantine/dates"
-import { IconCalendar, IconSearch } from "@tabler/icons-react"
-import classes from "~/app/partials/SalesOrderFilters/SalesOrderFilters.module.css"
+import { Grid, Input, MultiSelect, TextInput, type ComboboxItem } from '@mantine/core'
+import { DatePickerInput } from '@mantine/dates'
+import { IconCalendar, IconSearch } from '@tabler/icons-react'
+import classes from '~/app/partials/SalesOrderFilters/SalesOrderFilters.module.css'
 
-import { useState, useEffect } from "react"
-import { useFetcher } from "react-router"
+import { useState, useEffect } from 'react'
+import { useFetcher } from 'react-router'
 
 // import { useDebouncedValue } from "@mantine/hooks"
 
@@ -54,12 +48,8 @@ export default function SalesOrderFilters({
   const [searchValue, setSearchValue] = useState<string | null>(null)
   //const [debounced] = useDebouncedValue(searchValue, 100)
   const [statusOrders, setStatusOrders] = useState<string[]>([])
-  const [salesOrders, setSalesOrders] = useState<string[]>(
-    salesOrderProps?.values || []
-  )
-  const [invoices, setInvoices] = useState<string[]>(
-    invoicesProps?.values || []
-  )
+  const [salesOrders, setSalesOrders] = useState<string[]>(salesOrderProps?.values || [])
+  const [invoices, setInvoices] = useState<string[]>(invoicesProps?.values || [])
   const [dateValue, setDateValue] = useState<Date | null>(null)
 
   const fetcher = useFetcher()
@@ -71,7 +61,7 @@ export default function SalesOrderFilters({
     invoices: string[],
     date: Date | null
   ) => {
-    let params = ""
+    let params = ''
 
     if (search) {
       params += `search=${JSON.stringify(search)}`
@@ -117,23 +107,17 @@ export default function SalesOrderFilters({
         fetcher.load(`${route}?invoices=${JSON.stringify(invoices)}`)
       }
     }
-  }, [
-    data,
-    salesOrderProps?.salesOrderReference,
-    invoicesProps?.invoiceReference,
-  ])
+  }, [data, salesOrderProps?.salesOrderReference, invoicesProps?.invoiceReference])
 
-  const handleTextInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleTextInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value
     setSearchValue(value)
     fetchSalesOrderData(value, statusOrders, salesOrders, invoices, dateValue)
   }
 
   const handleTextInputClick = () => {
-    setSearchValue("")
-    fetchSalesOrderData("", statusOrders, salesOrders, invoices, dateValue)
+    setSearchValue('')
+    fetchSalesOrderData('', statusOrders, salesOrders, invoices, dateValue)
   }
 
   const handleStatusOrderChange = (values: string[]) => {
@@ -148,13 +132,7 @@ export default function SalesOrderFilters({
 
   const handleInvoiceChange = (values: string[]) => {
     setInvoices(values)
-    fetchSalesOrderData(
-      searchValue,
-      statusOrders,
-      salesOrders,
-      values,
-      dateValue
-    )
+    fetchSalesOrderData(searchValue, statusOrders, salesOrders, values, dateValue)
   }
 
   const handleDateChange = (date: Date | null) => {
@@ -172,15 +150,13 @@ export default function SalesOrderFilters({
             rightSectionWidth={42}
             leftSection={<IconSearch size={18} stroke={1.5} />}
             onChange={handleTextInputChange}
-            value={searchValue || ""}
+            value={searchValue || ''}
             label={searchProps?.description}
             classNames={{
               label: classes.label,
             }}
             rightSection={
-              searchValue ? (
-                <Input.ClearButton onClick={handleTextInputClick} />
-              ) : undefined
+              searchValue ? <Input.ClearButton onClick={handleTextInputClick} /> : undefined
             }
           />
         </Grid.Col>
@@ -189,17 +165,15 @@ export default function SalesOrderFilters({
       {salesOrderProps && (
         <Grid.Col span={3}>
           <MultiSelect
-            data={salesOrderProps?.data.filter(
-              (data) => !salesOrders.includes(data)
-            )}
+            data={salesOrderProps?.data.filter((data) => !salesOrders.includes(data))}
             value={salesOrders}
             onChange={handleSalesOrderChange}
             label={salesOrderProps?.description}
             hidePickedOptions
             comboboxProps={{
               width: 200,
-              position: "bottom-start",
-              shadow: "md",
+              position: 'bottom-start',
+              shadow: 'md',
             }}
             classNames={{
               label: classes.label,
@@ -212,17 +186,15 @@ export default function SalesOrderFilters({
       {invoicesProps && (
         <Grid.Col span={3}>
           <MultiSelect
-            data={invoicesProps?.data.filter(
-              (data) => !invoices.includes(data)
-            )}
+            data={invoicesProps?.data.filter((data) => !invoices.includes(data))}
             value={invoices}
             onChange={handleInvoiceChange}
             label={invoicesProps?.description}
             hidePickedOptions
             comboboxProps={{
               width: 200,
-              position: "bottom-start",
-              shadow: "md",
+              position: 'bottom-start',
+              shadow: 'md',
             }}
             classNames={{
               label: classes.label,
@@ -242,8 +214,8 @@ export default function SalesOrderFilters({
             hidePickedOptions
             comboboxProps={{
               width: 200,
-              position: "bottom-start",
-              shadow: "md",
+              position: 'bottom-start',
+              shadow: 'md',
             }}
             classNames={{
               label: classes.label,

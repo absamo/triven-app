@@ -1,1 +1,1 @@
-export { default } from "./TrendingProducts"
+export { default } from './TrendingProducts'

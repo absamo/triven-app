@@ -1,7 +1,7 @@
-import { Modal, Table, Text } from "@mantine/core"
-import dayjs from "dayjs"
-import { useTranslation } from "react-i18next"
-import type { IStockAdjustmentHistory } from "~/app/common/validations"
+import { Modal, Table, Text } from '@mantine/core'
+import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
+import type { IStockAdjustmentHistory } from '~/app/common/validations'
 
 interface StockAdjustmentHistoryProps {
   stockAdjustmentHistories: IStockAdjustmentHistory[]
@@ -28,7 +28,7 @@ export default function StockAdjustmentHistory({
       createdAt,
     }) => (
       <Table.Tr key={id}>
-        <Table.Td width={"300rem"}>
+        <Table.Td width={'300rem'}>
           <Text size="sm">{product?.name}</Text>
         </Table.Td>
         <Table.Td>
@@ -44,14 +44,10 @@ export default function StockAdjustmentHistory({
           <Text size="sm">{adjustedQuantity}</Text>
         </Table.Td>
         <Table.Td>
-          <Text size="sm">
-            {`${createdBy?.profile.firstName} ${createdBy?.profile.lastName}`}
-          </Text>
+          <Text size="sm">{`${createdBy?.profile.firstName} ${createdBy?.profile.lastName}`}</Text>
         </Table.Td>
         <Table.Td>
-          <Text size="sm">
-            {dayjs(createdAt).format("DD-MM-YYYY HH:mm:ss")}
-          </Text>
+          <Text size="sm">{dayjs(createdAt).format('DD-MM-YYYY HH:mm:ss')}</Text>
         </Table.Td>
       </Table.Tr>
     )
@@ -59,7 +55,7 @@ export default function StockAdjustmentHistory({
 
   return (
     <>
-      <Modal.Root opened={opened} onClose={onClose} size={"70rem"}>
+      <Modal.Root opened={opened} onClose={onClose} size={'70rem'}>
         <Modal.Overlay />
         <Modal.Content>
           <Modal.Header>
@@ -67,12 +63,7 @@ export default function StockAdjustmentHistory({
             <Modal.CloseButton />
           </Modal.Header>
           <Modal.Body>
-            <Table
-              verticalSpacing="xs"
-              highlightOnHover
-              withTableBorder
-              striped
-            >
+            <Table verticalSpacing="xs" highlightOnHover withTableBorder striped>
               <Table.Thead fz={12}>
                 <Table.Tr>
                   <Table.Th>{t('productHeader')}</Table.Th>

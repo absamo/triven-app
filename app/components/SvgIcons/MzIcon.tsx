@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface MzIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface MzIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function MzIcon({ size = 20, style, ...others }: MzIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#eee"
-          d="m99 136.8 413 20v31.5l-35.9 66.1 36.2 68.4-.3 32.4-413 22z"
-        />
+        <path fill="#eee" d="m99 136.8 413 20v31.5l-35.9 66.1 36.2 68.4-.3 32.4-413 22z" />
         <path fill="#496e2d" d="M512 156.8V0H0l122 156.8z" />
         <path fill="#333" d="M167 188.3v134.5h345.3l-.3-134.5z" />
         <path fill="#ffda44" d="M512 355.2V512H0l122-156.8z" />

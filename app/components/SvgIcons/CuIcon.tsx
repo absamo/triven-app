@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface CuIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface CuIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -23,10 +23,7 @@ export default function CuIcon({ size = 20, style, ...others }: CuIconProps) {
           d="M0 0h512v102.4L483.8 151l28.2 53.8v102.4l-30.5 50.7 30.5 51.7V512H0l39.8-257z"
         />
         <path fill="#ff9811" d="M0 44.5v423V256z" />
-        <path
-          fill="#eee"
-          d="M27.2 102.4v102.4H512V102.4H27.2zm0 204.8v102.4H512V307.2H27.2z"
-        />
+        <path fill="#eee" d="M27.2 102.4v102.4H512V102.4H27.2zm0 204.8v102.4H512V307.2H27.2z" />
         <path fill="#d80027" d="M0 0v512l256-256L0 0z" />
         <path
           fill="#eee"

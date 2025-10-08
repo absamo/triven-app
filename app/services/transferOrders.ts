@@ -1,13 +1,13 @@
-import type { Prisma } from "@prisma/client"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import { triggerWorkflow } from "~/app/services/workflow.server"
-import { TRANSFER_ORDER_STATUSES, WORKFLOW_TRIGGER_TYPES } from "../common/constants"
-import type { ISite } from "../common/validations/siteSchema"
-import type { ITransferOrder } from "../common/validations/transferOrderSchema"
+import type { Prisma } from '@prisma/client'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { triggerWorkflow } from '~/app/services/workflow.server'
+import { TRANSFER_ORDER_STATUSES, WORKFLOW_TRIGGER_TYPES } from '../common/constants'
+import type { ISite } from '../common/validations/siteSchema'
+import type { ITransferOrder } from '../common/validations/transferOrderSchema'
 
 export async function getTransferOrders(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:transferOrders"])
+  const user = await requireBetterAuthUser(request, ['read:transferOrders'])
 
   const transferOrders = await prisma.transferOrder.findMany({
     where: { companyId: user.companyId! },
@@ -15,13 +15,13 @@ export async function getTransferOrders(request: Request) {
       siteFrom: { include: { location: true } },
       siteTo: { include: { location: true } },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
   })
 
   return transferOrders || []
 }
 
-export async function getTransferOrder(transferOrderId: ITransferOrder["id"]) {
+export async function getTransferOrder(transferOrderId: ITransferOrder['id']) {
   const transferOrder = await prisma.transferOrder.findUnique({
     where: { id: transferOrderId },
     include: {
@@ -38,24 +38,19 @@ export async function getTransferOrder(transferOrderId: ITransferOrder["id"]) {
   return transferOrder
 }
 
-export async function getTransferOrdersBySite(
-  request: Request,
-  siteId: ISite["id"]
-) {
-  const user = await requireBetterAuthUser(request, ["read:transferOrders"])
+export async function getTransferOrdersBySite(request: Request, siteId: ISite['id']) {
+  const user = await requireBetterAuthUser(request, ['read:transferOrders'])
 
   const transferOrders = await prisma.transferOrder.findMany({
     where: { companyId: user.companyId!, siteFromId: siteId },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
   })
 
   return transferOrders || []
 }
 
-export async function getMaxTransferOrderNumber(
-  request: Request
-): Promise<string> {
-  const user = await requireBetterAuthUser(request, ["read:transferOrders"])
+export async function getMaxTransferOrderNumber(request: Request): Promise<string> {
+  const user = await requireBetterAuthUser(request, ['read:transferOrders'])
 
   const aggregateTransferOrderNumber = await prisma.transferOrder.aggregate({
     where: { companyId: user.companyId! },
@@ -65,11 +60,9 @@ export async function getMaxTransferOrderNumber(
   })
 
   const transferOrderNumber =
-    parseInt(
-      aggregateTransferOrderNumber?._max?.transferOrderNumber || "00000"
-    ) + 1
+    parseInt(aggregateTransferOrderNumber?._max?.transferOrderNumber || '00000') + 1
 
-  return transferOrderNumber.toString().padStart(5, "0")
+  return transferOrderNumber.toString().padStart(5, '0')
 }
 
 // Helper function to format transfer order details for display
@@ -93,11 +86,8 @@ ${toSite}
 `.trim()
 }
 
-export async function createTransferOrder(
-  request: Request,
-  transferOrder: ITransferOrder
-) {
-  const user = await requireBetterAuthUser(request, ["create:transferOrders"])
+export async function createTransferOrder(request: Request, transferOrder: ITransferOrder) {
+  const user = await requireBetterAuthUser(request, ['create:transferOrders'])
 
   const foundTransferOrder = await prisma.transferOrder.findFirst({
     where: {
@@ -109,7 +99,7 @@ export async function createTransferOrder(
   if (foundTransferOrder) {
     return {
       errors: {
-        name: "A transfer order already exists with this reference",
+        name: 'A transfer order already exists with this reference',
       },
     }
   }
@@ -140,7 +130,7 @@ export async function createTransferOrder(
       },
       transferOrderItems: {
         createMany: {
-          data: (transferOrder.transferOrderItems || []).map(item => ({
+          data: (transferOrder.transferOrderItems || []).map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
           })),
@@ -150,17 +140,17 @@ export async function createTransferOrder(
     } as Prisma.TransferOrderCreateInput,
     include: {
       siteFrom: {
-        include: { location: true }
+        include: { location: true },
       },
       siteTo: {
-        include: { location: true }
+        include: { location: true },
       },
       transferOrderItems: {
         include: {
-          product: true
-        }
-      }
-    }
+          product: true,
+        },
+      },
+    },
   })
 
   // Trigger workflow for approval
@@ -172,16 +162,20 @@ export async function createTransferOrder(
         transferOrderReference: createdTransferOrder.transferOrderReference,
         fromSite: createdTransferOrder.siteFrom.name,
         toSite: createdTransferOrder.siteTo.name,
-        products: (transferOrder.transferOrderItems || []).map(item => {
-          const product = createdTransferOrder.transferOrderItems.find(p => p.productId === item.productId)
+        products: (transferOrder.transferOrderItems || []).map((item) => {
+          const product = createdTransferOrder.transferOrderItems.find(
+            (p) => p.productId === item.productId
+          )
           return {
             sku: product?.product?.sku || `PROD-${item.productId.slice(-6)}`,
-            name: product?.product?.name || "Unknown Product",
+            name: product?.product?.name || 'Unknown Product',
             quantity: item.quantity,
           }
         }),
-        urgency: "Standard",
-        expectedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+        urgency: 'Standard',
+        expectedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0], // 7 days from now
       },
       triggeredBy: user.id,
       companyId: user.companyId!,
@@ -193,18 +187,15 @@ export async function createTransferOrder(
 
   return {
     notification: {
-      message: "Transfer order created successfully",
-      status: "Success",
-      redirectTo: "/transfer-orders",
+      message: 'Transfer order created successfully',
+      status: 'Success',
+      redirectTo: '/transfer-orders',
     },
   }
 }
 
-export async function updateTransferOrder(
-  request: Request,
-  transferOrder: ITransferOrder
-) {
-  const user = await requireBetterAuthUser(request, ["update:transferOrders"])
+export async function updateTransferOrder(request: Request, transferOrder: ITransferOrder) {
+  const user = await requireBetterAuthUser(request, ['update:transferOrders'])
 
   const foundTransferOrder = await prisma.transferOrder.findFirst({
     where: {
@@ -216,7 +207,7 @@ export async function updateTransferOrder(
   if (foundTransferOrder) {
     return {
       errors: {
-        name: "A transfer order already exists with this reference",
+        name: 'A transfer order already exists with this reference',
       },
     }
   }
@@ -246,7 +237,7 @@ export async function updateTransferOrder(
       transferOrderItems: {
         deleteMany: {},
         createMany: {
-          data: (transferOrder.transferOrderItems || []).map(item => ({
+          data: (transferOrder.transferOrderItems || []).map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
           })),
@@ -257,9 +248,9 @@ export async function updateTransferOrder(
 
   return {
     notification: {
-      message: "Transfer order updated successfully",
-      status: "Success",
-      redirectTo: "/transfer-orders",
+      message: 'Transfer order updated successfully',
+      status: 'Success',
+      redirectTo: '/transfer-orders',
     },
   }
 }

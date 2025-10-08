@@ -1,14 +1,14 @@
-import { PAYMENT_METHODS, PAYMENT_STATUSES } from "~/app/common/constants"
-import { z } from "zod"
-import dayjs from "dayjs"
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter"
-import { billSchema } from "./billSchema"
+import { PAYMENT_METHODS, PAYMENT_STATUSES } from '~/app/common/constants'
+import { z } from 'zod'
+import dayjs from 'dayjs'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import { billSchema } from './billSchema'
 
 dayjs.extend(isSameOrAfter)
 
 export const paymentsMadeSchema = z.object({
   id: z.string().optional(),
-  paymentReference: z.string().min(1, "Payment reference is required"),
+  paymentReference: z.string().min(1, 'Payment reference is required'),
   notes: z.string().optional().nullable(),
   paymentDate: z.coerce.date().refine(
     (input) => {
@@ -18,29 +18,27 @@ export const paymentsMadeSchema = z.object({
       )
     },
     {
-      message: "Payment date is required",
+      message: 'Payment date is required',
     }
   ),
   paymentMethod: z.nativeEnum(PAYMENT_METHODS, {
     errorMap: () => ({
-      message: "Payment method is required",
+      message: 'Payment method is required',
     }),
   }),
 
   amountReceived: z.coerce
     .number({
-      invalid_type_error: "Amount received is required",
+      invalid_type_error: 'Amount received is required',
     })
 
     .positive({
-      message: "Amount received should be greater than 0",
+      message: 'Amount received should be greater than 0',
     }),
   amountPaid: z.number().optional(),
   balanceDue: z.number().optional(),
-  billId: z.string().min(1, "Bill is required"),
-  bill: z
-    .lazy(() => billSchema.pick({ status: true, billReference: true }))
-    .optional(),
+  billId: z.string().min(1, 'Bill is required'),
+  bill: z.lazy(() => billSchema.pick({ status: true, billReference: true })).optional(),
   status: z.nativeEnum(PAYMENT_STATUSES).optional(),
 })
 

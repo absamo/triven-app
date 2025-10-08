@@ -1,5 +1,5 @@
-import { z } from "zod"
-import { ERRORS } from "~/app/common/errors"
+import { z } from 'zod'
+import { ERRORS } from '~/app/common/errors'
 
 const ResendSuccessSchema = z.object({
   id: z.string(),
@@ -11,8 +11,8 @@ const ResendErrorSchema = z.union([
     statusCode: z.number(),
   }),
   z.object({
-    name: z.literal("UnknownError"),
-    message: z.literal("Unknown Error"),
+    name: z.literal('UnknownError'),
+    message: z.literal('Unknown Error'),
     statusCode: z.literal(500),
     cause: z.any(),
   }),
@@ -30,14 +30,14 @@ export async function sendEmail(options: SendEmailOptions) {
     throw new Error(`Resend - ${ERRORS.ENVS_NOT_INITIALIZED}`)
   }
 
-  const from = "onboarding@resend.dev"
+  const from = 'onboarding@resend.dev'
   const email = { from, ...options }
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
     headers: {
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(email),
   })
@@ -46,7 +46,7 @@ export async function sendEmail(options: SendEmailOptions) {
   const parsedData = ResendSuccessSchema.safeParse(data)
 
   if (response.ok && parsedData.success) {
-    return { status: "success", data: parsedData } as const
+    return { status: 'success', data: parsedData } as const
   } else {
     const parsedErrorResult = ResendErrorSchema.safeParse(data)
     if (parsedErrorResult.success) {

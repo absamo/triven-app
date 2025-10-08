@@ -1,14 +1,14 @@
 import '@mantine/carousel/styles.css'
 import '@mantine/charts/styles.css'
-import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from "@mantine/core"
-import "@mantine/core/styles.css"
-import "@mantine/dates/styles.css"
-import "@mantine/dropzone/styles.css"
-import { Notifications } from "@mantine/notifications"
-import "@mantine/notifications/styles.css"
-import "./styles/auth-dark-mode-fixes.css"
+import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core'
+import '@mantine/core/styles.css'
+import '@mantine/dates/styles.css'
+import '@mantine/dropzone/styles.css'
+import { Notifications } from '@mantine/notifications'
+import '@mantine/notifications/styles.css'
+import './styles/auth-dark-mode-fixes.css'
 
-import { useTranslation } from "react-i18next"
+import { useTranslation } from 'react-i18next'
 import {
   // isRouteErrorResponse,
   data,
@@ -18,92 +18,90 @@ import {
   Scripts,
   ScrollRestoration,
   useRouteError,
-  type ErrorResponse
-} from "react-router"
-import { useChangeLanguage } from "remix-i18next/react"
-import {
-  getLocale,
-  i18nextMiddleware,
-  localeCookie,
-} from "./middleware/i18next"
+  type ErrorResponse,
+} from 'react-router'
+import { useChangeLanguage } from 'remix-i18next/react'
+import { getLocale, i18nextMiddleware, localeCookie } from './middleware/i18next'
 
-import { theme } from "~/app/lib/theme"
-import ErrorPage from "~/app/pages/Error/Error"
-import type { Route } from "./+types/root"
+import { theme } from '~/app/lib/theme'
+import ErrorPage from '~/app/pages/Error/Error'
+import type { Route } from './+types/root'
 
-export const unstable_middleware = [i18nextMiddleware];
+export const unstable_middleware = [i18nextMiddleware]
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-  let locale = getLocale(context);
-  const cookieHeader = request.headers.get("cookie") || ""
+  let locale = getLocale(context)
+  const cookieHeader = request.headers.get('cookie') || ''
 
   // Parse cookies for navbar state and color scheme
-  const cookies = cookieHeader ? Object.fromEntries(
-    cookieHeader.split('; ').map(cookie => {
-      const [key, ...valueParts] = cookie.split('=');
-      return [key, valueParts.join('=')];
-    })
-  ) : {};
+  const cookies = cookieHeader
+    ? Object.fromEntries(
+        cookieHeader.split('; ').map((cookie) => {
+          const [key, ...valueParts] = cookie.split('=')
+          return [key, valueParts.join('=')]
+        })
+      )
+    : {}
 
   // Only handle navbar state - let react-i18next handle languages
-  const showMiniNavbar = cookies.showMiniNavbar === 'true';
+  const showMiniNavbar = cookies.showMiniNavbar === 'true'
 
   // Get color scheme from cookie, default to auto if not set
-  const colorScheme = cookies['mantine-color-scheme'] || 'auto';
+  const colorScheme = cookies['mantine-color-scheme'] || 'auto'
 
   // ImageKit configuration for client-side
   const imagekitConfig = {
     publicKey: process.env.IMAGEKIT_PUBLIC_KEY || '',
     urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT || '',
-  };
+  }
 
   return data(
     { locale, showMiniNavbar, colorScheme, imagekitConfig },
-    { headers: { "Set-Cookie": await localeCookie.serialize(locale) } },
-  );
+    { headers: { 'Set-Cookie': await localeCookie.serialize(locale) } }
+  )
 }
 
 export async function action({ context, request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  const lng = formData.get("lng") as string;
+  const formData = await request.formData()
+  const lng = formData.get('lng') as string
 
-  if (lng && ["en", "fr"].includes(lng)) {
-    const headers = new Headers();
-    headers.append("Set-Cookie", await localeCookie.serialize(lng));
+  if (lng && ['en', 'fr'].includes(lng)) {
+    const headers = new Headers()
+    headers.append('Set-Cookie', await localeCookie.serialize(lng))
 
     // Redirect to the same URL to refresh with new language
-    const url = new URL(request.url);
-    url.searchParams.set("lng", lng);
+    const url = new URL(request.url)
+    url.searchParams.set('lng', lng)
 
     return new Response(null, {
       status: 302,
       headers: {
         ...Object.fromEntries(headers),
-        Location: url.pathname + "?" + url.searchParams.toString()
-      }
-    });
+        Location: url.pathname + '?' + url.searchParams.toString(),
+      },
+    })
   }
 
-  return data({ error: "Invalid language" }, { status: 400 });
+  return data({ error: 'Invalid language' }, { status: 400 })
 }
 
 export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
+  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    rel: 'stylesheet',
+    href: 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap',
   },
   // Favicon links
-  { rel: "icon", href: "/favicon.ico", sizes: "any" },
-  { rel: "icon", href: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-  { rel: "icon", href: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-  { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+  { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
+  { rel: 'icon', href: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+  { rel: 'icon', href: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+  { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
 ]
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  let { i18n } = useTranslation();
+  let { i18n } = useTranslation()
 
-  useChangeLanguage(loaderData.locale);
+  useChangeLanguage(loaderData.locale)
 
   return (
     <html lang={i18n.language} dir={i18n.dir(i18n.language)} {...mantineHtmlProps}>

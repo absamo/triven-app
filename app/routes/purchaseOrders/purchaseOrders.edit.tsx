@@ -3,33 +3,27 @@ import {
   type ActionFunctionArgs,
   type LoaderFunction,
   type LoaderFunctionArgs,
-} from "react-router"
+} from 'react-router'
 
-import { USER_ROLES } from "~/app/common/constants"
-import type { IAgency } from "~/app/common/validations/agencySchema"
-import type { ICurrency } from "~/app/common/validations/currencySchema"
-import type { IProduct } from "~/app/common/validations/productSchema"
-import type { IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
-import type { ISite } from "~/app/common/validations/siteSchema"
-import type { ISupplier } from "~/app/common/validations/supplierSchema"
-import { Notification } from "~/app/components"
-import PurchaseOrdersForm from "~/app/pages/PurchaseOrders/PurchaseOrdersForm"
-import { getAgencies } from "~/app/services/agencies.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import { getProducts, getProductsForAgency } from "~/app/services/products.server"
-import {
-  getPurchaseOrder,
-  updatePurchaseOrder,
-} from "~/app/services/purchases.server"
-import { getSuppliers } from "~/app/services/suppliers.server"
-import type { Route } from "./+types/purchaseOrders.edit"
+import { USER_ROLES } from '~/app/common/constants'
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import type { IProduct } from '~/app/common/validations/productSchema'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
+import type { ISupplier } from '~/app/common/validations/supplierSchema'
+import { Notification } from '~/app/components'
+import PurchaseOrdersForm from '~/app/pages/PurchaseOrders/PurchaseOrdersForm'
+import { getAgencies } from '~/app/services/agencies.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getProducts, getProductsForAgency } from '~/app/services/products.server'
+import { getPurchaseOrder, updatePurchaseOrder } from '~/app/services/purchases.server'
+import { getSuppliers } from '~/app/services/suppliers.server'
+import type { Route } from './+types/purchaseOrders.edit'
 
-export const loader: LoaderFunction = async ({
-  request,
-  params,
-}: LoaderFunctionArgs) => {
+export const loader: LoaderFunction = async ({ request, params }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
-  const user = await requireBetterAuthUser(request, ["update:purchaseOrders"])
+  const user = await requireBetterAuthUser(request, ['update:purchaseOrders'])
 
   const purchaseOrder = await getPurchaseOrder(request, params.id)
 
@@ -38,19 +32,19 @@ export const loader: LoaderFunction = async ({
 
   // For admin users, include all sites from all agencies
   // For non-admin users, only include sites from their agency
-  const sites = user.role?.name === USER_ROLES.ADMIN
-    ? agencies?.flatMap((agency: IAgency) => agency.sites || []) || []
-    : agencies?.find((agency: IAgency) => agency.id === user.agencyId)?.sites || []
+  const sites =
+    user.role?.name === USER_ROLES.ADMIN
+      ? agencies?.flatMap((agency: IAgency) => agency.sites || []) || []
+      : agencies?.find((agency: IAgency) => agency.id === user.agencyId)?.sites || []
 
   // For admin users, get all products from all agencies using getProductsForAgency with "All"
   // For non-admin users, get products using the regular getProducts function
-  const products = user.role?.name === USER_ROLES.ADMIN
-    ? await getProductsForAgency(request, "All")
-    : await getProducts(request)
+  const products =
+    user.role?.name === USER_ROLES.ADMIN
+      ? await getProductsForAgency(request, 'All')
+      : await getProducts(request)
 
-  const baseCurrency = user?.company?.currencies?.find(
-    (currency) => currency.base
-  )
+  const baseCurrency = user?.company?.currencies?.find((currency) => currency.base)
 
   return {
     purchaseOrder,
@@ -62,30 +56,25 @@ export const loader: LoaderFunction = async ({
   }
 }
 
-export const action: ActionFunction = async ({
-  request,
-  params,
-}: ActionFunctionArgs) => {
+export const action: ActionFunction = async ({ request, params }: ActionFunctionArgs) => {
   const formData = await request.formData()
   const purchaseOrderReference = formData.get(
-    "purchaseOrderReference"
-  ) as IPurchaseOrder["purchaseOrderReference"]
+    'purchaseOrderReference'
+  ) as IPurchaseOrder['purchaseOrderReference']
   const paymentTerms = JSON.parse(
-    formData.get("paymentTerms") as string
-  ) as IPurchaseOrder["paymentTerms"]
-  const orderDate = JSON.parse(
-    formData.get("orderDate") as string
-  ) as IPurchaseOrder["orderDate"]
-  const supplierId = formData.get("supplierId") as IPurchaseOrder["supplierId"]
-  const siteId = formData.get("siteId") as IPurchaseOrder["siteId"]
-  const agencyId = formData.get("agencyId") as IPurchaseOrder["agencyId"]
+    formData.get('paymentTerms') as string
+  ) as IPurchaseOrder['paymentTerms']
+  const orderDate = JSON.parse(formData.get('orderDate') as string) as IPurchaseOrder['orderDate']
+  const supplierId = formData.get('supplierId') as IPurchaseOrder['supplierId']
+  const siteId = formData.get('siteId') as IPurchaseOrder['siteId']
+  const agencyId = formData.get('agencyId') as IPurchaseOrder['agencyId']
   const expectedDeliveryDate = JSON.parse(
-    formData.get("orderDate") as string
-  ) as IPurchaseOrder["expectedDeliveryDate"]
+    formData.get('orderDate') as string
+  ) as IPurchaseOrder['expectedDeliveryDate']
 
   const purchaseOrderItems = JSON.parse(
-    formData.get("purchaseOrderItems") as string
-  ) as IPurchaseOrder["purchaseOrderItems"]
+    formData.get('purchaseOrderItems') as string
+  ) as IPurchaseOrder['purchaseOrderItems']
 
   return await updatePurchaseOrder(request, {
     id: params.id,
@@ -100,10 +89,7 @@ export const action: ActionFunction = async ({
   })
 }
 
-export default function PurchaseOrdersEditRoute({
-  loaderData,
-  actionData,
-}: Route.ComponentProps) {
+export default function PurchaseOrdersEditRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { purchaseOrder, agencies, sites, suppliers, products, currency } =
     loaderData as unknown as {
       purchaseOrder: IPurchaseOrder
@@ -122,9 +108,7 @@ export default function PurchaseOrdersEditRoute({
         suppliers={suppliers}
         products={products}
         currency={currency}
-        errors={
-          (actionData as unknown as { errors: Record<string, string> })?.errors
-        }
+        errors={(actionData as unknown as { errors: Record<string, string> })?.errors}
       />
       <Notification
         notification={
@@ -132,7 +116,7 @@ export default function PurchaseOrdersEditRoute({
             actionData as unknown as {
               notification: {
                 message: string | null
-                status: "Success" | "Warning" | "Error" | null
+                status: 'Success' | 'Warning' | 'Error' | null
                 redirectTo?: string | null
                 autoClose?: boolean
               }

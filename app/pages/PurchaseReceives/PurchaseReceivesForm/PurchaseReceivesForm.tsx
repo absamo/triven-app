@@ -1,36 +1,27 @@
-import {
-  ActionIcon,
-  Alert,
-  Badge,
-  Grid,
-  Loader,
-  Table,
-  Text,
-  TextInput,
-} from "@mantine/core"
-import { DateInput } from "@mantine/dates"
+import { ActionIcon, Alert, Badge, Grid, Loader, Table, Text, TextInput } from '@mantine/core'
+import { DateInput } from '@mantine/dates'
 
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useTranslation } from "react-i18next"
-import { useFetcher, useSubmit } from "react-router"
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useTranslation } from 'react-i18next'
+import { useFetcher, useSubmit } from 'react-router'
 
-import { useDisclosure } from "@mantine/hooks"
-import { IconEdit, IconExclamationCircle } from "@tabler/icons-react"
-import { useEffect, useState } from "react"
-import { PURCHASE_ORDER_STATUSES } from "~/app/common/constants"
-import { getPurchaseOrderItemsStatusLabel } from "~/app/common/helpers/purchase"
-import type { IPurchaseOrderItem } from "~/app/common/validations/purchaseOrderItemSchema"
-import { type IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
-import { type IPurchaseReceiveItem } from "~/app/common/validations/purchaseReceiveItemSchema"
+import { useDisclosure } from '@mantine/hooks'
+import { IconEdit, IconExclamationCircle } from '@tabler/icons-react'
+import { useEffect, useState } from 'react'
+import { PURCHASE_ORDER_STATUSES } from '~/app/common/constants'
+import { getPurchaseOrderItemsStatusLabel } from '~/app/common/helpers/purchase'
+import type { IPurchaseOrderItem } from '~/app/common/validations/purchaseOrderItemSchema'
+import { type IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import { type IPurchaseReceiveItem } from '~/app/common/validations/purchaseReceiveItemSchema'
 import {
   purchaseReceiveSchema,
   type IPurchaseReceive,
-} from "~/app/common/validations/purchaseReceiveSchema"
-import { Form } from "~/app/components"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
-import { Title } from "~/app/partials/Title"
-import PurchaseReceiveItemForm from "./PurchaseReceiveItemForm"
+} from '~/app/common/validations/purchaseReceiveSchema'
+import { Form } from '~/app/components'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
+import PurchaseReceiveItemForm from './PurchaseReceiveItemForm'
 
 interface PurchaseReceivesFormProps {
   purchaseReceive: IPurchaseReceive
@@ -46,8 +37,9 @@ export default function PurchaseReceivesForm({
   const { t } = useTranslation(['purchaseReceives', 'common'])
 
   const [opened, { open, close }] = useDisclosure(false)
-  const [purchaseReceiveItem, setPurchaseReceiveItem] =
-    useState<IPurchaseReceiveItem>({} as IPurchaseReceiveItem)
+  const [purchaseReceiveItem, setPurchaseReceiveItem] = useState<IPurchaseReceiveItem>(
+    {} as IPurchaseReceiveItem
+  )
 
   const [purchaseOrderFetched, setPurchaseOrderFetched] = useState(false)
 
@@ -74,37 +66,33 @@ export default function PurchaseReceivesForm({
   useEffect(() => {
     if (data) {
       form.setFieldValue(
-        "purchaseReceiveItems",
-        ((data.purchaseOrder.purchaseOrderItems || [])?.map(
-          (purchaseItem: IPurchaseOrderItem) => {
-            const purchaseReceiveItems = (
-              data.purchaseOrder.purchaseReceives || []
+        'purchaseReceiveItems',
+        ((data.purchaseOrder.purchaseOrderItems || [])?.map((purchaseItem: IPurchaseOrderItem) => {
+          const purchaseReceiveItems = (data.purchaseOrder.purchaseReceives || [])
+            .filter(
+              (purchaseReceive: IPurchaseReceive) =>
+                purchaseReceive.status !== PURCHASE_ORDER_STATUSES.CANCELLED
             )
-              .filter(
-                (purchaseReceive: IPurchaseReceive) =>
-                  purchaseReceive.status !== PURCHASE_ORDER_STATUSES.CANCELLED
-              )
-              ?.flatMap((item: IPurchaseReceive) => item.purchaseReceiveItems)
+            ?.flatMap((item: IPurchaseReceive) => item.purchaseReceiveItems)
 
-            // as IPurchaseReceiveItem[]
+          // as IPurchaseReceiveItem[]
 
-            const receivedItem = (purchaseReceiveItems || [])?.find(
-              (item) => item?.productId === purchaseItem?.productId
-            )
+          const receivedItem = (purchaseReceiveItems || [])?.find(
+            (item) => item?.productId === purchaseItem?.productId
+          )
 
-            const receivedQuantity = receivedItem?.receivedQuantity || 0
+          const receivedQuantity = receivedItem?.receivedQuantity || 0
 
-            //TODO: add status to purchase receive item and filter out cancelled status
+          //TODO: add status to purchase receive item and filter out cancelled status
 
-            return {
-              purchaseOrderId: purchaseItem.id,
-              productId: purchaseItem?.productId,
-              product: purchaseItem.product,
-              receivedQuantity,
-              orderedQuantity: purchaseItem.quantity,
-            }
+          return {
+            purchaseOrderId: purchaseItem.id,
+            productId: purchaseItem?.productId,
+            product: purchaseItem.product,
+            receivedQuantity,
+            orderedQuantity: purchaseItem.quantity,
           }
-        ) as IPurchaseReceiveItem[]) || []
+        }) as IPurchaseReceiveItem[]) || []
       )
     }
   }, [data])
@@ -137,31 +125,28 @@ export default function PurchaseReceivesForm({
   }: IPurchaseReceive) => {
     const formData = new FormData()
 
-    formData.append("purchaseReceiveReference", purchaseReceiveReference)
-    formData.append("receivedDate", JSON.stringify(receivedDate))
-    formData.append("purchaseOrderId", purchaseOrderId)
-    formData.append(
-      "purchaseReceiveItems",
-      JSON.stringify(form.values.purchaseReceiveItems)
-    )
+    formData.append('purchaseReceiveReference', purchaseReceiveReference)
+    formData.append('receivedDate', JSON.stringify(receivedDate))
+    formData.append('purchaseOrderId', purchaseOrderId)
+    formData.append('purchaseReceiveItems', JSON.stringify(form.values.purchaseReceiveItems))
 
     if (form.values.purchaseReceiveItems.length === 0) {
       form.setErrors({
-        purchaseReceiveItems:
-          t('purchaseReceives:purchaseReceiveItemRequired', 'Please add a purchase item to receive item before submitting the form'),
+        purchaseReceiveItems: t(
+          'purchaseReceives:purchaseReceiveItemRequired',
+          'Please add a purchase item to receive item before submitting the form'
+        ),
       })
       return
     }
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
   }
 
-  const purchaseOrderOptions = purchaseOrders.map(
-    (purchaseOrder: IPurchaseOrder) => ({
-      value: purchaseOrder.id,
-      label: purchaseOrder.purchaseOrderReference,
-    })
-  )
+  const purchaseOrderOptions = purchaseOrders.map((purchaseOrder: IPurchaseOrder) => ({
+    value: purchaseOrder.id,
+    label: purchaseOrder.purchaseOrderReference,
+  }))
 
   const handleClose = () => {
     setPurchaseReceiveItem({} as IPurchaseReceiveItem)
@@ -172,12 +157,10 @@ export default function PurchaseReceivesForm({
     purchaseReceive.purchaseOrder?.status === PURCHASE_ORDER_STATUSES.CANCELLED
 
   const canEdit =
-    (!purchaseOrderCancelled &&
-      purchaseReceive?.status === PURCHASE_ORDER_STATUSES.PENDING) ||
+    (!purchaseOrderCancelled && purchaseReceive?.status === PURCHASE_ORDER_STATUSES.PENDING) ||
     !purchaseReceive?.id
 
-  const purchaseReceivedCancelled =
-    purchaseReceive?.status === PURCHASE_ORDER_STATUSES.CANCELLED
+  const purchaseReceivedCancelled = purchaseReceive?.status === PURCHASE_ORDER_STATUSES.CANCELLED
 
   const rows = (form.values.purchaseReceiveItems || []).map(
     ({
@@ -259,39 +242,31 @@ export default function PurchaseReceivesForm({
     <>
       <Grid>
         <Grid.Col>
-          <Title backTo={"/purchase-receives"}>
+          <Title backTo={'/purchase-receives'}>
             {purchaseReceive.id
               ? t('purchaseReceives:editPurchaseReceive', 'Edit a purchase receive')
               : t('purchaseReceives:addPurchaseReceive', 'Add a purchase receive')}
           </Title>
 
           {form.errors.purchaseReceiveItems && (
-            <Alert
-              variant="light"
-              color="red"
-              icon={<IconExclamationCircle />}
-              withCloseButton
-            >
+            <Alert variant="light" color="red" icon={<IconExclamationCircle />} withCloseButton>
               <Text size="sm">{form.errors.purchaseReceiveItems}</Text>
             </Alert>
           )}
 
-          <Form
-            onSubmit={
-              purchaseReceivedCancelled
-                ? undefined
-                : form.onSubmit(handleSubmit)
-            }
-          >
+          <Form onSubmit={purchaseReceivedCancelled ? undefined : form.onSubmit(handleSubmit)}>
             <Grid.Col span={4}>
               <TextInput
                 withAsterisk
-                label={t('purchaseReceives:purchaseReceiveReferenceLabel', 'Purchase receive reference')}
+                label={t(
+                  'purchaseReceives:purchaseReceiveReferenceLabel',
+                  'Purchase receive reference'
+                )}
                 name="purchaseReceiveReference"
                 disabled={purchaseReceivedCancelled}
-                {...form.getInputProps("purchaseReceiveReference")}
+                {...form.getInputProps('purchaseReceiveReference')}
                 error={
-                  form.getInputProps("purchaseReceiveReference").error ||
+                  form.getInputProps('purchaseReceiveReference').error ||
                   errors?.purchaseReceiveReference
                 }
               />
@@ -306,7 +281,7 @@ export default function PurchaseReceivesForm({
                 minDate={new Date()}
                 clearable={!purchaseReceivedCancelled}
                 disabled={purchaseReceivedCancelled}
-                {...form.getInputProps("receivedDate")}
+                {...form.getInputProps('receivedDate')}
               />
             </Grid.Col>
             <Grid.Col span={4}>
@@ -318,39 +293,32 @@ export default function PurchaseReceivesForm({
                 clearable={canEdit}
                 disabled={!canEdit}
                 onClear={() => {
-                  form.getInputProps("purchaseReceiveItems").onChange([])
+                  form.getInputProps('purchaseReceiveItems').onChange([])
                 }}
                 data={purchaseOrderOptions}
                 onChange={(currentPurchaseOrderId: string) => {
                   if (!currentPurchaseOrderId) {
-                    form.getInputProps("purchaseOrderId").onChange("")
+                    form.getInputProps('purchaseOrderId').onChange('')
                     return
                   }
 
-                  form
-                    .getInputProps("purchaseOrderId")
-                    .onChange(currentPurchaseOrderId)
+                  form.getInputProps('purchaseOrderId').onChange(currentPurchaseOrderId)
                   fetcher.load(`/api/purchaseOrders/${currentPurchaseOrderId}`)
                 }}
                 value={form.values.purchaseOrderId}
-                rightSection={
-                  fetcher.state === "loading" ? <Loader size={16} /> : null
-                }
-                searchValue={purchaseOrderFetched ? "" : undefined}
+                rightSection={fetcher.state === 'loading' ? <Loader size={16} /> : null}
+                searchValue={purchaseOrderFetched ? '' : undefined}
                 error={form.errors?.purchaseOrderId}
               />
             </Grid.Col>
 
             <Grid.Col>
-              <Table
-                verticalSpacing="xs"
-                highlightOnHover={canEdit}
-                striped
-                mt={"md"}
-              >
+              <Table verticalSpacing="xs" highlightOnHover={canEdit} striped mt={'md'}>
                 <Table.Thead fz={12}>
                   <Table.Tr>
-                    <Table.Th>{t('purchaseReceives:purchaseReceiveItem', 'Purchase receive item')}</Table.Th>
+                    <Table.Th>
+                      {t('purchaseReceives:purchaseReceiveItem', 'Purchase receive item')}
+                    </Table.Th>
                     <Table.Th>{t('purchaseReceives:orderedQty', 'Ordered Qty')}</Table.Th>
                     <Table.Th>{t('purchaseReceives:receivedQty', 'Received Qty')}</Table.Th>
                     <Table.Th>{t('purchaseReceives:status', 'Status')}</Table.Th>
@@ -377,21 +345,15 @@ export default function PurchaseReceivesForm({
                   opened={opened}
                   onClose={handleClose}
                   onSubmit={(currentPurchaseReceiveItem) => {
-                    form.setFieldValue("purchaseReceiveItems", [
+                    form.setFieldValue('purchaseReceiveItems', [
                       ...form.values.purchaseReceiveItems.map((item) => {
-                        if (
-                          item.productId ===
-                          currentPurchaseReceiveItem.productId
-                        ) {
+                        if (item.productId === currentPurchaseReceiveItem.productId) {
                           return {
                             id: currentPurchaseReceiveItem.id,
                             productId: currentPurchaseReceiveItem.productId,
-                            receivedQuantity:
-                              currentPurchaseReceiveItem.receivedQuantity,
-                            orderedQuantity:
-                              currentPurchaseReceiveItem.orderedQuantity,
-                            purchaseOrderId:
-                              currentPurchaseReceiveItem.purchaseOrderId,
+                            receivedQuantity: currentPurchaseReceiveItem.receivedQuantity,
+                            orderedQuantity: currentPurchaseReceiveItem.orderedQuantity,
+                            purchaseOrderId: currentPurchaseReceiveItem.purchaseOrderId,
                             product: currentPurchaseReceiveItem.product,
                           }
                         }

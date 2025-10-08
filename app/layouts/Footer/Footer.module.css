@@ -1,25 +1,25 @@
 .footer {
-    position: relative;
-    z-index: 101;
-    height: 70px;
-    background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
-    border-top: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
-    box-shadow: var(--mantine-shadow-sm);
-    transition: all 0.2s ease;
+  position: relative;
+  z-index: 101;
+  height: 70px;
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  border-top: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+  box-shadow: var(--mantine-shadow-sm);
+  transition: all 0.2s ease;
 }
 
 .saveBtn {
-    background-color: var(--mantine-color-teal-7);
-    font-weight: 500;
-    transition: all 0.2s ease;
+  background-color: var(--mantine-color-teal-7);
+  font-weight: 500;
+  transition: all 0.2s ease;
 
-    &:hover {
-        background-color: var(--mantine-color-teal-6);
-        transform: translateY(-1px);
-        box-shadow: var(--mantine-shadow-md);
-    }
+  &:hover {
+    background-color: var(--mantine-color-teal-6);
+    transform: translateY(-1px);
+    box-shadow: var(--mantine-shadow-md);
+  }
 
-    &:active {
-        transform: translateY(0);
-    }
+  &:active {
+    transform: translateY(0);
+  }
 }

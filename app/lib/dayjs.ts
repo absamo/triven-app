@@ -1,9 +1,9 @@
-import dayjs from "dayjs"
-import "dayjs/locale/en"
-import "dayjs/locale/fr"
-import customParseFormat from "dayjs/plugin/customParseFormat"
-import localizedFormat from "dayjs/plugin/localizedFormat"
-import relativeTime from "dayjs/plugin/relativeTime"
+import dayjs from 'dayjs'
+import 'dayjs/locale/en'
+import 'dayjs/locale/fr'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+import localizedFormat from 'dayjs/plugin/localizedFormat'
+import relativeTime from 'dayjs/plugin/relativeTime'
 
 // Extend dayjs with plugins
 dayjs.extend(customParseFormat)
@@ -15,8 +15,8 @@ dayjs.extend(localizedFormat)
  * @param language - The current language code (e.g., 'en', 'fr')
  */
 export function setDayjsLocale(language: string) {
-    const locale = language === 'fr' ? 'fr' : 'en'
-    dayjs.locale(locale)
+  const locale = language === 'fr' ? 'fr' : 'en'
+  dayjs.locale(locale)
 }
 
 /**
@@ -25,8 +25,8 @@ export function setDayjsLocale(language: string) {
  * @returns A dayjs instance with the correct locale
  */
 export function getLocalizedDayjs(language: string) {
-    setDayjsLocale(language)
-    return dayjs
+  setDayjsLocale(language)
+  return dayjs
 }
 
 /**
@@ -36,8 +36,8 @@ export function getLocalizedDayjs(language: string) {
  * @returns Localized relative time string (e.g., "2 minutes ago" or "il y a 2 minutes")
  */
 export function formatRelativeTime(date: Date | string | dayjs.Dayjs, language: string): string {
-    const localizedDayjs = getLocalizedDayjs(language)
-    return localizedDayjs(date).fromNow()
+  const localizedDayjs = getLocalizedDayjs(language)
+  return localizedDayjs(date).fromNow()
 }
 
 /**
@@ -48,12 +48,12 @@ export function formatRelativeTime(date: Date | string | dayjs.Dayjs, language: 
  * @returns Localized date string
  */
 export function formatLocalizedDate(
-    date: Date | string | dayjs.Dayjs,
-    language: string,
-    format?: string
+  date: Date | string | dayjs.Dayjs,
+  language: string,
+  format?: string
 ): string {
-    const localizedDayjs = getLocalizedDayjs(language)
-    return format ? localizedDayjs(date).format(format) : localizedDayjs(date).format('LLL')
+  const localizedDayjs = getLocalizedDayjs(language)
+  return format ? localizedDayjs(date).format(format) : localizedDayjs(date).format('LLL')
 }
 
 export default dayjs

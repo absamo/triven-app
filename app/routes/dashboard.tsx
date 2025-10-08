@@ -1,18 +1,25 @@
-import { data, type LoaderFunction, type LoaderFunctionArgs } from "react-router"
-import { BILL_STATUSES, INVOICE_STATUSES, PAYMENT_STATUSES, PURCHASE_ORDER_STATUSES, SALES_ORDERS_STATUSES, USER_ROLES } from "~/app/common/constants"
-import type { IAgency } from "~/app/common/validations/agencySchema"
-import type { ISite } from "~/app/common/validations/siteSchema"
-import { prisma } from "~/app/db.server"
-import Dashboard from "~/app/pages/Dashboard"
-import { getAgencies } from "~/app/services/agencies.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import { getProductsByAgencyId } from "../services/products.server"
-import type { Route } from "./+types/dashboard"
+import { data, type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import {
+  BILL_STATUSES,
+  INVOICE_STATUSES,
+  PAYMENT_STATUSES,
+  PURCHASE_ORDER_STATUSES,
+  SALES_ORDERS_STATUSES,
+  USER_ROLES,
+} from '~/app/common/constants'
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
+import { prisma } from '~/app/db.server'
+import Dashboard from '~/app/pages/Dashboard'
+import { getAgencies } from '~/app/services/agencies.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getProductsByAgencyId } from '../services/products.server'
+import type { Route } from './+types/dashboard'
 
-export function meta({ }: Route.MetaArgs) {
+export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Dashboard - Flow" },
-    { name: "description", content: "Dashboard for Flow business management" },
+    { title: 'Dashboard - Flow' },
+    { name: 'description', content: 'Dashboard for Flow business management' },
   ]
 }
 
@@ -77,42 +84,40 @@ type LoaderData = {
   }
 }
 
-
-
-
-export const loader: LoaderFunction = async ({
-  request
-}: LoaderFunctionArgs) => {
+export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   try {
     // Require user with dashboard read permissions
-    const user = await requireBetterAuthUser(request, ["read:analytics"])
+    const user = await requireBetterAuthUser(request, ['read:analytics'])
 
     // Check if this is a fetcher request (has refresh parameter or specific headers)
     const url = new URL(request.url)
-    const isRefresh = url.searchParams.has("refresh")
-    const isFetcher = request.headers.get("x-requested-with") === "fetch" || isRefresh
+    const isRefresh = url.searchParams.has('refresh')
+    const isFetcher = request.headers.get('x-requested-with') === 'fetch' || isRefresh
 
     // Get agency parameter from URL, default to "All"
-    const selectedAgency = url.searchParams.get("agency") || "All"
+    const selectedAgency = url.searchParams.get('agency') || 'All'
 
     // Get date parameters from URL
-    const startDateParam = url.searchParams.get("startDate")
-    const endDateParam = url.searchParams.get("endDate")
+    const startDateParam = url.searchParams.get('startDate')
+    const endDateParam = url.searchParams.get('endDate')
 
     // Build date range filter
-    const dateRange = startDateParam && endDateParam ? {
-      gte: new Date(startDateParam),
-      lte: new Date(endDateParam)
-    } : null
+    const dateRange =
+      startDateParam && endDateParam
+        ? {
+            gte: new Date(startDateParam),
+            lte: new Date(endDateParam),
+          }
+        : null
 
     // Helper function to build agency filter condition
     const getAgencyFilter = (baseWhere: any) => {
-      if (selectedAgency === "All") {
+      if (selectedAgency === 'All') {
         return baseWhere
       }
       return {
         ...baseWhere,
-        agencyId: selectedAgency
+        agencyId: selectedAgency,
       }
     }
 
@@ -123,7 +128,7 @@ export const loader: LoaderFunction = async ({
       }
       return {
         ...baseWhere,
-        [dateField]: dateRange
+        [dateField]: dateRange,
       }
     }
 
@@ -133,29 +138,30 @@ export const loader: LoaderFunction = async ({
     }
 
     const stats = await getProductsByAgencyId(request, selectedAgency, dateRange)
-    const agencies =
-      user?.role?.name === USER_ROLES.ADMIN ? await getAgencies(request) : []
+    const agencies = user?.role?.name === USER_ROLES.ADMIN ? await getAgencies(request) : []
 
     // Get sites from agencies (agencies include sites relation from Prisma)
     const sites = agencies ? agencies.flatMap((agency: any) => agency.sites || []) : []
 
     // For fetcher requests, recalculate inventory stats to get fresh data
-    const inventoryStats = isFetcher ? await getProductsByAgencyId(request, selectedAgency, dateRange) : stats
+    const inventoryStats = isFetcher
+      ? await getProductsByAgencyId(request, selectedAgency, dateRange)
+      : stats
 
     // Get pending sales orders (status: PENDING) - filtered by agency
     const pendingSalesOrders = await prisma.salesOrder.count({
       where: getAgencyFilter({
         companyId: user?.companyId,
-        status: SALES_ORDERS_STATUSES.PENDING
-      })
+        status: SALES_ORDERS_STATUSES.PENDING,
+      }),
     })
 
     // Get pending purchase orders (status: PENDING) - filtered by agency
     const pendingPurchaseOrders = await prisma.purchaseOrder.count({
       where: getAgencyFilter({
         companyId: user?.companyId,
-        status: PURCHASE_ORDER_STATUSES.PENDING
-      })
+        status: PURCHASE_ORDER_STATUSES.PENDING,
+      }),
     })
 
     // Calculate recent sales total with date filtering
@@ -168,15 +174,18 @@ export const loader: LoaderFunction = async ({
     const recentSalesOrders = await prisma.salesOrder.findMany({
       where: getFilters({
         companyId: user?.companyId,
-        status: { not: SALES_ORDERS_STATUSES.CANCELLED }
+        status: { not: SALES_ORDERS_STATUSES.CANCELLED },
       }),
       include: {
-        salesOrderItems: true
-      }
+        salesOrderItems: true,
+      },
     })
 
     const recentSalesTotal = recentSalesOrders.reduce((total: number, order: any) => {
-      const orderTotal = order.salesOrderItems.reduce((sum: number, item: any) => sum + (item.amount || 0), 0)
+      const orderTotal = order.salesOrderItems.reduce(
+        (sum: number, item: any) => sum + (item.amount || 0),
+        0
+      )
       return total + orderTotal
     }, 0)
 
@@ -184,15 +193,18 @@ export const loader: LoaderFunction = async ({
     const recentPurchaseOrders = await prisma.purchaseOrder.findMany({
       where: getFilters({
         companyId: user?.companyId,
-        status: { not: PURCHASE_ORDER_STATUSES.CANCELLED }
+        status: { not: PURCHASE_ORDER_STATUSES.CANCELLED },
       }),
       include: {
-        purchaseOrderItems: true
-      }
+        purchaseOrderItems: true,
+      },
     })
 
     const recentPurchasesTotal = recentPurchaseOrders.reduce((total: number, order: any) => {
-      const orderTotal = order.purchaseOrderItems.reduce((sum: number, item: any) => sum + (item.amount || 0), 0)
+      const orderTotal = order.purchaseOrderItems.reduce(
+        (sum: number, item: any) => sum + (item.amount || 0),
+        0
+      )
       return total + orderTotal
     }, 0)
 
@@ -208,7 +220,7 @@ export const loader: LoaderFunction = async ({
       const currentRangeLength = dateRange.lte.getTime() - dateRange.gte.getTime()
       prevPeriodFilter = {
         gte: new Date(dateRange.gte.getTime() - currentRangeLength),
-        lte: dateRange.gte
+        lte: dateRange.gte,
       }
       currentPeriodForComparison = dateRange
     } else {
@@ -222,15 +234,18 @@ export const loader: LoaderFunction = async ({
       where: getAgencyFilter({
         companyId: user?.companyId,
         orderDate: currentPeriodForComparison,
-        status: { not: SALES_ORDERS_STATUSES.CANCELLED }
+        status: { not: SALES_ORDERS_STATUSES.CANCELLED },
       }),
       include: {
-        salesOrderItems: true
-      }
+        salesOrderItems: true,
+      },
     })
 
     const currentPeriodSalesTotal = currentPeriodSales.reduce((total: number, order: any) => {
-      const orderTotal = order.salesOrderItems.reduce((sum: number, item: any) => sum + (item.amount || 0), 0)
+      const orderTotal = order.salesOrderItems.reduce(
+        (sum: number, item: any) => sum + (item.amount || 0),
+        0
+      )
       return total + orderTotal
     }, 0)
 
@@ -238,36 +253,40 @@ export const loader: LoaderFunction = async ({
       where: getAgencyFilter({
         companyId: user?.companyId,
         orderDate: prevPeriodFilter,
-        status: { not: SALES_ORDERS_STATUSES.CANCELLED }
+        status: { not: SALES_ORDERS_STATUSES.CANCELLED },
       }),
       include: {
-        salesOrderItems: true
-      }
+        salesOrderItems: true,
+      },
     })
 
     const prevMonthSalesTotal = prevMonthSales.reduce((total: number, order: any) => {
-      const orderTotal = order.salesOrderItems.reduce((sum: number, item: any) => sum + (item.amount || 0), 0)
+      const orderTotal = order.salesOrderItems.reduce(
+        (sum: number, item: any) => sum + (item.amount || 0),
+        0
+      )
       return total + orderTotal
     }, 0)
 
     // Use the appropriate current period total for comparison
     const comparisonCurrentTotal = dateRange ? recentSalesTotal : currentPeriodSalesTotal
 
-    const ordersComparisonPercentage = prevMonthSalesTotal > 0
-      ? Math.round(((comparisonCurrentTotal - prevMonthSalesTotal) / prevMonthSalesTotal) * 100)
-      : 0
+    const ordersComparisonPercentage =
+      prevMonthSalesTotal > 0
+        ? Math.round(((comparisonCurrentTotal - prevMonthSalesTotal) / prevMonthSalesTotal) * 100)
+        : 0
 
     // Get pending invoices count - filtered by agency through salesOrder
     const pendingInvoices = await prisma.invoice.count({
       where: {
         companyId: user?.companyId,
         status: INVOICE_STATUSES.PENDING,
-        ...(selectedAgency !== "All" && {
+        ...(selectedAgency !== 'All' && {
           salesOrder: {
-            agencyId: selectedAgency
-          }
-        })
-      }
+            agencyId: selectedAgency,
+          },
+        }),
+      },
     })
 
     // Get pending bills count - filtered by agency through purchaseOrder
@@ -275,12 +294,12 @@ export const loader: LoaderFunction = async ({
       where: {
         companyId: user?.companyId,
         status: BILL_STATUSES.UNBILLED,
-        ...(selectedAgency !== "All" && {
+        ...(selectedAgency !== 'All' && {
           purchaseOrder: {
-            agencyId: selectedAgency
-          }
-        })
-      }
+            agencyId: selectedAgency,
+          },
+        }),
+      },
     })
 
     // Get recent payments received with date filtering
@@ -289,17 +308,17 @@ export const loader: LoaderFunction = async ({
         companyId: user?.companyId,
         ...(salesDateFilter && { paymentDate: salesDateFilter }),
         status: { not: PAYMENT_STATUSES.CANCELLED },
-        ...(selectedAgency !== "All" && {
+        ...(selectedAgency !== 'All' && {
           invoice: {
             salesOrder: {
-              agencyId: selectedAgency
-            }
-          }
-        })
+              agencyId: selectedAgency,
+            },
+          },
+        }),
       },
       _sum: {
-        amountReceived: true
-      }
+        amountReceived: true,
+      },
     })
 
     // Get recent payments made with date filtering
@@ -308,57 +327,59 @@ export const loader: LoaderFunction = async ({
         companyId: user?.companyId,
         ...(salesDateFilter && { paymentDate: salesDateFilter }),
         status: { not: PAYMENT_STATUSES.CANCELLED },
-        ...(selectedAgency !== "All" && {
+        ...(selectedAgency !== 'All' && {
           bill: {
             purchaseOrder: {
-              agencyId: selectedAgency
-            }
-          }
-        })
+              agencyId: selectedAgency,
+            },
+          },
+        }),
       },
       _sum: {
-        amountReceived: true
-      }
+        amountReceived: true,
+      },
     })
 
     // Calculate cashflow
-    const cashflow = (recentPaymentsReceived._sum?.amountReceived || 0) - (recentPaymentsMade._sum?.amountReceived || 0)  // Get trending products (most sold in last 30 days)
+    const cashflow =
+      (recentPaymentsReceived._sum?.amountReceived || 0) -
+      (recentPaymentsMade._sum?.amountReceived || 0) // Get trending products (most sold in last 30 days)
     const salesOrderIds = recentSalesOrders.map((order: any) => order.id)
 
     const soldItems = await prisma.salesOrderItem.groupBy({
       by: ['productId'],
       where: {
         salesOrderId: {
-          in: salesOrderIds
-        }
+          in: salesOrderIds,
+        },
       },
       _sum: {
         quantity: true,
-        amount: true
+        amount: true,
       },
       orderBy: {
         _sum: {
-          quantity: 'desc'
-        }
+          quantity: 'desc',
+        },
       },
-      take: 5
+      take: 5,
     })
 
     const productIds = soldItems.map((item: any) => item.productId)
     const trendingProductsData = await prisma.product.findMany({
       where: {
         id: {
-          in: productIds
+          in: productIds,
         },
-        companyId: user?.companyId
+        companyId: user?.companyId,
       },
       select: {
         id: true,
         name: true,
         physicalStockOnHand: true,
         accountingStockOnHand: true,
-        status: true
-      }
+        status: true,
+      },
     })
 
     const trendingProducts = soldItems.map((item: any) => {
@@ -369,7 +390,7 @@ export const loader: LoaderFunction = async ({
         soldQuantity: item._sum.quantity || 0,
         revenue: item._sum.amount || 0,
         currentStock: product?.physicalStockOnHand || 0,
-        stockStatus: product?.status || 'Unknown'
+        stockStatus: product?.status || 'Unknown',
       }
     })
 
@@ -381,7 +402,20 @@ export const loader: LoaderFunction = async ({
 
     // Generate array of last 6 months
     const months = []
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ]
     for (let i = 0; i < 6; i++) {
       const date = new Date()
       date.setMonth(date.getMonth() - i)
@@ -395,13 +429,13 @@ export const loader: LoaderFunction = async ({
       where: getAgencyFilter({
         companyId: user?.companyId,
         orderDate: {
-          gte: sixMonthsAgo
+          gte: sixMonthsAgo,
         },
-        status: { not: SALES_ORDERS_STATUSES.CANCELLED }
+        status: { not: SALES_ORDERS_STATUSES.CANCELLED },
       }),
       include: {
-        salesOrderItems: true
-      }
+        salesOrderItems: true,
+      },
     })
 
     // Group sales orders by month
@@ -415,7 +449,7 @@ export const loader: LoaderFunction = async ({
       if (!salesByMonth[key]) {
         salesByMonth[key] = {
           count: 0,
-          value: 0
+          value: 0,
         }
       }
 
@@ -429,7 +463,7 @@ export const loader: LoaderFunction = async ({
     const salesTrends = months.map((month) => ({
       month,
       salesCount: salesByMonth[month]?.count || 0,
-      salesValue: salesByMonth[month]?.value || 0
+      salesValue: salesByMonth[month]?.value || 0,
     }))
 
     // Get customer metrics - filtered by agency
@@ -438,16 +472,16 @@ export const loader: LoaderFunction = async ({
         where: {
           companyId: user?.companyId,
           createdAt: {
-            gte: thirtyDaysAgo
+            gte: thirtyDaysAgo,
           },
-          ...(selectedAgency !== "All" && {
+          ...(selectedAgency !== 'All' && {
             salesOrders: {
               some: {
-                agencyId: selectedAgency
-              }
-            }
-          })
-        }
+                agencyId: selectedAgency,
+              },
+            },
+          }),
+        },
       }),
       // Find active customers by their association with sales orders - filtered by agency
       activeCustomers: await prisma.customer.count({
@@ -456,25 +490,25 @@ export const loader: LoaderFunction = async ({
           salesOrders: {
             some: {
               orderDate: {
-                gte: thirtyDaysAgo
+                gte: thirtyDaysAgo,
               },
-              ...(selectedAgency !== "All" && {
-                agencyId: selectedAgency
-              })
-            }
-          }
-        }
+              ...(selectedAgency !== 'All' && {
+                agencyId: selectedAgency,
+              }),
+            },
+          },
+        },
       }),
       customersByType: [
         { name: 'Business', value: 65, color: 'blue.6' },
         { name: 'Individual', value: 25, color: 'teal.6' },
-        { name: 'Government', value: 10, color: 'violet.6' }
+        { name: 'Government', value: 10, color: 'violet.6' },
       ],
       customerActivity: [
         { name: 'Frequent', value: 45, color: 'green.6' },
         { name: 'Regular', value: 30, color: 'blue.6' },
-        { name: 'Occasional', value: 25, color: 'orange.6' }
-      ]
+        { name: 'Occasional', value: 25, color: 'orange.6' },
+      ],
     }
 
     const dashboardData = {
@@ -486,18 +520,18 @@ export const loader: LoaderFunction = async ({
           pendingPurchaseOrders,
           recentSalesTotal,
           recentPurchasesTotal,
-          ordersComparisonPercentage
+          ordersComparisonPercentage,
         },
         finances: {
           pendingInvoices,
           pendingBills,
           recentPaymentsReceived: recentPaymentsReceived._sum?.amountReceived || 0,
           recentPaymentsMade: recentPaymentsMade._sum?.amountReceived || 0,
-          cashflow
+          cashflow,
         },
         trendingProducts,
         salesTrends,
-        customerMetrics
+        customerMetrics,
       },
       agencies,
       sites,

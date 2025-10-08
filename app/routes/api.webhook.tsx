@@ -1,16 +1,16 @@
-import type { ActionFunctionArgs } from "react-router"
-import type Stripe from "stripe"
-import { z } from "zod"
-import { stripe } from "~/app/modules/stripe/stripe.server"
+import type { ActionFunctionArgs } from 'react-router'
+import type Stripe from 'stripe'
+import { z } from 'zod'
+import { stripe } from '~/app/modules/stripe/stripe.server'
 
 // import {
 //   sendSubscriptionSuccessEmail,
 //   sendSubscriptionErrorEmail,
 // } from '#app/modules/email/templates/subscription-email'
-import { ERRORS } from "~/app/common/errors"
-import { prisma } from "~/app/db.server"
+import { ERRORS } from '~/app/common/errors'
+import { prisma } from '~/app/db.server'
 
-export const ROUTE_PATH = "/api/webhook" as const
+export const ROUTE_PATH = '/api/webhook' as const
 
 /**
  * Gets and constructs a Stripe event signature.
@@ -24,7 +24,7 @@ async function getStripeEvent(request: Request) {
   }
 
   try {
-    const signature = request.headers.get("Stripe-Signature")
+    const signature = request.headers.get('Stripe-Signature')
     if (!signature) throw new Error(ERRORS.STRIPE_MISSING_SIGNATURE)
     const payload = await request.text()
     const event = stripe.webhooks.constructEvent(
@@ -46,26 +46,126 @@ export async function action({ request }: ActionFunctionArgs) {
     switch (event.type) {
       /**
        * Occurs when a payment intent has succeeded.
-       * NOTE: For subscriptions, we handle activation in invoice.payment_succeeded instead.
+       * For subscriptions, the invoice.payment_succeeded event handles activation.
        */
-      case "payment_intent.succeeded": {
+      case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object
-        console.log(`💰 Payment intent ${paymentIntent.id} succeeded for amount ${paymentIntent.amount}`)
+        console.log(`💰 PaymentIntent succeeded: ${paymentIntent.id} (${paymentIntent.amount})`)
 
-        // For subscription payments, the invoice.payment_succeeded event will handle the activation
-        // We don't need to create subscription records here to avoid duplicates
+        // Handle standalone PaymentIntents for subscriptions
+        const { metadata } = paymentIntent
+        if (
+          metadata?.subscriptionId &&
+          metadata?.type === 'subscription_payment' &&
+          paymentIntent.payment_method
+        ) {
+          console.log(`🔗 Processing subscription payment for ${metadata.subscriptionId}`)
+
+          try {
+            const paymentMethodId = paymentIntent.payment_method as string
+            const customerId = paymentIntent.customer as string
+
+            // Ensure the payment method is attached to the customer
+            try {
+              await stripe.paymentMethods.attach(paymentMethodId, {
+                customer: customerId,
+              })
+              console.log(`📎 Attached payment method ${paymentMethodId} to customer ${customerId}`)
+            } catch (attachError: any) {
+              // Payment method might already be attached
+              if (!attachError.message?.includes('already attached')) {
+                console.error(`❌ Failed to attach payment method: ${attachError.message}`)
+              }
+            }
+
+            // Update subscription with the payment method
+            await stripe.subscriptions.update(metadata.subscriptionId, {
+              default_payment_method: paymentMethodId,
+            })
+            console.log(
+              `✅ Updated subscription ${metadata.subscriptionId} with payment method ${paymentMethodId}`
+            )
+
+            // Pay the subscription invoice manually since the PaymentIntent isn't attached
+            if (metadata.invoiceId) {
+              try {
+                const paidInvoice = await stripe.invoices.pay(metadata.invoiceId, {
+                  payment_method: paymentMethodId,
+                })
+                console.log(`💳 Paid invoice ${metadata.invoiceId} status: ${paidInvoice.status}`)
+              } catch (invoiceError) {
+                console.error('❌ Failed to pay invoice:', invoiceError)
+              }
+            }
+          } catch (error) {
+            console.error('❌ Failed to process subscription payment:', error)
+          }
+        }
 
         return new Response(null, { status: 200 })
       }
 
       /**
+       * Occurs when a SetupIntent is succeeded.
+       * Handle subscription payment method setup.
+       */
+      case 'setup_intent.succeeded': {
+        const setupIntent = event.data.object
+        console.log(`🔧 SetupIntent succeeded: ${setupIntent.id}`)
+
+        const { metadata } = setupIntent
+        if (
+          metadata?.subscriptionId &&
+          metadata?.type === 'subscription_setup' &&
+          setupIntent.payment_method
+        ) {
+          console.log(`🔗 Processing subscription setup for ${metadata.subscriptionId}`)
+
+          try {
+            const paymentMethodId = setupIntent.payment_method as string
+
+            // Update subscription with the payment method
+            await stripe.subscriptions.update(metadata.subscriptionId, {
+              default_payment_method: paymentMethodId,
+            })
+            console.log(
+              `✅ Updated subscription ${metadata.subscriptionId} with payment method ${paymentMethodId}`
+            )
+
+            // If subscription has an invoice that needs payment, try to pay it
+            if (metadata.invoiceId) {
+              try {
+                const invoice = await stripe.invoices.retrieve(metadata.invoiceId)
+                if (invoice.status === 'open' && invoice.amount_due > 0) {
+                  console.log(`💳 Attempting to pay invoice ${metadata.invoiceId}`)
+                  const paidInvoice = await stripe.invoices.pay(metadata.invoiceId)
+                  console.log(
+                    `✅ Invoice ${metadata.invoiceId} payment status: ${paidInvoice.status}`
+                  )
+                }
+              } catch (invoiceError) {
+                console.error('❌ Failed to pay invoice:', invoiceError)
+              }
+            }
+          } catch (error) {
+            console.error('❌ Failed to process SetupIntent:', error)
+          }
+        }
+
+        return new Response(null, { status: 200 })
+      } /**
        * Occurs when a subscription invoice payment succeeds.
        * This is the proper event to handle subscription activation.
        */
-      case "invoice.payment_succeeded": {
+      case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice
         const subscriptionId = (invoice as any).subscription as string
         const customerId = invoice.customer as string
+
+        console.log(`🧾 Invoice payment succeeded: ${invoice.id}`)
+        console.log(`   Subscription: ${subscriptionId}`)
+        console.log(`   Customer: ${customerId}`)
+        console.log(`   Amount paid: ${invoice.amount_paid}`)
 
         if (!subscriptionId) {
           console.log('Invoice payment succeeded but no subscription ID found')
@@ -77,7 +177,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
         // Find the user by Stripe customer ID
         const user = await prisma.user.findUnique({
-          where: { stripeCustomerId: customerId }
+          where: { stripeCustomerId: customerId },
         })
 
         if (!user) {
@@ -94,27 +194,32 @@ export async function action({ request }: ActionFunctionArgs) {
         // Find the correct database plan ID by looking up the price
         const dbPrice = await prisma.price.findUnique({
           where: { id: String(priceData.price.id) },
-          include: { plan: true }
+          include: { plan: true },
         })
 
         if (dbPrice) {
           dbPlanId = dbPrice.planId
           console.log(`✅ Found database plan: ${dbPlanId} for Stripe product: ${stripeProductId}`)
         } else {
-          console.log(`⚠️ Could not find database plan for price ${priceData.price.id}, using fallback: ${dbPlanId}`)
+          console.log(
+            `⚠️ Could not find database plan for price ${priceData.price.id}, using fallback: ${dbPlanId}`
+          )
         }
 
         // Extract period information with proper defaults
         const subscriptionData = stripeSubscription as any // Cast to access Stripe properties
-        const currentPeriodStart = subscriptionData.current_period_start || Math.floor(Date.now() / 1000)
-        const currentPeriodEnd = subscriptionData.current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
+        const currentPeriodStart =
+          subscriptionData.current_period_start || Math.floor(Date.now() / 1000)
+        const currentPeriodEnd =
+          subscriptionData.current_period_end ||
+          Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
         const trialStart = subscriptionData.trial_start || 0
 
         console.log('🔍 Webhook subscription periods:', {
           currentPeriodStart,
           currentPeriodEnd,
           trialStart,
-          trialEnd: 0
+          trialEnd: 0,
         })
 
         // Update subscription in database - this subscription now becomes active
@@ -209,7 +314,7 @@ export async function action({ request }: ActionFunctionArgs) {
        * Occurs when a Stripe subscription has been updated.
        * E.g. when a user upgrades or downgrades their plan.
        */
-      case "customer.subscription.updated": {
+      case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription
         const customerId = subscription.customer as string
 
@@ -234,7 +339,7 @@ export async function action({ request }: ActionFunctionArgs) {
         // Find the correct database plan ID by looking up the price
         const updateDbPrice = await prisma.price.findUnique({
           where: { id: String(updatePriceData.price.id) },
-          include: { plan: true }
+          include: { plan: true },
         })
 
         if (updateDbPrice) {
@@ -243,38 +348,37 @@ export async function action({ request }: ActionFunctionArgs) {
 
         // Extract period information with proper casting
         const updateSubscriptionData = subscription as any
-        const updateCurrentPeriodStart = updateSubscriptionData.current_period_start || Math.floor(Date.now() / 1000)
-        const updateCurrentPeriodEnd = updateSubscriptionData.current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
+        const updateCurrentPeriodStart =
+          updateSubscriptionData.current_period_start || Math.floor(Date.now() / 1000)
+        const updateCurrentPeriodEnd =
+          updateSubscriptionData.current_period_end ||
+          Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
 
         await prisma.subscription.upsert({
           where: { userId: user.id },
           update: {
             planId: updateDbPlanId, // Use database plan ID, not Stripe product ID
             priceId: String(updatePriceData.price.id),
-            interval: String(
-              updatePriceData.price.recurring?.interval || "month",
-            ),
+            interval: String(updatePriceData.price.recurring?.interval || 'month'),
             status: subscription.status,
             currentPeriodStart: updateCurrentPeriodStart,
             currentPeriodEnd: updateCurrentPeriodEnd,
             cancelAtPeriodEnd: updateSubscriptionData.cancel_at_period_end || false,
             trialStart: updateSubscriptionData.trial_start || 0,
-            trialEnd: subscription.status === 'active' ? 0 : (updateSubscriptionData.trial_end || 0), // Clear trial for active subscriptions
+            trialEnd: subscription.status === 'active' ? 0 : updateSubscriptionData.trial_end || 0, // Clear trial for active subscriptions
           },
           create: {
             id: subscription.id,
             userId: user.id,
             planId: updateDbPlanId, // Use database plan ID, not Stripe product ID
             priceId: String(updatePriceData.price.id),
-            interval: String(
-              updatePriceData.price.recurring?.interval || "month",
-            ),
+            interval: String(updatePriceData.price.recurring?.interval || 'month'),
             status: subscription.status,
             currentPeriodStart: updateCurrentPeriodStart,
             currentPeriodEnd: updateCurrentPeriodEnd,
             cancelAtPeriodEnd: updateSubscriptionData.cancel_at_period_end || false,
             trialStart: updateSubscriptionData.trial_start || 0,
-            trialEnd: subscription.status === 'active' ? 0 : (updateSubscriptionData.trial_end || 0), // Clear trial for active subscriptions
+            trialEnd: subscription.status === 'active' ? 0 : updateSubscriptionData.trial_end || 0, // Clear trial for active subscriptions
           },
         })
 
@@ -285,22 +389,21 @@ export async function action({ request }: ActionFunctionArgs) {
       /**
        * Occurs whenever a customer’s subscription ends.
        */
-      case "customer.subscription.deleted": {
+      case 'customer.subscription.deleted': {
         const subscription = event.data.object
         const { id } = z.object({ id: z.string() }).parse(subscription)
 
         const dbSubscription = await prisma.subscription.findUnique({
           where: { id },
         })
-        if (dbSubscription)
-          await prisma.subscription.delete({ where: { id: dbSubscription.id } })
+        if (dbSubscription) await prisma.subscription.delete({ where: { id: dbSubscription.id } })
 
         return new Response(null)
       }
     }
   } catch (err: unknown) {
     switch (event.type) {
-      case "payment_intent.succeeded": {
+      case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object
         const { metadata } = paymentIntent
 
@@ -311,7 +414,7 @@ export async function action({ request }: ActionFunctionArgs) {
         return new Response(null, { status: 200 })
       }
 
-      case "checkout.session.completed": {
+      case 'checkout.session.completed': {
         const session = event.data.object
 
         const { customer: customerId, subscription: subscriptionId } = z
@@ -325,7 +428,7 @@ export async function action({ request }: ActionFunctionArgs) {
         return new Response(null)
       }
 
-      case "customer.subscription.updated": {
+      case 'customer.subscription.updated': {
         const subscription = event.data.object
 
         const { id: subscriptionId, customer: customerId } = z

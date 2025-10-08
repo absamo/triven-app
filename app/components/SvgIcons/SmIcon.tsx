@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface SmIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface SmIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -28,10 +28,7 @@ export default function SmIcon({ size = 20, style, ...others }: SmIconProps) {
           fill="#ffda44"
           d="M256 367.3c-49.1 0-89-40-89-89v-33.4a89.1 89.1 0 0 1 178 0v33.4c0 49-39.9 89-89 89z"
         />
-        <path
-          fill="#338af3"
-          d="M311.7 278.3v-33.4a55.7 55.7 0 0 0-111.4 0v33.4l55.7 11z"
-        />
+        <path fill="#338af3" d="M311.7 278.3v-33.4a55.7 55.7 0 0 0-111.4 0v33.4l55.7 11z" />
         <path fill="#6da544" d="M200.3 278.3a55.7 55.7 0 0 0 111.4 0z" />
         <path
           fill="#ffda44"

@@ -1,20 +1,17 @@
-import { redirect } from "react-router"
+import { redirect } from 'react-router'
 
 import {
   PRODUCT_STATUSES,
   PURCHASE_ORDER_STATUSES,
   SALES_ORDERS_STATUSES,
   USER_ROLES,
-} from "~/app/common/constants"
-import {
-  getStockNotificationMessage,
-  getStockStatus,
-} from "~/app/common/helpers/inventories"
-import { type IAgency } from "~/app/common/validations/agencySchema"
-import { type IProduct } from "~/app/common/validations/productSchema"
-import { prisma } from "~/app/db.server"
-import { getBetterAuthUser } from "~/app/services/better-auth.server"
-import { emitter } from "~/app/utils/emitter.server"
+} from '~/app/common/constants'
+import { getStockNotificationMessage, getStockStatus } from '~/app/common/helpers/inventories'
+import { type IAgency } from '~/app/common/validations/agencySchema'
+import { type IProduct } from '~/app/common/validations/productSchema'
+import { prisma } from '~/app/db.server'
+import { getBetterAuthUser } from '~/app/services/better-auth.server'
+import { emitter } from '~/app/utils/emitter.server'
 
 export async function checkProductNameExists(
   request: Request,
@@ -31,7 +28,7 @@ export async function checkProductNameExists(
       companyId: user.companyId,
       name: {
         equals: productName.trim(),
-        mode: "insensitive",
+        mode: 'insensitive',
       },
       ...(excludeId && { id: { not: excludeId } }),
     },
@@ -43,20 +40,20 @@ export async function checkProductNameExists(
 export async function getProducts(
   request: Request,
   filter: {
-    search?: string;
-    limit?: number;
-    offset?: number;
-    allSites?: boolean;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
+    search?: string
+    limit?: number
+    offset?: number
+    allSites?: boolean
+    sortBy?: string
+    sortOrder?: 'asc' | 'desc'
   } = {
-      search: undefined,
-      limit: 30,
-      offset: 0,
-      allSites: false,
-      sortBy: 'createdAt',
-      sortOrder: 'desc',
-    }
+    search: undefined,
+    limit: 30,
+    offset: 0,
+    allSites: false,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+  }
 ) {
   const user = await getBetterAuthUser(request)
   if (!user?.id) {
@@ -66,7 +63,7 @@ export async function getProducts(
   // Build where clause - include all sites if allSites is true or if no specific site
   const whereClause: any = {
     companyId: user.companyId,
-    name: { contains: filter.search, mode: "insensitive" },
+    name: { contains: filter.search, mode: 'insensitive' },
   }
 
   // Filter by user's agency (unless user is admin with access to all agencies)
@@ -119,8 +116,12 @@ export async function getProducts(
   })
 
   // Apply client-side case-insensitive sorting for text fields to fix PostgreSQL case sensitivity
-  if (filter.sortBy === 'name' || filter.sortBy === 'status' || filter.sortBy === 'site' || filter.sortBy === 'agency') {
-
+  if (
+    filter.sortBy === 'name' ||
+    filter.sortBy === 'status' ||
+    filter.sortBy === 'site' ||
+    filter.sortBy === 'agency'
+  ) {
     const sortedProducts = products.sort((a, b) => {
       let aValue = ''
       let bValue = ''
@@ -143,7 +144,7 @@ export async function getProducts(
       const comparison = aValue.localeCompare(bValue, 'en', {
         numeric: true,
         sensitivity: 'base', // Case-insensitive, accent-sensitive
-        ignorePunctuation: false
+        ignorePunctuation: false,
       })
 
       return filter.sortOrder === 'asc' ? comparison : -comparison
@@ -186,7 +187,7 @@ export async function getFilteredProducts(
     return []
   }
 
-  const currentSearch = search && search.trim() !== ""
+  const currentSearch = search && search.trim() !== ''
 
   // Build orderBy clause based on sortBy parameter
   const getOrderBy = () => {
@@ -233,7 +234,8 @@ export async function getFilteredProducts(
   let filteredProducts = baseProducts
   if (reorderAlert) {
     filteredProducts = baseProducts.filter(
-      (product) => (product.accountingStockOnHand || 0) <= (product.reorderPoint || 0) && product.active
+      (product) =>
+        (product.accountingStockOnHand || 0) <= (product.reorderPoint || 0) && product.active
     )
   }
 
@@ -253,29 +255,29 @@ export async function getFilteredProducts(
           none: {
             salesOrder: {
               orderDate: {
-                gte: ninetyDaysAgo
-              }
-            }
-          }
+                gte: ninetyDaysAgo,
+              },
+            },
+          },
         },
         // And haven't been in any purchase order items in the last 90 days
         purchaseOrderItems: {
           none: {
             purchaseOrder: {
               orderDate: {
-                gte: ninetyDaysAgo
-              }
-            }
-          }
+                gte: ninetyDaysAgo,
+              },
+            },
+          },
         },
         // And haven't been adjusted in the last 90 days
         stockAdjustmentHistories: {
           none: {
             createdAt: {
-              gte: ninetyDaysAgo
-            }
-          }
-        }
+              gte: ninetyDaysAgo,
+            },
+          },
+        },
       },
       include: {
         category: true,
@@ -285,13 +287,13 @@ export async function getFilteredProducts(
     })
 
     // Filter base products to only include dead stock products
-    const deadStockIds = deadStockProducts.map(p => p.id)
-    filteredProducts = baseProducts.filter(product => deadStockIds.includes(product.id))
+    const deadStockIds = deadStockProducts.map((p) => p.id)
+    filteredProducts = baseProducts.filter((product) => deadStockIds.includes(product.id))
   }
 
   // Apply accuracy filter if needed (products where physical stock != accounting stock)
   if (accuracyFilter) {
-    filteredProducts = filteredProducts.filter(product => {
+    filteredProducts = filteredProducts.filter((product) => {
       const systemQty = product.accountingStockOnHand || 0
       const physicalQty = product.physicalStockOnHand || 0
       return systemQty !== physicalQty // Only show inaccurate items
@@ -300,34 +302,33 @@ export async function getFilteredProducts(
 
   // Then apply other filters on top of the previous results
   if (currentSearch) {
-    filteredProducts = filteredProducts.filter(product =>
-      product.name.toLowerCase().includes(search!.toLowerCase()) ||
-      (product.sku && product.sku.toLowerCase().includes(search!.toLowerCase())) ||
-      (product.barcode && product.barcode.toLowerCase().includes(search!.toLowerCase()))
+    filteredProducts = filteredProducts.filter(
+      (product) =>
+        product.name.toLowerCase().includes(search!.toLowerCase()) ||
+        (product.sku && product.sku.toLowerCase().includes(search!.toLowerCase())) ||
+        (product.barcode && product.barcode.toLowerCase().includes(search!.toLowerCase()))
     )
   }
 
   if (statuses && statuses.length > 0) {
-    filteredProducts = filteredProducts.filter(product =>
-      statuses.includes(product.status)
-    )
+    filteredProducts = filteredProducts.filter((product) => statuses.includes(product.status))
   }
 
   if (categories && categories.length > 0) {
-    filteredProducts = filteredProducts.filter(product =>
-      product.categoryId && categories.includes(product.categoryId)
+    filteredProducts = filteredProducts.filter(
+      (product) => product.categoryId && categories.includes(product.categoryId)
     )
   }
 
   if (agencies && agencies.length > 0) {
-    filteredProducts = filteredProducts.filter(product =>
-      product.agencyId && agencies.includes(product.agencyId)
+    filteredProducts = filteredProducts.filter(
+      (product) => product.agencyId && agencies.includes(product.agencyId)
     )
   }
 
   if (sites && sites.length > 0) {
-    filteredProducts = filteredProducts.filter(product =>
-      product.siteId && sites.includes(product.siteId)
+    filteredProducts = filteredProducts.filter(
+      (product) => product.siteId && sites.includes(product.siteId)
     )
   }
 
@@ -355,7 +356,7 @@ export async function getFilteredProducts(
       const comparison = aValue.localeCompare(bValue, 'en', {
         numeric: true,
         sensitivity: 'base', // Case-insensitive, accent-sensitive
-        ignorePunctuation: false
+        ignorePunctuation: false,
       })
       return sortOrder === 'asc' ? comparison : -comparison
     })
@@ -367,7 +368,7 @@ export async function getFilteredProducts(
 
 export async function getProductsByAgencyId(
   request: Request,
-  agencyId: IAgency["id"],
+  agencyId: IAgency['id'],
   dateRange?: { gte: Date; lte: Date } | null
 ) {
   const user = await getBetterAuthUser(request)
@@ -378,7 +379,7 @@ export async function getProductsByAgencyId(
   // Build where clause with optional date filtering
   const whereClause: any = {
     companyId: user.companyId,
-    agencyId: agencyId === "All" ? undefined : agencyId,
+    agencyId: agencyId === 'All' ? undefined : agencyId,
   }
 
   // Add date filtering if provided - filter by product creation/update date
@@ -388,16 +389,16 @@ export async function getProductsByAgencyId(
       {
         createdAt: {
           gte: dateRange.gte,
-          lte: dateRange.lte
-        }
+          lte: dateRange.lte,
+        },
       },
       // Products updated within the date range
       {
         updatedAt: {
           gte: dateRange.gte,
-          lte: dateRange.lte
-        }
-      }
+          lte: dateRange.lte,
+        },
+      },
     ]
   }
 
@@ -407,13 +408,11 @@ export async function getProductsByAgencyId(
     })) || []
 
   const productsInStock = products.filter(
-    (product) =>
-      product.status !== PRODUCT_STATUSES.OUTOFSTOCK && product.active
+    (product) => product.status !== PRODUCT_STATUSES.OUTOFSTOCK && product.active
   )
 
   const productsOutOfStock = products.filter(
-    (product) =>
-      product.status === PRODUCT_STATUSES.OUTOFSTOCK && product.active
+    (product) => product.status === PRODUCT_STATUSES.OUTOFSTOCK && product.active
   )
 
   const productsInLowStock = products.filter(
@@ -422,9 +421,10 @@ export async function getProductsByAgencyId(
 
   const productsInCriticalStock = products.filter(
     (product) => product.status === PRODUCT_STATUSES.CRITICAL && product.active
-  )  // Calculate products at or below reorder point
+  ) // Calculate products at or below reorder point
   const productsAtReorderPoint = products.filter(
-    (product) => (product.accountingStockOnHand || 0) <= (product.reorderPoint || 0) && product.active
+    (product) =>
+      (product.accountingStockOnHand || 0) <= (product.reorderPoint || 0) && product.active
   )
 
   // Calculate dead stock (products with no movement in last 90 days)
@@ -440,35 +440,35 @@ export async function getProductsByAgencyId(
         none: {
           salesOrder: {
             orderDate: {
-              gte: ninetyDaysAgo
-            }
-          }
-        }
+              gte: ninetyDaysAgo,
+            },
+          },
+        },
       },
       // And haven't been in any purchase order items in the last 90 days
       purchaseOrderItems: {
         none: {
           purchaseOrder: {
             orderDate: {
-              gte: ninetyDaysAgo
-            }
-          }
-        }
+              gte: ninetyDaysAgo,
+            },
+          },
+        },
       },
       // And haven't been adjusted in the last 90 days
       stockAdjustmentHistories: {
         none: {
           createdAt: {
-            gte: ninetyDaysAgo
-          }
-        }
-      }
-    }
+            gte: ninetyDaysAgo,
+          },
+        },
+      },
+    },
   })
 
   // Calculate dead stock value
   const deadStockValue = deadStockProducts.reduce(
-    (acc: number, product) => acc + (product.sellingPrice * (product.physicalStockOnHand || 0)),
+    (acc: number, product) => acc + product.sellingPrice * (product.physicalStockOnHand || 0),
     0
   )
 
@@ -478,10 +478,9 @@ export async function getProductsByAgencyId(
     0
   )
   const currentStockValue = productsInStock.reduce(
-    (acc: number, product) =>
-      acc + product.sellingPrice * (product.physicalStockOnHand || 0),
+    (acc: number, product) => acc + product.sellingPrice * (product.physicalStockOnHand || 0),
     0
-  )  // Calculate comparison period values for percentage calculation
+  ) // Calculate comparison period values for percentage calculation
   let totalProductsInStockDiff = 0
   let productsInStockValueDiff = 0
 
@@ -497,30 +496,30 @@ export async function getProductsByAgencyId(
     // Get products for the previous period
     const previousWhereClause: any = {
       companyId: user.companyId,
-      agencyId: agencyId === "All" ? undefined : agencyId,
+      agencyId: agencyId === 'All' ? undefined : agencyId,
       OR: [
         {
           createdAt: {
             gte: previousStart,
-            lte: previousEnd
-          }
+            lte: previousEnd,
+          },
         },
         {
           updatedAt: {
             gte: previousStart,
-            lte: previousEnd
-          }
-        }
-      ]
+            lte: previousEnd,
+          },
+        },
+      ],
     }
 
-    const previousProducts = await prisma.product.findMany({
-      where: previousWhereClause,
-    }) || []
+    const previousProducts =
+      (await prisma.product.findMany({
+        where: previousWhereClause,
+      })) || []
 
     const previousProductsInStock = previousProducts.filter(
-      (product) =>
-        product.status !== PRODUCT_STATUSES.OUTOFSTOCK && product.active
+      (product) => product.status !== PRODUCT_STATUSES.OUTOFSTOCK && product.active
     )
 
     const previousTotalStock = previousProductsInStock.reduce(
@@ -528,23 +527,24 @@ export async function getProductsByAgencyId(
       0
     )
     const previousStockValue = previousProductsInStock.reduce(
-      (acc: number, product) =>
-        acc + product.sellingPrice * (product.physicalStockOnHand || 0),
+      (acc: number, product) => acc + product.sellingPrice * (product.physicalStockOnHand || 0),
       0
     )
 
     // Calculate percentage differences
-    totalProductsInStockDiff = previousTotalStock > 0
-      ? Math.round(((currentTotalStock - previousTotalStock) / previousTotalStock) * 100)
-      : 0
+    totalProductsInStockDiff =
+      previousTotalStock > 0
+        ? Math.round(((currentTotalStock - previousTotalStock) / previousTotalStock) * 100)
+        : 0
 
-    productsInStockValueDiff = previousStockValue > 0
-      ? Math.round(((currentStockValue - previousStockValue) / previousStockValue) * 100)
-      : 0
+    productsInStockValueDiff =
+      previousStockValue > 0
+        ? Math.round(((currentStockValue - previousStockValue) / previousStockValue) * 100)
+        : 0
   }
 
   // Calculate inventory accuracy (Physical vs System)
-  const accuracyAnalysis = products.map(product => {
+  const accuracyAnalysis = products.map((product) => {
     const systemQty = product.accountingStockOnHand || 0
     const physicalQty = product.physicalStockOnHand || 0
     return {
@@ -553,17 +553,23 @@ export async function getProductsByAgencyId(
       systemQuantity: systemQty,
       physicalQuantity: physicalQty,
       variance: physicalQty - systemQty,
-      isAccurate: systemQty === physicalQty
+      isAccurate: systemQty === physicalQty,
     }
   })
 
-  const accurateItems = accuracyAnalysis.filter(item => item.isAccurate).length
+  const accurateItems = accuracyAnalysis.filter((item) => item.isAccurate).length
   const totalItems = products.length
   const accuracyPercentage = totalItems > 0 ? Math.round((accurateItems / totalItems) * 100) : 100
 
   // Calculate total physical and accounting stock values
-  const totalPhysicalStock = products.reduce((acc, product) => acc + (product.physicalStockOnHand || 0), 0)
-  const totalAccountingStock = products.reduce((acc, product) => acc + (product.accountingStockOnHand || 0), 0)
+  const totalPhysicalStock = products.reduce(
+    (acc, product) => acc + (product.physicalStockOnHand || 0),
+    0
+  )
+  const totalAccountingStock = products.reduce(
+    (acc, product) => acc + (product.accountingStockOnHand || 0),
+    0
+  )
 
   const stats = {
     inventory: {
@@ -586,9 +592,8 @@ export async function getProductsByAgencyId(
       deadStockItems: deadStockProducts.length,
     },
     stockStatus: {
-      inStock: productsInStock.filter(
-        (product) => product.status === PRODUCT_STATUSES.AVAILABLE
-      ).length,
+      inStock: productsInStock.filter((product) => product.status === PRODUCT_STATUSES.AVAILABLE)
+        .length,
       lowStock: productsInLowStock.length,
       outOfStock: productsOutOfStock.length,
       critical: productsInCriticalStock.length,
@@ -598,10 +603,7 @@ export async function getProductsByAgencyId(
   return stats
 }
 
-export async function getProductsForAgency(
-  request: Request,
-  agencyId: IAgency["id"]
-) {
+export async function getProductsForAgency(request: Request, agencyId: IAgency['id']) {
   const user = await getBetterAuthUser(request)
   if (!user?.id) {
     return []
@@ -610,7 +612,7 @@ export async function getProductsForAgency(
   const products = await prisma.product.findMany({
     where: {
       companyId: user.companyId,
-      agencyId: agencyId === "All" ? undefined : agencyId,
+      agencyId: agencyId === 'All' ? undefined : agencyId,
       active: true, // Only show active products
     },
     include: {
@@ -626,7 +628,7 @@ export async function getProductsForAgency(
   return products || []
 }
 
-export async function getProduct(request: Request, productId: IProduct["id"]) {
+export async function getProduct(request: Request, productId: IProduct['id']) {
   const user = await getBetterAuthUser(request)
   if (!user?.id) {
     return null
@@ -674,7 +676,7 @@ export async function getProduct(request: Request, productId: IProduct["id"]) {
   return product
 }
 
-export async function getProductByBarcode(barcode?: IProduct["barcode"]) {
+export async function getProductByBarcode(barcode?: IProduct['barcode']) {
   const product = await prisma.product.findFirst({
     where: { barcode: barcode },
     include: {
@@ -697,10 +699,11 @@ export async function getProductByBarcode(barcode?: IProduct["barcode"]) {
 
 export async function createProduct(
   request: Request,
-  product: Omit<IProduct, "category" | "subcategory | site"> & { images?: Array<{ name: string; path: string; type: string; primary?: boolean }> },
+  product: Omit<IProduct, 'category' | 'subcategory | site'> & {
+    images?: Array<{ name: string; path: string; type: string; primary?: boolean }>
+  },
   returnProduct = false
 ) {
-
   try {
     const user = await getBetterAuthUser(request)
     if (!user?.id) {
@@ -740,23 +743,24 @@ export async function createProduct(
           connect: { id: user.id },
         },
         // Create associated images
-        ...(product.images && product.images.length > 0 && {
-          images: {
-            create: product.images.map(image => ({
-              name: image.name,
-              path: image.path,
-              imagekitId: (image as any).imagekitId || null, // ImageKit's file ID
-              type: image.type,
-              primary: image.primary || false,
-            }))
-          }
-        })
+        ...(product.images &&
+          product.images.length > 0 && {
+            images: {
+              create: product.images.map((image) => ({
+                name: image.name,
+                path: image.path,
+                imagekitId: (image as any).imagekitId || null, // ImageKit's file ID
+                type: image.type,
+                primary: image.primary || false,
+              })),
+            },
+          }),
       } as any,
     })
 
     // Emit dashboard update event for real-time updates
-    emitter.emit("dashboard-updates", {
-      action: "product_created",
+    emitter.emit('dashboard-updates', {
+      action: 'product_created',
       product: {
         id: createdProduct.id,
         name: createdProduct.name,
@@ -774,18 +778,17 @@ export async function createProduct(
       return createdProduct
     }
 
-
     return {
       notification: {
-        message: "Product created successfully.",
-        status: "Success",
+        message: 'Product created successfully.',
+        status: 'Success',
       },
     }
   } catch {
     return {
       notification: {
-        message: "An error occured while updating the product.",
-        status: "Error",
+        message: 'An error occured while updating the product.',
+        status: 'Error',
       },
     }
   }
@@ -793,11 +796,10 @@ export async function createProduct(
 
 export async function updateProduct(
   request: Request,
-  product: Omit<IProduct, "category" | "subcategory" | "attributeTypes"> & {
-    images?: Array<{ id?: string; name: string; path: string; type: string; primary?: boolean }>;
+  product: Omit<IProduct, 'category' | 'subcategory' | 'attributeTypes'> & {
+    images?: Array<{ id?: string; name: string; path: string; type: string; primary?: boolean }>
   }
 ) {
-
   try {
     const user = await getBetterAuthUser(request)
     if (!user?.id) {
@@ -811,7 +813,7 @@ export async function updateProduct(
     if (!foundProduct) {
       return {
         errors: {
-          productId: "Product not found",
+          productId: 'Product not found',
         },
       }
     }
@@ -831,9 +833,8 @@ export async function updateProduct(
 
       // Create new images if any provided
       if (product.images.length > 0) {
-
         await prisma.asset.createMany({
-          data: product.images.map(image => ({
+          data: product.images.map((image) => ({
             name: image.name,
             path: image.path,
             type: image.type,
@@ -870,36 +871,38 @@ export async function updateProduct(
         },
         notifications:
           status === PRODUCT_STATUSES.LOWSTOCK ||
-            status === PRODUCT_STATUSES.OUTOFSTOCK ||
-            status === PRODUCT_STATUSES.CRITICAL
+          status === PRODUCT_STATUSES.OUTOFSTOCK ||
+          status === PRODUCT_STATUSES.CRITICAL
             ? {
-              create: {
-                message: notificationMsg,
-                read: false,
-                companyId: user.companyId,
-                createdById: user.id,
-                status,
-              },
-            }
+                create: {
+                  message: notificationMsg,
+                  read: false,
+                  companyId: user.companyId,
+                  createdById: user.id,
+                  status,
+                },
+              }
             : undefined,
       },
     })
 
     // Emit notification with stock alert data
-    if (status === PRODUCT_STATUSES.LOWSTOCK ||
+    if (
+      status === PRODUCT_STATUSES.LOWSTOCK ||
       status === PRODUCT_STATUSES.OUTOFSTOCK ||
-      status === PRODUCT_STATUSES.CRITICAL) {
-      emitter.emit("notifications", {
-        action: "stock_alert",
+      status === PRODUCT_STATUSES.CRITICAL
+    ) {
+      emitter.emit('notifications', {
+        action: 'stock_alert',
         product: { id: product.id, name: product.name, status },
         message: notificationMsg,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }
 
     // Emit dashboard update event for real-time updates
-    emitter.emit("dashboard-updates", {
-      action: "product_updated",
+    emitter.emit('dashboard-updates', {
+      action: 'product_updated',
       product: {
         id: product.id,
         name: product.name,
@@ -913,15 +916,15 @@ export async function updateProduct(
 
     return {
       notification: {
-        message: "Product updated successfully.",
-        status: "Success",
+        message: 'Product updated successfully.',
+        status: 'Success',
       },
     }
   } catch {
     return {
       notification: {
-        message: "An error occured while updating the product.",
-        status: "Error",
+        message: 'An error occured while updating the product.',
+        status: 'Error',
       },
     }
   }
@@ -930,7 +933,7 @@ export async function updateProduct(
 export async function duplicateProduct(request: Request, id?: string) {
   const user = await getBetterAuthUser(request)
   if (!user?.id || !id) {
-    throw new Error("Unauthorized or missing product id")
+    throw new Error('Unauthorized or missing product id')
   }
   const product = await prisma.product.findUnique({
     where: {
@@ -939,7 +942,7 @@ export async function duplicateProduct(request: Request, id?: string) {
     },
   })
   if (!product) {
-    throw new Error("Product not found")
+    throw new Error('Product not found')
   }
   // Remove id and set a new name (e.g., 'Copy of ...')
   await prisma.product.create({
@@ -957,10 +960,10 @@ export async function deleteProduct(request: Request, id?: string) {
   if (!user?.id || !id) {
     return {
       notification: {
-        message: "Unauthorized or missing product id",
-        status: "Error",
+        message: 'Unauthorized or missing product id',
+        status: 'Error',
         autoClose: false,
-      }
+      },
     }
   }
   try {
@@ -978,10 +981,10 @@ export async function deleteProduct(request: Request, id?: string) {
     if (!product) {
       return {
         notification: {
-          message: "Product not found.",
-          status: "Error",
+          message: 'Product not found.',
+          status: 'Error',
           autoClose: false,
-        }
+        },
       }
     }
 
@@ -996,15 +999,15 @@ export async function deleteProduct(request: Request, id?: string) {
     return {
       notification: {
         message: `Product "${product.name}" has been deleted successfully.`,
-        status: "Success",
+        status: 'Success',
         // Don't redirect - let the component handle the state update
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Failed to delete product.",
-        status: "Error"
+        message: 'Failed to delete product.',
+        status: 'Error',
       },
     }
   }

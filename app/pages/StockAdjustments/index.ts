@@ -1,3 +1,3 @@
-import StockAdjustments from "./StockAdjustments"
+import StockAdjustments from './StockAdjustments'
 
 export default StockAdjustments

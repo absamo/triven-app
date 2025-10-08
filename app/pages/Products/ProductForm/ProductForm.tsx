@@ -18,60 +18,70 @@ import {
   TextInput,
   Textarea,
   Tooltip,
-  rem
-} from "@mantine/core"
-import { Dropzone, type FileWithPath } from "@mantine/dropzone"
-import { useForm } from "@mantine/form"
-import { useDisclosure } from "@mantine/hooks"
-import { notifications } from "@mantine/notifications"
-import { IconBarcode, IconInfoCircle, IconPhoto, IconStar, IconTrash, IconUpload, IconX } from "@tabler/icons-react"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useEffect, useRef, useState } from "react"
+  rem,
+} from '@mantine/core'
+import { Dropzone, type FileWithPath } from '@mantine/dropzone'
+import { useForm } from '@mantine/form'
+import { useDisclosure } from '@mantine/hooks'
+import { notifications } from '@mantine/notifications'
+import {
+  IconBarcode,
+  IconInfoCircle,
+  IconPhoto,
+  IconStar,
+  IconTrash,
+  IconUpload,
+  IconX,
+} from '@tabler/icons-react'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useActionData, useNavigate, useSubmit } from "react-router"
+import { useActionData, useNavigate, useSubmit } from 'react-router'
 
 // Import ImageKit utilities - now using server-side approach
-import { generateProductImageUrl } from "~/app/lib/imagekit.client-config"
+import { generateProductImageUrl } from '~/app/lib/imagekit.client-config'
 
 // import Barcode from "react-barcode"
 // import Ean from "ean-generator"
 
-import dayjs from "dayjs"
-import { PRODUCT_STATUSES, PRODUCT_UNITS, PURCHASE_ORDER_STATUSES, SALES_ORDERS_STATUSES } from "~/app/common/constants"
-import { createEan13 } from "~/app/common/helpers/inventories"
-import { getPurchaseOrderStatusLabel } from "~/app/common/helpers/purchase"
-import { getSalesOrderStatusLabel } from "~/app/common/helpers/sales"
-import { type IAgency } from "~/app/common/validations/agencySchema"
-import { type IAsset } from "~/app/common/validations/assetSchema"
-import { type ICategory } from "~/app/common/validations/categorySchema"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import { type IInvoice } from "~/app/common/validations/invoiceSchema"
+import dayjs from 'dayjs'
 import {
-  productSchema,
-  type IProduct,
-} from "~/app/common/validations/productSchema"
-import { type IPurchaseOrderItem } from "~/app/common/validations/purchaseOrderItemSchema"
-import { type IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
-import { type IPurchaseReceiveItem } from "~/app/common/validations/purchaseReceiveItemSchema"
-import { type ISalesOrderItem } from "~/app/common/validations/salesOrderItemSchema"
-import { type ISalesOrder } from "~/app/common/validations/salesOrderSchema"
-import { type ISite } from "~/app/common/validations/siteSchema"
-import { type IStockAdjustment } from "~/app/common/validations/stockAdjustmentsSchema"
-import { Form } from "~/app/components"
-import { AgencySites } from "~/app/partials/AgencySites"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
-import { Title } from "~/app/partials/Title"
-import classes from "./ProductForm.module.css"
+  PRODUCT_STATUSES,
+  PRODUCT_UNITS,
+  PURCHASE_ORDER_STATUSES,
+  SALES_ORDERS_STATUSES,
+} from '~/app/common/constants'
+import { createEan13 } from '~/app/common/helpers/inventories'
+import { getPurchaseOrderStatusLabel } from '~/app/common/helpers/purchase'
+import { getSalesOrderStatusLabel } from '~/app/common/helpers/sales'
+import { type IAgency } from '~/app/common/validations/agencySchema'
+import { type IAsset } from '~/app/common/validations/assetSchema'
+import { type ICategory } from '~/app/common/validations/categorySchema'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { type IInvoice } from '~/app/common/validations/invoiceSchema'
+import { productSchema, type IProduct } from '~/app/common/validations/productSchema'
+import { type IPurchaseOrderItem } from '~/app/common/validations/purchaseOrderItemSchema'
+import { type IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import { type IPurchaseReceiveItem } from '~/app/common/validations/purchaseReceiveItemSchema'
+import { type ISalesOrderItem } from '~/app/common/validations/salesOrderItemSchema'
+import { type ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import { type ISite } from '~/app/common/validations/siteSchema'
+import { type IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
+import { Form } from '~/app/components'
+import { AgencySites } from '~/app/partials/AgencySites'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
+import classes from './ProductForm.module.css'
 
 interface ProductFormProps {
   product: IProduct & {
     images?: IAsset[]
     salesOrderItems: {
-      quantity: ISalesOrderItem["quantity"]
+      quantity: ISalesOrderItem['quantity']
       salesOrder: { invoices: IInvoice[] }
     }[]
     purchaseOrderItems: {
-      quantity: IPurchaseOrderItem["quantity"]
+      quantity: IPurchaseOrderItem['quantity']
       purchaseOrder: {
         bills: { purchaseOrder: { purchaseOrderItems: [] } }[]
         purchaseReceives: { purchaseReceiveItems: IPurchaseReceiveItem[] }[]
@@ -99,22 +109,25 @@ export default function ProductForm({
   currency,
   errors,
 }: ProductFormProps) {
-  const { t } = useTranslation('inventory');
+  const { t } = useTranslation('inventory')
 
   // State for managing product images - simple approach with files
   const [productImages, setProductImages] = useState<IAsset[]>(product.images || [])
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([])
-  const [pendingImageFiles, setPendingImageFiles] = useState<{ file: File; primary: boolean; id: string; blobUrl?: string }[]>([]) // Files ready to upload
+  const [pendingImageFiles, setPendingImageFiles] = useState<
+    { file: File; primary: boolean; id: string; blobUrl?: string }[]
+  >([]) // Files ready to upload
   const [uploadErrors, setUploadErrors] = useState<string[]>([])
 
   // Confirmation modal state
-  const [deleteModalOpened, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false)
+  const [deleteModalOpened, { open: openDeleteModal, close: closeDeleteModal }] =
+    useDisclosure(false)
   const [imageToDelete, setImageToDelete] = useState<{ id: string; name: string } | null>(null)
 
   // Ref to track all created blob URLs for cleanup
   const blobUrlsRef = useRef<Set<string>>(new Set())
 
-  // Simple combined images - existing + pending files  
+  // Simple combined images - existing + pending files
   const allImages = (() => {
     const existingImages = productImages.sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0))
 
@@ -136,22 +149,22 @@ export default function ProductForm({
         type: 'image' as const,
         productId: product.id,
         primary: item.primary,
-        isPending: true
+        isPending: true,
       }
     })
 
     const result = [...existingImages, ...pendingAsImages]
     return result
-  })()  // Get the first image to display as main (either primary or first)
+  })() // Get the first image to display as main (either primary or first)
   const getDisplayMainImage = () => {
-    const primaryImage = allImages.find(img => img.primary)
+    const primaryImage = allImages.find((img) => img.primary)
     return primaryImage || allImages[0]
   }
 
   // Get images for additional slots (all except the one shown as main)
   const getDisplayAdditionalImages = () => {
     const mainImg = getDisplayMainImage()
-    const additionalImages = allImages.filter(img => img.id !== mainImg?.id)
+    const additionalImages = allImages.filter((img) => img.id !== mainImg?.id)
     return additionalImages
   }
 
@@ -159,7 +172,7 @@ export default function ProductForm({
   useEffect(() => {
     return () => {
       // Cleanup all tracked blob URLs
-      blobUrlsRef.current.forEach(url => {
+      blobUrlsRef.current.forEach((url) => {
         URL.revokeObjectURL(url)
       })
       blobUrlsRef.current.clear()
@@ -173,7 +186,7 @@ export default function ProductForm({
     // Only clear if the product ID actually changed
     if (product.id !== previousProductId.current) {
       // Clean up existing blob URLs before clearing
-      pendingImageFiles.forEach(item => {
+      pendingImageFiles.forEach((item) => {
         if (item.blobUrl) {
           URL.revokeObjectURL(item.blobUrl)
           blobUrlsRef.current.delete(item.blobUrl)
@@ -220,7 +233,9 @@ export default function ProductForm({
 
   const navigate = useNavigate()
   const submit = useSubmit()
-  const actionData = useActionData() as { error?: string; notification?: { message: string; status: string } } | undefined
+  const actionData = useActionData() as
+    | { error?: string; notification?: { message: string; status: string } }
+    | undefined
 
   // Handle server-side errors
   useEffect(() => {
@@ -233,8 +248,12 @@ export default function ProductForm({
       })
     }
     if (actionData?.notification) {
-      const color = actionData.notification.status === 'Success' ? 'green' :
-        actionData.notification.status === 'warning' ? 'yellow' : 'red'
+      const color =
+        actionData.notification.status === 'Success'
+          ? 'green'
+          : actionData.notification.status === 'warning'
+            ? 'yellow'
+            : 'red'
 
       notifications.show({
         title: actionData.notification.status === 'Success' ? 'Success' : 'Error',
@@ -258,50 +277,50 @@ export default function ProductForm({
     const formData = new FormData()
 
     // Add basic form fields
-    if (values.id) formData.append("id", values.id)
-    formData.append("name", values.name)
-    formData.append("description", values.description || "")
-    formData.append("barcode", values.barcode)
-    formData.append("unit", values.unit)
-    formData.append("categoryId", values.categoryId)
-    formData.append("status", values.status || "")
-    formData.append("agencyId", values.agencyId)
-    formData.append("siteId", values.siteId)
+    if (values.id) formData.append('id', values.id)
+    formData.append('name', values.name)
+    formData.append('description', values.description || '')
+    formData.append('barcode', values.barcode)
+    formData.append('unit', values.unit)
+    formData.append('categoryId', values.categoryId)
+    formData.append('status', values.status || '')
+    formData.append('agencyId', values.agencyId)
+    formData.append('siteId', values.siteId)
 
     // Add numeric fields as strings
-    formData.append("costPrice", String(values.costPrice))
-    formData.append("sellingPrice", String(values.sellingPrice))
-    formData.append("reorderPoint", String(values.reorderPoint))
-    formData.append("safetyStockLevel", String(values.safetyStockLevel))
-    formData.append("openingStock", String(values.openingStock))
-    formData.append("openingValue", String(values.openingValue))
+    formData.append('costPrice', String(values.costPrice))
+    formData.append('sellingPrice', String(values.sellingPrice))
+    formData.append('reorderPoint', String(values.reorderPoint))
+    formData.append('safetyStockLevel', String(values.safetyStockLevel))
+    formData.append('openingStock', String(values.openingStock))
+    formData.append('openingValue', String(values.openingValue))
 
     // Add image data - send complete images array
-    formData.append("imagesToDelete", JSON.stringify(imagesToDelete))
+    formData.append('imagesToDelete', JSON.stringify(imagesToDelete))
 
     // Create complete images array combining existing + new
     const completeImages = [
       // Existing images (not deleted)
-      ...productImages.filter(img => !imagesToDelete.includes(img.id!)),
+      ...productImages.filter((img) => !imagesToDelete.includes(img.id!)),
       // New images with primary status (these will be uploaded by server)
-      ...pendingImageFiles.map(item => ({
+      ...pendingImageFiles.map((item) => ({
         name: item.file.name,
         path: '', // Will be set by server after upload
         type: 'image',
-        primary: item.primary
-      }))
+        primary: item.primary,
+      })),
     ]
 
-    formData.append("images", JSON.stringify(completeImages))
+    formData.append('images', JSON.stringify(completeImages))
 
     // Add pending image files for upload
     pendingImageFiles.forEach((item) => {
-      formData.append("imageFiles", item.file)
+      formData.append('imageFiles', item.file)
     })
 
     // Use useSubmit with explicit encType for file uploads
     try {
-      submit(formData, { method: "post", encType: "multipart/form-data" })
+      submit(formData, { method: 'post', encType: 'multipart/form-data' })
     } catch (error) {
       notifications.show({
         title: 'Submission Error',
@@ -342,7 +361,8 @@ export default function ProductForm({
     const errors: string[] = []
 
     files.forEach((file) => {
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+      if (file.size > 2 * 1024 * 1024) {
+        // 2MB limit
         errors.push(`${file.name}: File size exceeds 2MB limit`)
         return
       }
@@ -376,22 +396,26 @@ export default function ProductForm({
     const newFileItems = validFiles.map((file, index) => ({
       file,
       id: `pending-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${index}`,
-      primary: allImages.length === 0 && !productImages.some(img => img.primary) && index === 0
+      primary: allImages.length === 0 && !productImages.some((img) => img.primary) && index === 0,
     }))
 
     // If this is the first image and no existing primary, make it primary
-    if (newFileItems.length > 0 && allImages.length === 0 && !productImages.some(img => img.primary)) {
+    if (
+      newFileItems.length > 0 &&
+      allImages.length === 0 &&
+      !productImages.some((img) => img.primary)
+    ) {
       newFileItems[0].primary = true
     }
 
-    setPendingImageFiles(prev => [...prev, ...newFileItems])
+    setPendingImageFiles((prev) => [...prev, ...newFileItems])
   }
 
   // Handle dropzone rejections (file too large, wrong type, etc.)
   const handleImageReject = (rejectedFiles: any[]) => {
     const errors: string[] = []
 
-    rejectedFiles.forEach(rejection => {
+    rejectedFiles.forEach((rejection) => {
       const file = rejection.file
       const errorCodes = rejection.errors || []
 
@@ -424,13 +448,13 @@ export default function ProductForm({
 
   const handleImageDelete = (imageId: string) => {
     // Get image name for confirmation dialog
-    let imageName = '';
+    let imageName = ''
     if (imageId.startsWith('pending-')) {
-      const itemToRemove = pendingImageFiles.find(item => item.id === imageId)
-      imageName = itemToRemove?.file.name || 'this image';
+      const itemToRemove = pendingImageFiles.find((item) => item.id === imageId)
+      imageName = itemToRemove?.file.name || 'this image'
     } else {
-      const existingImage = productImages.find(img => img.id === imageId)
-      imageName = existingImage?.name || 'this image';
+      const existingImage = productImages.find((img) => img.id === imageId)
+      imageName = existingImage?.name || 'this image'
     }
 
     // Set the image to delete and open confirmation modal
@@ -446,21 +470,21 @@ export default function ProductForm({
     // Proceed with deletion
     if (imageId.startsWith('pending-')) {
       // Find the item to remove and clean up its blob URL
-      const itemToRemove = pendingImageFiles.find(item => item.id === imageId)
+      const itemToRemove = pendingImageFiles.find((item) => item.id === imageId)
       if (itemToRemove?.blobUrl) {
         URL.revokeObjectURL(itemToRemove.blobUrl)
         blobUrlsRef.current.delete(itemToRemove.blobUrl)
       }
 
       // Remove from pending images
-      setPendingImageFiles(prev => prev.filter(item => item.id !== imageId))
+      setPendingImageFiles((prev) => prev.filter((item) => item.id !== imageId))
     } else {
       // It's an existing image - mark for deletion
-      setProductImages(prev => prev.filter(img => img.id !== imageId))
+      setProductImages((prev) => prev.filter((img) => img.id !== imageId))
 
       // Add to deleted images if it's an existing image from the original product
-      if (product.images?.some(img => img.id === imageId)) {
-        setImagesToDelete(prev => [...prev, imageId])
+      if (product.images?.some((img) => img.id === imageId)) {
+        setImagesToDelete((prev) => [...prev, imageId])
       }
     }
 
@@ -472,20 +496,24 @@ export default function ProductForm({
   const handleSetPrimary = (imageId: string) => {
     if (imageId.startsWith('pending-')) {
       // Update pending images primary status
-      setPendingImageFiles(prev => prev.map(item => ({
-        ...item,
-        primary: item.id === imageId
-      })))
+      setPendingImageFiles((prev) =>
+        prev.map((item) => ({
+          ...item,
+          primary: item.id === imageId,
+        }))
+      )
       // Remove primary from existing images
-      setProductImages(prev => prev.map(img => ({ ...img, primary: false })))
+      setProductImages((prev) => prev.map((img) => ({ ...img, primary: false })))
     } else {
       // Update existing images primary status
-      setProductImages(prev => prev.map(img => ({
-        ...img,
-        primary: img.id === imageId
-      })))
+      setProductImages((prev) =>
+        prev.map((img) => ({
+          ...img,
+          primary: img.id === imageId,
+        }))
+      )
       // Remove primary from pending images
-      setPendingImageFiles(prev => prev.map(item => ({ ...item, primary: false })))
+      setPendingImageFiles((prev) => prev.map((item) => ({ ...item, primary: false })))
     }
   }
 
@@ -509,9 +537,7 @@ export default function ProductForm({
         }}
       >
         <Table.Td>
-          <Text size="sm">
-            {dayjs(salesOrder.orderDate).format("DD-MM-YYYY")}
-          </Text>
+          <Text size="sm">{dayjs(salesOrder.orderDate).format('DD-MM-YYYY')}</Text>
         </Table.Td>
         <Table.Td>{salesOrder.salesOrderReference}</Table.Td>
         <Table.Td>{`${salesOrder.customer?.firstName} ${salesOrder.customer?.lastName}`}</Table.Td>
@@ -529,89 +555,80 @@ export default function ProductForm({
     )
   })
 
-  const purchaseOrdeRows = purchaseOrders.map(
-    (purchaseOrder: IPurchaseOrder) => {
-      const status = getPurchaseOrderStatusLabel(purchaseOrder?.status ?? PURCHASE_ORDER_STATUSES.PENDING)
+  const purchaseOrdeRows = purchaseOrders.map((purchaseOrder: IPurchaseOrder) => {
+    const status = getPurchaseOrderStatusLabel(
+      purchaseOrder?.status ?? PURCHASE_ORDER_STATUSES.PENDING
+    )
 
-      const totalAmount = purchaseOrder.purchaseOrderItems?.reduce(
-        (acc, item) => acc + (item.amount || 0),
-        0
-      )
+    const totalAmount = purchaseOrder.purchaseOrderItems?.reduce(
+      (acc, item) => acc + (item.amount || 0),
+      0
+    )
 
-      return (
-        <Table.Tr
-          key={purchaseOrder.id}
-          onClick={() => {
-            navigate(`/purchase-orders/${purchaseOrder.id}/edit`)
-          }}
-        >
-          <Table.Td>
-            <Text size="sm">
-              {dayjs(purchaseOrder.orderDate).format("DD-MM-YYYY")}
-            </Text>
-          </Table.Td>
-          <Table.Td>{purchaseOrder.purchaseOrderReference}</Table.Td>
-          <Table.Td>{purchaseOrder.supplier?.name}</Table.Td>
+    return (
+      <Table.Tr
+        key={purchaseOrder.id}
+        onClick={() => {
+          navigate(`/purchase-orders/${purchaseOrder.id}/edit`)
+        }}
+      >
+        <Table.Td>
+          <Text size="sm">{dayjs(purchaseOrder.orderDate).format('DD-MM-YYYY')}</Text>
+        </Table.Td>
+        <Table.Td>{purchaseOrder.purchaseOrderReference}</Table.Td>
+        <Table.Td>{purchaseOrder.supplier?.name}</Table.Td>
 
-          <Table.Td>
-            <Badge color={status.color} variant="light">
-              {status.label}
-            </Badge>
-          </Table.Td>
+        <Table.Td>
+          <Badge color={status.color} variant="light">
+            {status.label}
+          </Badge>
+        </Table.Td>
 
-          <Table.Td>
-            <Text size="sm">{`${currency?.symbol}${totalAmount}`}</Text>
-          </Table.Td>
-        </Table.Tr>
-      )
-    }
-  )
+        <Table.Td>
+          <Text size="sm">{`${currency?.symbol}${totalAmount}`}</Text>
+        </Table.Td>
+      </Table.Tr>
+    )
+  })
 
-  const stockAdjusmentsRows = stockAdjustments.map(
-    (stockAdjustment: IStockAdjustment) => {
-      return (
-        <Table.Tr
-          key={stockAdjustment.id}
-          onClick={() => {
-            navigate(`/adjustments/${stockAdjustment.id}/edit`)
-          }}
-        >
-          <Table.Td>
-            <Text size="sm">
-              {dayjs(stockAdjustment.date).format("DD-MM-YYYY")}
-            </Text>
-          </Table.Td>
-          <Table.Td>{stockAdjustment.reference}</Table.Td>
-          <Table.Td>{stockAdjustment.reason}</Table.Td>
+  const stockAdjusmentsRows = stockAdjustments.map((stockAdjustment: IStockAdjustment) => {
+    return (
+      <Table.Tr
+        key={stockAdjustment.id}
+        onClick={() => {
+          navigate(`/adjustments/${stockAdjustment.id}/edit`)
+        }}
+      >
+        <Table.Td>
+          <Text size="sm">{dayjs(stockAdjustment.date).format('DD-MM-YYYY')}</Text>
+        </Table.Td>
+        <Table.Td>{stockAdjustment.reference}</Table.Td>
+        <Table.Td>{stockAdjustment.reason}</Table.Td>
 
-          <Table.Td>
-            <Text size="sm">{stockAdjustment.site?.name}</Text>
-          </Table.Td>
-        </Table.Tr>
-      )
-    }
-  )
+        <Table.Td>
+          <Text size="sm">{stockAdjustment.site?.name}</Text>
+        </Table.Td>
+      </Table.Tr>
+    )
+  })
 
   const accountingStockOnHand = product.accountingStockOnHand || 0
   const accountingCommittedStock =
     product.salesOrderItems.reduce((acc, item) => acc + item.quantity, 0) || 0
 
-  const accountingAvailableStockForSale =
-    accountingStockOnHand - accountingCommittedStock
+  const accountingAvailableStockForSale = accountingStockOnHand - accountingCommittedStock
 
   const physicalStockOnHand = product.physicalStockOnHand || 0
   const physicalCommittedStock = 0
   const physicalAvailableStockForSale = 0
 
   const quantityToBeInvoiced = product.salesOrderItems.reduce(
-    (acc, item) =>
-      acc + item.salesOrder.invoices.length === 0 ? item.quantity : 0,
+    (acc, item) => (acc + item.salesOrder.invoices.length === 0 ? item.quantity : 0),
     0
   )
 
   const quantityToBilled = product.purchaseOrderItems.reduce(
-    (acc, item) =>
-      acc + item.purchaseOrder.bills.length === 0 ? item.quantity : 0,
+    (acc, item) => (acc + item.purchaseOrder.bills.length === 0 ? item.quantity : 0),
     0
   )
 
@@ -624,9 +641,7 @@ export default function ProductForm({
           (acc, item) =>
             acc +
             item.purchaseReceiveItems
-              .filter(
-                (purchaseReceive) => purchaseReceive.productId === product.id
-              )
+              .filter((purchaseReceive) => purchaseReceive.productId === product.id)
               .reduce((acc, item) => acc + item.receivedQuantity, 0),
           0
         ),
@@ -637,9 +652,7 @@ export default function ProductForm({
     <>
       <Grid>
         <Grid.Col>
-          <Title backTo={"/products"}>
-            {product.id ? t('editProduct') : t('addProduct')}
-          </Title>
+          <Title backTo={'/products'}>{product.id ? t('editProduct') : t('addProduct')}</Title>
 
           <Form onSubmit={form.onSubmit(handleSubmit)} showSubmitButton={false}>
             <Grid.Col>
@@ -648,9 +661,7 @@ export default function ProductForm({
                   <Tabs.List mb={15}>
                     <Tabs.Tab value="details">{t('details')}</Tabs.Tab>
                     <Tabs.Tab value="stockMovements">{t('stockMovements')}</Tabs.Tab>
-                    <Tabs.Tab value="inventoryAdjustments">
-                      {t('inventoryAdjustments')}
-                    </Tabs.Tab>
+                    <Tabs.Tab value="inventoryAdjustments">{t('inventoryAdjustments')}</Tabs.Tab>
                     <Tabs.Tab value="salesOrders">{t('salesOrders')}</Tabs.Tab>
                     <Tabs.Tab value="purchaseOrders">{t('purchaseOrders')}</Tabs.Tab>
                   </Tabs.List>
@@ -663,8 +674,8 @@ export default function ProductForm({
                         withAsterisk
                         label={t('name')}
                         name="name"
-                        {...form.getInputProps("name")}
-                        error={form.getInputProps("name").error || errors?.name}
+                        {...form.getInputProps('name')}
+                        error={form.getInputProps('name').error || errors?.name}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -672,17 +683,13 @@ export default function ProductForm({
                         withAsterisk
                         label={t('barcode')}
                         name="barcode"
-                        {...form.getInputProps("barcode")}
-                        error={
-                          form.getInputProps("barcode").error || errors?.barcode
-                        }
+                        {...form.getInputProps('barcode')}
+                        error={form.getInputProps('barcode').error || errors?.barcode}
                         rightSection={
                           <Tooltip label={t('generateBarcode')}>
                             <ActionIcon
                               variant="subtle"
-                              onClick={() =>
-                                form.setFieldValue("barcode", createEan13())
-                              }
+                              onClick={() => form.setFieldValue('barcode', createEan13())}
                             >
                               <IconBarcode
                                 style={{ width: rem(18), height: rem(18) }}
@@ -711,12 +718,12 @@ export default function ProductForm({
                       sites={sites}
                       siteId={form.values.siteId}
                       onChange={({ agencyId, siteId }) => {
-                        form.setFieldValue("agencyId", agencyId)
-                        form.setFieldValue("siteId", siteId)
+                        form.setFieldValue('agencyId', agencyId)
+                        form.setFieldValue('siteId', siteId)
                       }}
                       error={{
-                        siteId: form.getInputProps("siteId").error,
-                        agencyId: form.getInputProps("agencyId").error,
+                        siteId: form.getInputProps('siteId').error,
+                        agencyId: form.getInputProps('agencyId').error,
                       }}
                     />
 
@@ -739,7 +746,7 @@ export default function ProductForm({
                           { value: PRODUCT_UNITS.LITER, label: 'l' },
                           { value: PRODUCT_UNITS.METER, label: 'm' },
                         ]}
-                        {...form.getInputProps("unit")}
+                        {...form.getInputProps('unit')}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -750,11 +757,11 @@ export default function ProductForm({
                         withAsterisk
                         data={categories.map((category) => {
                           return {
-                            value: category.id || "",
+                            value: category.id || '',
                             label: category.name,
                           }
                         })}
-                        {...form.getInputProps("categoryId")}
+                        {...form.getInputProps('categoryId')}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -775,7 +782,7 @@ export default function ProductForm({
                           { value: PRODUCT_STATUSES.DAMAGED, label: 'Damaged' },
                           { value: PRODUCT_STATUSES.CRITICAL, label: 'Critical' },
                         ]}
-                        {...form.getInputProps("status")}
+                        {...form.getInputProps('status')}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -784,7 +791,7 @@ export default function ProductForm({
                         label={t('openingStock')}
                         name="openingStock"
                         disabled={!!product.id}
-                        {...form.getInputProps("openingStock")}
+                        {...form.getInputProps('openingStock')}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -793,7 +800,7 @@ export default function ProductForm({
                         label={t('openingValue')}
                         name="openingValue"
                         disabled={!!product.id}
-                        {...form.getInputProps("openingValue")}
+                        {...form.getInputProps('openingValue')}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -801,7 +808,7 @@ export default function ProductForm({
                         withAsterisk
                         label={t('reorderPoint')}
                         name="reorderPoint"
-                        {...form.getInputProps("reorderPoint")}
+                        {...form.getInputProps('reorderPoint')}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -809,7 +816,7 @@ export default function ProductForm({
                         withAsterisk
                         label={t('safetyStockLevel')}
                         name="safetyStockLevel"
-                        {...form.getInputProps("safetyStockLevel")}
+                        {...form.getInputProps('safetyStockLevel')}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -819,7 +826,7 @@ export default function ProductForm({
                         withAsterisk
                         label={t('costPrice')}
                         name="costPrice"
-                        {...form.getInputProps("costPrice")}
+                        {...form.getInputProps('costPrice')}
                       />
                     </Grid.Col>
                     <Grid.Col span={6}>
@@ -829,7 +836,7 @@ export default function ProductForm({
                         withAsterisk
                         label={t('sellingPrice')}
                         name="sellingPrice"
-                        {...form.getInputProps("sellingPrice")}
+                        {...form.getInputProps('sellingPrice')}
                       />
                     </Grid.Col>
 
@@ -861,7 +868,7 @@ export default function ProductForm({
                         name="description"
                         autosize
                         minRows={4}
-                        {...form.getInputProps("description")}
+                        {...form.getInputProps('description')}
                       />
                     </Grid.Col>
 
@@ -887,7 +894,7 @@ export default function ProductForm({
                                 w={400}
                                 withArrow
                                 classNames={{
-                                  tooltip: classes.imageTooltip
+                                  tooltip: classes.imageTooltip,
                                 }}
                               >
                                 <ActionIcon variant="subtle" size="sm" c="dimmed">
@@ -923,7 +930,11 @@ export default function ProductForm({
                                   <div className={classes.imageContainer} key={mainImage.id}>
                                     <Image
                                       key={`main-image-${mainImage.id}`}
-                                      src={(mainImage as any).isPending ? mainImage.path : generateProductImageUrl(mainImage.path, 'gallery')}
+                                      src={
+                                        (mainImage as any).isPending
+                                          ? mainImage.path
+                                          : generateProductImageUrl(mainImage.path, 'gallery')
+                                      }
                                       alt={mainImage.name}
                                       className={classes.productImage}
                                       onError={(e) => {
@@ -946,13 +957,15 @@ export default function ProductForm({
                                           position: 'absolute',
                                           top: 8,
                                           right: 8,
-                                          zIndex: 20
+                                          zIndex: 20,
                                         }}
                                       >
                                         <IconTrash size={14} />
                                       </ActionIcon>
                                     </div>
-                                    {(mainImage.primary || (!productImages.some(img => img.primary) && allImages.length > 0)) && (
+                                    {(mainImage.primary ||
+                                      (!productImages.some((img) => img.primary) &&
+                                        allImages.length > 0)) && (
                                       <Badge
                                         variant="filled"
                                         color="blue"
@@ -972,7 +985,11 @@ export default function ProductForm({
                                     maxFiles={Math.max(1, 5 - allImages.length)}
                                     className={classes.dropzoneMain}
                                   >
-                                    <Stack align="center" gap="sm" className={classes.dropzoneContent}>
+                                    <Stack
+                                      align="center"
+                                      gap="sm"
+                                      className={classes.dropzoneContent}
+                                    >
                                       <div className={classes.dropzoneIcon}>
                                         <Dropzone.Accept>
                                           <IconUpload size={32} stroke={1.5} />
@@ -1007,9 +1024,14 @@ export default function ProductForm({
                                 const image = additionalImages[index]
 
                                 return (
-                                  <Grid.Col key={`additional-slot-${index}`} span={{ base: 4, sm: 6, md: 6 }}>
+                                  <Grid.Col
+                                    key={`additional-slot-${index}`}
+                                    span={{ base: 4, sm: 6, md: 6 }}
+                                  >
                                     <Stack gap="xs">
-                                      <div className={`${classes.imageSlot} ${classes.additionalImageSlot}`}>
+                                      <div
+                                        className={`${classes.imageSlot} ${classes.additionalImageSlot}`}
+                                      >
                                         {image ? (
                                           <div
                                             key={`additional-${image.id}`}
@@ -1018,7 +1040,11 @@ export default function ProductForm({
                                           >
                                             <Image
                                               key={`additional-image-${image.id}`}
-                                              src={(image as any).isPending ? image.path : generateProductImageUrl(image.path, 'thumbnail')}
+                                              src={
+                                                (image as any).isPending
+                                                  ? image.path
+                                                  : generateProductImageUrl(image.path, 'thumbnail')
+                                              }
                                               alt={image.name}
                                               className={classes.productImage}
                                               onError={(e) => {
@@ -1050,7 +1076,7 @@ export default function ProductForm({
                                                 position: 'absolute',
                                                 top: 8,
                                                 left: 8,
-                                                zIndex: 20
+                                                zIndex: 20,
                                               }}
                                             >
                                               <IconStar size={14} />
@@ -1070,7 +1096,7 @@ export default function ProductForm({
                                                 position: 'absolute',
                                                 top: 8,
                                                 right: 8,
-                                                zIndex: 20
+                                                zIndex: 20,
                                               }}
                                             >
                                               <IconTrash size={12} />
@@ -1092,7 +1118,12 @@ export default function ProductForm({
                                             onDrop={handleImageUpload}
                                             onReject={handleImageReject}
                                             maxSize={2 * 1024 * 1024}
-                                            accept={['image/jpeg', 'image/png', 'image/webp', 'image/gif']}
+                                            accept={[
+                                              'image/jpeg',
+                                              'image/png',
+                                              'image/webp',
+                                              'image/gif',
+                                            ]}
                                             maxFiles={Math.max(1, 5 - allImages.length)}
                                             className={classes.dropzoneAdditional}
                                             disabled={allImages.length >= 5}
@@ -1105,7 +1136,15 @@ export default function ProductForm({
                                                 <IconX size={16} stroke={1.5} />
                                               </Dropzone.Reject>
                                               <Dropzone.Idle>
-                                                <IconPhoto size={16} stroke={1.5} color={allImages.length === 0 ? "var(--mantine-color-gray-5)" : "currentColor"} />
+                                                <IconPhoto
+                                                  size={16}
+                                                  stroke={1.5}
+                                                  color={
+                                                    allImages.length === 0
+                                                      ? 'var(--mantine-color-gray-5)'
+                                                      : 'currentColor'
+                                                  }
+                                                />
                                               </Dropzone.Idle>
                                             </div>
                                           </Dropzone>
@@ -1126,19 +1165,9 @@ export default function ProductForm({
                 <Tabs.Panel value="stockMovements">
                   <Grid>
                     <Grid.Col>
-                      <Container
-                        mt="md"
-                        size="responsive"
-                        className={classes.container}
-                        p={15}
-                      >
+                      <Container mt="md" size="responsive" className={classes.container} p={15}>
                         <Stack gap={0} w="100%">
-                          <MantineTitle
-                            order={5}
-                            mb={10}
-                            pb={10}
-                            className={classes.title}
-                          >
+                          <MantineTitle order={5} mb={10} pb={10} className={classes.title}>
                             {t('overview')}
                           </MantineTitle>
 
@@ -1180,21 +1209,11 @@ export default function ProductForm({
                     </Grid.Col>
 
                     <Grid.Col>
-                      <Container
-                        mt="md"
-                        size="responsive"
-                        className={classes.container}
-                        p={15}
-                      >
+                      <Container mt="md" size="responsive" className={classes.container} p={15}>
                         <Stack gap={0} w="100%">
                           <Group justify="space-between">
                             <Stack gap={5} w="45%">
-                              <MantineTitle
-                                order={5}
-                                mb={10}
-                                pb={10}
-                                className={classes.title}
-                              >
+                              <MantineTitle order={5} mb={10} pb={10} className={classes.title}>
                                 {t('physicalStock')}
                               </MantineTitle>
                               <Group gap={10} justify="space-between">
@@ -1214,12 +1233,7 @@ export default function ProductForm({
                             <Divider orientation="vertical" />
 
                             <Stack gap={5} w="45%">
-                              <MantineTitle
-                                order={5}
-                                mb={10}
-                                pb={10}
-                                className={classes.title}
-                              >
+                              <MantineTitle order={5} mb={10} pb={10} className={classes.title}>
                                 {t('accountingStock')}
                               </MantineTitle>
                               <Group gap={10} justify="space-between">
@@ -1242,13 +1256,7 @@ export default function ProductForm({
                   </Grid>
                 </Tabs.Panel>
                 <Tabs.Panel value="inventoryAdjustments">
-                  <Table
-                    verticalSpacing="xs"
-                    highlightOnHover
-                    withTableBorder
-                    striped
-                    mt={35}
-                  >
+                  <Table verticalSpacing="xs" highlightOnHover withTableBorder striped mt={35}>
                     <Table.Thead fz={12}>
                       <Table.Tr>
                         <Table.Th>{t('dateHeader')}</Table.Th>
@@ -1273,13 +1281,7 @@ export default function ProductForm({
                   </Table>
                 </Tabs.Panel>
                 <Tabs.Panel value="salesOrders">
-                  <Table
-                    verticalSpacing="xs"
-                    highlightOnHover
-                    withTableBorder
-                    striped
-                    mt={35}
-                  >
+                  <Table verticalSpacing="xs" highlightOnHover withTableBorder striped mt={35}>
                     <Table.Thead fz={12}>
                       <Table.Tr>
                         <Table.Th>{t('dateHeader')}</Table.Th>
@@ -1305,13 +1307,7 @@ export default function ProductForm({
                   </Table>
                 </Tabs.Panel>
                 <Tabs.Panel value="purchaseOrders">
-                  <Table
-                    verticalSpacing="xs"
-                    highlightOnHover
-                    withTableBorder
-                    striped
-                    mt={35}
-                  >
+                  <Table verticalSpacing="xs" highlightOnHover withTableBorder striped mt={35}>
                     <Table.Thead fz={12}>
                       <Table.Tr>
                         <Table.Th>{t('dateHeader')}</Table.Th>

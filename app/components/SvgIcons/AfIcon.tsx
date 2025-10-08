@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface AfIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface AfIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function AfIcon({ size = 20, style, ...others }: AfIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#d80027"
-          d="M144.7 0h222.6l37 257.7-37 254.3H144.7l-42.4-255.2z"
-        />
+        <path fill="#d80027" d="M144.7 0h222.6l37 257.7-37 254.3H144.7l-42.4-255.2z" />
         <path fill="#496e2d" d="M367.3 0H512v512H367.3z" />
         <path fill="#333" d="M0 0h144.7v512H0z" />
         <g fill="#ffda44">

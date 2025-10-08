@@ -15,9 +15,10 @@
 .container {
   padding: 0;
   border-radius: var(--mantine-radius-md);
-  background-color: light-dark(var(--mantine-color-white),
-      var(--mantine-color-dark-7));
-  transition: box-shadow 150ms ease, transform 100ms ease;
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  transition:
+    box-shadow 150ms ease,
+    transform 100ms ease;
   /* &:hover {
     background-color: var(--mantine-color-gray-0);
     cursor: pointer;
@@ -35,22 +36,21 @@
 }
 
 .root {
-  background-color: light-dark(var(--mantine-color-white),
-      var(--mantine-color-dark-7));
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
 }
 
 .panel {
-  background-color: light-dark(var(--mantine-color-white),
-      var(--mantine-color-dark-7));
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
 }
 
 .item {
-  background-color: light-dark(var(--mantine-color-white),
-      var(--mantine-color-dark-7));
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
 }
 
 .title {
-  font-family: Greycliff CF, var(--mantine-font-family);
+  font-family:
+    Greycliff CF,
+    var(--mantine-font-family);
   font-weight: 700;
   border-bottom: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   padding-bottom: 15px;

@@ -1,1 +1,1 @@
-export { default } from './WorkflowTemplates';
+export { default } from './WorkflowTemplates'

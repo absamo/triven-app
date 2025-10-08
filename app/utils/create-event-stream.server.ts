@@ -1,15 +1,15 @@
-import { eventStream } from "remix-utils/sse/server"
-import { emitter } from "./emitter.server"
+import { eventStream } from 'remix-utils/sse/server'
+import { emitter } from './emitter.server'
 
 export function createEventStream(request: Request, eventName: string) {
   return eventStream(request.signal, (send) => {
     // Send initial connection confirmation
     send({
-      event: "connected",
+      event: 'connected',
       data: JSON.stringify({
-        type: "connected",
+        type: 'connected',
         timestamp: Date.now(),
-        eventName
+        eventName,
       }),
     })
 
@@ -19,7 +19,7 @@ export function createEventStream(request: Request, eventName: string) {
         data: JSON.stringify({
           type: eventName,
           timestamp: Date.now(),
-          data: data || {}
+          data: data || {},
         }),
       })
     }

@@ -1,2 +1,2 @@
-import SalesOrders from "./SalesOrders"
+import SalesOrders from './SalesOrders'
 export default SalesOrders

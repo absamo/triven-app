@@ -1,19 +1,16 @@
-import type { PurchaseOrderStatus } from "@prisma/client"
-import { BILL_STATUSES, PURCHASE_ORDER_STATUSES } from "~/app/common/constants"
-import { type IProduct } from "~/app/common/validations/productSchema"
-import { type IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
-import { type IPurchaseReceive } from "~/app/common/validations/purchaseReceiveSchema"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
+import type { PurchaseOrderStatus } from '@prisma/client'
+import { BILL_STATUSES, PURCHASE_ORDER_STATUSES } from '~/app/common/constants'
+import { type IProduct } from '~/app/common/validations/productSchema'
+import { type IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import { type IPurchaseReceive } from '~/app/common/validations/purchaseReceiveSchema'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 export async function getPurchaseOrders(
   request: Request,
-  {
-    billId,
-    purchaseOrderId,
-  }: { billId?: string; purchaseOrderId?: string } = {}
+  { billId, purchaseOrderId }: { billId?: string; purchaseOrderId?: string } = {}
 ) {
-  const user = await requireBetterAuthUser(request, ["read:purchaseOrders"])
+  const user = await requireBetterAuthUser(request, ['read:purchaseOrders'])
 
   const purchases = await prisma.purchaseOrder.findMany({
     where: {
@@ -30,7 +27,7 @@ export async function getPurchaseOrders(
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -39,7 +36,7 @@ export async function getPurchaseOrders(
 }
 
 export async function getPurchaseOrdersWithoutCancelledBills(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:purchaseOrders"])
+  const user = await requireBetterAuthUser(request, ['read:purchaseOrders'])
 
   const purchaseOrders = await prisma.purchaseOrder.findMany({
     where: {
@@ -64,7 +61,7 @@ export async function getPurchaseOrdersWithoutCancelledBills(request: Request) {
 
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -86,9 +83,9 @@ export async function getFilteredPurchaseOrders(
     purchaseOrders: string[]
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:purchaseOrders"])
+  const user = await requireBetterAuthUser(request, ['read:purchaseOrders'])
 
-  const currentSearch = !!search || search === ""
+  const currentSearch = !!search || search === ''
 
   return (
     (await prisma.purchaseOrder.findMany({
@@ -96,46 +93,46 @@ export async function getFilteredPurchaseOrders(
         companyId: user.companyId,
         OR: currentSearch
           ? [
-            {
-              purchaseOrderReference: {
-                contains: search,
-                mode: "insensitive",
+              {
+                purchaseOrderReference: {
+                  contains: search,
+                  mode: 'insensitive',
+                },
               },
-            },
-            {
-              agency: {
-                name: { contains: search, mode: "insensitive" },
+              {
+                agency: {
+                  name: { contains: search, mode: 'insensitive' },
+                },
               },
-            },
-            {
-              supplier: {
-                name: { contains: search, mode: "insensitive" },
+              {
+                supplier: {
+                  name: { contains: search, mode: 'insensitive' },
+                },
               },
-            },
-          ]
+            ]
           : undefined,
         AND: [
           {
             status:
               (statuses || []).length > 0
                 ? {
-                  in: statuses as PurchaseOrderStatus[],
-                }
+                    in: statuses as PurchaseOrderStatus[],
+                  }
                 : undefined,
           },
           {
             orderDate: date
               ? {
-                gte: date,
-              }
+                  gte: date,
+                }
               : undefined,
           },
           {
             purchaseOrderReference:
               purchaseOrders.length > 0
                 ? {
-                  in: purchaseOrders,
-                }
+                    in: purchaseOrders,
+                  }
                 : undefined,
           },
         ],
@@ -149,18 +146,15 @@ export async function getFilteredPurchaseOrders(
       },
       orderBy: [
         {
-          id: "desc",
+          id: 'desc',
         },
       ],
     })) || []
   )
 }
 
-export async function getFilteredPurchaseOrdersByStatus(
-  request: Request,
-  statuses: string[]
-) {
-  const user = await requireBetterAuthUser(request, ["read:purchaseOrders"])
+export async function getFilteredPurchaseOrdersByStatus(request: Request, statuses: string[]) {
+  const user = await requireBetterAuthUser(request, ['read:purchaseOrders'])
 
   const suppliers = await prisma.purchaseOrder.findMany({
     where: {
@@ -168,8 +162,8 @@ export async function getFilteredPurchaseOrdersByStatus(
       status:
         statuses.length > 0
           ? {
-            in: statuses as PurchaseOrderStatus[],
-          }
+              in: statuses as PurchaseOrderStatus[],
+            }
           : undefined,
     },
     include: {
@@ -181,7 +175,7 @@ export async function getFilteredPurchaseOrdersByStatus(
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -190,7 +184,7 @@ export async function getFilteredPurchaseOrdersByStatus(
 }
 
 export async function getUnreceivedPurchaseOrders(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:purchaseOrders"])
+  const user = await requireBetterAuthUser(request, ['read:purchaseOrders'])
 
   const purchases = await prisma.purchaseOrder.findMany({
     where: {
@@ -221,7 +215,7 @@ export async function getUnreceivedPurchaseOrders(request: Request) {
 
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -229,11 +223,8 @@ export async function getUnreceivedPurchaseOrders(request: Request) {
   return purchases || []
 }
 
-export async function getPurchaseOrder(
-  request: Request,
-  purchaseOrderId: IPurchaseOrder["id"]
-) {
-  const user = await requireBetterAuthUser(request, ["read:purchaseOrders"])
+export async function getPurchaseOrder(request: Request, purchaseOrderId: IPurchaseOrder['id']) {
+  const user = await requireBetterAuthUser(request, ['read:purchaseOrders'])
   const purchaseOrder = await prisma.purchaseOrder.findUnique({
     where: { id: purchaseOrderId },
     include: {
@@ -243,7 +234,7 @@ export async function getPurchaseOrder(
         include: { product: true },
         orderBy: [
           {
-            productId: "desc",
+            productId: 'desc',
           },
         ],
       },
@@ -263,11 +254,8 @@ export async function getPurchaseOrder(
   return purchaseOrder
 }
 
-export async function getPurchaseOrdersByProductId(
-  request: Request,
-  productId: IProduct["id"]
-) {
-  const user = await requireBetterAuthUser(request, ["read:purchaseOrders"])
+export async function getPurchaseOrdersByProductId(request: Request, productId: IProduct['id']) {
+  const user = await requireBetterAuthUser(request, ['read:purchaseOrders'])
 
   const purchases = await prisma.purchaseOrder.findMany({
     where: {
@@ -280,7 +268,7 @@ export async function getPurchaseOrdersByProductId(
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -288,10 +276,8 @@ export async function getPurchaseOrdersByProductId(
   return purchases || []
 }
 
-export async function getMaxPurchaseOrderNumber(
-  request: Request
-): Promise<string> {
-  const user = await requireBetterAuthUser(request, ["read:purchaseOrders"])
+export async function getMaxPurchaseOrderNumber(request: Request): Promise<string> {
+  const user = await requireBetterAuthUser(request, ['read:purchaseOrders'])
 
   const aggregatePurchaseOrderNumber = await prisma.purchaseOrder.aggregate({
     where: { companyId: user.companyId },
@@ -301,18 +287,13 @@ export async function getMaxPurchaseOrderNumber(
   })
 
   const purchaseOrderNumber =
-    parseInt(
-      aggregatePurchaseOrderNumber?._max.purchaseOrderNumber || "00000"
-    ) + 1
+    parseInt(aggregatePurchaseOrderNumber?._max.purchaseOrderNumber || '00000') + 1
 
-  return purchaseOrderNumber.toString().padStart(5, "0")
+  return purchaseOrderNumber.toString().padStart(5, '0')
 }
 
-export async function createPurchaseOrder(
-  request: Request,
-  purchaseOrder: IPurchaseOrder
-) {
-  const user = await requireBetterAuthUser(request, ["create:purchaseOrders"])
+export async function createPurchaseOrder(request: Request, purchaseOrder: IPurchaseOrder) {
+  const user = await requireBetterAuthUser(request, ['create:purchaseOrders'])
 
   const foundPurchaseOrder = await prisma.purchaseOrder.findFirst({
     where: {
@@ -324,8 +305,7 @@ export async function createPurchaseOrder(
   if (foundPurchaseOrder) {
     return {
       errors: {
-        purchaseOrderReference:
-          "A purchase order already exists with this reference",
+        purchaseOrderReference: 'A purchase order already exists with this reference',
       },
     }
   }
@@ -352,26 +332,23 @@ export async function createPurchaseOrder(
 
     return {
       notification: {
-        message: "Purchase order created successfully",
-        status: "Success",
-        redirectTo: "/purchase-orders",
+        message: 'Purchase order created successfully',
+        status: 'Success',
+        redirectTo: '/purchase-orders',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Purchase order could not be created",
-        status: "Error",
+        message: 'Purchase order could not be created',
+        status: 'Error',
       },
     }
   }
 }
 
-export async function updatePurchaseOrder(
-  request: Request,
-  purchaseOrder: IPurchaseOrder
-) {
-  const user = await requireBetterAuthUser(request, ["update:purchaseOrders"])
+export async function updatePurchaseOrder(request: Request, purchaseOrder: IPurchaseOrder) {
+  const user = await requireBetterAuthUser(request, ['update:purchaseOrders'])
 
   const foundPurchaseOrder = await prisma.purchaseOrder.findFirst({
     where: {
@@ -384,8 +361,7 @@ export async function updatePurchaseOrder(
   if (foundPurchaseOrder) {
     return {
       errors: {
-        purchaseOrderReference:
-          "A purchase order already exists with this reference",
+        purchaseOrderReference: 'A purchase order already exists with this reference',
       },
     }
   }
@@ -410,16 +386,16 @@ export async function updatePurchaseOrder(
 
     return {
       notification: {
-        message: "Purchase order updated successfully",
-        status: "Success",
-        redirectTo: "/purchase-orders",
+        message: 'Purchase order updated successfully',
+        status: 'Success',
+        redirectTo: '/purchase-orders',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Purchase order could not be updated",
-        status: "Error",
+        message: 'Purchase order could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }
@@ -431,9 +407,9 @@ export async function updatePurchaseOrderStatus(
   {
     purchaseOrderId,
     status,
-  }: { purchaseOrderId: IPurchaseOrder["id"]; status: IPurchaseOrder["status"] }
+  }: { purchaseOrderId: IPurchaseOrder['id']; status: IPurchaseOrder['status'] }
 ) {
-  const user = await requireBetterAuthUser(request, ["update:purchaseOrders"])
+  const user = await requireBetterAuthUser(request, ['update:purchaseOrders'])
 
   try {
     if (status === PURCHASE_ORDER_STATUSES.CANCELLED) {
@@ -448,8 +424,8 @@ export async function updatePurchaseOrderStatus(
         return {
           notification: {
             message:
-              "Purchase order cannot be cancelled because a purchase receive has been created on this purchase order",
-            status: "Error",
+              'Purchase order cannot be cancelled because a purchase receive has been created on this purchase order',
+            status: 'Error',
             autoClose: false,
           },
         }
@@ -469,8 +445,8 @@ export async function updatePurchaseOrderStatus(
         return {
           notification: {
             message:
-              "Purchase order cannot be cancelled because a bill has been created on this purchase order",
-            status: "Error",
+              'Purchase order cannot be cancelled because a bill has been created on this purchase order',
+            status: 'Error',
             autoClose: false,
           },
         }
@@ -486,15 +462,15 @@ export async function updatePurchaseOrderStatus(
 
     return {
       notification: {
-        message: "Purchase order status updated successfully",
-        status: "Success",
+        message: 'Purchase order status updated successfully',
+        status: 'Success',
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Purchase order status could not be updated",
-        status: "Error",
+        message: 'Purchase order status could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }
@@ -515,44 +491,44 @@ export async function getFilteredPurchaseReceives(
     date: Date | null
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:purchaseReceives"])
+  const user = await requireBetterAuthUser(request, ['read:purchaseReceives'])
 
-  const currentSearch = !!search || search === ""
+  const currentSearch = !!search || search === ''
 
   const purchaseReceives = await prisma.purchaseReceive.findMany({
     where: {
       companyId: user.companyId,
       OR: currentSearch
         ? [
-          {
-            purchaseReceiveReference: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            purchaseOrder: {
-              supplier: {
-                name: { contains: search, mode: "insensitive" },
+            {
+              purchaseReceiveReference: {
+                contains: search,
+                mode: 'insensitive',
               },
             },
-          },
-        ]
+            {
+              purchaseOrder: {
+                supplier: {
+                  name: { contains: search, mode: 'insensitive' },
+                },
+              },
+            },
+          ]
         : undefined,
       AND: [
         {
           status:
             statuses.length > 0
               ? {
-                in: statuses as PurchaseOrderStatus[],
-              }
+                  in: statuses as PurchaseOrderStatus[],
+                }
               : undefined,
         },
         {
           receivedDate: receivedDate
             ? {
-              gte: receivedDate,
-            }
+                gte: receivedDate,
+              }
             : undefined,
         },
         {
@@ -573,7 +549,7 @@ export async function getFilteredPurchaseReceives(
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -585,7 +561,7 @@ export async function getPurchaseReceives(
   request: Request,
   { purchaseOrderReference }: { purchaseOrderReference?: string } = {}
 ) {
-  const user = await requireBetterAuthUser(request, ["read:purchaseReceives"])
+  const user = await requireBetterAuthUser(request, ['read:purchaseReceives'])
 
   const purchaseReceives = await prisma.purchaseReceive.findMany({
     where: {
@@ -602,7 +578,7 @@ export async function getPurchaseReceives(
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -610,30 +586,23 @@ export async function getPurchaseReceives(
   return purchaseReceives || []
 }
 
-export async function getMaxPurchaseReceiveNumber(
-  request: Request
-): Promise<string> {
-  const user = await requireBetterAuthUser(request, ["read:purchaseReceives"])
+export async function getMaxPurchaseReceiveNumber(request: Request): Promise<string> {
+  const user = await requireBetterAuthUser(request, ['read:purchaseReceives'])
 
-  const aggregatePurchaseReceivedNumber =
-    await prisma.purchaseReceive.aggregate({
-      where: { companyId: user.companyId },
-      _max: {
-        purchaseReceiveNumber: true,
-      },
-    })
+  const aggregatePurchaseReceivedNumber = await prisma.purchaseReceive.aggregate({
+    where: { companyId: user.companyId },
+    _max: {
+      purchaseReceiveNumber: true,
+    },
+  })
 
   const purchaseReceiveNumber =
-    parseInt(
-      aggregatePurchaseReceivedNumber?._max.purchaseReceiveNumber || "00000"
-    ) + 1
+    parseInt(aggregatePurchaseReceivedNumber?._max.purchaseReceiveNumber || '00000') + 1
 
-  return purchaseReceiveNumber.toString().padStart(5, "0")
+  return purchaseReceiveNumber.toString().padStart(5, '0')
 }
 
-export async function getPurchaseReceive(
-  purchaseReceiveId: IPurchaseOrder["id"]
-) {
+export async function getPurchaseReceive(purchaseReceiveId: IPurchaseOrder['id']) {
   const purchaseReceive = await prisma.purchaseReceive.findUnique({
     where: {
       id: purchaseReceiveId,
@@ -656,11 +625,8 @@ export async function getPurchaseReceive(
   return purchaseReceive
 }
 
-export async function createPurchaseReceive(
-  request: Request,
-  purchaseReceive: IPurchaseReceive
-) {
-  const user = await requireBetterAuthUser(request, ["create:purchaseReceives"])
+export async function createPurchaseReceive(request: Request, purchaseReceive: IPurchaseReceive) {
+  const user = await requireBetterAuthUser(request, ['create:purchaseReceives'])
 
   const foundPurchaseReceive = await prisma.purchaseReceive.findFirst({
     where: {
@@ -672,8 +638,7 @@ export async function createPurchaseReceive(
   if (foundPurchaseReceive) {
     return {
       errors: {
-        purchaseReceiveReference:
-          "A purchase receive already exists with this reference",
+        purchaseReceiveReference: 'A purchase receive already exists with this reference',
       },
     }
   }
@@ -691,12 +656,9 @@ export async function createPurchaseReceive(
       where: { purchaseOrderId: purchaseReceive.purchaseOrderId },
     })
 
-    const orderedQuantity = purchaseOrderItems.reduce(
-      (acc, item) => acc + item.quantity,
-      0
-    )
+    const orderedQuantity = purchaseOrderItems.reduce((acc, item) => acc + item.quantity, 0)
 
-    let status: IPurchaseOrder["status"] = PURCHASE_ORDER_STATUSES.PENDING
+    let status: IPurchaseOrder['status'] = PURCHASE_ORDER_STATUSES.PENDING
 
     if (receivedQuantity > 0) {
       status =
@@ -734,26 +696,23 @@ export async function createPurchaseReceive(
 
     return {
       notification: {
-        message: "Purchase receive created successfully",
-        status: "Success",
-        redirectTo: "/purchase-receives",
+        message: 'Purchase receive created successfully',
+        status: 'Success',
+        redirectTo: '/purchase-receives',
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Purchase receive could not be created",
-        status: "Error",
+        message: 'Purchase receive could not be created',
+        status: 'Error',
       },
     }
   }
 }
 
-export async function updatePurchaseReceive(
-  request: Request,
-  purchaseReceive: IPurchaseReceive
-) {
-  const user = await requireBetterAuthUser(request, ["update:purchaseReceives"])
+export async function updatePurchaseReceive(request: Request, purchaseReceive: IPurchaseReceive) {
+  const user = await requireBetterAuthUser(request, ['update:purchaseReceives'])
 
   const foundPurchaseReceive = await prisma.purchaseReceive.findFirst({
     where: {
@@ -766,8 +725,7 @@ export async function updatePurchaseReceive(
   if (foundPurchaseReceive) {
     return {
       errors: {
-        purchaseReceiveReference:
-          "A purchase receive already exists with this reference",
+        purchaseReceiveReference: 'A purchase receive already exists with this reference',
       },
     }
   }
@@ -784,12 +742,9 @@ export async function updatePurchaseReceive(
       where: { purchaseOrderId: purchaseReceive.purchaseOrderId },
     })
 
-    const orderedQuantity = purchaseOrderItems.reduce(
-      (acc, item) => acc + item.quantity,
-      0
-    )
+    const orderedQuantity = purchaseOrderItems.reduce((acc, item) => acc + item.quantity, 0)
 
-    let status: IPurchaseOrder["status"] = PURCHASE_ORDER_STATUSES.PENDING
+    let status: IPurchaseOrder['status'] = PURCHASE_ORDER_STATUSES.PENDING
 
     if (receivedQuantity > 0) {
       status =
@@ -821,24 +776,22 @@ export async function updatePurchaseReceive(
       where: { id: purchaseReceive.purchaseOrderId },
       data: {
         status:
-          status === PURCHASE_ORDER_STATUSES.PENDING
-            ? PURCHASE_ORDER_STATUSES.ISSUED
-            : status,
+          status === PURCHASE_ORDER_STATUSES.PENDING ? PURCHASE_ORDER_STATUSES.ISSUED : status,
       },
     })
 
     return {
       notification: {
-        message: "Purchase receive updated successfully",
-        status: "Success",
-        redirectTo: "/purchase-receives",
+        message: 'Purchase receive updated successfully',
+        status: 'Success',
+        redirectTo: '/purchase-receives',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Purchase receive could not be updated",
-        status: "Error",
+        message: 'Purchase receive could not be updated',
+        status: 'Error',
       },
     }
   }
@@ -850,11 +803,11 @@ export async function updatePurchaseReceiveStatus(
     purchaseReceiveId,
     status,
   }: {
-    purchaseReceiveId: IPurchaseReceive["id"]
-    status: IPurchaseReceive["status"]
+    purchaseReceiveId: IPurchaseReceive['id']
+    status: IPurchaseReceive['status']
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["update:purchaseReceives"])
+  const user = await requireBetterAuthUser(request, ['update:purchaseReceives'])
 
   try {
     await prisma.purchaseReceive.update({
@@ -874,15 +827,15 @@ export async function updatePurchaseReceiveStatus(
 
     return {
       notification: {
-        message: "Purchase receive status updated successfully",
-        status: "Success",
+        message: 'Purchase receive status updated successfully',
+        status: 'Success',
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Purchase receive status could not be updated",
-        status: "Error",
+        message: 'Purchase receive status could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }

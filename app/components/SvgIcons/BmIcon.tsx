@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface BmIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface BmIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -25,26 +25,11 @@ export default function BmIcon({ size = 20, style, ...others }: BmIconProps) {
         />
         <path fill="#496e2d" d="M445.2 256.1zm-155.8 0z" />
         <path fill="#d80027" d="m267 235.5-102-102h-31.4L267 267z" />
-        <path
-          fill="#d80027"
-          d="M33.4 0v33.4H0v66.8h33.4v170.6h66.8V100.2h170.2V33.4H100.2V0z"
-        />
-        <path
-          fill="#0052b4"
-          d="M180.8 133.6H256v75.2zm-47.2 47.2v75.3l75.2-.1z"
-        />
-        <path
-          fill="#eee"
-          d="M289.4 133.6V256c0 59.6 155.8 59.6 155.8 0V133.6z"
-        />
-        <path
-          fill="#6da544"
-          d="M289.4 256c0 59.6 77.9 78 77.9 78s78-18.4 78-78h-156z"
-        />
-        <path
-          fill="#a2001d"
-          d="m367.3 207-36.2 15.6V256l36.2 22.3 36.2-22.3v-33.4z"
-        />
+        <path fill="#d80027" d="M33.4 0v33.4H0v66.8h33.4v170.6h66.8V100.2h170.2V33.4H100.2V0z" />
+        <path fill="#0052b4" d="M180.8 133.6H256v75.2zm-47.2 47.2v75.3l75.2-.1z" />
+        <path fill="#eee" d="M289.4 133.6V256c0 59.6 155.8 59.6 155.8 0V133.6z" />
+        <path fill="#6da544" d="M289.4 256c0 59.6 77.9 78 77.9 78s78-18.4 78-78h-156z" />
+        <path fill="#a2001d" d="m367.3 207-36.2 15.6V256l36.2 22.3 36.2-22.3v-33.4z" />
         <path fill="#338af3" d="M331.1 189.2h72.4v33.4H331z" />
       </g>
     </svg>

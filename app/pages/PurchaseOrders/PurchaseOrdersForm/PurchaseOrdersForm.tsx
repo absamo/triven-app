@@ -9,37 +9,34 @@ import {
   Table,
   Text,
   TextInput,
-} from "@mantine/core"
-import { DateInput } from "@mantine/dates"
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useTranslation } from "react-i18next"
-import { useSubmit } from "react-router"
+} from '@mantine/core'
+import { DateInput } from '@mantine/dates'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useTranslation } from 'react-i18next'
+import { useSubmit } from 'react-router'
 
-import { useDisclosure } from "@mantine/hooks"
-import { IconEdit, IconExclamationCircle, IconPlus, IconTrash } from "@tabler/icons-react"
-import { useEffect, useState } from "react"
-import {
-  PURCHASE_ORDER_PAYMENT_TERMS,
-  PURCHASE_ORDER_STATUSES,
-} from "~/app/common/constants"
-import { formatMoney } from "~/app/common/helpers/money"
-import { type IAgency } from "~/app/common/validations/agencySchema"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import { type IProduct } from "~/app/common/validations/productSchema"
-import { type IPurchaseOrderItem } from "~/app/common/validations/purchaseOrderItemSchema"
+import { useDisclosure } from '@mantine/hooks'
+import { IconEdit, IconExclamationCircle, IconPlus, IconTrash } from '@tabler/icons-react'
+import { useEffect, useState } from 'react'
+import { PURCHASE_ORDER_PAYMENT_TERMS, PURCHASE_ORDER_STATUSES } from '~/app/common/constants'
+import { formatMoney } from '~/app/common/helpers/money'
+import { type IAgency } from '~/app/common/validations/agencySchema'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { type IProduct } from '~/app/common/validations/productSchema'
+import { type IPurchaseOrderItem } from '~/app/common/validations/purchaseOrderItemSchema'
 import {
   purchaseOrderSchema,
   type IPurchaseOrder,
-} from "~/app/common/validations/purchaseOrderSchema"
-import type { ISite } from "~/app/common/validations/siteSchema"
-import { type ISupplier } from "~/app/common/validations/supplierSchema"
-import { Form } from "~/app/components"
-import { AgencySites } from "~/app/partials/AgencySites"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
-import { Title } from "~/app/partials/Title"
-import PurchaseOrderItemForm from "./PurchaseOrderItemForm"
-import classes from "./PurchaseOrdersForm.module.css"
+} from '~/app/common/validations/purchaseOrderSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
+import { type ISupplier } from '~/app/common/validations/supplierSchema'
+import { Form } from '~/app/components'
+import { AgencySites } from '~/app/partials/AgencySites'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
+import PurchaseOrderItemForm from './PurchaseOrderItemForm'
+import classes from './PurchaseOrdersForm.module.css'
 
 interface PurchaseOrdersFormProps {
   purchaseOrder: IPurchaseOrder
@@ -62,11 +59,12 @@ export default function PurchaseOrdersForm({
 }: PurchaseOrdersFormProps) {
   const { t } = useTranslation(['purchaseOrders', 'forms', 'common'])
   const [opened, { open, close }] = useDisclosure(false)
-  const [purchaseOrderItem, setPurchaseOrderItem] =
-    useState<IPurchaseOrderItem>({} as IPurchaseOrderItem)
+  const [purchaseOrderItem, setPurchaseOrderItem] = useState<IPurchaseOrderItem>(
+    {} as IPurchaseOrderItem
+  )
 
   // State for inline product selection form
-  const [selectedProduct, setSelectedProduct] = useState<string>("")
+  const [selectedProduct, setSelectedProduct] = useState<string>('')
   const [quantity, setQuantity] = useState<number>(1)
   const [rate, setRate] = useState<number>(0)
   const [tax, setTax] = useState<number>(0)
@@ -75,13 +73,25 @@ export default function PurchaseOrdersForm({
   const getPaymentTermLabel = (term: string) => {
     const termMap: Record<string, string> = {
       [PURCHASE_ORDER_PAYMENT_TERMS.DUEONDATE]: t('purchaseOrders:dueOnDate', 'Due on date'),
-      [PURCHASE_ORDER_PAYMENT_TERMS.PAYMENTINADVANCE]: t('purchaseOrders:paymentInAdvance', 'Payment in advance'),
+      [PURCHASE_ORDER_PAYMENT_TERMS.PAYMENTINADVANCE]: t(
+        'purchaseOrders:paymentInAdvance',
+        'Payment in advance'
+      ),
       [PURCHASE_ORDER_PAYMENT_TERMS.NET15]: t('purchaseOrders:net15', 'Net 15'),
       [PURCHASE_ORDER_PAYMENT_TERMS.NET30]: t('purchaseOrders:net30', 'Net 30'),
       [PURCHASE_ORDER_PAYMENT_TERMS.NET60]: t('purchaseOrders:net60', 'Net 60'),
-      [PURCHASE_ORDER_PAYMENT_TERMS.DUEENDOFMONTH]: t('purchaseOrders:dueEndOfMonth', 'Due end of month'),
-      [PURCHASE_ORDER_PAYMENT_TERMS.DUEENDOFNEXTMONTH]: t('purchaseOrders:dueEndOfNextMonth', 'Due end of next month'),
-      [PURCHASE_ORDER_PAYMENT_TERMS.DUEONRECEIPT]: t('purchaseOrders:dueOnReceipt', 'Due on receipt'),
+      [PURCHASE_ORDER_PAYMENT_TERMS.DUEENDOFMONTH]: t(
+        'purchaseOrders:dueEndOfMonth',
+        'Due end of month'
+      ),
+      [PURCHASE_ORDER_PAYMENT_TERMS.DUEENDOFNEXTMONTH]: t(
+        'purchaseOrders:dueEndOfNextMonth',
+        'Due end of next month'
+      ),
+      [PURCHASE_ORDER_PAYMENT_TERMS.DUEONRECEIPT]: t(
+        'purchaseOrders:dueOnReceipt',
+        'Due on receipt'
+      ),
     }
     return termMap[term] || term
   }
@@ -108,7 +118,7 @@ export default function PurchaseOrdersForm({
   useEffect(() => {
     if (form.values.agencyId) {
       const validItems = form.values.purchaseOrderItems.filter((item) => {
-        const product = products.find(p => p.id === item.productId)
+        const product = products.find((p) => p.id === item.productId)
         return product && product.agencyId === form.values.agencyId
       })
 
@@ -120,7 +130,7 @@ export default function PurchaseOrdersForm({
 
   // Clear inline form when agency or site changes
   useEffect(() => {
-    setSelectedProduct("")
+    setSelectedProduct('')
     setQuantity(1)
     setRate(0)
     setTax(0)
@@ -130,7 +140,7 @@ export default function PurchaseOrdersForm({
   const addItem = () => {
     if (!selectedProduct) return
 
-    const product = products.find(p => p.id === selectedProduct)
+    const product = products.find((p) => p.id === selectedProduct)
     if (!product) return
 
     const amount = quantity * rate
@@ -145,13 +155,15 @@ export default function PurchaseOrdersForm({
       amount,
     }
 
-    form.setFieldValue("purchaseOrderItems", [
-      ...form.values.purchaseOrderItems,
-      newItem
-    ].sort((a, b) => a.productId.localeCompare(b.productId)).reverse())
+    form.setFieldValue(
+      'purchaseOrderItems',
+      [...form.values.purchaseOrderItems, newItem]
+        .sort((a, b) => a.productId.localeCompare(b.productId))
+        .reverse()
+    )
 
     // Reset form
-    setSelectedProduct("")
+    setSelectedProduct('')
     setQuantity(1)
     setRate(0)
     setTax(0)
@@ -160,7 +172,7 @@ export default function PurchaseOrdersForm({
   const handlePurchaseItemClick = () => {
     setPurchaseOrderItem({
       id: undefined,
-      productId: "",
+      productId: '',
       quantity: 1,
       rate: 0,
       tax: undefined,
@@ -182,52 +194,51 @@ export default function PurchaseOrdersForm({
   }: IPurchaseOrder) => {
     const formData = new FormData()
 
-    formData.append("purchaseOrderReference", purchaseOrderReference || "")
-    formData.append("supplierId", supplierId)
-    formData.append("orderDate", JSON.stringify(orderDate))
-    formData.append("paymentTerms", JSON.stringify(paymentTerms))
-    formData.append("siteId", siteId)
-    formData.append("agencyId", agencyId)
+    formData.append('purchaseOrderReference', purchaseOrderReference || '')
+    formData.append('supplierId', supplierId)
+    formData.append('orderDate', JSON.stringify(orderDate))
+    formData.append('paymentTerms', JSON.stringify(paymentTerms))
+    formData.append('siteId', siteId)
+    formData.append('agencyId', agencyId)
+    formData.append('expectedDeliveryDate', JSON.stringify(expectedDeliveryDate))
     formData.append(
-      "expectedDeliveryDate",
-      JSON.stringify(expectedDeliveryDate)
-    )
-    formData.append(
-      "purchaseOrderItems",
+      'purchaseOrderItems',
       JSON.stringify(
-        form.values.purchaseOrderItems.map(
-          (purchaseOrderItem: IPurchaseOrderItem) => ({
-            productId: purchaseOrderItem.productId,
-            quantity: purchaseOrderItem.quantity,
-            rate: purchaseOrderItem.rate,
-            tax: purchaseOrderItem.tax || 0,
-            amount: purchaseOrderItem.amount,
-          })
-        )
+        form.values.purchaseOrderItems.map((purchaseOrderItem: IPurchaseOrderItem) => ({
+          productId: purchaseOrderItem.productId,
+          quantity: purchaseOrderItem.quantity,
+          rate: purchaseOrderItem.rate,
+          tax: purchaseOrderItem.tax || 0,
+          amount: purchaseOrderItem.amount,
+        }))
       )
     )
 
     if (form.values.purchaseOrderItems.length === 0) {
       form.setErrors({
-        purchaseOrderItems: t('purchaseOrders:purchaseOrderItemRequired', 'Please add a purchase order item before submitting the form'),
+        purchaseOrderItems: t(
+          'purchaseOrders:purchaseOrderItemRequired',
+          'Please add a purchase order item before submitting the form'
+        ),
       })
       return
     }
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
   }
 
   const supplierOptions = suppliers.map((supplier: ISupplier) => ({
-    value: supplier.id || "",
+    value: supplier.id || '',
     label: supplier.name,
   }))
 
   // Filter products for inline form
   const usedProductIds = form.values.purchaseOrderItems.map((item: any) => item.productId)
-  const availableProducts = products.filter(product =>
-    !usedProductIds.includes(product.id) &&
-    (!form.values.agencyId || product.agencyId === form.values.agencyId) &&
-    (!form.values.siteId || product.siteId === form.values.siteId)
+  const availableProducts = products.filter(
+    (product) =>
+      !usedProductIds.includes(product.id) &&
+      (!form.values.agencyId || product.agencyId === form.values.agencyId) &&
+      (!form.values.siteId || product.siteId === form.values.siteId)
   )
 
   const productOptions = availableProducts.map((product) => ({
@@ -270,7 +281,7 @@ export default function PurchaseOrdersForm({
                 variant="subtle"
                 color="red"
                 onClick={() =>
-                  form.setFieldValue("purchaseOrderItems", [
+                  form.setFieldValue('purchaseOrderItems', [
                     ...(form.values.purchaseOrderItems || []).filter(
                       (purchaseOrderItem: IPurchaseOrderItem) =>
                         purchaseOrderItem.productId !== product?.id
@@ -289,7 +300,7 @@ export default function PurchaseOrdersForm({
                 onClick={() => {
                   setPurchaseOrderItem({
                     id,
-                    productId: product?.id || "",
+                    productId: product?.id || '',
                     product,
                     quantity,
                     rate,
@@ -317,7 +328,7 @@ export default function PurchaseOrdersForm({
     <>
       <Grid>
         <Grid.Col>
-          <Title backTo={"/purchase-orders"}>
+          <Title backTo={'/purchase-orders'}>
             {purchaseOrder.id
               ? t('purchaseOrders:editPurchaseOrder', 'Edit a purchase order')
               : t('purchaseOrders:addPurchaseOrder', 'Add a purchase order')}
@@ -345,9 +356,9 @@ export default function PurchaseOrdersForm({
                 label={t('purchaseOrders:purchaseOrderReferenceLabel', 'Purchase Order reference')}
                 name="purchaseOrderReference"
                 disabled={!canEdit}
-                {...form.getInputProps("purchaseOrderReference")}
+                {...form.getInputProps('purchaseOrderReference')}
                 error={
-                  form.getInputProps("purchaseOrderReference").error ||
+                  form.getInputProps('purchaseOrderReference').error ||
                   errors?.purchaseOrderReference
                 }
               />
@@ -362,9 +373,9 @@ export default function PurchaseOrdersForm({
                 value={form.values.supplierId}
                 name="supplierId"
                 onChange={(currentSupplier: string) => {
-                  form.setFieldValue("supplierId", currentSupplier)
+                  form.setFieldValue('supplierId', currentSupplier)
                 }}
-                error={form.getInputProps("supplierId").error}
+                error={form.getInputProps('supplierId').error}
                 clearable={canEdit}
               />
             </Grid.Col>
@@ -408,7 +419,7 @@ export default function PurchaseOrdersForm({
                     label: getPaymentTermLabel(PURCHASE_ORDER_PAYMENT_TERMS.DUEONRECEIPT),
                   },
                 ]}
-                {...form.getInputProps("paymentTerms")}
+                {...form.getInputProps('paymentTerms')}
               />
             </Grid.Col>
 
@@ -421,7 +432,7 @@ export default function PurchaseOrdersForm({
                 disabled={!canEdit}
                 minDate={new Date()}
                 clearable={canEdit}
-                {...form.getInputProps("orderDate")}
+                {...form.getInputProps('orderDate')}
               />
             </Grid.Col>
             <Grid.Col span={6}>
@@ -432,7 +443,7 @@ export default function PurchaseOrdersForm({
                 minDate={new Date()}
                 clearable={canEdit}
                 disabled={!canEdit}
-                {...form.getInputProps("expectedDeliveryDate")}
+                {...form.getInputProps('expectedDeliveryDate')}
               />
             </Grid.Col>
 
@@ -444,12 +455,12 @@ export default function PurchaseOrdersForm({
               sites={sites}
               siteId={form.values.siteId}
               onChange={({ agencyId, siteId }) => {
-                form.setFieldValue("agencyId", agencyId)
-                form.setFieldValue("siteId", siteId)
+                form.setFieldValue('agencyId', agencyId)
+                form.setFieldValue('siteId', siteId)
               }}
               error={{
-                siteId: form.getInputProps("siteId").error,
-                agencyId: form.getInputProps("agencyId").error,
+                siteId: form.getInputProps('siteId').error,
+                agencyId: form.getInputProps('agencyId').error,
               }}
             />
 
@@ -470,7 +481,7 @@ export default function PurchaseOrdersForm({
                     }
                     data={productOptions}
                     value={selectedProduct}
-                    onChange={(value) => setSelectedProduct(value || "")}
+                    onChange={(value) => setSelectedProduct(value || '')}
                     searchable
                     disabled={!form.values.agencyId || availableProducts.length === 0}
                     style={{ flex: 1 }}
@@ -519,12 +530,14 @@ export default function PurchaseOrdersForm({
                 verticalSpacing="xs"
                 highlightOnHover={canEdit}
                 striped
-                mt={"md"}
+                mt={'md'}
                 withTableBorder
               >
                 <Table.Thead fz={12}>
                   <Table.Tr>
-                    <Table.Th>{t('purchaseOrders:purchaseOrderItem', 'PURCHASE ORDER ITEM')}</Table.Th>
+                    <Table.Th>
+                      {t('purchaseOrders:purchaseOrderItem', 'PURCHASE ORDER ITEM')}
+                    </Table.Th>
                     <Table.Th>{t('purchaseOrders:quantity', 'QUANTITY')}</Table.Th>
                     <Table.Th>{t('purchaseOrders:rate', 'RATE')}</Table.Th>
                     <Table.Th>{t('purchaseOrders:tax', 'TAX')}</Table.Th>
@@ -552,7 +565,10 @@ export default function PurchaseOrdersForm({
                     <Table.Tr className={classes.totalRow}>
                       <Table.Td colSpan={2} className={classes.totalCell}></Table.Td>
                       <Table.Td className={classes.totalCell}>
-                        <Text fw={500} ta="right">{`${t('purchaseOrders:total', 'Total')} ( ${currency.symbol} )`}</Text>
+                        <Text
+                          fw={500}
+                          ta="right"
+                        >{`${t('purchaseOrders:total', 'Total')} ( ${currency.symbol} )`}</Text>
                       </Table.Td>
                       <Table.Td className={classes.totalCell}></Table.Td>
                       <Table.Td className={classes.totalCell}>
@@ -568,34 +584,29 @@ export default function PurchaseOrdersForm({
                 <PurchaseOrderItemForm
                   products={
                     purchaseOrderItem.productId
-                      ? products.filter(
-                        (product) => form.values.agencyId ? product.agencyId === form.values.agencyId : true
-                      )
+                      ? products.filter((product) =>
+                          form.values.agencyId ? product.agencyId === form.values.agencyId : true
+                        )
                       : products
-                        .filter(
-                          (product) => form.values.agencyId ? product.agencyId === form.values.agencyId : true
-                        )
-                        .filter(
-                          (product) =>
-                            !form.values.purchaseOrderItems
-                              .map(
-                                (purchaseOrderItem) =>
-                                  purchaseOrderItem.productId
-                              )
-                              .some((productId) => productId === product.id)
-                        )
+                          .filter((product) =>
+                            form.values.agencyId ? product.agencyId === form.values.agencyId : true
+                          )
+                          .filter(
+                            (product) =>
+                              !form.values.purchaseOrderItems
+                                .map((purchaseOrderItem) => purchaseOrderItem.productId)
+                                .some((productId) => productId === product.id)
+                          )
                   }
                   purchaseOrderItem={purchaseOrderItem}
                   opened={opened}
                   onClose={handleClose}
                   onSubmit={(currentPurchaseItem) => {
                     form.setFieldValue(
-                      "purchaseOrderItems",
+                      'purchaseOrderItems',
                       [
                         ...form.values.purchaseOrderItems.filter((item) => {
-                          return (
-                            item.productId !== currentPurchaseItem.productId
-                          )
+                          return item.productId !== currentPurchaseItem.productId
                         }),
                         {
                           id: currentPurchaseItem.id,

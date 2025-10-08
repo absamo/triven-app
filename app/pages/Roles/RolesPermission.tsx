@@ -1,5 +1,5 @@
-import { Flex, Switch } from "@mantine/core"
-import { useTranslation } from "react-i18next"
+import { Flex, Switch } from '@mantine/core'
+import { useTranslation } from 'react-i18next'
 
 interface RolesPermissionProps {
   permissions: string[]
@@ -14,11 +14,11 @@ export default function RolesPermission({
   name,
   label,
 }: RolesPermissionProps) {
-  const { t } = useTranslation(['roles', 'common']);
+  const { t } = useTranslation(['roles', 'common'])
 
   return (
     <Switch.Group value={permissions} label={label} mt={20}>
-      <Flex mt="xs" justify={"space-between"}>
+      <Flex mt="xs" justify={'space-between'}>
         <Switch
           value={`full:${name}`}
           label={t('roles:permissions.fullAccess')}
@@ -80,22 +80,16 @@ export default function RolesPermission({
           onClick={(event) => {
             if (event.currentTarget.checked) {
               onChange([
-                ...permissions.filter(
-                  (p) => p !== `read:${name}` && p !== `create:${name}`
-                ),
+                ...permissions.filter((p) => p !== `read:${name}` && p !== `create:${name}`),
                 `read:${name}`,
                 `create:${name}`,
-                permissions.includes(
-                  `read:${name}` && `update:${name}` && `delete:${name}`
-                )
+                permissions.includes(`read:${name}` && `update:${name}` && `delete:${name}`)
                   ? `full:${name}`
-                  : "",
+                  : '',
               ])
             } else {
               onChange([
-                ...permissions.filter(
-                  (p) => p !== `full:${name}` && p !== `create:${name}`
-                ),
+                ...permissions.filter((p) => p !== `full:${name}` && p !== `create:${name}`),
               ])
             }
           }}
@@ -110,25 +104,18 @@ export default function RolesPermission({
             if (event.currentTarget.checked) {
               onChange([
                 ...permissions.filter(
-                  (p) =>
-                    p !== `read:${name}` &&
-                    p !== `create:${name}` &&
-                    p !== `update:${name}`
+                  (p) => p !== `read:${name}` && p !== `create:${name}` && p !== `update:${name}`
                 ),
                 `read:${name}`,
                 `create:${name}`,
                 `update:${name}`,
-                permissions.includes(
-                  `read:${name}` && `create:${name}` && `delete:${name}`
-                )
+                permissions.includes(`read:${name}` && `create:${name}` && `delete:${name}`)
                   ? `full:${name}`
-                  : "",
+                  : '',
               ])
             } else {
               onChange([
-                ...permissions.filter(
-                  (p) => p !== `full:${name}` && p !== `update:${name}`
-                ),
+                ...permissions.filter((p) => p !== `full:${name}` && p !== `update:${name}`),
               ])
             }
           }}
@@ -150,9 +137,7 @@ export default function RolesPermission({
               ])
             } else {
               onChange([
-                ...permissions.filter(
-                  (p) => p !== `full:${name}` && p !== `delete:${name}`
-                ),
+                ...permissions.filter((p) => p !== `full:${name}` && p !== `delete:${name}`),
               ])
             }
           }}

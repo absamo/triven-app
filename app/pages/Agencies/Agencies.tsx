@@ -1,29 +1,26 @@
-import { ActionIcon, Badge, Card, Group, SimpleGrid, Stack, Text, Tooltip } from "@mantine/core"
-import { IconCurrencyDollar, IconEdit, IconMapPin } from "@tabler/icons-react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router"
+import { ActionIcon, Badge, Card, Group, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core'
+import { IconCurrencyDollar, IconEdit, IconMapPin } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 
-import type { IAgency } from "~/app/common/validations/agencySchema"
-import { Title } from "~/app/partials/Title"
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import { Title } from '~/app/partials/Title'
 
 interface AgencyProps {
   agencies: IAgency[]
   permissions: string[]
 }
 
-export default function AgenciesPage({
-  agencies = [],
-  permissions = [],
-}: AgencyProps) {
+export default function AgenciesPage({ agencies = [], permissions = [] }: AgencyProps) {
   const { t } = useTranslation(['agencies', 'common'])
-  const canCreate = permissions.includes("create:agencies")
-  const canUpdate = permissions.includes("update:agencies")
+  const canCreate = permissions.includes('create:agencies')
+  const canUpdate = permissions.includes('update:agencies')
 
   const navigate = useNavigate()
 
   return (
     <>
-      <Title to={"/agencies/create"} canCreate={canCreate}>
+      <Title to={'/agencies/create'} canCreate={canCreate}>
         {t('agencies:title')}
       </Title>
 
@@ -37,11 +34,7 @@ export default function AgenciesPage({
           </Stack>
         </Card>
       ) : (
-        <SimpleGrid
-          cols={{ base: 1, sm: 2, lg: 3 }}
-          spacing="md"
-          mt={20}
-        >
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md" mt={20}>
           {agencies.map(({ id, name, location, currency }) => (
             <Card
               key={id}

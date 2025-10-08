@@ -1,28 +1,25 @@
+import { Badge, Button, Group, Loader, Menu, rem, Table, Text } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
 import {
-  Badge,
-  Button,
-  Group,
-  Loader,
-  Menu,
-  rem,
-  Table,
-  Text
-} from "@mantine/core"
-import { useDisclosure } from "@mantine/hooks"
-import { IconChevronDown, IconChevronUp, IconDownload, IconSelector, IconUpload } from "@tabler/icons-react"
+  IconChevronDown,
+  IconChevronUp,
+  IconDownload,
+  IconSelector,
+  IconUpload,
+} from '@tabler/icons-react'
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher, useNavigate } from "react-router"
-import { PRODUCT_STATUSES, USER_ROLES } from "~/app/common/constants"
-import { type IAgency } from "~/app/common/validations/agencySchema"
-import { type ICategory } from "~/app/common/validations/categorySchema"
-import { type IProduct } from "~/app/common/validations/productSchema"
-import { type ISite } from "~/app/common/validations/siteSchema"
-import { Notification, TableActionsMenu } from "~/app/components"
-import ProductImportModal from "~/app/components/ProductImportModal"
-import ProductFilters from "~/app/partials/ProductFilters/ProductFilters"
-import { Title } from "~/app/partials/Title"
+import { useFetcher, useNavigate } from 'react-router'
+import { PRODUCT_STATUSES, USER_ROLES } from '~/app/common/constants'
+import { type IAgency } from '~/app/common/validations/agencySchema'
+import { type ICategory } from '~/app/common/validations/categorySchema'
+import { type IProduct } from '~/app/common/validations/productSchema'
+import { type ISite } from '~/app/common/validations/siteSchema'
+import { Notification, TableActionsMenu } from '~/app/components'
+import ProductImportModal from '~/app/components/ProductImportModal'
+import ProductFilters from '~/app/partials/ProductFilters/ProductFilters'
+import { Title } from '~/app/partials/Title'
 
 interface ProductsProps {
   products: IProduct[]
@@ -47,19 +44,22 @@ export default function Products({
   isFiltered: isFilteredProp = false,
   userRole,
 }: ProductsProps) {
-  const { t } = useTranslation('inventory');
-  const { t: tCommon } = useTranslation('common');
+  const { t } = useTranslation('inventory')
+  const { t: tCommon } = useTranslation('common')
   const navigate = useNavigate()
 
   const [hasMore, setHasMore] = useState(!isFilteredProp) // Disable infinite scroll when initial results are filtered
   const [page, setPage] = useState(2) // Start from page 2 since first page is already loaded
   const [products, setProducts] = useState<IProduct[]>(productsProp)
-  const [filteredProducts, setFilteredProducts] = useState<IProduct[]>(isFilteredProp ? productsProp : [])
+  const [filteredProducts, setFilteredProducts] = useState<IProduct[]>(
+    isFilteredProp ? productsProp : []
+  )
   const [isFiltered, setIsFiltered] = useState(isFilteredProp)
   const [isExporting, setIsExporting] = useState(false)
-  const [importModalOpened, { open: openImportModal, close: closeImportModal }] = useDisclosure(false)
-  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
-  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+  const [importModalOpened, { open: openImportModal, close: closeImportModal }] =
+    useDisclosure(false)
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null)
   // Sorting state
   const [sortBy, setSortBy] = useState<string>('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -76,63 +76,64 @@ export default function Products({
   const productsStatuses = [
     {
       label: t('available'),
-      color: "green",
+      color: 'green',
       type: PRODUCT_STATUSES.AVAILABLE,
     },
     {
       label: t('critical'),
-      color: "orange",
+      color: 'orange',
       type: PRODUCT_STATUSES.CRITICAL,
     },
     {
       label: t('lowStock'),
-      color: "yellow",
+      color: 'yellow',
       type: PRODUCT_STATUSES.LOWSTOCK,
     },
     {
       label: t('outOfStock'),
-      color: "red",
+      color: 'red',
       type: PRODUCT_STATUSES.OUTOFSTOCK,
     },
     {
       label: t('damaged'),
-      color: "red",
+      color: 'red',
       type: PRODUCT_STATUSES.DAMAGED,
     },
     {
       label: t('discontinued'),
-      color: "red",
+      color: 'red',
       type: PRODUCT_STATUSES.DISCONTINUED,
     },
     {
       label: t('inTransit'),
-      color: "blue",
+      color: 'blue',
       type: PRODUCT_STATUSES.INTRANSIT,
     },
     {
       label: t('reserved'),
-      color: "blue",
+      color: 'blue',
       type: PRODUCT_STATUSES.RESERVED,
     },
     {
       label: t('archived'),
-      color: "blue",
+      color: 'blue',
       type: PRODUCT_STATUSES.ARCHIVED,
     },
     {
       label: t('onOrder'),
-      color: "blue",
+      color: 'blue',
       type: PRODUCT_STATUSES.ONORDER,
     },
   ]
 
   // Convert specific product statuses to filter options - only show key inventory statuses
   const statusFilterOptions = productsStatuses
-    .filter((status) =>
-      status.type === PRODUCT_STATUSES.AVAILABLE ||
-      status.type === PRODUCT_STATUSES.LOWSTOCK ||
-      status.type === PRODUCT_STATUSES.CRITICAL ||
-      status.type === PRODUCT_STATUSES.OUTOFSTOCK
+    .filter(
+      (status) =>
+        status.type === PRODUCT_STATUSES.AVAILABLE ||
+        status.type === PRODUCT_STATUSES.LOWSTOCK ||
+        status.type === PRODUCT_STATUSES.CRITICAL ||
+        status.type === PRODUCT_STATUSES.OUTOFSTOCK
     )
     .map((status) => ({
       value: status.type,
@@ -163,38 +164,44 @@ export default function Products({
       label: site.name,
     }))
 
-  const handleFilter = useCallback((data: { products: IProduct[], categories: ICategory[], isFiltered: boolean, permissions: string[] }) => {
-    // Prevent any state updates if data is null or undefined
-    if (!data) return
+  const handleFilter = useCallback(
+    (data: {
+      products: IProduct[]
+      categories: ICategory[]
+      isFiltered: boolean
+      permissions: string[]
+    }) => {
+      // Prevent any state updates if data is null or undefined
+      if (!data) return
 
-    if (data.products && data.products.length > 0) {
-      // This is a filtered result with actual products
-      setFilteredProducts(data.products)
-      setIsFiltered(true)
-      setHasMore(false) // Disable infinite scroll when filtering
-      setPage(2) // Reset page when filtering
-      currentPageRef.current = 2
-    } else if (data.isFiltered === false) {
-      // This is a reset signal - clear filters and let route data show through
-      setFilteredProducts([])
-      setIsFiltered(false)
-      setHasMore(true) // Re-enable infinite scroll
-      setPage(2) // Reset to page 2 when clearing filters (page 1 is already loaded)
-      currentPageRef.current = 2
-    } else if (data.products && Array.isArray(data.products) && data.products.length === 0) {
-      // This is a search with no results - show empty table
-      setFilteredProducts([])
-      setIsFiltered(true)
-      setHasMore(false) // Disable infinite scroll when filtering
-      setPage(2) // Reset page when filtering
-      currentPageRef.current = 2
-    }
-  }, []) // No dependencies needed since we're only calling setters
+      if (data.products && data.products.length > 0) {
+        // This is a filtered result with actual products
+        setFilteredProducts(data.products)
+        setIsFiltered(true)
+        setHasMore(false) // Disable infinite scroll when filtering
+        setPage(2) // Reset page when filtering
+        currentPageRef.current = 2
+      } else if (data.isFiltered === false) {
+        // This is a reset signal - clear filters and let route data show through
+        setFilteredProducts([])
+        setIsFiltered(false)
+        setHasMore(true) // Re-enable infinite scroll
+        setPage(2) // Reset to page 2 when clearing filters (page 1 is already loaded)
+        currentPageRef.current = 2
+      } else if (data.products && Array.isArray(data.products) && data.products.length === 0) {
+        // This is a search with no results - show empty table
+        setFilteredProducts([])
+        setIsFiltered(true)
+        setHasMore(false) // Disable infinite scroll when filtering
+        setPage(2) // Reset page when filtering
+        currentPageRef.current = 2
+      }
+    },
+    []
+  ) // No dependencies needed since we're only calling setters
 
   // Handle sorting with three-state cycle
   const handleSort = (column: string) => {
-
-
     let newSortBy: string = column
     let newSortOrder: 'asc' | 'desc' = 'asc'
 
@@ -210,8 +217,6 @@ export default function Products({
       }
     }
     // If clicking different column, start with asc (already set above)
-
-
 
     setSortBy(newSortBy)
     setSortOrder(newSortOrder)
@@ -257,8 +262,6 @@ export default function Products({
 
   // Handle product import
   const handleImportProducts = (importedProducts: any[]) => {
-
-
     // Don't auto-close the modal anymore - let user close it manually after reviewing results
     // This allows users to see warnings and import results
 
@@ -278,25 +281,29 @@ export default function Products({
   // Handle product deletion
   const handleDeleteProduct = async (id: string) => {
     setDeletingProductId(id) // Track which product is being deleted
-    fetcher.submit({ id }, {
-      method: "DELETE",
-      action: "/products", // Explicitly specify the action URL
-    })
+    fetcher.submit(
+      { id },
+      {
+        method: 'DELETE',
+        action: '/products', // Explicitly specify the action URL
+      }
+    )
   }
 
   // Handle product duplication
   const handleDuplicateProduct = async (id: string) => {
-    await fetcher.submit({ id }, {
-      method: "POST",
-    })
+    await fetcher.submit(
+      { id },
+      {
+        method: 'POST',
+      }
+    )
     fetcher.load(`?sortBy=${sortBy}&sortOrder=${sortOrder}&limit=30&offset=0`)
   }
 
   const handleExportPDF = async () => {
-
     try {
       setIsExporting(true)
-
 
       // Use server-side API to generate PDF with ALL products (not just paginated client data)
       const response = await fetch('/api/products-export', {
@@ -305,7 +312,6 @@ export default function Products({
           'Content-Type': 'application/json',
         },
       })
-
 
       if (!response.ok) {
         throw new Error(`Export failed: ${response.status}`)
@@ -326,7 +332,6 @@ export default function Products({
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
     } catch (error) {
-
       // You could add a toast notification here
     } finally {
       setIsExporting(false)
@@ -336,21 +341,25 @@ export default function Products({
   // Handle all fetcher data in a single useEffect to prevent infinite loops
   useEffect(() => {
     // Guard clause: only process when fetcher has data and is idle
-    if (!fetcher.data || fetcher.state !== "idle") return
+    if (!fetcher.data || fetcher.state !== 'idle') return
 
     const data = fetcher.data as any
 
     // Check if this is a deletion response first
-    if (data.notification?.status === "Success" && data.notification?.message?.includes("deleted") && deletingProductId) {
+    if (
+      data.notification?.status === 'Success' &&
+      data.notification?.message?.includes('deleted') &&
+      deletingProductId
+    ) {
       // Remove the deleted product from the local state immediately
       setProducts((prevProducts) =>
-        prevProducts.filter(product => product.id !== deletingProductId)
+        prevProducts.filter((product) => product.id !== deletingProductId)
       )
 
       // Also remove from filtered products if filtering is active
       if (isFiltered) {
         setFilteredProducts((prevFiltered) =>
-          prevFiltered.filter(product => product.id !== deletingProductId)
+          prevFiltered.filter((product) => product.id !== deletingProductId)
         )
       }
 
@@ -386,7 +395,7 @@ export default function Products({
       // Reset the pagination flag after processing
       isPaginationRequestRef.current = false
     }
-  }, [fetcher.data, fetcher.state, deletingProductId])  // Initialize filtered state based on props
+  }, [fetcher.data, fetcher.state, deletingProductId]) // Initialize filtered state based on props
   useEffect(() => {
     if (isFilteredProp) {
       setFilteredProducts(productsProp)
@@ -416,7 +425,7 @@ export default function Products({
   // Handle sorting of existing products when sort state changes
   useEffect(() => {
     // Don't sort if products are empty, filtered, or fetcher is not idle
-    if (products.length === 0 || isFiltered || fetcher.state !== "idle") return
+    if (products.length === 0 || isFiltered || fetcher.state !== 'idle') return
 
     // Only sort text fields that need client-side sorting
     if (sortBy === 'name' || sortBy === 'status' || sortBy === 'site' || sortBy === 'agency') {
@@ -445,7 +454,7 @@ export default function Products({
           const comparison = aValue.localeCompare(bValue, 'en', {
             numeric: true,
             sensitivity: 'base',
-            ignorePunctuation: false
+            ignorePunctuation: false,
           })
           return sortOrder === 'asc' ? comparison : -comparison
         })
@@ -458,7 +467,7 @@ export default function Products({
   // IntersectionObserver for infinite scroll
   useEffect(() => {
     // Don't setup observer if conditions are not met
-    if (isFiltered || fetcher.state !== "idle" || !hasMore) {
+    if (isFiltered || fetcher.state !== 'idle' || !hasMore) {
       return
     }
 
@@ -467,13 +476,15 @@ export default function Products({
         const entry = entries[0]
 
         // Double-check hasMore and fetcher state before making request
-        if (entry.isIntersecting && hasMore && fetcher.state === "idle") {
+        if (entry.isIntersecting && hasMore && fetcher.state === 'idle') {
           const currentPage = currentPageRef.current
           const offset = (currentPage - 1) * 30 // For page 2, offset = 30; for page 3, offset = 60
 
           // Mark this as a pagination request
           isPaginationRequestRef.current = true
-          fetcher.load(`?limit=30&offset=${offset}&sortBy=${sortByRef.current}&sortOrder=${sortOrderRef.current}&pagination=true`)
+          fetcher.load(
+            `?limit=30&offset=${offset}&sortBy=${sortByRef.current}&sortOrder=${sortOrderRef.current}&pagination=true`
+          )
 
           // Increment page for next time
           const nextPage = currentPage + 1
@@ -483,7 +494,7 @@ export default function Products({
       },
       {
         threshold: 0.1,
-        rootMargin: '20px'
+        rootMargin: '20px',
       }
     )
 
@@ -498,14 +509,12 @@ export default function Products({
     }
   }, [hasMore, fetcher.state, isFiltered])
 
-  const canEdit = permissions.includes("update:products")
+  const canEdit = permissions.includes('update:products')
   const isAdmin = userRole === USER_ROLES.ADMIN
 
   const rows = displayProducts.map(
     ({ id, name, sellingPrice, physicalStockOnHand, status, site, agency }) => {
-      const currentStatus = productsStatuses.find(
-        (productStatus) => productStatus.type === status
-      )
+      const currentStatus = productsStatuses.find((productStatus) => productStatus.type === status)
       return (
         <Table.Tr
           key={id}
@@ -537,18 +546,31 @@ export default function Products({
             <Text size="sm">{agency?.name}</Text>
           </Table.Td>
           <Table.Td style={{ textAlign: 'center', position: 'relative', padding: 0 }}>
-            <TableActionsMenu
-              itemId={id}
-              hoveredRowId={hoveredRowId}
-            >
-              <Menu.Item onClick={e => { e.stopPropagation(); navigate(`/products/${id}/edit`) }}>
+            <TableActionsMenu itemId={id} hoveredRowId={hoveredRowId}>
+              <Menu.Item
+                onClick={(e) => {
+                  e.stopPropagation()
+                  navigate(`/products/${id}/edit`)
+                }}
+              >
                 {t('edit')}
               </Menu.Item>
-              <Menu.Item onClick={e => { e.stopPropagation(); handleDuplicateProduct(id!) }}>
+              <Menu.Item
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDuplicateProduct(id!)
+                }}
+              >
                 {t('duplicate')}
               </Menu.Item>
-              <Menu.Item color="red" type="submit"
-                onClick={e => { e.stopPropagation(); handleDeleteProduct(id!) }}>
+              <Menu.Item
+                color="red"
+                type="submit"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteProduct(id!)
+                }}
+              >
                 {t('delete')}
               </Menu.Item>
             </TableActionsMenu>
@@ -561,15 +583,15 @@ export default function Products({
   return (
     <>
       <Title
-        to={"/products/create"}
-        canCreate={permissions.includes("create:products")}
+        to={'/products/create'}
+        canCreate={permissions.includes('create:products')}
         additionalButtons={
           <Group>
             <Button
               variant="outline"
               leftSection={<IconUpload size={16} />}
               onClick={openImportModal}
-              disabled={!permissions.includes("create:products")}
+              disabled={!permissions.includes('create:products')}
             >
               {tCommon('import')}
             </Button>
@@ -600,26 +622,29 @@ export default function Products({
           description: t('filterByCategory'),
           data: categoryFilterOptions,
         }}
-        agencyProps={isAdmin ? {
-          description: 'Filter by Agency',
-          data: agencyFilterOptions,
-        } : undefined}
-        siteProps={isAdmin ? {
-          description: 'Filter by Site',
-          data: siteFilterOptions,
-        } : undefined}
+        agencyProps={
+          isAdmin
+            ? {
+                description: 'Filter by Agency',
+                data: agencyFilterOptions,
+              }
+            : undefined
+        }
+        siteProps={
+          isAdmin
+            ? {
+                description: 'Filter by Site',
+                data: siteFilterOptions,
+              }
+            : undefined
+        }
         onFilter={handleFilter}
         route="/api/products-search"
         sortBy={sortBy}
         sortOrder={sortOrder}
       />
 
-      <Table
-        verticalSpacing="xs"
-        highlightOnHover={canEdit}
-        withTableBorder
-        striped
-      >
+      <Table verticalSpacing="xs" highlightOnHover={canEdit} withTableBorder striped>
         <Table.Thead fz={12}>
           <Table.Tr>
             <Table.Th
@@ -629,7 +654,7 @@ export default function Products({
                 userSelect: 'none',
               }}
             >
-              <Group gap={6} align="center" >
+              <Group gap={6} align="center">
                 <Text fw={600} size="xs">
                   {t('nameHeader')}
                 </Text>
@@ -640,7 +665,7 @@ export default function Products({
               onClick={() => handleSort('physicalStockOnHand')}
               style={{
                 cursor: 'pointer',
-                userSelect: 'none'
+                userSelect: 'none',
               }}
             >
               <Group gap={6} align="center" w={rem(100)}>
@@ -654,10 +679,10 @@ export default function Products({
               onClick={() => handleSort('sellingPrice')}
               style={{
                 cursor: 'pointer',
-                userSelect: 'none'
+                userSelect: 'none',
               }}
             >
-              <Group gap={6} align="center" w={rem(110)} >
+              <Group gap={6} align="center" w={rem(110)}>
                 <Text fw={600} size="xs">
                   {t('sellingPriceHeader')}
                 </Text>
@@ -668,7 +693,7 @@ export default function Products({
               onClick={() => handleSort('status')}
               style={{
                 cursor: 'pointer',
-                userSelect: 'none'
+                userSelect: 'none',
               }}
             >
               <Group gap={6} align="center">
@@ -682,7 +707,7 @@ export default function Products({
               onClick={() => handleSort('site')}
               style={{
                 cursor: 'pointer',
-                userSelect: 'none'
+                userSelect: 'none',
               }}
             >
               <Group gap={6} align="center">
@@ -696,7 +721,7 @@ export default function Products({
               onClick={() => handleSort('agency')}
               style={{
                 cursor: 'pointer',
-                userSelect: 'none'
+                userSelect: 'none',
               }}
             >
               <Group gap={6} align="center">
@@ -706,14 +731,13 @@ export default function Products({
                 {getSortIcon('agency')}
               </Group>
             </Table.Th>
-            <Table.Th
-
-            >
-            </Table.Th>
+            <Table.Th></Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {rows.length > 0 ? rows : (
+          {rows.length > 0 ? (
+            rows
+          ) : (
             <Table.Tr>
               <Table.Td colSpan={7} align="center">
                 <Text size="sm" c="dimmed" py="md">
@@ -734,7 +758,7 @@ export default function Products({
       <Group justify="center" mt="md">
         <Text size="sm" c="dimmed">
           {t('showingProducts', {
-            count: displayProducts.length
+            count: displayProducts.length,
           })}
         </Text>
       </Group>
@@ -746,9 +770,7 @@ export default function Products({
       />
 
       {/* Handle notifications from fetcher data */}
-      {fetcher.data?.notification && (
-        <Notification notification={fetcher.data.notification} />
-      )}
+      {fetcher.data?.notification && <Notification notification={fetcher.data.notification} />}
     </>
   )
 }

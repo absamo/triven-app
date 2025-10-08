@@ -12,10 +12,7 @@
   /* padding: 50px; */
   height: 60px;
   border-radius: var(--mantine-radius-md);
-  background-color: light-dark(
-    var(--mantine-color-white),
-    var(--mantine-color-dark-7)
-  );
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
 }
 
 .tableContainer {
@@ -24,8 +21,5 @@
   padding: 20px;
   height: calc(100% - 160px);
   border-radius: var(--mantine-radius-md);
-  background-color: light-dark(
-    var(--mantine-color-white),
-    var(--mantine-color-dark-7)
-  );
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
 }

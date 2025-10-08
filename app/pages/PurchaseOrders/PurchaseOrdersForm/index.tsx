@@ -1,2 +1,2 @@
-import PurchaseOrdersForm from "./PurchaseOrdersForm"
+import PurchaseOrdersForm from './PurchaseOrdersForm'
 export default PurchaseOrdersForm

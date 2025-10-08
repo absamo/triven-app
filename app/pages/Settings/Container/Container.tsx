@@ -9,10 +9,10 @@ import {
   rem,
   Container,
   Title,
-} from "@mantine/core"
-import { Link, Outlet } from "react-router";
-import { IconArrowLeft } from "@tabler/icons-react"
-import classes from "./Container.module.css"
+} from '@mantine/core'
+import { Link, Outlet } from 'react-router'
+import { IconArrowLeft } from '@tabler/icons-react'
+import classes from './Container.module.css'
 // import // IconGauge,
 // IconFingerprint,
 // IconActivity,
@@ -45,8 +45,8 @@ export default function ContainerPage({ children }) {
   return (
     <Grid
       style={{
-        minHeight: "calc(100vh - 92px)",
-        display: "flex",
+        minHeight: 'calc(100vh - 92px)',
+        display: 'flex',
       }}
     >
       {/* <Grid.Col span={3}>
@@ -60,20 +60,17 @@ export default function ContainerPage({ children }) {
           <Box>{items}</Box>
         </Paper>
       </Grid.Col> */}
-      <Grid.Col span={"auto"}>
+      <Grid.Col span={'auto'}>
         <Paper
           style={{
-            height: "100%",
+            height: '100%',
           }}
           withBorder
           p="xl"
         >
-          <Anchor c="blue" size="md" component={Link} to={"/settings"}>
+          <Anchor c="blue" size="md" component={Link} to={'/settings'}>
             <Center inline>
-              <IconArrowLeft
-                style={{ width: rem(16), height: rem(16) }}
-                stroke={1.5}
-              />
+              <IconArrowLeft style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
               <Box ml={5}>Back to settings</Box>
             </Center>
           </Anchor>

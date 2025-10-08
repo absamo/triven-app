@@ -1,35 +1,31 @@
-import type { PaymentStatus } from "@prisma/client"
-import {
-  BILL_STATUSES,
-  INVOICE_STATUSES,
-  PAYMENT_STATUSES,
-} from "~/app/common/constants"
+import type { PaymentStatus } from '@prisma/client'
+import { BILL_STATUSES, INVOICE_STATUSES, PAYMENT_STATUSES } from '~/app/common/constants'
 import {
   getAmountPaidByInvoice,
   getInvoiceStatus,
   getTotalAmountDueByInvoice,
-} from "~/app/common/helpers/invoice"
-import { type IPaymentsMade } from "~/app/common/validations/paymentsMadeSchema"
-import { type IPaymentsReceived } from "~/app/common/validations/paymentsReceivedSchema"
-import { type IUser } from "~/app/common/validations/userSchema"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
+} from '~/app/common/helpers/invoice'
+import { type IPaymentsMade } from '~/app/common/validations/paymentsMadeSchema'
+import { type IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
+import { type IUser } from '~/app/common/validations/userSchema'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import {
   getAmountPaidByBill,
   getBalanceDue,
   getBillStatus,
   getTotalAmountDueByBill,
-} from "../common/helpers/bill"
-import { getPaymentMadeStatus } from "../common/helpers/payment"
-import type { IBill } from "../common/validations/billSchema"
-import type { IInvoice } from "../common/validations/invoiceSchema"
+} from '../common/helpers/bill'
+import { getPaymentMadeStatus } from '../common/helpers/payment'
+import type { IBill } from '../common/validations/billSchema'
+import type { IInvoice } from '../common/validations/invoiceSchema'
 
 /**
  * Payments Received
  */
 
 export async function getPaymentsReceived(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
   const paymentsReceived = await prisma.paymentReceived.findMany({
     where: { companyId: user.companyId },
@@ -40,7 +36,7 @@ export async function getPaymentsReceived(request: Request) {
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -48,7 +44,7 @@ export async function getPaymentsReceived(request: Request) {
   return paymentsReceived || ([] as IPaymentsReceived[])
 }
 
-export async function getPaymentReceived(invoiceId: IPaymentsReceived["id"]) {
+export async function getPaymentReceived(invoiceId: IPaymentsReceived['id']) {
   const paymentReceived = await prisma.paymentReceived.findUnique({
     where: { id: invoiceId },
     include: {
@@ -60,10 +56,8 @@ export async function getPaymentReceived(invoiceId: IPaymentsReceived["id"]) {
   return paymentReceived
 }
 
-export async function getMaxPaymentReceivedNumber(
-  request: Request
-): Promise<string> {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+export async function getMaxPaymentReceivedNumber(request: Request): Promise<string> {
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
   const paymentReceivedNumber = await prisma.paymentReceived.aggregate({
     where: { companyId: user.companyId },
@@ -72,17 +66,13 @@ export async function getMaxPaymentReceivedNumber(
     },
   })
 
-  const paymentNumber =
-    parseInt(paymentReceivedNumber?._max.paymentNumber || "00000") + 1
+  const paymentNumber = parseInt(paymentReceivedNumber?._max.paymentNumber || '00000') + 1
 
-  return paymentNumber.toString().padStart(5, "0")
+  return paymentNumber.toString().padStart(5, '0')
 }
 
-export async function createPaymentReceived(
-  request: Request,
-  paymentReceived: IPaymentsReceived
-) {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+export async function createPaymentReceived(request: Request, paymentReceived: IPaymentsReceived) {
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
   const foundPaymentReceived = await prisma.paymentReceived.findFirst({
     where: {
@@ -94,8 +84,7 @@ export async function createPaymentReceived(
   if (foundPaymentReceived) {
     return {
       errors: {
-        paymentReceivedReference:
-          "A payment already exists with this reference",
+        paymentReceivedReference: 'A payment already exists with this reference',
       },
     }
   }
@@ -149,26 +138,23 @@ export async function createPaymentReceived(
 
     return {
       notification: {
-        message: "Payment received successfully created",
-        status: "Success",
-        redirectTo: "/payments-received",
+        message: 'Payment received successfully created',
+        status: 'Success',
+        redirectTo: '/payments-received',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Invoice could not be created",
-        status: "Error",
+        message: 'Invoice could not be created',
+        status: 'Error',
       },
     }
   }
 }
 
-export async function updatePaymentReceived(
-  request: Request,
-  paymentReceived: IPaymentsReceived
-) {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+export async function updatePaymentReceived(request: Request, paymentReceived: IPaymentsReceived) {
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
   const foundPaymentReiceived = await prisma.paymentReceived.findFirst({
     where: {
@@ -181,7 +167,7 @@ export async function updatePaymentReceived(
   if (foundPaymentReiceived) {
     return {
       errors: {
-        paymentReference: "A payment already exists with this reference",
+        paymentReference: 'A payment already exists with this reference',
       },
     }
   }
@@ -209,10 +195,8 @@ export async function updatePaymentReceived(
     )
 
     const amontPaid =
-      paymentsReceived.reduce(
-        (acc, payment) => acc + payment.amountReceived,
-        0
-      ) + paymentReceived.amountReceived
+      paymentsReceived.reduce((acc, payment) => acc + payment.amountReceived, 0) +
+      paymentReceived.amountReceived
 
     await prisma.paymentReceived.update({
       where: { id: paymentReceived.id },
@@ -237,16 +221,16 @@ export async function updatePaymentReceived(
 
     return {
       notification: {
-        message: "Payment received successfully updated",
-        status: "Success",
-        redirectTo: "/payments-received",
+        message: 'Payment received successfully updated',
+        status: 'Success',
+        redirectTo: '/payments-received',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Payment received could not be updated",
-        status: "Error",
+        message: 'Payment received could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }
@@ -259,11 +243,11 @@ export async function updatePaymentReceivedStatus(
     paymentReceivedId,
     status,
   }: {
-    paymentReceivedId: IPaymentsReceived["id"]
-    status: IPaymentsReceived["status"]
+    paymentReceivedId: IPaymentsReceived['id']
+    status: IPaymentsReceived['status']
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
   try {
     const paymentReceived = await prisma.paymentReceived.update({
@@ -285,15 +269,15 @@ export async function updatePaymentReceivedStatus(
 
     return {
       notification: {
-        message: "Payment received status updated successfully",
-        status: "Success",
+        message: 'Payment received status updated successfully',
+        status: 'Success',
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Payment received status could not be updated",
-        status: "Error",
+        message: 'Payment received status could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }
@@ -314,52 +298,49 @@ export async function getFilteredPaymentsReceived(
     paymentDate: Date | null
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
-  const currentSearch = !!search || search === ""
+  const currentSearch = !!search || search === ''
 
   const paymentsReceived = await prisma.paymentReceived.findMany({
     where: {
       companyId: user.companyId,
       OR: currentSearch
         ? [
-          {
-            invoice: {
-              invoiceReference: {
-                contains: search,
-                mode: "insensitive",
+            {
+              invoice: {
+                invoiceReference: {
+                  contains: search,
+                  mode: 'insensitive',
+                },
               },
             },
-          },
-          {
-            paymentReference: {
-              contains: search,
-              mode: "insensitive",
+            {
+              paymentReference: {
+                contains: search,
+                mode: 'insensitive',
+              },
             },
-          },
-        ]
+          ]
         : undefined,
       AND: [
         {
           status:
             statuses.length > 0
               ? {
-                in: statuses as PaymentStatus[],
-              }
+                  in: statuses as PaymentStatus[],
+                }
               : undefined,
         },
         {
           paymentDate: paymentDate
             ? {
-              gte: paymentDate,
-            }
+                gte: paymentDate,
+              }
             : undefined,
         },
         {
-          invoice:
-            invoices.length > 0
-              ? { invoiceReference: { in: invoices } }
-              : undefined,
+          invoice: invoices.length > 0 ? { invoiceReference: { in: invoices } } : undefined,
         },
       ],
     },
@@ -376,7 +357,7 @@ export async function getFilteredPaymentsReceived(
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -389,7 +370,7 @@ export async function getFilteredPaymentsReceived(
  */
 
 export async function getPaymentsMade(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
   const paymentsMade = await prisma.paymentMade.findMany({
     where: { companyId: user.companyId },
@@ -407,7 +388,7 @@ export async function getPaymentsMade(request: Request) {
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -429,38 +410,38 @@ export async function getFilteredPaymentsMade(
     paymentDate: Date | null
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
-  const currentSearch = !!search || search === ""
+  const currentSearch = !!search || search === ''
 
   const paymentsMade = await prisma.paymentMade.findMany({
     where: {
       companyId: user.companyId,
       OR: currentSearch
         ? [
-          {
-            bill: {
-              billReference: {
-                contains: search,
+            {
+              bill: {
+                billReference: {
+                  contains: search,
+                },
               },
             },
-          },
-        ]
+          ]
         : undefined,
       AND: [
         {
           status:
             statuses.length > 0
               ? {
-                in: statuses as PaymentStatus[],
-              }
+                  in: statuses as PaymentStatus[],
+                }
               : undefined,
         },
         {
           paymentDate: paymentDate
             ? {
-              gte: paymentDate,
-            }
+                gte: paymentDate,
+              }
             : undefined,
         },
         {
@@ -481,7 +462,7 @@ export async function getFilteredPaymentsMade(
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -489,7 +470,7 @@ export async function getFilteredPaymentsMade(
   return paymentsMade || []
 }
 
-export async function getPaymentMade(paymentId: IPaymentsMade["id"]) {
+export async function getPaymentMade(paymentId: IPaymentsMade['id']) {
   const paymentMade = await prisma.paymentMade.findUnique({
     where: { id: paymentId },
     include: {
@@ -509,10 +490,8 @@ export async function getPaymentMade(paymentId: IPaymentsMade["id"]) {
   return paymentMade
 }
 
-export async function getMaxPaymentMadeNumber(
-  request: Request
-): Promise<string> {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+export async function getMaxPaymentMadeNumber(request: Request): Promise<string> {
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
   const paymentMadeNumber = await prisma.paymentMade.aggregate({
     where: { companyId: user.companyId },
@@ -521,17 +500,13 @@ export async function getMaxPaymentMadeNumber(
     },
   })
 
-  const paymentNumber =
-    parseInt(paymentMadeNumber?._max.paymentNumber || "00000") + 1
+  const paymentNumber = parseInt(paymentMadeNumber?._max.paymentNumber || '00000') + 1
 
-  return paymentNumber.toString().padStart(5, "0")
+  return paymentNumber.toString().padStart(5, '0')
 }
 
-export async function createPaymentMade(
-  request: Request,
-  paymentMade: IPaymentsMade
-) {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+export async function createPaymentMade(request: Request, paymentMade: IPaymentsMade) {
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
   const foundPaymentMade = await prisma.paymentMade.findFirst({
     where: {
@@ -543,7 +518,7 @@ export async function createPaymentMade(
   if (foundPaymentMade) {
     return {
       errors: {
-        paymentReference: "A payment already exists with this reference",
+        paymentReference: 'A payment already exists with this reference',
       },
     }
   }
@@ -564,11 +539,7 @@ export async function createPaymentMade(
 
     const amountDue = getTotalAmountDueByBill(bill)
 
-    const amountPaid = getAmountPaidByBill(
-      bill,
-      paymentMade.id,
-      paymentMade.amountReceived
-    )
+    const amountPaid = getAmountPaidByBill(bill, paymentMade.id, paymentMade.amountReceived)
 
     const balanceDue = getBalanceDue(amountPaid, amountDue)
 
@@ -596,26 +567,23 @@ export async function createPaymentMade(
 
     return {
       notification: {
-        message: "Payment made successfully created",
-        status: "Success",
-        redirectTo: "/payments-made",
+        message: 'Payment made successfully created',
+        status: 'Success',
+        redirectTo: '/payments-made',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Bill could not be created",
-        status: "Error",
+        message: 'Bill could not be created',
+        status: 'Error',
       },
     }
   }
 }
 
-export async function updatePaymentMade(
-  request: Request,
-  paymentMade: IPaymentsMade
-) {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+export async function updatePaymentMade(request: Request, paymentMade: IPaymentsMade) {
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
   const foundPaymentMade = await prisma.paymentMade.findFirst({
     where: {
@@ -628,7 +596,7 @@ export async function updatePaymentMade(
   if (foundPaymentMade) {
     return {
       errors: {
-        paymentReference: "A payment already exists with this reference",
+        paymentReference: 'A payment already exists with this reference',
       },
     }
   }
@@ -656,11 +624,7 @@ export async function updatePaymentMade(
 
     const amountDue = getTotalAmountDueByBill(bill)
 
-    const amountPaid = getAmountPaidByBill(
-      bill,
-      paymentMade.id,
-      paymentMade.amountReceived
-    )
+    const amountPaid = getAmountPaidByBill(bill, paymentMade.id, paymentMade.amountReceived)
 
     const balanceDue = getBalanceDue(amountPaid, amountDue)
 
@@ -687,16 +651,16 @@ export async function updatePaymentMade(
 
     return {
       notification: {
-        message: "Payment made successfully updated",
-        status: "Success",
-        redirectTo: "/payments-made",
+        message: 'Payment made successfully updated',
+        status: 'Success',
+        redirectTo: '/payments-made',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Payment made could not be updated",
-        status: "Error",
+        message: 'Payment made could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }
@@ -709,11 +673,11 @@ export async function updatePaymentMadeStatus(
     paymentMadeId,
     status,
   }: {
-    paymentMadeId: IPaymentsMade["id"]
-    status: IPaymentsMade["status"]
+    paymentMadeId: IPaymentsMade['id']
+    status: IPaymentsMade['status']
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:paymentsReceived"])
+  const user = await requireBetterAuthUser(request, ['read:paymentsReceived'])
 
   try {
     const paymentmade = await prisma.paymentMade.update({
@@ -735,15 +699,15 @@ export async function updatePaymentMadeStatus(
 
     return {
       notification: {
-        message: "Payment made status updated successfully",
-        status: "Success",
+        message: 'Payment made status updated successfully',
+        status: 'Success',
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Payment made status could not be updated",
-        status: "Error",
+        message: 'Payment made status could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }

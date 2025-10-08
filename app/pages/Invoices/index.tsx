@@ -1,2 +1,2 @@
-import Invoices from "./Invoices"
+import Invoices from './Invoices'
 export default Invoices

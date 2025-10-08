@@ -58,8 +58,7 @@
 .trialAlert {
   border-radius: 0;
   box-shadow: none;
-padding: 15px;
-
+  padding: 15px;
 }
 
 /* Toggle button positioned at the bottom of navbar */
@@ -71,7 +70,10 @@ padding: 15px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: light-dark(linear-gradient(135deg, #ffffff 0%, #f8fafc 100%), var(--mantine-color-dark-6));
+  background: light-dark(
+    linear-gradient(135deg, #ffffff 0%, #f8fafc 100%),
+    var(--mantine-color-dark-6)
+  );
   border: 2px solid light-dark(#e2e8f0, var(--mantine-color-dark-4));
   box-shadow:
     0 6px 20px rgba(0, 0, 0, 0.1),

@@ -1,23 +1,23 @@
-import { Badge, Table, Text } from "@mantine/core"
+import { Badge, Table, Text } from '@mantine/core'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from "react-router"
+import { useNavigate } from 'react-router'
 
-import { getTransferOrderReasonLabel, getTransferOrderStatusLabel } from "~/app/common/helpers/transferOrder"
-import type { ITransferOrder } from "~/app/common/validations/transferOrderSchema"
-import { Title } from "~/app/partials/Title"
+import {
+  getTransferOrderReasonLabel,
+  getTransferOrderStatusLabel,
+} from '~/app/common/helpers/transferOrder'
+import type { ITransferOrder } from '~/app/common/validations/transferOrderSchema'
+import { Title } from '~/app/partials/Title'
 
 interface TransferOrdersProps {
   transferOrders: ITransferOrder[]
   permissions: string[]
 }
 
-export default function SitesPage({
-  transferOrders = [],
-  permissions = [],
-}: TransferOrdersProps) {
-  const { t } = useTranslation('inventory');
-  const canCreate = permissions.includes("create:transferOrders")
-  const canUpdate = permissions.includes("update:transferOrders")
+export default function SitesPage({ transferOrders = [], permissions = [] }: TransferOrdersProps) {
+  const { t } = useTranslation('inventory')
+  const canCreate = permissions.includes('create:transferOrders')
+  const canUpdate = permissions.includes('update:transferOrders')
 
   const navigate = useNavigate()
 
@@ -26,10 +26,7 @@ export default function SitesPage({
       const transferOrderReason = getTransferOrderReasonLabel(reason, t)
       const transferOrderStatus = getTransferOrderStatusLabel(status, t)
       return (
-        <Table.Tr
-          key={id}
-          onClick={() => canUpdate && navigate(`/transfer-orders/${id}/edit`)}
-        >
+        <Table.Tr key={id} onClick={() => canUpdate && navigate(`/transfer-orders/${id}/edit`)}>
           <Table.Td>
             <Text size="sm">{transferOrderReference}</Text>
           </Table.Td>
@@ -56,17 +53,11 @@ export default function SitesPage({
 
   return (
     <>
-      <Title to={"/transfer-orders/create"} canCreate={canCreate}>
+      <Title to={'/transfer-orders/create'} canCreate={canCreate}>
         {t('transferOrders')}
       </Title>
 
-      <Table
-        verticalSpacing="xs"
-        highlightOnHover={canUpdate}
-        withTableBorder
-        striped
-        mt={20}
-      >
+      <Table verticalSpacing="xs" highlightOnHover={canUpdate} withTableBorder striped mt={20}>
         <Table.Thead fz={12}>
           <Table.Tr>
             <Table.Th>{t('reference')}</Table.Th>

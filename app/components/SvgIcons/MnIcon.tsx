@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface MnIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface MnIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function MnIcon({ size = 20, style, ...others }: MnIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#a2001d"
-          d="M0 0h167l84.9 45L345 0h167v512H345l-87.7-48.1L167 512H0z"
-        />
+        <path fill="#a2001d" d="M0 0h167l84.9 45L345 0h167v512H345l-87.7-48.1L167 512H0z" />
         <path fill="#0052b4" d="M167 0h178v512H167z" />
         <g fill="#ffda44">
           <path d="M122.4 256h22.3v89h-22.3zm-89 0h22.3v89H33.4z" />

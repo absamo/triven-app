@@ -1,7 +1,7 @@
-import { Badge, Flex, Group, Paper, Stack, Text, ThemeIcon, Title, Tooltip } from "@mantine/core"
-import { IconArrowDownRight, IconArrowUpRight, IconInfoCircle } from "@tabler/icons-react"
-import { useTranslation } from "react-i18next"
-import { useNavigate, useSearchParams } from "react-router"
+import { Badge, Flex, Group, Paper, Stack, Text, ThemeIcon, Title, Tooltip } from '@mantine/core'
+import { IconArrowDownRight, IconArrowUpRight, IconInfoCircle } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate, useSearchParams } from 'react-router'
 
 interface InventoryStats {
   inventory: {
@@ -27,7 +27,7 @@ export default function InventoryStats({ inventory }: InventoryStats) {
   const [searchParams] = useSearchParams()
 
   // Get current agency ID from dashboard context
-  const currentAgency = searchParams.get("agency")
+  const currentAgency = searchParams.get('agency')
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -52,7 +52,7 @@ export default function InventoryStats({ inventory }: InventoryStats) {
   // Helper function to build products URL with agency context preserved
   const buildProductsUrl = (filterParams: string) => {
     // Only include agency parameter if it's set and not "All"
-    if (currentAgency && currentAgency !== "All") {
+    if (currentAgency && currentAgency !== 'All') {
       const separator = filterParams.includes('?') ? '&' : '?'
       return `/products${filterParams}${separator}agency=${currentAgency}`
     }
@@ -81,13 +81,14 @@ export default function InventoryStats({ inventory }: InventoryStats) {
   }
 
   // Calculate average percentage for combined metric
-  const avgPercentageDiff = Math.round((inventory.totalProductsInStockDiff + inventory.productsInStockValueDiff) / 2)
+  const avgPercentageDiff = Math.round(
+    (inventory.totalProductsInStockDiff + inventory.productsInStockValueDiff) / 2
+  )
   const DiffIcon = avgPercentageDiff > 0 ? IconArrowUpRight : IconArrowDownRight
   const accuracyStatus = getAccuracyStatus(inventory.accuracyPercentage)
 
   return (
     <Paper withBorder p="md" radius="md" mb={0} shadow="sm">
-
       <Group justify="space-between" align="flex-start" mb="md">
         <Title order={5}>{t('inventoryOverview')}</Title>
       </Group>
@@ -104,7 +105,7 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                   <ThemeIcon
                     size="xs"
                     variant="transparent"
-                    c={inventory.productsInStockValueDiff > 0 ? "teal" : "red"}
+                    c={inventory.productsInStockValueDiff > 0 ? 'teal' : 'red'}
                   >
                     {inventory.productsInStockValueDiff > 0 ? (
                       <IconArrowUpRight style={{ width: 12, height: 12 }} />
@@ -114,10 +115,12 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                   </ThemeIcon>
                   <Text
                     size="xs"
-                    c={inventory.productsInStockValueDiff > 0 ? "teal" : "red"}
+                    c={inventory.productsInStockValueDiff > 0 ? 'teal' : 'red'}
                     fw={500}
                   >
-                    {Math.abs(inventory.productsInStockValueDiff)}% {inventory.productsInStockValueDiff > 0 ? t('increase') : t('decrease')} {t('comparedToLastMonth')}
+                    {Math.abs(inventory.productsInStockValueDiff)}%{' '}
+                    {inventory.productsInStockValueDiff > 0 ? t('increase') : t('decrease')}{' '}
+                    {t('comparedToLastMonth')}
                   </Text>
                 </Group>
               )}
@@ -130,8 +133,8 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                   cursor: 'pointer',
                   transition: 'opacity 0.2s',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                 onClick={handleTotalValueClick}
               >
                 {formatCurrency(inventory.productsInStockValue)}
@@ -155,7 +158,8 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                   <div>
                     <Text size="sm" fw={500} mb={6}>
                       {t('inventoryAccuracy')}
-                    </Text>                  <Text size="xs" c="dimmed" mb={8}>
+                    </Text>{' '}
+                    <Text size="xs" c="dimmed" mb={8}>
                       {t('inventoryAccuracyTooltip')}
                     </Text>
                     <div style={{ marginTop: 8, padding: '8px 0', borderTop: '1px solid #e9ecef' }}>
@@ -166,13 +170,16 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                         • {t('totalProducts')} {inventory.totalItemsTracked} {t('items')}
                       </Text>
                       <Text size="xs" mb={2}>
-                        • {t('accurateItems')} {inventory.accurateItems} {t('items')} ({t('wherePhysicalEqualsAccounting')})
+                        • {t('accurateItems')} {inventory.accurateItems} {t('items')} (
+                        {t('wherePhysicalEqualsAccounting')})
                       </Text>
                       <Text size="xs" mb={2}>
-                        • {t('inaccurateItems')} {inventory.inaccurateItems} {t('items')} ({t('whereTheresDifference')})
+                        • {t('inaccurateItems')} {inventory.inaccurateItems} {t('items')} (
+                        {t('whereTheresDifference')})
                       </Text>
                       <Text size="xs" fw={500}>
-                        • {t('accuracyPercentage')} {inventory.accurateItems}/{inventory.totalItemsTracked} = {inventory.accuracyPercentage}%
+                        • {t('accuracyPercentage')} {inventory.accurateItems}/
+                        {inventory.totalItemsTracked} = {inventory.accuracyPercentage}%
                       </Text>
                     </div>
                   </div>
@@ -191,8 +198,8 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                   cursor: 'pointer',
                   transition: 'opacity 0.2s',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                 onClick={handleAccuracyClick}
               >
                 {inventory.accuracyPercentage}%
@@ -234,18 +241,22 @@ export default function InventoryStats({ inventory }: InventoryStats) {
               <Text
                 fw={700}
                 fz="xl"
-                c={inventory.reorderPointAlerts > 0 ? "orange" : "dimmed"}
+                c={inventory.reorderPointAlerts > 0 ? 'orange' : 'dimmed'}
                 style={{
                   cursor: 'pointer',
                   transition: 'opacity 0.2s',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                 onClick={handleReorderAlertsClick}
               >
                 {inventory.reorderPointAlerts}
               </Text>
-              <Badge color={inventory.reorderPointAlerts > 0 ? "orange" : "gray"} variant="light" size="sm">
+              <Badge
+                color={inventory.reorderPointAlerts > 0 ? 'orange' : 'gray'}
+                variant="light"
+                size="sm"
+              >
                 {inventory.reorderPointAlerts > 0 ? t('actionRequired') : t('allGood')}
               </Badge>
             </Group>
@@ -275,9 +286,7 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                       <Text size="xs" mb={2}>
                         • {t('deadStockItems')} {inventory.deadStockItems} {t('products')}
                       </Text>
-                      <Text size="xs">
-                        • {t('noSalesAdjustmentsLast90Days')}
-                      </Text>
+                      <Text size="xs">• {t('noSalesAdjustmentsLast90Days')}</Text>
                     </div>
                   </div>
                 }
@@ -291,18 +300,22 @@ export default function InventoryStats({ inventory }: InventoryStats) {
               <Text
                 fw={700}
                 fz="xl"
-                c={inventory.deadStockValue > 0 ? "red" : "dimmed"}
+                c={inventory.deadStockValue > 0 ? 'red' : 'dimmed'}
                 style={{
                   cursor: 'pointer',
                   transition: 'opacity 0.2s',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                 onClick={handleDeadStockClick}
               >
                 {formatCurrency(inventory.deadStockValue)}
               </Text>
-              <Badge color={inventory.deadStockValue > 0 ? "red" : "gray"} variant="light" size="sm">
+              <Badge
+                color={inventory.deadStockValue > 0 ? 'red' : 'gray'}
+                variant="light"
+                size="sm"
+              >
                 {inventory.deadStockItems} {t('items')}
               </Badge>
             </Group>

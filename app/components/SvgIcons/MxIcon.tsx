@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface MxIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface MxIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -45,15 +45,7 @@ export default function MxIcon({ size = 20, style, ...others }: MxIconProps) {
         <circle cx="297" cy="323" r="8" fill="#ffda44" />
         <circle cx="324" cy="302" r="8" fill="#ffda44" />
         <circle cx="341" cy="275" r="8" fill="#ffda44" />
-        <rect
-          width="34"
-          height="22"
-          x="239"
-          y="299"
-          fill="#ff9811"
-          rx="11"
-          ry="11"
-        />
+        <rect width="34" height="22" x="239" y="299" fill="#ff9811" rx="11" ry="11" />
       </g>
     </svg>
   )

@@ -1,9 +1,9 @@
-import type { IRole } from "~/app/common/validations/roleSchema"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
+import type { IRole } from '~/app/common/validations/roleSchema'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 export async function getRoles(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:roles"])
+  const user = await requireBetterAuthUser(request, ['read:roles'])
 
   const roles = await prisma.role.findMany({
     where: { companyId: user.companyId },
@@ -12,7 +12,7 @@ export async function getRoles(request: Request) {
   return roles || []
 }
 
-export async function getRole(roleId: IRole["id"]) {
+export async function getRole(roleId: IRole['id']) {
   const role = await prisma.role.findUnique({
     where: { id: roleId },
   })
@@ -21,7 +21,7 @@ export async function getRole(roleId: IRole["id"]) {
 }
 
 export async function createRole(request: Request, role: IRole) {
-  const user = await requireBetterAuthUser(request, ["create:roles"])
+  const user = await requireBetterAuthUser(request, ['create:roles'])
 
   const foundRole: IRole | null = await prisma.role.findFirst({
     where: { name: role.name, companyId: user.companyId },
@@ -30,7 +30,7 @@ export async function createRole(request: Request, role: IRole) {
   if (foundRole) {
     return {
       errors: {
-        name: "A role already exists with this name",
+        name: 'A role already exists with this name',
       },
     }
   }
@@ -47,23 +47,23 @@ export async function createRole(request: Request, role: IRole) {
 
     return {
       notification: {
-        message: "Role created successfully",
-        status: "Success",
-        redirectTo: "/roles",
+        message: 'Role created successfully',
+        status: 'Success',
+        redirectTo: '/roles',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Role could not be created",
-        status: "Error",
+        message: 'Role could not be created',
+        status: 'Error',
       },
     }
   }
 }
 
 export async function updateRole(request: Request, role: IRole) {
-  const user = await requireBetterAuthUser(request, ["update:roles"])
+  const user = await requireBetterAuthUser(request, ['update:roles'])
 
   const foundRole: IRole | null = await prisma.role.findFirst({
     where: { name: role.name, id: { not: role.id }, companyId: user.companyId },
@@ -72,7 +72,7 @@ export async function updateRole(request: Request, role: IRole) {
   if (foundRole) {
     return {
       errors: {
-        name: "A role already exists with this name",
+        name: 'A role already exists with this name',
       },
     }
   }
@@ -81,8 +81,8 @@ export async function updateRole(request: Request, role: IRole) {
     if (!(role as unknown as IRole)?.editable) {
       return {
         notification: {
-          message: "Dafault roles cannot be edited",
-          status: "Error",
+          message: 'Dafault roles cannot be edited',
+          status: 'Error',
           autoClose: false,
         },
       }
@@ -99,16 +99,16 @@ export async function updateRole(request: Request, role: IRole) {
 
     return {
       notification: {
-        message: "Role updated successfully",
-        status: "Success",
-        redirectTo: "/roles",
+        message: 'Role updated successfully',
+        status: 'Success',
+        redirectTo: '/roles',
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Role could not be updated",
-        status: "Error",
+        message: 'Role could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }

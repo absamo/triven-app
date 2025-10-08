@@ -1,11 +1,11 @@
-import dayjs from "dayjs"
-import { redirect } from "react-router"
-import { USER_STATUSES } from "~/app/common/constants"
-import type { INotification } from "~/app/common/validations/notificationSchema"
-import { getBetterAuthUser } from "~/app/services/better-auth.server"
-import { getNotifications } from "~/app/services/notifications.server"
-import type { Route } from "./+types/main"
-import Layout from "./Layout"
+import dayjs from 'dayjs'
+import { redirect } from 'react-router'
+import { USER_STATUSES } from '~/app/common/constants'
+import type { INotification } from '~/app/common/validations/notificationSchema'
+import { getBetterAuthUser } from '~/app/services/better-auth.server'
+import { getNotifications } from '~/app/services/notifications.server'
+import type { Route } from './+types/main'
+import Layout from './Layout'
 
 type LoaderData = {
   user: {
@@ -25,26 +25,27 @@ export async function loader({ request }: Route.LoaderArgs) {
   const user = await getBetterAuthUser(request)
 
   if (!user) {
-    return redirect("/")
+    return redirect('/')
   }
 
   // Check if user needs business setup
   if (user.status === USER_STATUSES.PENDING_BUSINESS_SETUP) {
-    return redirect("/auth/business-setup")
+    return redirect('/auth/business-setup')
   }
 
   // Check if user has the necessary business relationships
   if (!user.role || !user.company || !user.agency) {
-    return redirect("/auth/business-setup")
+    return redirect('/auth/business-setup')
   }
 
   const notifications = ((await getNotifications(request, { read: false })) ||
     []) as unknown as INotification[]
 
-  const trialing = user.subscriptions?.status === "trialing"
-  const trialPeriodDays = trialing && user.subscriptions?.trialEnd
-    ? dayjs(user.subscriptions.trialEnd * 1000).diff(dayjs(), "days")
-    : undefined
+  const trialing = user.subscriptions?.status === 'trialing'
+  const trialPeriodDays =
+    trialing && user.subscriptions?.trialEnd
+      ? dayjs(user.subscriptions.trialEnd * 1000).diff(dayjs(), 'days')
+      : undefined
 
   return {
     user: {
@@ -56,8 +57,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         lastName: user.profile?.lastName || '',
         avatar: user.profile?.avatar,
       },
-      currentPlan: user.subscriptions?.planId || "Standard",
-      planStatus: user.subscriptions?.status || "trialing",
+      currentPlan: user.subscriptions?.planId || 'Standard',
+      planStatus: user.subscriptions?.status || 'trialing',
       trialPeriodDays: trialPeriodDays || 0,
     },
     notifications,

@@ -1,8 +1,8 @@
-import { z } from "zod"
+import { z } from 'zod'
 
-import { ADJUSTMENT_REASONS } from "../constants"
-import { productSchema } from "./productSchema"
-import { siteSchema } from "./siteSchema"
+import { ADJUSTMENT_REASONS } from '../constants'
+import { productSchema } from './productSchema'
+import { siteSchema } from './siteSchema'
 // import { adjustedQuantitySchema } from "./adjustedQuantitySchema"
 // import dayjs from "dayjs"
 
@@ -19,21 +19,24 @@ export const stockAdjustmentSchema = z.object({
   date: z.coerce.date(),
   reason: z.nativeEnum(ADJUSTMENT_REASONS, {
     errorMap: () => ({
-      message: "Adjustment reason is required",
+      message: 'Adjustment reason is required',
     }),
   }),
-  reference: z.string().min(1, "Reference is required"),
+  reference: z.string().min(1, 'Reference is required'),
   notes: z.string().optional(),
   //  product: productSchema?.optional(),
   site: z.lazy(() => siteSchema).optional(),
-  siteId: z.string().min(1, "Site is required"),
+  siteId: z.string().min(1, 'Site is required'),
   products: z
-    .preprocess((products) => {
-      if (typeof products === "string") {
-        return JSON.parse(products)
-      }
-      return products
-    }, z.array(z.lazy(() => productSchema)))
+    .preprocess(
+      (products) => {
+        if (typeof products === 'string') {
+          return JSON.parse(products)
+        }
+        return products
+      },
+      z.array(z.lazy(() => productSchema))
+    )
     .optional(),
 
   // adjustedQuantities: z

@@ -1,5 +1,5 @@
-import type { Resource } from "i18next";
-import en from "./en";
-import fr from "./fr";
+import type { Resource } from 'i18next'
+import en from './en'
+import fr from './fr'
 
-export default { en, fr } satisfies Resource;
+export default { en, fr } satisfies Resource

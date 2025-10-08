@@ -1,2 +1,2 @@
-import PurchaseReceives from "./PurchaseReceives"
+import PurchaseReceives from './PurchaseReceives'
 export default PurchaseReceives

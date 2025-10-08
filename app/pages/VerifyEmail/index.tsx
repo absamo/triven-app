@@ -1,3 +1,3 @@
-import VerifyEmail from "./VerifyEmail"
+import VerifyEmail from './VerifyEmail'
 
 export default VerifyEmail

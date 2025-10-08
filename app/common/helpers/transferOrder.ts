@@ -1,7 +1,4 @@
-import {
-  TRANSFER_ORDER_REASONS,
-  TRANSFER_ORDER_STATUSES,
-} from "~/app/common/constants"
+import { TRANSFER_ORDER_REASONS, TRANSFER_ORDER_STATUSES } from '~/app/common/constants'
 
 export function getTransferOrderReasonLabel(reason: string, t?: (key: string) => string) {
   if (t) {
@@ -41,53 +38,56 @@ export function getTransferOrderReasonLabel(reason: string, t?: (key: string) =>
   // Return English labels when no translation function is provided
   switch (reason) {
     case TRANSFER_ORDER_REASONS.DAMAGED_ITEMS:
-      return { label: "Damaged items" }
+      return { label: 'Damaged items' }
     case TRANSFER_ORDER_REASONS.EXCESS_STOCK:
-      return { label: "Excess stock" }
+      return { label: 'Excess stock' }
     case TRANSFER_ORDER_REASONS.QUALITY_CONTROL:
-      return { label: "Quality control" }
+      return { label: 'Quality control' }
     case TRANSFER_ORDER_REASONS.INTERNAL_TRANSFER:
-      return { label: "Internal transfer" }
+      return { label: 'Internal transfer' }
     case TRANSFER_ORDER_REASONS.RETURN_SUPPLIER:
-      return { label: "Return supplier" }
+      return { label: 'Return supplier' }
     case TRANSFER_ORDER_REASONS.UNACCOUNTED_INVENTORY:
-      return { label: "Unaccounted inventory" }
+      return { label: 'Unaccounted inventory' }
     case TRANSFER_ORDER_REASONS.DEMO:
-      return { label: "Demo" }
+      return { label: 'Demo' }
     case TRANSFER_ORDER_REASONS.LOST_ITEMS:
-      return { label: "Lost items" }
+      return { label: 'Lost items' }
     case TRANSFER_ORDER_REASONS.PURCHASE:
-      return { label: "Purchase" }
+      return { label: 'Purchase' }
     case TRANSFER_ORDER_REASONS.SALE:
-      return { label: "Sale" }
+      return { label: 'Sale' }
     case TRANSFER_ORDER_REASONS.RETURN:
-      return { label: "Return" }
+      return { label: 'Return' }
     case TRANSFER_ORDER_REASONS.REFUND:
-      return { label: "Refund" }
+      return { label: 'Refund' }
     case TRANSFER_ORDER_REASONS.OTHER:
-      return { label: "Other" }
+      return { label: 'Other' }
     default:
-      return { label: "Unknown" }
+      return { label: 'Unknown' }
   }
 }
 
-export function getTransferOrderStatusLabel(status: string | undefined, t?: (key: string) => string) {
+export function getTransferOrderStatusLabel(
+  status: string | undefined,
+  t?: (key: string) => string
+) {
   const getColor = () => {
     switch (status) {
       case TRANSFER_ORDER_STATUSES.PENDING:
-        return "yellow"
+        return 'yellow'
       case TRANSFER_ORDER_STATUSES.CONFIRMED:
-        return "blue"
+        return 'blue'
       case TRANSFER_ORDER_STATUSES.DELIVERED:
-        return "green"
+        return 'green'
       case TRANSFER_ORDER_STATUSES.INTRANSIT:
-        return "violet"
+        return 'violet'
       case TRANSFER_ORDER_STATUSES.RETURNED:
-        return "orange"
+        return 'orange'
       case TRANSFER_ORDER_STATUSES.CANCELLED:
-        return "red"
+        return 'red'
       default:
-        return "gray"
+        return 'gray'
     }
   }
 
@@ -114,18 +114,18 @@ export function getTransferOrderStatusLabel(status: string | undefined, t?: (key
   // Return English labels when no translation function is provided
   switch (status) {
     case TRANSFER_ORDER_STATUSES.PENDING:
-      return { label: "Pending", color: getColor() }
+      return { label: 'Pending', color: getColor() }
     case TRANSFER_ORDER_STATUSES.CONFIRMED:
-      return { label: "Confirmed", color: getColor() }
+      return { label: 'Confirmed', color: getColor() }
     case TRANSFER_ORDER_STATUSES.DELIVERED:
-      return { label: "Delivered", color: getColor() }
+      return { label: 'Delivered', color: getColor() }
     case TRANSFER_ORDER_STATUSES.INTRANSIT:
-      return { label: "In transit", color: getColor() }
+      return { label: 'In transit', color: getColor() }
     case TRANSFER_ORDER_STATUSES.RETURNED:
-      return { label: "Returned", color: getColor() }
+      return { label: 'Returned', color: getColor() }
     case TRANSFER_ORDER_STATUSES.CANCELLED:
-      return { label: "Cancelled", color: getColor() }
+      return { label: 'Cancelled', color: getColor() }
     default:
-      return { label: "Unknown", color: getColor() }
+      return { label: 'Unknown', color: getColor() }
   }
 }

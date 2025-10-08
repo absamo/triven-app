@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from 'react'
 // import { useFetcher } from "@remix-run/react"
 // import { useDebouncedValue } from "@mantine/hooks"
-import { Select } from "@mantine/core"
+import { Select } from '@mantine/core'
 
 export function SearchableSelect({ ...props }) {
   //   const fetcher = useFetcher()
@@ -32,8 +32,8 @@ export function SearchableSelect({ ...props }) {
       searchable
       onSearchChange={handleSearch}
       searchValue={searchValue}
-      nothingFoundMessage={props.nothingFoundMessage || "No options"}
-      comboboxProps={{ shadow: "md" }}
+      nothingFoundMessage={props.nothingFoundMessage || 'No options'}
+      comboboxProps={{ shadow: 'md' }}
       styles={{
         dropdown: {
           zIndex: 9999,

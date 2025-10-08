@@ -1,17 +1,17 @@
-import { Grid, Modal, NumberInput } from "@mantine/core"
+import { Grid, Modal, NumberInput } from '@mantine/core'
 
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
 import { useTranslation } from 'react-i18next'
 
-import { useState } from "react"
-import { type IProduct } from "~/app/common/validations/productSchema"
+import { useState } from 'react'
+import { type IProduct } from '~/app/common/validations/productSchema'
 import {
   salesOrderItemSchema,
   type ISalesOrderItem,
-} from "~/app/common/validations/salesOrderItemSchema"
-import Form from "~/app/components/Form"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
+} from '~/app/common/validations/salesOrderItemSchema'
+import Form from '~/app/components/Form'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
 
 interface ISalesOrderItemFormProps {
   products: IProduct[]
@@ -28,11 +28,11 @@ export default function SalesOrderItemForm({
   onClose,
   onSubmit,
 }: ISalesOrderItemFormProps) {
-  const { t } = useTranslation(['salesOrders', 'forms', 'common']);
+  const { t } = useTranslation(['salesOrders', 'forms', 'common'])
   const [amount, setAmount] = useState<number>(salesOrderItem.amount || 0)
 
   const form = useForm({
-    mode: "uncontrolled",
+    mode: 'uncontrolled',
     validateInputOnBlur: true,
     validate: zodResolver(salesOrderItemSchema),
     initialValues: {
@@ -45,9 +45,7 @@ export default function SalesOrderItemForm({
     },
     onValuesChange: ({ tax, quantity, rate }) => {
       const taxPercentage = (quantity * rate * (tax || 1)) / 100
-      const currentAmount = tax
-        ? taxPercentage + quantity * rate
-        : quantity * rate
+      const currentAmount = tax ? taxPercentage + quantity * rate : quantity * rate
 
       setAmount(currentAmount)
     },
@@ -74,7 +72,7 @@ export default function SalesOrderItemForm({
   }
 
   const productsOptions = products.map((product: IProduct) => ({
-    value: product.id || "",
+    value: product.id || '',
     label: product.name,
   }))
 
@@ -100,7 +98,7 @@ export default function SalesOrderItemForm({
                 data={productsOptions}
                 name="productId"
                 clearable
-                {...form.getInputProps("productId")}
+                {...form.getInputProps('productId')}
               />
             </Grid.Col>
             <Grid.Col span={6}>
@@ -108,11 +106,9 @@ export default function SalesOrderItemForm({
                 withAsterisk
                 label={t('common:quantity', 'Quantity')}
                 name="quantity"
-                {...form.getInputProps("quantity")}
+                {...form.getInputProps('quantity')}
                 onChange={(quantity) => {
-                  form
-                    .getInputProps("quantity")
-                    .onChange(quantity === "" ? undefined : quantity)
+                  form.getInputProps('quantity').onChange(quantity === '' ? undefined : quantity)
                 }}
               />
             </Grid.Col>
@@ -121,11 +117,9 @@ export default function SalesOrderItemForm({
                 withAsterisk
                 label={t('salesOrders:rate', 'Rate')}
                 name="rate"
-                {...form.getInputProps("rate")}
+                {...form.getInputProps('rate')}
                 onChange={(rate) => {
-                  form
-                    .getInputProps("rate")
-                    .onChange(rate === "" ? undefined : rate)
+                  form.getInputProps('rate').onChange(rate === '' ? undefined : rate)
                 }}
               />
             </Grid.Col>
@@ -134,11 +128,9 @@ export default function SalesOrderItemForm({
                 label={t('salesOrders:tax', 'Tax')}
                 name="tax"
                 suffix="%"
-                {...form.getInputProps("tax")}
+                {...form.getInputProps('tax')}
                 onChange={(tax) => {
-                  form
-                    .getInputProps("tax")
-                    .onChange(tax === "" ? undefined : tax)
+                  form.getInputProps('tax').onChange(tax === '' ? undefined : tax)
                 }}
               />
             </Grid.Col>

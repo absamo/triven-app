@@ -1,6 +1,6 @@
-import { z } from "zod"
+import { z } from 'zod'
 
-import { userSchema } from "~/app/common/validations/userSchema"
+import { userSchema } from '~/app/common/validations/userSchema'
 
 export const teamSchema = z.lazy(() =>
   userSchema.pick({

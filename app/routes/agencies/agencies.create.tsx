@@ -3,27 +3,27 @@ import {
   type LoaderFunction,
   type ActionFunction,
   type ActionFunctionArgs,
-} from "react-router"
+} from 'react-router'
 
-import type { IAgency } from "~/app/common/validations/agencySchema"
-import AgencyForm from "~/app/pages/Agencies/AgencyForm"
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import AgencyForm from '~/app/pages/Agencies/AgencyForm'
 
-import { createAgency } from "~/app/services/agencies.server"
-import { getSites } from "~/app/services/sites.server"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import { getCurrenciesByCompany } from "~/app/services/settings.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import type { Route } from "./+types/agencies.create"
-import { Notification } from "~/app/components"
-import type { ISite } from "~/app/common/validations/siteSchema"
+import { createAgency } from '~/app/services/agencies.server'
+import { getSites } from '~/app/services/sites.server'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { getCurrenciesByCompany } from '~/app/services/settings.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import type { Route } from './+types/agencies.create'
+import { Notification } from '~/app/components'
+import type { ISite } from '~/app/common/validations/siteSchema'
 
 export const loader: LoaderFunction = async ({ request }) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
-  await requireBetterAuthUser(request, ["create:agencies"])
+  await requireBetterAuthUser(request, ['create:agencies'])
 
   const sites = (await getSites(request)) || []
   const agency: IAgency = {
-    name: "",
+    name: '',
   }
   const defaultCurrencies: ICurrency[] =
     ((await getCurrenciesByCompany(request)) as ICurrency[]) || []
@@ -31,18 +31,12 @@ export const loader: LoaderFunction = async ({ request }) => {
   return { agency, sites, defaultCurrencies }
 }
 
-export const action: ActionFunction = async ({
-  request,
-}: ActionFunctionArgs) => {
+export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData()
-  const name = formData.get("name") as IAgency["name"]
-  const sites = JSON.parse(formData.get("sites") as string)
-  const location = JSON.parse(
-    formData.get("location") as string
-  ) as IAgency["location"]
-  const currency = JSON.parse(
-    formData.get("currency") as string
-  ) as IAgency["currency"]
+  const name = formData.get('name') as IAgency['name']
+  const sites = JSON.parse(formData.get('sites') as string)
+  const location = JSON.parse(formData.get('location') as string) as IAgency['location']
+  const currency = JSON.parse(formData.get('currency') as string) as IAgency['currency']
 
   return await createAgency(request, {
     name,
@@ -52,10 +46,7 @@ export const action: ActionFunction = async ({
   })
 }
 
-export default function CreateAgenciesRoute({
-  loaderData,
-  actionData,
-}: Route.ComponentProps) {
+export default function CreateAgenciesRoute({ loaderData, actionData }: Route.ComponentProps) {
   const { agency, sites, defaultCurrencies } = loaderData as unknown as {
     agency: IAgency
     sites: ISite[]
@@ -68,9 +59,7 @@ export default function CreateAgenciesRoute({
         agency={agency}
         sites={sites}
         defaultCurrencies={defaultCurrencies}
-        errors={
-          (actionData as unknown as { errors: Record<string, string> })?.errors
-        }
+        errors={(actionData as unknown as { errors: Record<string, string> })?.errors}
       />
       {actionData && (
         <Notification
@@ -79,7 +68,7 @@ export default function CreateAgenciesRoute({
               actionData as unknown as {
                 notification: {
                   message: string | null
-                  status: "Success" | "Warning" | "Error" | null
+                  status: 'Success' | 'Warning' | 'Error' | null
                   redirectTo?: string | null
                   autoClose?: boolean
                 }

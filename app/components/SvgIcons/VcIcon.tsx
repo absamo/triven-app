@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface VcIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface VcIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function VcIcon({ size = 20, style, ...others }: VcIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#ffda44"
-          d="M378.5 0H133.7l-22.3 256 22.3 256h244.8l22.3-256z"
-        />
+        <path fill="#ffda44" d="M378.5 0H133.7l-22.3 256 22.3 256h244.8l22.3-256z" />
         <path fill="#338af3" d="M133.7 512V0H0v512z" />
         <path
           fill="#6da544"

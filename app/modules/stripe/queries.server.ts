@@ -1,9 +1,15 @@
-import { prisma } from "~/app/db.server"
-import { PRICING_PLANS, getStripePriceId, type Currency, type Interval, type Plan } from "~/app/modules/stripe/plans"
-import { stripe } from "~/app/modules/stripe/stripe.server"
+import { prisma } from '~/app/db.server'
+import {
+  PRICING_PLANS,
+  getStripePriceId,
+  type Currency,
+  type Interval,
+  type Plan,
+} from '~/app/modules/stripe/plans'
+import { stripe } from '~/app/modules/stripe/stripe.server'
 // import { getLocaleCurrency, HOST_URL } from "#app/utils/misc.server"
-import { ERRORS } from "~/app/common/errors"
-import { type IProfile } from "~/app/common/validations/profileSchema"
+import { ERRORS } from '~/app/common/errors'
+import { type IProfile } from '~/app/common/validations/profileSchema'
 
 /**
  * Creates a Stripe customer for a user.
@@ -47,59 +53,55 @@ export async function createCustomer({
  * Creates a Stripe plans
  */
 export async function createPlans() {
-  const plansInit = Object.values(PRICING_PLANS).map(
-    async ({ id, name, description, prices }) => {
-      // Format prices to match Stripe's API.
-      const pricesByInterval = Object.entries(prices).flatMap(
-        ([interval, price]) => {
-          return Object.entries(price).map(([currency, amount]) => ({
-            interval,
-            currency,
-            amount,
-          }))
-        }
-      )
+  const plansInit = Object.values(PRICING_PLANS).map(async ({ id, name, description, prices }) => {
+    // Format prices to match Stripe's API.
+    const pricesByInterval = Object.entries(prices).flatMap(([interval, price]) => {
+      return Object.entries(price).map(([currency, amount]) => ({
+        interval,
+        currency,
+        amount,
+      }))
+    })
 
-      // Create Stripe product.
-      await stripe.products.create({
+    // Create Stripe product.
+    await stripe.products.create({
+      id,
+      name,
+      description: description || undefined,
+    })
+
+    // Create Stripe price for the current product.
+    const stripePrices = await Promise.all(
+      pricesByInterval.map((price) => {
+        return stripe.prices.create({
+          product: id,
+          currency: price.currency,
+          unit_amount: price.amount,
+          tax_behavior: 'inclusive',
+          recurring: {
+            interval: price.interval as Interval,
+          },
+        })
+      })
+    )
+
+    // Store product into database.
+    await prisma.plan.create({
+      data: {
         id,
         name,
-        description: description || undefined,
-      })
-
-      // Create Stripe price for the current product.
-      const stripePrices = await Promise.all(
-        pricesByInterval.map((price) => {
-          return stripe.prices.create({
-            product: id,
+        description,
+        prices: {
+          create: stripePrices.map((price) => ({
+            id: price.id,
+            amount: price.unit_amount ?? 0,
             currency: price.currency,
-            unit_amount: price.amount,
-            tax_behavior: "inclusive",
-            recurring: {
-              interval: price.interval as Interval,
-            },
-          })
-        })
-      )
-
-      // Store product into database.
-      await prisma.plan.create({
-        data: {
-          id,
-          name,
-          description,
-          prices: {
-            create: stripePrices.map((price) => ({
-              id: price.id,
-              amount: price.unit_amount ?? 0,
-              currency: price.currency,
-              interval: price.recurring?.interval ?? "month",
-            })),
-          },
+            interval: price.recurring?.interval ?? 'month',
+          })),
         },
-      })
-    }
-  )
+      },
+    })
+  })
 
   await Promise.all(plansInit)
 
@@ -121,8 +123,7 @@ export async function createFreeTrialSubscription({
   currency: string
 }) {
   const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (!user || !user.stripeCustomerId)
-    throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
+  if (!user || !user.stripeCustomerId) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
 
   const subscription = await prisma.subscription.findUnique({
     where: { userId: user.id },
@@ -141,9 +142,7 @@ export async function createFreeTrialSubscription({
 
   const stripeSubscription = await stripe.subscriptions.create({
     customer: String(user.stripeCustomerId),
-    items: [
-      { price: currentPrice.id, quantity: planInterval === "year" ? 12 : 1 },
-    ],
+    items: [{ price: currentPrice.id, quantity: planInterval === 'year' ? 12 : 1 }],
     trial_period_days: 14,
   })
 
@@ -186,8 +185,7 @@ export async function createSubscriptionCheckout({
 }) {
   const user = await prisma.user.findUnique({ where: { id: userId } })
 
-  if (!user || !user.stripeCustomerId)
-    throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
+  if (!user || !user.stripeCustomerId) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
 
   const subscription = await prisma.subscription.findUnique({
     where: { userId: user.id },
@@ -201,8 +199,8 @@ export async function createSubscriptionCheckout({
   const checkoutSessionData: any = {
     customer: user.stripeCustomerId,
     line_items: [{ price: stripePriceId, quantity: 1 }],
-    mode: "subscription",
-    payment_method_types: ["card"],
+    mode: 'subscription',
+    payment_method_types: ['card'],
     success_url: `${process.env.BASE_URL}/dashboard`,
     cancel_url: `${process.env.BASE_URL}/signup`,
   }

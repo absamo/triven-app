@@ -1,29 +1,29 @@
-import type { Prisma } from "@prisma/client"
-import type { ISupplier } from "~/app/common/validations/supplierSchema"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import { PURCHASE_ORDER_STATUSES } from "../common/constants"
-import { type IPurchaseOrder } from "../common/validations/purchaseOrderSchema"
+import type { Prisma } from '@prisma/client'
+import type { ISupplier } from '~/app/common/validations/supplierSchema'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { PURCHASE_ORDER_STATUSES } from '../common/constants'
+import { type IPurchaseOrder } from '../common/validations/purchaseOrderSchema'
 
 export async function getFilteredSuppliers(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:suppliers"])
+  const user = await requireBetterAuthUser(request, ['read:suppliers'])
 
   const url = new URL(request.url)
-  const search = url.searchParams.get("search") || undefined
+  const search = url.searchParams.get('search') || undefined
 
   const suppliers = await prisma.supplier.findMany({
     where: {
       companyId: user.companyId,
       OR: search
         ? [
-          {
-            name: {
-              contains: search,
-              mode: "insensitive",
+            {
+              name: {
+                contains: search,
+                mode: 'insensitive',
+              },
             },
-          },
-          { companyName: { contains: search, mode: "insensitive" } },
-        ]
+            { companyName: { contains: search, mode: 'insensitive' } },
+          ]
         : undefined,
     },
     orderBy: { createdAt: 'desc' },
@@ -33,7 +33,7 @@ export async function getFilteredSuppliers(request: Request) {
 }
 
 export async function getSuppliers(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:suppliers"])
+  const user = await requireBetterAuthUser(request, ['read:suppliers'])
 
   const suppliers = await prisma.supplier.findMany({
     where: { companyId: user.companyId },
@@ -43,7 +43,7 @@ export async function getSuppliers(request: Request) {
   return suppliers || []
 }
 
-export async function getSupplier(supplierId: ISupplier["id"]) {
+export async function getSupplier(supplierId: ISupplier['id']) {
   const supplier = await prisma.supplier.findUnique({
     where: { id: supplierId },
     include: {
@@ -72,7 +72,7 @@ export async function getSupplier(supplierId: ISupplier["id"]) {
 }
 
 export async function createSupplier(request: Request, supplier: ISupplier) {
-  const user = await requireBetterAuthUser(request, ["create:suppliers"])
+  const user = await requireBetterAuthUser(request, ['create:suppliers'])
 
   const foundSupplier = await prisma.supplier.findFirst({
     where: {
@@ -83,18 +83,14 @@ export async function createSupplier(request: Request, supplier: ISupplier) {
   if (foundSupplier) {
     return {
       errors: {
-        email: "A supplier already exists with this email",
+        email: 'A supplier already exists with this email',
       },
     }
   }
 
-  if (
-    !supplier.location?.city ||
-    !supplier.location?.country ||
-    !supplier.currency?.id
-  ) {
+  if (!supplier.location?.city || !supplier.location?.country || !supplier.currency?.id) {
     //log error
-    throw new Response("Bad request", {
+    throw new Response('Bad request', {
       status: 404,
     })
   }
@@ -129,23 +125,23 @@ export async function createSupplier(request: Request, supplier: ISupplier) {
 
     return {
       notification: {
-        message: "Supplier created successfully",
-        status: "Success",
-        redirectTo: "/suppliers",
+        message: 'Supplier created successfully',
+        status: 'Success',
+        redirectTo: '/suppliers',
       },
     }
   } catch {
     return {
       notification: {
-        message: "An error occured while creating the supplier",
-        status: "Error",
+        message: 'An error occured while creating the supplier',
+        status: 'Error',
       },
     }
   }
 }
 
 export async function updateSupplier(request: Request, supplier: ISupplier) {
-  const user = await requireBetterAuthUser(request, ["update:suppliers"])
+  const user = await requireBetterAuthUser(request, ['update:suppliers'])
 
   const foundSupplier = await prisma.supplier.findFirst({
     where: { email: supplier.email, id: { not: supplier.id } },
@@ -154,18 +150,14 @@ export async function updateSupplier(request: Request, supplier: ISupplier) {
   if (foundSupplier) {
     return {
       errors: {
-        email: "A supplier already exists with this email",
+        email: 'A supplier already exists with this email',
       },
     }
   }
 
-  if (
-    !supplier.location?.city ||
-    !supplier.location?.country ||
-    !supplier.currency?.id
-  ) {
+  if (!supplier.location?.city || !supplier.location?.country || !supplier.currency?.id) {
     //log error
-    throw new Response("Bad request", {
+    throw new Response('Bad request', {
       status: 400,
     })
   }
@@ -203,16 +195,16 @@ export async function updateSupplier(request: Request, supplier: ISupplier) {
 
     return {
       notification: {
-        message: "Supplier updated successfully",
-        status: "Success",
-        redirectTo: "/suppliers",
+        message: 'Supplier updated successfully',
+        status: 'Success',
+        redirectTo: '/suppliers',
       },
     }
   } catch {
     return {
       notification: {
-        message: "An error occured while updating the supplier",
-        status: "Error",
+        message: 'An error occured while updating the supplier',
+        status: 'Error',
       },
     }
   }
@@ -220,10 +212,10 @@ export async function updateSupplier(request: Request, supplier: ISupplier) {
 
 export async function getPurchaseOrdersBySupplier(
   request: Request,
-  supplierId: ISupplier["id"],
-  purchaseOrderId?: IPurchaseOrder["id"]
+  supplierId: ISupplier['id'],
+  purchaseOrderId?: IPurchaseOrder['id']
 ) {
-  const user = await requireBetterAuthUser(request, ["read:suppliers"])
+  const user = await requireBetterAuthUser(request, ['read:suppliers'])
 
   const supplier = await prisma.supplier.findFirst({
     where: { companyId: user.companyId, id: supplierId },
@@ -238,9 +230,7 @@ export async function getPurchaseOrdersBySupplier(
               status: PURCHASE_ORDER_STATUSES.PARTIALLY_RECEIVED,
             },
             {
-              status: purchaseOrderId
-                ? PURCHASE_ORDER_STATUSES.RECEIVED
-                : undefined,
+              status: purchaseOrderId ? PURCHASE_ORDER_STATUSES.RECEIVED : undefined,
             },
           ],
         },

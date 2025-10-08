@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface ShIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface ShIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -32,10 +32,7 @@ export default function ShIcon({ size = 20, style, ...others }: ShIconProps) {
           fill="#333"
           d="M368 140a14 14 0 0 0-14 14h-42a14 14 0 0 0 14 14 14 14 0 0 0 14 14 14 14 0 0 0 14 14h28a14 14 0 0 0 14-14 14 14 0 0 0 14-14 14 14 0 0 0 14-14h-42a14 14 0 0 0-14-14z"
         />
-        <path
-          fill="#338af3"
-          d="M288 208v48c0 61 80 80 80 80s80-19 80-80v-48z"
-        />
+        <path fill="#338af3" d="M288 208v48c0 61 80 80 80 80s80-19 80-80v-48z" />
         <path
           fill="#eee"
           d="M372 221c-9 0-15 8-25 1 5 12 14 9 22 10v6h-14s-14 20 0 38h14v5h-14c-9 0-9-11-9-11h-34v11h7c9 8 13 26 27 26h52c15 0 17-9 20-17 3-7 5-8 6-9v-8h-29s0 8-8 8h-12v-6h14c-11-17 0-37 0-37h-14v-16l-4-1zm-23 17c-20 6-31 26-31 26h25c-2-17 6-26 6-26zm44 6a34 34 0 0 0-2 23h24c-5-12 0-23 0-23z"

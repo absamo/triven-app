@@ -10,37 +10,41 @@ import {
   Table,
   Text,
   TextInput,
-} from "@mantine/core"
-import { DateInput } from "@mantine/dates"
+} from '@mantine/core'
+import { DateInput } from '@mantine/dates'
 
-import { useForm } from "@mantine/form"
-import { notifications } from "@mantine/notifications"
-import { IconEdit, IconExclamationCircle, IconEye, IconPlus, IconTrash, IconTruck } from "@tabler/icons-react"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useTranslation } from 'react-i18next'
-import { Link, useFetcher, useSubmit } from "react-router"
+import { useForm } from '@mantine/form'
+import { notifications } from '@mantine/notifications'
 import {
-  PRODUCT_STATUSES,
-  PURCHASE_ORDER_PAYMENT_TERMS
-} from "~/app/common/constants"
-import { type IAgency } from "~/app/common/validations/agencySchema"
-import { type IProduct } from "~/app/common/validations/productSchema"
-import { salesOrderSchema } from "~/app/common/validations/salesOrderSchema"
-import { Form, TableActionsMenu } from "~/app/components"
-import { AgencySites } from "~/app/partials/AgencySites"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
-import { Title } from "~/app/partials/Title"
+  IconEdit,
+  IconExclamationCircle,
+  IconEye,
+  IconPlus,
+  IconTrash,
+  IconTruck,
+} from '@tabler/icons-react'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useTranslation } from 'react-i18next'
+import { Link, useFetcher, useSubmit } from 'react-router'
+import { PRODUCT_STATUSES, PURCHASE_ORDER_PAYMENT_TERMS } from '~/app/common/constants'
+import { type IAgency } from '~/app/common/validations/agencySchema'
+import { type IProduct } from '~/app/common/validations/productSchema'
+import { salesOrderSchema } from '~/app/common/validations/salesOrderSchema'
+import { Form, TableActionsMenu } from '~/app/components'
+import { AgencySites } from '~/app/partials/AgencySites'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
 
-import { useDisclosure } from "@mantine/hooks"
-import { useEffect, useState } from "react"
-import { formatMoney } from "~/app/common/helpers/money"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import { type ICustomer } from "~/app/common/validations/customerSchema"
-import { type ISalesOrderItem } from "~/app/common/validations/salesOrderItemSchema"
-import { type ISalesOrder } from "~/app/common/validations/salesOrderSchema"
-import type { ISite } from "~/app/common/validations/siteSchema"
-import SalesOrderItemForm from "./SalesOrderItemForm"
-import classes from "./SalesOrdersForm.module.css"
+import { useDisclosure } from '@mantine/hooks'
+import { useEffect, useState } from 'react'
+import { formatMoney } from '~/app/common/helpers/money'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { type ICustomer } from '~/app/common/validations/customerSchema'
+import { type ISalesOrderItem } from '~/app/common/validations/salesOrderItemSchema'
+import { type ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
+import SalesOrderItemForm from './SalesOrderItemForm'
+import classes from './SalesOrdersForm.module.css'
 
 interface SalesOrdersFormProps {
   salesOrder: ISalesOrder
@@ -61,79 +65,77 @@ export default function SalesOrdersForm({
   currency,
   errors,
 }: SalesOrdersFormProps) {
-  const { t } = useTranslation(['salesOrders', 'forms', 'common']);
-  const { t: tInventory } = useTranslation('inventory');
-
-
+  const { t } = useTranslation(['salesOrders', 'forms', 'common'])
+  const { t: tInventory } = useTranslation('inventory')
 
   // Product statuses for display
   const productsStatuses = [
     {
       label: tInventory('available'),
-      color: "green",
+      color: 'green',
       type: PRODUCT_STATUSES.AVAILABLE,
     },
     {
       label: tInventory('critical'),
-      color: "orange",
+      color: 'orange',
       type: PRODUCT_STATUSES.CRITICAL,
     },
     {
       label: tInventory('lowStock'),
-      color: "yellow",
+      color: 'yellow',
       type: PRODUCT_STATUSES.LOWSTOCK,
     },
     {
       label: tInventory('outOfStock'),
-      color: "red",
+      color: 'red',
       type: PRODUCT_STATUSES.OUTOFSTOCK,
     },
     {
       label: tInventory('damaged'),
-      color: "red",
+      color: 'red',
       type: PRODUCT_STATUSES.DAMAGED,
     },
     {
       label: tInventory('discontinued'),
-      color: "red",
+      color: 'red',
       type: PRODUCT_STATUSES.DISCONTINUED,
     },
     {
       label: tInventory('inTransit'),
-      color: "blue",
+      color: 'blue',
       type: PRODUCT_STATUSES.INTRANSIT,
     },
     {
       label: tInventory('reserved'),
-      color: "blue",
+      color: 'blue',
       type: PRODUCT_STATUSES.RESERVED,
     },
     {
       label: tInventory('archived'),
-      color: "blue",
+      color: 'blue',
       type: PRODUCT_STATUSES.ARCHIVED,
     },
     {
       label: tInventory('onOrder'),
-      color: "blue",
+      color: 'blue',
       type: PRODUCT_STATUSES.ONORDER,
     },
   ]
 
   const [opened, { open, close }] = useDisclosure(false)
-  const [salesOrderItem, setSalesOrderItem] = useState<ISalesOrderItem>(
-    {} as ISalesOrderItem
-  )
+  const [salesOrderItem, setSalesOrderItem] = useState<ISalesOrderItem>({} as ISalesOrderItem)
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
 
   // State for inline product selection form
-  const [selectedProduct, setSelectedProduct] = useState<string>("")
+  const [selectedProduct, setSelectedProduct] = useState<string>('')
   const [quantity, setQuantity] = useState<number>(1)
   const [rate, setRate] = useState<number>(0)
   const [tax, setTax] = useState<number>(0)
 
   // State to track created backorders for each sales order item (by salesOrderItemId)
-  const [createdBackorders, setCreatedBackorders] = useState<Map<string, { backorderReference: string; backorderId: string }>>(new Map())
+  const [createdBackorders, setCreatedBackorders] = useState<
+    Map<string, { backorderReference: string; backorderId: string }>
+  >(new Map())
 
   const form = useForm({
     validate: zodResolver(salesOrderSchema),
@@ -172,7 +174,7 @@ export default function SalesOrdersForm({
     // Only filter if agency is selected and we have items to filter
     if (form.values.agencyId && form.values.salesOrderItems.length > 0) {
       const validItems = form.values.salesOrderItems.filter((item) => {
-        const product = products.find(p => p.id === item.productId)
+        const product = products.find((p) => p.id === item.productId)
         return product && product.agencyId === form.values.agencyId
       })
 
@@ -184,7 +186,7 @@ export default function SalesOrdersForm({
 
   // Clear inline form when agency or site changes
   useEffect(() => {
-    setSelectedProduct("")
+    setSelectedProduct('')
     setQuantity(1)
     setRate(0)
     setTax(0)
@@ -194,7 +196,7 @@ export default function SalesOrdersForm({
   const addItem = () => {
     if (!selectedProduct) return
 
-    const product = products.find(p => p.id === selectedProduct)
+    const product = products.find((p) => p.id === selectedProduct)
     if (!product) return
 
     const amount = quantity * rate
@@ -210,13 +212,15 @@ export default function SalesOrdersForm({
       status: undefined,
     }
 
-    form.setFieldValue("salesOrderItems", [
-      ...form.values.salesOrderItems,
-      newItem
-    ].sort((a, b) => a.productId.localeCompare(b.productId)).reverse())
+    form.setFieldValue(
+      'salesOrderItems',
+      [...form.values.salesOrderItems, newItem]
+        .sort((a, b) => a.productId.localeCompare(b.productId))
+        .reverse()
+    )
 
     // Reset form
-    setSelectedProduct("")
+    setSelectedProduct('')
     setQuantity(1)
     setRate(0)
     setTax(0)
@@ -227,7 +231,7 @@ export default function SalesOrdersForm({
 
   // Handle backorder fetcher response
   useEffect(() => {
-    if (backorderFetcher.state === "idle" && backorderFetcher.data) {
+    if (backorderFetcher.state === 'idle' && backorderFetcher.data) {
       if (backorderFetcher.data.success && backorderFetcher.data.backorder) {
         // Update the created backorders map with the actual backorder reference
         const backorderReference = backorderFetcher.data.backorder.backorderReference
@@ -235,16 +239,23 @@ export default function SalesOrdersForm({
         const salesOrderItemId = backorderFetcher.data.backorderItems?.[0]?.salesOrderItemId
 
         if (salesOrderItemId && backorderReference && backorderId) {
-          setCreatedBackorders(prev => new Map(prev.set(salesOrderItemId, {
-            backorderReference,
-            backorderId
-          })))
+          setCreatedBackorders(
+            (prev) =>
+              new Map(
+                prev.set(salesOrderItemId, {
+                  backorderReference,
+                  backorderId,
+                })
+              )
+          )
         }
 
         // Show success notification with actual backorder reference
         notifications.show({
           title: 'Backorder Created',
-          message: backorderFetcher.data.notification?.message || `Backorder ${backorderReference} created successfully`,
+          message:
+            backorderFetcher.data.notification?.message ||
+            `Backorder ${backorderReference} created successfully`,
           color: 'green',
           icon: <IconTruck style={{ width: 16, height: 16 }} />,
           autoClose: 3000, // Auto-close after 4 seconds
@@ -261,7 +272,7 @@ export default function SalesOrdersForm({
   }, [backorderFetcher.state, backorderFetcher.data])
 
   const handleCreateBackorder = async (salesOrderItem: ISalesOrderItem) => {
-    const fullProduct = products.find(p => p.id === salesOrderItem.productId)
+    const fullProduct = products.find((p) => p.id === salesOrderItem.productId)
 
     if (!fullProduct) {
       notifications.show({
@@ -271,27 +282,26 @@ export default function SalesOrdersForm({
         icon: <IconExclamationCircle style={{ width: 16, height: 16 }} />,
       })
       return
-    }    // Prepare data in the format expected by the API
+    } // Prepare data in the format expected by the API
     const requestData = {
       salesOrderId: salesOrder.id,
-      outOfStockItems: [{
-        salesOrderItemId: salesOrderItem.id,
-        productId: salesOrderItem.productId,
-        requestedQuantity: salesOrderItem.quantity,
-        availableQuantity: 0, // Assuming no stock available for backorder creation
-        rate: salesOrderItem.rate,
-      }]
+      outOfStockItems: [
+        {
+          salesOrderItemId: salesOrderItem.id,
+          productId: salesOrderItem.productId,
+          requestedQuantity: salesOrderItem.quantity,
+          availableQuantity: 0, // Assuming no stock available for backorder creation
+          rate: salesOrderItem.rate,
+        },
+      ],
     }
 
     // Submit to our new API endpoint using fetcher
-    backorderFetcher.submit(
-      JSON.stringify(requestData),
-      {
-        method: "post",
-        action: "/api/salesorders",
-        encType: "application/json"
-      }
-    )
+    backorderFetcher.submit(JSON.stringify(requestData), {
+      method: 'post',
+      action: '/api/salesorders',
+      encType: 'application/json',
+    })
   }
 
   const handleSubmit = ({
@@ -312,19 +322,16 @@ export default function SalesOrdersForm({
 
     const formData = new FormData()
 
-    formData.append("salesOrderReference", salesOrderReference || "")
-    formData.append("customerId", customerId)
-    formData.append("orderDate", JSON.stringify(orderDate))
-    formData.append(
-      "expectedShipmentDate",
-      JSON.stringify(expectedShipmentDate)
-    )
-    formData.append("paymentTerms", JSON.stringify(paymentTerms))
-    formData.append("siteId", siteId)
-    formData.append("agencyId", agencyId)
+    formData.append('salesOrderReference', salesOrderReference || '')
+    formData.append('customerId', customerId)
+    formData.append('orderDate', JSON.stringify(orderDate))
+    formData.append('expectedShipmentDate', JSON.stringify(expectedShipmentDate))
+    formData.append('paymentTerms', JSON.stringify(paymentTerms))
+    formData.append('siteId', siteId)
+    formData.append('agencyId', agencyId)
 
     formData.append(
-      "salesOrderItems",
+      'salesOrderItems',
       JSON.stringify(
         form.values.salesOrderItems.map((salesOrderItems: ISalesOrderItem) => ({
           productId: salesOrderItems.productId,
@@ -336,20 +343,21 @@ export default function SalesOrdersForm({
       )
     )
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
   }
 
   const customerOptions = customers.map((cutomer: ICustomer) => ({
-    value: cutomer.id || "",
+    value: cutomer.id || '',
     label: `${cutomer.firstName} (${cutomer.lastName})`,
   }))
 
   // Filter products for inline form
   const usedProductIds = form.values.salesOrderItems.map((item: any) => item.productId)
-  const availableProducts = products.filter(product =>
-    !usedProductIds.includes(product.id) &&
-    (!form.values.agencyId || product.agencyId === form.values.agencyId) &&
-    (!form.values.siteId || product.siteId === form.values.siteId)
+  const availableProducts = products.filter(
+    (product) =>
+      !usedProductIds.includes(product.id) &&
+      (!form.values.agencyId || product.agencyId === form.values.agencyId) &&
+      (!form.values.siteId || product.siteId === form.values.siteId)
   )
 
   const productOptions = availableProducts.map((product) => ({
@@ -367,161 +375,156 @@ export default function SalesOrdersForm({
     return !!getItemError(index, field)
   }
 
-  const rows = form.values.salesOrderItems.map(
-    (salesOrderItem, index) => {
-      const { id, product, quantity, rate, tax, amount, status, productId } = salesOrderItem
+  const rows = form.values.salesOrderItems.map((salesOrderItem, index) => {
+    const { id, product, quantity, rate, tax, amount, status, productId } = salesOrderItem
 
-      // Find the corresponding database sales order item to check for existing backorder
-      const dbSalesOrderItem = salesOrder.salesOrderItems?.find(item =>
+    // Find the corresponding database sales order item to check for existing backorder
+    const dbSalesOrderItem = salesOrder.salesOrderItems?.find(
+      (item) =>
         item.id === salesOrderItem.id ||
         (item.productId === salesOrderItem.productId && !salesOrderItem.id)
-      ) as any // Type assertion to access backorderItem
+    ) as any // Type assertion to access backorderItem
 
-      return (
-        <Table.Tr
-          key={product?.id || id}
-          style={{ position: 'relative' }}
-          onMouseEnter={() => setHoveredRowId(product?.id || id || null)}
-          onMouseLeave={() => setHoveredRowId(null)}
-        >
-          <Table.Td>
-            <Text size="sm" w={220}>
-              {product?.name}
-            </Text>
-          </Table.Td>
-          <Table.Td>
-            {(() => {
-              const fullProduct = products.find(p => p.id === productId)
+    return (
+      <Table.Tr
+        key={product?.id || id}
+        style={{ position: 'relative' }}
+        onMouseEnter={() => setHoveredRowId(product?.id || id || null)}
+        onMouseLeave={() => setHoveredRowId(null)}
+      >
+        <Table.Td>
+          <Text size="sm" w={220}>
+            {product?.name}
+          </Text>
+        </Table.Td>
+        <Table.Td>
+          {(() => {
+            const fullProduct = products.find((p) => p.id === productId)
 
-              const currentStatus = productsStatuses.find(
-                (statusItem) => statusItem.type === fullProduct?.status
-              )
+            const currentStatus = productsStatuses.find(
+              (statusItem) => statusItem.type === fullProduct?.status
+            )
 
-              return currentStatus ? (
-                <Badge color={currentStatus.color} variant="light">
-                  {currentStatus.label}
-                </Badge>
-              ) : null
-            })()}
-          </Table.Td>
-          <Table.Td>
-            <Text size="sm" className={hasError(index, 'quantity') ? classes.errorText : undefined}>
-              {quantity}
-            </Text>
-          </Table.Td>
-          <Table.Td>
-            <Text size="sm" className={hasError(index, 'rate') ? classes.errorText : undefined}>
-              {formatMoney(rate)}
-            </Text>
-          </Table.Td>
-          <Table.Td>
-            <Text size="sm" className={hasError(index, 'tax') ? classes.errorText : undefined}>
-              {tax || undefined}
-            </Text>
-          </Table.Td>
-          <Table.Td>
-            <Text size="sm" className={hasError(index, 'amount') ? classes.errorText : undefined}>
-              {formatMoney(amount)}
-            </Text>
-          </Table.Td>
-          <Table.Td style={{ textAlign: 'center', position: 'relative', padding: 0 }}>
-            <TableActionsMenu
-              itemId={product?.id || id}
-              hoveredRowId={hoveredRowId}
-              menuWidth={180}
+            return currentStatus ? (
+              <Badge color={currentStatus.color} variant="light">
+                {currentStatus.label}
+              </Badge>
+            ) : null
+          })()}
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm" className={hasError(index, 'quantity') ? classes.errorText : undefined}>
+            {quantity}
+          </Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm" className={hasError(index, 'rate') ? classes.errorText : undefined}>
+            {formatMoney(rate)}
+          </Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm" className={hasError(index, 'tax') ? classes.errorText : undefined}>
+            {tax || undefined}
+          </Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm" className={hasError(index, 'amount') ? classes.errorText : undefined}>
+            {formatMoney(amount)}
+          </Text>
+        </Table.Td>
+        <Table.Td style={{ textAlign: 'center', position: 'relative', padding: 0 }}>
+          <TableActionsMenu itemId={product?.id || id} hoveredRowId={hoveredRowId} menuWidth={180}>
+            <Menu.Item
+              leftSection={<IconEdit style={{ width: 14, height: 14 }} />}
+              onClick={() => {
+                setSalesOrderItem({
+                  id,
+                  productId: salesOrderItem.productId,
+                  product,
+                  quantity,
+                  rate,
+                  tax,
+                  amount,
+                  status,
+                })
+                open()
+              }}
             >
+              {t('common:edit')}
+            </Menu.Item>
+            {/* Show view backorder if backorder exists (either from database or newly created) */}
+            {(dbSalesOrderItem?.backorderItem ||
+              createdBackorders.has(salesOrderItem.id || '')) && (
               <Menu.Item
-                leftSection={<IconEdit style={{ width: 14, height: 14 }} />}
-                onClick={() => {
-                  setSalesOrderItem({
-                    id,
-                    productId: salesOrderItem.productId,
-                    product,
-                    quantity,
-                    rate,
-                    tax,
-                    amount,
-                    status,
-                  })
-                  open()
-                }}
-              >
-                {t('common:edit')}
-              </Menu.Item>
-              {/* Show view backorder if backorder exists (either from database or newly created) */}
-              {(dbSalesOrderItem?.backorderItem || createdBackorders.has(salesOrderItem.id || '')) && (
-                <Menu.Item
-                  leftSection={<IconEye style={{ width: 14, height: 14 }} />}
-                  component={Link}
-                  to={dbSalesOrderItem?.backorderItem
+                leftSection={<IconEye style={{ width: 14, height: 14 }} />}
+                component={Link}
+                to={
+                  dbSalesOrderItem?.backorderItem
                     ? `/backorders/${dbSalesOrderItem.backorderItem.backorderId}/edit`
                     : `/backorders/${createdBackorders.get(salesOrderItem.id || '')?.backorderId}/edit`
-                  }
-                >
-                  {dbSalesOrderItem?.backorderItem
-                    ? `View Backorder (${dbSalesOrderItem.backorderItem.backorder?.backorderReference || 'N/A'})`
-                    : `View backorder (${createdBackorders.get(salesOrderItem.id || '')?.backorderReference})`
-                  }
-                </Menu.Item>
-              )}
-              {/* Only show create backorder if sales order is saved, no backorder exists, and product is out of stock */}
-              {(() => {
-                const fullProduct = products.find(p => p.id === productId)
-                const isOutOfStock = fullProduct?.availableQuantity === 0 ||
-                  fullProduct?.status === 'OutOfStock' ||
-                  (fullProduct?.availableQuantity || 0) < quantity
-
-                return salesOrder.id &&
-                  salesOrderItem.id &&
-                  !dbSalesOrderItem?.backorderItem &&
-                  !createdBackorders.has(salesOrderItem.id || '') &&
-                  isOutOfStock
-              })() && (
-                  <Menu.Item
-                    leftSection={<IconTruck style={{ width: 14, height: 14 }} />}
-                    onClick={() => handleCreateBackorder(salesOrderItem)}
-                  >
-                    {t('salesOrders:createBackorder')}
-                  </Menu.Item>
-                )}
-              <Menu.Item
-                color="red"
-                leftSection={<IconTrash style={{ width: 14, height: 14 }} />}
-                onClick={() => {
-                  const newItems = (form.values.salesOrderItems || []).filter(
-                    (item: ISalesOrderItem) =>
-                      item.productId !== salesOrderItem.productId
-                  )
-                  form.setFieldValue("salesOrderItems", newItems)
-
-                  // Clean up the created backorders map for this item
-                  if (salesOrderItem.id) {
-                    setCreatedBackorders(prev => {
-                      const updated = new Map(prev)
-                      updated.delete(salesOrderItem.id!)
-                      return updated
-                    })
-                  }
-
-                  // Reset selected product if the removed product was selected
-                  if (selectedProduct === salesOrderItem.productId) {
-                    setSelectedProduct("")
-                  }
-                }}
+                }
               >
-                {t('common:delete')}
+                {dbSalesOrderItem?.backorderItem
+                  ? `View Backorder (${dbSalesOrderItem.backorderItem.backorder?.backorderReference || 'N/A'})`
+                  : `View backorder (${createdBackorders.get(salesOrderItem.id || '')?.backorderReference})`}
               </Menu.Item>
-            </TableActionsMenu>
-          </Table.Td>
-        </Table.Tr>
-      )
-    }
-  )
+            )}
+            {/* Only show create backorder if sales order is saved, no backorder exists, and product is out of stock */}
+            {(() => {
+              const fullProduct = products.find((p) => p.id === productId)
+              const isOutOfStock =
+                fullProduct?.availableQuantity === 0 ||
+                fullProduct?.status === 'OutOfStock' ||
+                (fullProduct?.availableQuantity || 0) < quantity
 
-  const totalAmount = form.values.salesOrderItems.reduce(
-    (acc, item) => acc + (item.amount || 0),
-    0
-  )
+              return (
+                salesOrder.id &&
+                salesOrderItem.id &&
+                !dbSalesOrderItem?.backorderItem &&
+                !createdBackorders.has(salesOrderItem.id || '') &&
+                isOutOfStock
+              )
+            })() && (
+              <Menu.Item
+                leftSection={<IconTruck style={{ width: 14, height: 14 }} />}
+                onClick={() => handleCreateBackorder(salesOrderItem)}
+              >
+                {t('salesOrders:createBackorder')}
+              </Menu.Item>
+            )}
+            <Menu.Item
+              color="red"
+              leftSection={<IconTrash style={{ width: 14, height: 14 }} />}
+              onClick={() => {
+                const newItems = (form.values.salesOrderItems || []).filter(
+                  (item: ISalesOrderItem) => item.productId !== salesOrderItem.productId
+                )
+                form.setFieldValue('salesOrderItems', newItems)
+
+                // Clean up the created backorders map for this item
+                if (salesOrderItem.id) {
+                  setCreatedBackorders((prev) => {
+                    const updated = new Map(prev)
+                    updated.delete(salesOrderItem.id!)
+                    return updated
+                  })
+                }
+
+                // Reset selected product if the removed product was selected
+                if (selectedProduct === salesOrderItem.productId) {
+                  setSelectedProduct('')
+                }
+              }}
+            >
+              {t('common:delete')}
+            </Menu.Item>
+          </TableActionsMenu>
+        </Table.Td>
+      </Table.Tr>
+    )
+  })
+
+  const totalAmount = form.values.salesOrderItems.reduce((acc, item) => acc + (item.amount || 0), 0)
 
   const handleClose = () => {
     setSalesOrderItem({} as ISalesOrderItem)
@@ -532,7 +535,7 @@ export default function SalesOrdersForm({
     <>
       <Grid>
         <Grid.Col>
-          <Title backTo={"/sales-orders"}>
+          <Title backTo={'/sales-orders'}>
             {salesOrder.id ? t('salesOrders:edit') : t('salesOrders:addSalesOrder')}
           </Title>
 
@@ -542,10 +545,12 @@ export default function SalesOrdersForm({
               color="red"
               icon={<IconExclamationCircle />}
               classNames={{
-                root: 'sales-order-error-alert'
+                root: 'sales-order-error-alert',
               }}
             >
-              <Text size="sm" c="red">{form.errors.salesOrderItems}</Text>
+              <Text size="sm" c="red">
+                {form.errors.salesOrderItems}
+              </Text>
             </Alert>
           )}
 
@@ -555,10 +560,9 @@ export default function SalesOrdersForm({
                 withAsterisk
                 label={t('salesOrders:salesOrderReference')}
                 name="salesOrderReference"
-                {...form.getInputProps("salesOrderReference")}
+                {...form.getInputProps('salesOrderReference')}
                 error={
-                  form.getInputProps("salesOrderReference").error ||
-                  errors?.salesOrderReference
+                  form.getInputProps('salesOrderReference').error || errors?.salesOrderReference
                 }
               />
             </Grid.Col>
@@ -571,9 +575,9 @@ export default function SalesOrdersForm({
                 value={form.values.customerId}
                 name="customerId"
                 onChange={(currentCustomer: string) => {
-                  form.setFieldValue("customerId", currentCustomer)
+                  form.setFieldValue('customerId', currentCustomer)
                 }}
-                error={form.getInputProps("customerId").error}
+                error={form.getInputProps('customerId').error}
               />
             </Grid.Col>
             <Grid.Col span={4}>
@@ -616,7 +620,7 @@ export default function SalesOrdersForm({
                     label: t('salesOrders:dueOnReceipt'),
                   },
                 ]}
-                {...form.getInputProps("paymentTerms")}
+                {...form.getInputProps('paymentTerms')}
               />
             </Grid.Col>
 
@@ -628,7 +632,7 @@ export default function SalesOrdersForm({
                 name="orderDate"
                 minDate={new Date()}
                 clearable
-                {...form.getInputProps("orderDate")}
+                {...form.getInputProps('orderDate')}
               />
             </Grid.Col>
 
@@ -639,7 +643,7 @@ export default function SalesOrdersForm({
                 name="expectedShipmentDate"
                 minDate={new Date()}
                 clearable
-                {...form.getInputProps("expectedShipmentDate")}
+                {...form.getInputProps('expectedShipmentDate')}
               />
             </Grid.Col>
 
@@ -650,12 +654,12 @@ export default function SalesOrdersForm({
               sites={sites}
               siteId={form.values.siteId}
               onChange={({ agencyId, siteId }) => {
-                form.setFieldValue("agencyId", agencyId)
-                form.setFieldValue("siteId", siteId)
+                form.setFieldValue('agencyId', agencyId)
+                form.setFieldValue('siteId', siteId)
               }}
               error={{
-                siteId: form.getInputProps("siteId").error,
-                agencyId: form.getInputProps("agencyId").error,
+                siteId: form.getInputProps('siteId').error,
+                agencyId: form.getInputProps('agencyId').error,
               }}
             />
 
@@ -675,7 +679,7 @@ export default function SalesOrdersForm({
                   }
                   data={productOptions}
                   value={selectedProduct}
-                  onChange={(value) => setSelectedProduct(value || "")}
+                  onChange={(value) => setSelectedProduct(value || '')}
                   searchable
                   disabled={!form.values.agencyId || availableProducts.length === 0}
                   style={{ flex: 1 }}
@@ -721,19 +725,15 @@ export default function SalesOrdersForm({
 
               {/* Info alert for backorder creation */}
               {!salesOrder.id && form.values.salesOrderItems.length > 0 && (
-                <Alert
-                  variant="light"
-                  color="blue"
-                  icon={<IconExclamationCircle />}
-                  mt="md"
-                >
+                <Alert variant="light" color="blue" icon={<IconExclamationCircle />} mt="md">
                   <Text size="sm">
-                    <strong>Tip:</strong> Save this sales order first to enable backorder creation from individual items.
+                    <strong>Tip:</strong> Save this sales order first to enable backorder creation
+                    from individual items.
                   </Text>
                 </Alert>
               )}
 
-              <Table verticalSpacing="xs" striped mt={"md"} withTableBorder highlightOnHover>
+              <Table verticalSpacing="xs" striped mt={'md'} withTableBorder highlightOnHover>
                 <Table.Thead fz={12}>
                   <Table.Tr>
                     <Table.Th>{t('salesOrders:salesOrderItem')}</Table.Th>
@@ -763,7 +763,10 @@ export default function SalesOrdersForm({
                     <Table.Tr className={classes.totalRow}>
                       <Table.Td colSpan={3} className={classes.totalCell}></Table.Td>
                       <Table.Td className={classes.totalCell}>
-                        <Text fw={500} ta="right">{`${t('common:total')} ( ${currency.symbol} )`}</Text>
+                        <Text
+                          fw={500}
+                          ta="right"
+                        >{`${t('common:total')} ( ${currency.symbol} )`}</Text>
                       </Table.Td>
                       <Table.Td className={classes.totalCell}></Table.Td>
                       <Table.Td className={classes.totalCell}>
@@ -776,20 +779,28 @@ export default function SalesOrdersForm({
               </Table>
 
               {/* Display sales order items errors */}
-              {Object.keys(form.errors).some(key => key.startsWith('salesOrderItems.') && key.includes('.')) && (
+              {Object.keys(form.errors).some(
+                (key) => key.startsWith('salesOrderItems.') && key.includes('.')
+              ) && (
                 <Alert
                   variant="light"
                   color="red"
                   icon={<IconExclamationCircle />}
                   mt="md"
                   classNames={{
-                    root: 'sales-order-field-error-alert'
+                    root: 'sales-order-field-error-alert',
                   }}
                 >
                   <Text size="sm" c="red">
-                    {[...new Set(Object.entries(form.errors)
-                      .filter(([key]) => key.startsWith('salesOrderItems.') && key.includes('.'))
-                      .map(([, error]) => error))].join('. ')}
+                    {[
+                      ...new Set(
+                        Object.entries(form.errors)
+                          .filter(
+                            ([key]) => key.startsWith('salesOrderItems.') && key.includes('.')
+                          )
+                          .map(([, error]) => error)
+                      ),
+                    ].join('. ')}
                   </Text>
                 </Alert>
               )}
@@ -799,34 +810,33 @@ export default function SalesOrdersForm({
                   products={
                     salesOrderItem.productId
                       ? products.filter(
-                        (product) =>
-                          (!form.values.agencyId || product.agencyId === form.values.agencyId) &&
-                          (!form.values.siteId || product.siteId === form.values.siteId)
-                      )
-                      : products
-                        .filter(
                           (product) =>
                             (!form.values.agencyId || product.agencyId === form.values.agencyId) &&
                             (!form.values.siteId || product.siteId === form.values.siteId)
                         )
-                        .filter(
-                          (product) =>
-                            !form.values.salesOrderItems
-                              .map((salesOrderItem) => salesOrderItem.productId)
-                              .some((productId) => productId === product.id)
-                        )
+                      : products
+                          .filter(
+                            (product) =>
+                              (!form.values.agencyId ||
+                                product.agencyId === form.values.agencyId) &&
+                              (!form.values.siteId || product.siteId === form.values.siteId)
+                          )
+                          .filter(
+                            (product) =>
+                              !form.values.salesOrderItems
+                                .map((salesOrderItem) => salesOrderItem.productId)
+                                .some((productId) => productId === product.id)
+                          )
                   }
                   salesOrderItem={salesOrderItem}
                   opened={opened}
                   onClose={handleClose}
                   onSubmit={(currentSalesOrderItem) => {
                     form.setFieldValue(
-                      "salesOrderItems",
+                      'salesOrderItems',
                       [
                         ...form.values.salesOrderItems.filter((item) => {
-                          return (
-                            item.productId !== currentSalesOrderItem.productId
-                          )
+                          return item.productId !== currentSalesOrderItem.productId
                         }),
                         {
                           id: currentSalesOrderItem.id,

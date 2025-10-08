@@ -9,7 +9,7 @@ import {
   Preview,
   Section,
   Text,
-} from "@react-email/components"
+} from '@react-email/components'
 
 interface UserSignupProps {
   userFirstname: string
@@ -21,10 +21,7 @@ const baseUrl = process.env.BASE_URL
 export const UserSignup = ({ userFirstname, inviteLink }: UserSignupProps) => (
   <Html>
     <Head />
-    <Preview>
-      The inventory management solution that helps you streamline your
-      operations.
-    </Preview>
+    <Preview>The inventory management solution that helps you streamline your operations.</Preview>
     <Body style={main}>
       <Container style={container}>
         <Img
@@ -35,12 +32,9 @@ export const UserSignup = ({ userFirstname, inviteLink }: UserSignupProps) => (
           style={logo}
         />
         <Text style={paragraph}>Hi {userFirstname},</Text>
+        <Text style={paragraph}>Welcome to TRIVEN! We're excited to have you on board.</Text>
         <Text style={paragraph}>
-          Welcome to TRIVEN! We're excited to have you on board.
-        </Text>
-        <Text style={paragraph}>
-          To get started, please click the button below to complete your
-          registration.
+          To get started, please click the button below to complete your registration.
         </Text>
         <Section>
           <Button style={button} href={inviteLink}>
@@ -62,40 +56,40 @@ export const UserSignup = ({ userFirstname, inviteLink }: UserSignupProps) => (
 export default UserSignup
 
 const main = {
-  backgroundColor: "#ffffff",
+  backgroundColor: '#ffffff',
   fontFamily:
     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
 }
 
 const container = {
-  margin: "0 auto",
-  padding: "20px 0 48px",
+  margin: '0 auto',
+  padding: '20px 0 48px',
 }
 
 const logo = {
-  margin: "0 auto",
+  margin: '0 auto',
 }
 
 const paragraph = {
-  fontSize: "16px",
-  lineHeight: "26px",
+  fontSize: '16px',
+  lineHeight: '26px',
 }
 
 const button = {
-  backgroundColor: "#5F51E8",
-  borderRadius: "3px",
-  color: "#fff",
-  fontSize: "16px",
-  textDecoration: "none",
-  textAlign: "center" as const,
-  display: "block",
-  padding: "10px 20px",
+  backgroundColor: '#5F51E8',
+  borderRadius: '3px',
+  color: '#fff',
+  fontSize: '16px',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'block',
+  padding: '10px 20px',
 }
 
 const hr = {
-  borderColor: "#cccccc",
-  margin: "20px 0",
-  fontWeight: "bold",
+  borderColor: '#cccccc',
+  margin: '20px 0',
+  fontWeight: 'bold',
 }
 
 // const footer = {

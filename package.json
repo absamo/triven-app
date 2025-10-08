@@ -25,7 +25,13 @@
     "ollama:restart": "docker-compose restart ollama",
     "ollama:down": "docker-compose down ollama",
     "ollama:build": "docker-compose build ollama",
-    "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhook"
+    "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhook",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -91,6 +97,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.26.0",
+    "@biomejs/biome": "^2.2.5",
     "@faker-js/faker": "^9.3.0",
     "@react-email/button": "^0.2.0",
     "@react-email/components": "^0.5.1",

@@ -11,8 +11,8 @@ import {
   Preview,
   Section,
   Tailwind,
-  Text
-} from "@react-email/components"
+  Text,
+} from '@react-email/components'
 
 interface InviteUserEmailProps {
   username: string
@@ -34,8 +34,8 @@ export const InviteUserEmail = ({
   teamName,
   teamImage,
   inviteLink,
-  inviteFromIp = "204.13.186.218",
-  inviteFromLocation = "Lyon, France",
+  inviteFromIp = '204.13.186.218',
+  inviteFromLocation = 'Lyon, France',
 }: InviteUserEmailProps) => {
   const previewText = `Join ${invitedByUsername} on TRIVEN`
 
@@ -48,8 +48,8 @@ export const InviteUserEmail = ({
         fontFamily="Karla"
         fallbackFontFamily="Verdana"
         webFont={{
-          url: "https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap",
-          format: "woff2",
+          url: 'https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap',
+          format: 'woff2',
         }}
         fontWeight={400}
         fontStyle="normal"
@@ -70,20 +70,15 @@ export const InviteUserEmail = ({
             <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
               Join your organisation team
             </Heading>
-            <Text className="text-black text-[14px] leading-[24px]">
-              Hello {username},
-            </Text>
+            <Text className="text-black text-[14px] leading-[24px]">Hello {username},</Text>
             {invitedByUsername && (
               <Text className="text-black text-[14px] leading-[24px]">
                 <strong>{invitedByUsername}</strong> (
-                <Link
-                  href={`mailto:${invitedByEmail}`}
-                  className="text-blue-600 no-underline"
-                >
+                <Link href={`mailto:${invitedByEmail}`} className="text-blue-600 no-underline">
                   {invitedByEmail}
                 </Link>
-                ) has invited you to the <strong>{teamName}</strong> team on{" "}
-                <strong>TRIVEN</strong>.
+                ) has invited you to the <strong>{teamName}</strong> team on <strong>TRIVEN</strong>
+                .
               </Text>
             )}
             {/* <Section>
@@ -116,7 +111,7 @@ export const InviteUserEmail = ({
             </Section> */}
             <Section className="text-center mt-[32px] mb-[32px]">
               <Button
-                style={{ color: "#61dafb", padding: "10px 20px" }}
+                style={{ color: '#61dafb', padding: '10px 20px' }}
                 className="bg-[#000000] rounded text-white text-[12px] font-semibold no-underline text-center"
                 href={inviteLink}
               >

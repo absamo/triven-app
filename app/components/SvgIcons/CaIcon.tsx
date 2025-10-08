@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface CaIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface CaIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function CaIcon({ size = 20, style, ...others }: CaIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#d80027"
-          d="M0 0v512h144l112-64 112 64h144V0H368L256 64 144 0Z"
-        />
+        <path fill="#d80027" d="M0 0v512h144l112-64 112 64h144V0H368L256 64 144 0Z" />
         <path fill="#eee" d="M144 0h224v512H144Z" />
         <path
           fill="#d80027"

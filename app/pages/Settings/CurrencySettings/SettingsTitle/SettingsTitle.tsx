@@ -1,16 +1,12 @@
-import { Flex, Text, Button } from "@mantine/core"
-import classes from "./SettingsTitle.module.css"
+import { Flex, Text, Button } from '@mantine/core'
+import classes from './SettingsTitle.module.css'
 interface SettingsTitleProps {
   title?: string
   description?: string
   onClick: () => void
 }
 
-export default function SettingsTitle({
-  title,
-  description,
-  onClick,
-}: SettingsTitleProps) {
+export default function SettingsTitle({ title, description, onClick }: SettingsTitleProps) {
   return (
     <Flex align="center" justify="space-between">
       <div>
@@ -20,11 +16,7 @@ export default function SettingsTitle({
         </Text>
       </div>
 
-      <Button
-        onClick={onClick}
-        className={classes.editButton}
-        size="compact-sm"
-      >
+      <Button onClick={onClick} className={classes.editButton} size="compact-sm">
         Add currency
       </Button>
     </Flex>

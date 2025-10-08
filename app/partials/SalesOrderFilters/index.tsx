@@ -1,2 +1,2 @@
-import SalesOrderFilters from "./SalesOrderFilters"
+import SalesOrderFilters from './SalesOrderFilters'
 export { SalesOrderFilters }

@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface CdIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface CdIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -19,10 +19,7 @@ export default function CdIcon({ size = 20, style, ...others }: CdIconProps) {
       </mask>
       <g mask="url(#a)">
         <path fill="#338af3" d="M0 0h401.9L512 110.3V512H110.3L0 401.9z" />
-        <path
-          fill="#ffda44"
-          d="M401.9 0 0 401.9V449l63 63h47.3L512 110.3V63L449 0z"
-        />
+        <path fill="#ffda44" d="M401.9 0 0 401.9V449l63 63h47.3L512 110.3V63L449 0z" />
         <path fill="#d80027" d="M449 0 0 449v63h63L512 63V0h-63z" />
         <path
           fill="#ffda44"

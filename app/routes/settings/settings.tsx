@@ -3,38 +3,31 @@ import {
   type ActionFunctionArgs,
   type LoaderFunction,
   type LoaderFunctionArgs,
-} from "react-router"
+} from 'react-router'
 
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import Settings from "~/app/pages/Settings"
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import Settings from '~/app/pages/Settings'
 import {
   createCurrency,
   deleteCurrency,
   getCurrenciesByCompany,
   updateCurrencyBase,
-} from "~/app/services/settings.server"
+} from '~/app/services/settings.server'
 
-import { prisma } from "~/app/db.server"
-import {
-  getAllInvoices,
-  getUpcomingInvoice,
-} from "~/app/modules/stripe/queries.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import type { Route } from "./+types/settings"
+import { prisma } from '~/app/db.server'
+import { getAllInvoices, getUpcomingInvoice } from '~/app/modules/stripe/queries.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import type { Route } from './+types/settings'
 
-export const loader: LoaderFunction = async ({
-  request,
-}: LoaderFunctionArgs) => {
-
+export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
-  const user = await requireBetterAuthUser(request, ["read:settings"])
-
+  const user = await requireBetterAuthUser(request, ['read:settings'])
 
   const permissions = user?.role?.permissions.filter(
     (permission) =>
-      permission === "create:settings" ||
-      permission === "update:settings" ||
-      permission === "delete:settings"
+      permission === 'create:settings' ||
+      permission === 'update:settings' ||
+      permission === 'delete:settings'
   )
 
   const defaultCurrencies: ICurrency[] =
@@ -63,9 +56,7 @@ export const loader: LoaderFunction = async ({
 
     if (!isDemoSubscription) {
       // Only call Stripe APIs for real subscriptions
-      invoices = await (
-        await getAllInvoices(subscription?.id)
-      ).map((invoice: any) => {
+      invoices = await (await getAllInvoices(subscription?.id)).map((invoice: any) => {
         return {
           id: invoice.id,
           amountPaid: invoice.amount_paid,
@@ -110,7 +101,7 @@ export const loader: LoaderFunction = async ({
     }
 
     currentsubscription = {
-      currentPlan: subscription.planId?.toLowerCase() || "standard",
+      currentPlan: subscription.planId?.toLowerCase() || 'standard',
       currentPeriodStart: subscription.currentPeriodStart,
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
@@ -127,25 +118,27 @@ export const loader: LoaderFunction = async ({
     defaultCurrencies,
     subscription: currentsubscription,
     invoices,
-    upcomingInvoice: upcomingInvoice ? {
-      amountDue: upcomingInvoice.amount_due,
-      currency: upcomingInvoice.currency,
-      periodStart: upcomingInvoice.period_start,
-      periodEnd: upcomingInvoice.period_end,
-      billingReason: upcomingInvoice.billing_reason,
-      status: upcomingInvoice.status,
-      nextPayment_attempt: upcomingInvoice.next_payment_attempt,
-      customerName: upcomingInvoice.customer_name,
-      customerEmail: upcomingInvoice.customer_email,
-      customerAddress: {
-        city: upcomingInvoice.customer_address?.city,
-        country: upcomingInvoice.customer_address?.country,
-        line1: upcomingInvoice.customer_address?.line1,
-        postalCode: upcomingInvoice.customer_address?.postal_code,
-        state: upcomingInvoice.customer_address?.state,
-      },
-      customerPhone: upcomingInvoice.customer_phone,
-    } : null,
+    upcomingInvoice: upcomingInvoice
+      ? {
+          amountDue: upcomingInvoice.amount_due,
+          currency: upcomingInvoice.currency,
+          periodStart: upcomingInvoice.period_start,
+          periodEnd: upcomingInvoice.period_end,
+          billingReason: upcomingInvoice.billing_reason,
+          status: upcomingInvoice.status,
+          nextPayment_attempt: upcomingInvoice.next_payment_attempt,
+          customerName: upcomingInvoice.customer_name,
+          customerEmail: upcomingInvoice.customer_email,
+          customerAddress: {
+            city: upcomingInvoice.customer_address?.city,
+            country: upcomingInvoice.customer_address?.country,
+            line1: upcomingInvoice.customer_address?.line1,
+            postalCode: upcomingInvoice.customer_address?.postal_code,
+            state: upcomingInvoice.customer_address?.state,
+          },
+          customerPhone: upcomingInvoice.customer_phone,
+        }
+      : null,
     permissions,
     config: {
       stripePublicKey: process.env.STRIPE_PUBLIC_KEY || '',
@@ -153,37 +146,38 @@ export const loader: LoaderFunction = async ({
   }
 }
 
-export const action: ActionFunction = async ({
-  request,
-}: ActionFunctionArgs) => {
+export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData()
-  const action = formData.get("action") as string
+  const action = formData.get('action') as string
 
   // Handle upgrade subscription action
-  if (action === "upgrade") {
-    const planId = formData.get("planId") as string
-    const interval = formData.get("interval") as string
-    const currency = formData.get("currency") as string
+  if (action === 'upgrade') {
+    const planId = formData.get('planId') as string
+    const interval = formData.get('interval') as string
+    const currency = formData.get('currency') as string
 
     // Forward to the subscription-create API
-    const subscriptionResponse = await fetch(`${new URL(request.url).origin}/api/subscription-create`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Cookie': request.headers.get('Cookie') || '',
-      },
-      body: JSON.stringify({
-        planId,
-        interval,
-        currency,
-      }),
-    })
+    const subscriptionResponse = await fetch(
+      `${new URL(request.url).origin}/api/subscription-create`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: request.headers.get('Cookie') || '',
+        },
+        body: JSON.stringify({
+          planId,
+          interval,
+          currency,
+        }),
+      }
+    )
 
     const subscriptionData = await subscriptionResponse.json()
 
     if (!subscriptionResponse.ok) {
       return {
-        error: subscriptionData.error || 'Failed to create subscription'
+        error: subscriptionData.error || 'Failed to create subscription',
       }
     }
 
@@ -191,30 +185,33 @@ export const action: ActionFunction = async ({
   }
 
   // Handle setup-payment action
-  if (action === "setup-payment") {
-    const planId = formData.get("planId") as string
-    const interval = formData.get("interval") as string
-    const currency = formData.get("currency") as string
+  if (action === 'setup-payment') {
+    const planId = formData.get('planId') as string
+    const interval = formData.get('interval') as string
+    const currency = formData.get('currency') as string
 
     // Forward to the subscription-create API
-    const subscriptionResponse = await fetch(`${new URL(request.url).origin}/api/subscription-create`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Cookie': request.headers.get('Cookie') || '',
-      },
-      body: JSON.stringify({
-        planId,
-        interval,
-        currency,
-      }),
-    })
+    const subscriptionResponse = await fetch(
+      `${new URL(request.url).origin}/api/subscription-create`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: request.headers.get('Cookie') || '',
+        },
+        body: JSON.stringify({
+          planId,
+          interval,
+          currency,
+        }),
+      }
+    )
 
     const subscriptionData = await subscriptionResponse.json()
 
     if (!subscriptionResponse.ok) {
       return {
-        error: subscriptionData.error || 'Failed to setup payment'
+        error: subscriptionData.error || 'Failed to setup payment',
       }
     }
 
@@ -222,25 +219,23 @@ export const action: ActionFunction = async ({
   }
 
   // Handle currency base update and delete actions
-  if (action === "update") {
-    const currencyId = formData.get("id") as string
+  if (action === 'update') {
+    const currencyId = formData.get('id') as string
     return await updateCurrencyBase(currencyId, request)
   }
 
-  if (action === "delete") {
-    const currencyId = formData.get("id") as string
+  if (action === 'delete') {
+    const currencyId = formData.get('id') as string
     return await deleteCurrency(currencyId, request)
   }
 
   // Handle currency creation (default action) - only if we have currency data
-  if (action === "create" || (!action && formData.get("currencyCode"))) {
-    const currencyCode = formData.get("currencyCode") as ICurrency["currencyCode"]
-    const currencyName = formData.get("currencyName") as ICurrency["currencyName"]
-    const countryName = formData.get("countryName") as ICurrency["countryName"]
-    const isoCode = formData.get("isoCode") as ICurrency["isoCode"]
-    const order = JSON.parse(
-      formData.get("order") as string
-    ) as ICurrency["order"]
+  if (action === 'create' || (!action && formData.get('currencyCode'))) {
+    const currencyCode = formData.get('currencyCode') as ICurrency['currencyCode']
+    const currencyName = formData.get('currencyName') as ICurrency['currencyName']
+    const countryName = formData.get('countryName') as ICurrency['countryName']
+    const isoCode = formData.get('isoCode') as ICurrency['isoCode']
+    const order = JSON.parse(formData.get('order') as string) as ICurrency['order']
 
     return await createCurrency(request, {
       currencyCode,
@@ -253,46 +248,44 @@ export const action: ActionFunction = async ({
 
   // If no valid action is found, return an error
   return {
-    error: "Invalid action"
+    error: 'Invalid action',
   }
 }
 
-export default function SettingsRoute({
-  loaderData,
-  actionData,
-}: Route.ComponentProps) {
-  const { subscription, permissions, defaultCurrencies, upcomingInvoice, config } = loaderData as unknown as {
-    subscription: {
-      currentPlan: string
-      currentPeriodStart: number
-      currentPeriodEnd: number
-      cancelAtPeriodEnd: boolean
-      trialStart: number
-      trialEnd: number
-      interval: string
-      amount: number
-      currency: string
-      status: string
+export default function SettingsRoute({ loaderData, actionData }: Route.ComponentProps) {
+  const { subscription, permissions, defaultCurrencies, upcomingInvoice, config } =
+    loaderData as unknown as {
+      subscription: {
+        currentPlan: string
+        currentPeriodStart: number
+        currentPeriodEnd: number
+        cancelAtPeriodEnd: boolean
+        trialStart: number
+        trialEnd: number
+        interval: string
+        amount: number
+        currency: string
+        status: string
+      }
+      upcomingInvoice: {
+        amountDue: number
+        currency: string
+        periodStart: number
+        periodEnd: number
+        billingReason: string
+        status: string
+        nextPayment_attempt: number
+        customerName: string
+        customerEmail: string
+        customerAddress: any
+        customerPhone: string
+      } | null
+      permissions: string[]
+      defaultCurrencies: ICurrency[]
+      config: {
+        stripePublicKey: string
+      }
     }
-    upcomingInvoice: {
-      amountDue: number
-      currency: string
-      periodStart: number
-      periodEnd: number
-      billingReason: string
-      status: string
-      nextPayment_attempt: number
-      customerName: string
-      customerEmail: string
-      customerAddress: any
-      customerPhone: string
-    } | null
-    permissions: string[]
-    defaultCurrencies: ICurrency[]
-    config: {
-      stripePublicKey: string
-    }
-  }
 
   return (
     <Settings

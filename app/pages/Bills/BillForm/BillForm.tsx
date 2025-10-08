@@ -6,21 +6,21 @@ import {
   Text,
   TextInput,
   Textarea,
-  useMantineTheme
-} from "@mantine/core"
-import { DateInput } from "@mantine/dates"
+  useMantineTheme,
+} from '@mantine/core'
+import { DateInput } from '@mantine/dates'
 
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useTranslation } from "react-i18next"
-import { useSubmit } from "react-router"
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useTranslation } from 'react-i18next'
+import { useSubmit } from 'react-router'
 
-import { type IBill, billSchema } from "~/app/common/validations/billSchema"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import { type IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
-import { Form } from "~/app/components"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
-import { Title } from "~/app/partials/Title"
+import { type IBill, billSchema } from '~/app/common/validations/billSchema'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { type IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import { Form } from '~/app/components'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
 
 interface BillFormProps {
   bill: IBill
@@ -29,12 +29,7 @@ interface BillFormProps {
   errors: Record<string, string>
 }
 
-export default function BillForm({
-  bill,
-  purchaseOrders,
-  errors,
-  currency,
-}: BillFormProps) {
+export default function BillForm({ bill, purchaseOrders, errors, currency }: BillFormProps) {
   const { t } = useTranslation(['bills', 'common'])
 
   const form = useForm({
@@ -52,30 +47,22 @@ export default function BillForm({
 
   const submit = useSubmit()
 
-  const handleSubmit = ({
-    billReference,
-    billDate,
-    dueDate,
-    purchaseOrderId,
-    notes,
-  }: IBill) => {
+  const handleSubmit = ({ billReference, billDate, dueDate, purchaseOrderId, notes }: IBill) => {
     const formData = new FormData()
 
-    formData.append("billReference", billReference)
-    formData.append("billDate", JSON.stringify(billDate))
-    formData.append("dueDate", JSON.stringify(dueDate))
-    formData.append("purchaseOrderId", purchaseOrderId)
-    formData.append("notes", notes || "")
+    formData.append('billReference', billReference)
+    formData.append('billDate', JSON.stringify(billDate))
+    formData.append('dueDate', JSON.stringify(dueDate))
+    formData.append('purchaseOrderId', purchaseOrderId)
+    formData.append('notes', notes || '')
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
   }
 
-  const purchaseOrderOptions = purchaseOrders.map(
-    (purchaseOrder: IPurchaseOrder) => ({
-      value: purchaseOrder.id,
-      label: purchaseOrder.purchaseOrderReference,
-    })
-  )
+  const purchaseOrderOptions = purchaseOrders.map((purchaseOrder: IPurchaseOrder) => ({
+    value: purchaseOrder.id,
+    label: purchaseOrder.purchaseOrderReference,
+  }))
 
   const totalAmount = form.values.purchaseOrderItems.reduce(
     (acc, item) => acc + (item.amount || 0),
@@ -119,9 +106,7 @@ export default function BillForm({
     <>
       <Grid>
         <Grid.Col>
-          <Title backTo={"/bills"}>
-            {bill.id ? t('bills:editBill') : t('bills:addBill')}
-          </Title>
+          <Title backTo={'/bills'}>{bill.id ? t('bills:editBill') : t('bills:addBill')}</Title>
 
           <Form onSubmit={form.onSubmit(handleSubmit)}>
             <Grid.Col span={6}>
@@ -129,11 +114,8 @@ export default function BillForm({
                 withAsterisk
                 label={t('bills:billReferenceLabel')}
                 name="billReference"
-                {...form.getInputProps("billReference")}
-                error={
-                  form.getInputProps("billReference").error ||
-                  errors?.billReference
-                }
+                {...form.getInputProps('billReference')}
+                error={form.getInputProps('billReference').error || errors?.billReference}
               />
             </Grid.Col>
 
@@ -147,16 +129,15 @@ export default function BillForm({
                 name="purchaseOrderId"
                 disabled={!!bill.id}
                 onChange={(currentPurchaseOrder: string) => {
-                  form.setFieldValue("purchaseOrderId", currentPurchaseOrder)
+                  form.setFieldValue('purchaseOrderId', currentPurchaseOrder)
                   form.setFieldValue(
-                    "purchaseOrderItems",
+                    'purchaseOrderItems',
                     purchaseOrders.find(
-                      (purchaseOrder) =>
-                        purchaseOrder.id === currentPurchaseOrder
+                      (purchaseOrder) => purchaseOrder.id === currentPurchaseOrder
                     )?.purchaseOrderItems || []
                   )
                 }}
-                error={form.getInputProps("purchaseOrderId").error}
+                error={form.getInputProps('purchaseOrderId').error}
               />
             </Grid.Col>
 
@@ -167,7 +148,7 @@ export default function BillForm({
                 label={t('bills:billDate')}
                 name="billDate"
                 minDate={new Date()}
-                {...form.getInputProps("billDate")}
+                {...form.getInputProps('billDate')}
               />
             </Grid.Col>
 
@@ -178,7 +159,7 @@ export default function BillForm({
                 label={t('bills:dueDate')}
                 name="dueDate"
                 minDate={new Date()}
-                {...form.getInputProps("dueDate")}
+                {...form.getInputProps('dueDate')}
               />
             </Grid.Col>
 
@@ -188,7 +169,7 @@ export default function BillForm({
                 name="notes"
                 autosize
                 minRows={4}
-                {...form.getInputProps("notes")}
+                {...form.getInputProps('notes')}
               />
             </Grid.Col>
 
@@ -197,7 +178,7 @@ export default function BillForm({
                 verticalSpacing="xs"
                 highlightOnHover={false}
                 striped
-                mt={"md"}
+                mt={'md'}
                 withTableBorder
               >
                 <Table.Thead fz={12}>
@@ -230,10 +211,7 @@ export default function BillForm({
               <Grid.Col span={7} offset={5}>
                 <Paper withBorder p={20} bg={theme.colors.gray[1]}>
                   <Group justify="space-between">
-                    <Text
-                      size="md"
-                      fw="bold"
-                    >{`${t('bills:total')} ( ${currency.symbol} )`}</Text>
+                    <Text size="md" fw="bold">{`${t('bills:total')} ( ${currency.symbol} )`}</Text>
                     <Text size="md" fw="bold">
                       {totalAmount}
                     </Text>

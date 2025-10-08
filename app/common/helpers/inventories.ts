@@ -1,8 +1,8 @@
-import Ean from "ean-generator"
-import { PRODUCT_STATUSES } from "~/app/common/constants"
-import { type IProduct } from "../validations/productSchema"
+import Ean from 'ean-generator'
+import { PRODUCT_STATUSES } from '~/app/common/constants'
+import { type IProduct } from '../validations/productSchema'
 
-let ean = new Ean(["300", "310", "320", "330", "340", "350", "360", "370"])
+let ean = new Ean(['300', '310', '320', '330', '340', '350', '360', '370'])
 
 export function isEan13(barcode: string): boolean {
   return ean.isValid(barcode)
@@ -44,10 +44,10 @@ export function getStockStatus(product: IProduct) {
 }
 
 export function getStockNotificationMessage(
-  productStatus: IProduct["status"],
-  productName: IProduct["name"]
+  productStatus: IProduct['status'],
+  productName: IProduct['name']
 ) {
-  let notificationMsg = ""
+  let notificationMsg = ''
   switch (productStatus) {
     case PRODUCT_STATUSES.OUTOFSTOCK:
       notificationMsg = `${productName} is out of stock`

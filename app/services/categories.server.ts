@@ -1,17 +1,16 @@
-
-import type { Prisma } from "@prisma/client"
-import type { ICategory } from "~/app/common/validations/categorySchema"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
+import type { Prisma } from '@prisma/client'
+import type { ICategory } from '~/app/common/validations/categorySchema'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 export async function getCategories(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:categories"])
+  const user = await requireBetterAuthUser(request, ['read:categories'])
 
   const categories = await prisma.category.findMany({
-    where: { companyId: user.companyId, name: { mode: "insensitive" } },
+    where: { companyId: user.companyId, name: { mode: 'insensitive' } },
     orderBy: [
       {
-        name: "desc",
+        name: 'desc',
       },
     ],
   })
@@ -19,7 +18,7 @@ export async function getCategories(request: Request) {
   return categories || []
 }
 
-export async function getCategory(id?: ICategory["id"]) {
+export async function getCategory(id?: ICategory['id']) {
   const category = await prisma.category.findUnique({
     where: { id },
   })
@@ -28,7 +27,7 @@ export async function getCategory(id?: ICategory["id"]) {
 }
 
 export async function createCategory(request: Request, category: ICategory) {
-  const user = await requireBetterAuthUser(request, ["create:categories"])
+  const user = await requireBetterAuthUser(request, ['create:categories'])
 
   const foundCategory = await prisma.category.findFirst({
     where: { name: category.name },
@@ -37,7 +36,7 @@ export async function createCategory(request: Request, category: ICategory) {
   if (foundCategory) {
     return {
       errors: {
-        name: "A category already exists with this name",
+        name: 'A category already exists with this name',
       },
     }
   }
@@ -57,23 +56,23 @@ export async function createCategory(request: Request, category: ICategory) {
 
     return {
       notification: {
-        message: "Category created successfully",
-        status: "Success",
-        redirectTo: "/categories",
+        message: 'Category created successfully',
+        status: 'Success',
+        redirectTo: '/categories',
       },
     }
   } catch {
     return {
       notification: {
-        message: "An error occured while creating the category",
-        status: "Error",
+        message: 'An error occured while creating the category',
+        status: 'Error',
       },
     }
   }
 }
 
 export async function updateCategory(request: Request, category: ICategory) {
-  const user = await requireBetterAuthUser(request, ["update:categories"])
+  const user = await requireBetterAuthUser(request, ['update:categories'])
 
   const foundCategory = await prisma.category.findFirst({
     where: { id: category.id, name: category.name },
@@ -82,7 +81,7 @@ export async function updateCategory(request: Request, category: ICategory) {
   if (foundCategory && foundCategory.id !== category.id) {
     return {
       errors: {
-        name: "A category already exists with this name",
+        name: 'A category already exists with this name',
       },
     }
   }
@@ -105,16 +104,16 @@ export async function updateCategory(request: Request, category: ICategory) {
 
     return {
       notification: {
-        message: "Category updated successfully",
-        status: "Success",
-        redirectTo: "/categories",
+        message: 'Category updated successfully',
+        status: 'Success',
+        redirectTo: '/categories',
       },
     }
   } catch {
     return {
       notification: {
-        message: "An error occured while updating the category",
-        status: "Error",
+        message: 'An error occured while updating the category',
+        status: 'Error',
       },
     }
   }

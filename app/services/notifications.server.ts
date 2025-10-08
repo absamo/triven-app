@@ -1,8 +1,8 @@
-import { redirect } from "react-router"
-import { prisma } from "~/app/db.server"
-import { getBetterAuthUser } from "~/app/services/better-auth.server"
-import { emitter } from "~/app/utils/emitter.server"
-import type { INotification } from "../common/validations/notificationSchema"
+import { redirect } from 'react-router'
+import { prisma } from '~/app/db.server'
+import { getBetterAuthUser } from '~/app/services/better-auth.server'
+import { emitter } from '~/app/utils/emitter.server'
+import type { INotification } from '../common/validations/notificationSchema'
 
 export async function getNotifications(
   request: Request,
@@ -24,16 +24,13 @@ export async function getNotifications(
         // product: { siteId: user.site?.id },
       },
       include: { createdBy: { select: { profile: true } } },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     })) || []
 
   return notifications
 }
 
-export async function updateNotification(
-  notifications: INotification[],
-  redirectTo?: string
-) {
+export async function updateNotification(notifications: INotification[], redirectTo?: string) {
   await Promise.all(
     (notifications || []).map(async (notification: INotification) => {
       await prisma.notification.update({
@@ -46,11 +43,11 @@ export async function updateNotification(
   )
 
   // Emit notification update with data
-  emitter.emit("notifications", {
-    action: "updated",
+  emitter.emit('notifications', {
+    action: 'updated',
     count: notifications.length,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   })
 
-  return redirect(redirectTo || "/")
+  return redirect(redirectTo || '/')
 }

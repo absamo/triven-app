@@ -1,17 +1,17 @@
-import { Button, Grid, Group, Modal, NumberInput } from "@mantine/core"
+import { Button, Grid, Group, Modal, NumberInput } from '@mantine/core'
 
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useTranslation } from "react-i18next"
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useTranslation } from 'react-i18next'
 
-import { useState } from "react"
-import type { IProduct } from "~/app/common/validations/productSchema"
+import { useState } from 'react'
+import type { IProduct } from '~/app/common/validations/productSchema'
 import {
   purchaseOrderItemSchema,
   type IPurchaseOrderItem,
-} from "~/app/common/validations/purchaseOrderItemSchema"
-import Form from "~/app/components/Form"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
+} from '~/app/common/validations/purchaseOrderItemSchema'
+import Form from '~/app/components/Form'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
 
 interface IPurchaseItemFormProps {
   products: IProduct[]
@@ -32,7 +32,7 @@ export default function PurchaseItemForm({
   const [amount, setAmount] = useState<number>(purchaseOrderItem.amount || 0)
 
   const form = useForm({
-    mode: "uncontrolled",
+    mode: 'uncontrolled',
     validateInputOnBlur: true,
     validate: zodResolver(purchaseOrderItemSchema),
     initialValues: {
@@ -44,9 +44,7 @@ export default function PurchaseItemForm({
     },
     onValuesChange: ({ tax, quantity, rate }) => {
       const taxPercentage = (quantity * rate * (tax || 1)) / 100
-      const currentAmount = tax
-        ? taxPercentage + quantity * rate
-        : quantity * rate
+      const currentAmount = tax ? taxPercentage + quantity * rate : quantity * rate
 
       setAmount(currentAmount)
     },
@@ -73,7 +71,7 @@ export default function PurchaseItemForm({
   }
 
   const productsOptions = products.map((product: IProduct) => ({
-    value: product.id || "",
+    value: product.id || '',
     label: product.name,
   }))
 
@@ -99,7 +97,7 @@ export default function PurchaseItemForm({
                 data={productsOptions}
                 name="productId"
                 clearable
-                {...form.getInputProps("productId")}
+                {...form.getInputProps('productId')}
               />
             </Grid.Col>
             <Grid.Col span={6}>
@@ -107,11 +105,9 @@ export default function PurchaseItemForm({
                 withAsterisk
                 label={t('purchaseOrders:quantity', 'Quantity')}
                 name="quantity"
-                {...form.getInputProps("quantity")}
+                {...form.getInputProps('quantity')}
                 onChange={(quantity) => {
-                  form
-                    .getInputProps("quantity")
-                    .onChange(quantity === "" ? undefined : quantity)
+                  form.getInputProps('quantity').onChange(quantity === '' ? undefined : quantity)
                 }}
               />
             </Grid.Col>
@@ -120,11 +116,9 @@ export default function PurchaseItemForm({
                 withAsterisk
                 label={t('purchaseOrders:rate', 'Rate')}
                 name="rate"
-                {...form.getInputProps("rate")}
+                {...form.getInputProps('rate')}
                 onChange={(rate) => {
-                  form
-                    .getInputProps("rate")
-                    .onChange(rate === "" ? undefined : rate)
+                  form.getInputProps('rate').onChange(rate === '' ? undefined : rate)
                 }}
               />
             </Grid.Col>
@@ -133,11 +127,9 @@ export default function PurchaseItemForm({
                 label={t('purchaseOrders:tax', 'Tax')}
                 name="tax"
                 suffix="%"
-                {...form.getInputProps("tax")}
+                {...form.getInputProps('tax')}
                 onChange={(tax) => {
-                  form
-                    .getInputProps("tax")
-                    .onChange(tax === "" ? undefined : tax)
+                  form.getInputProps('tax').onChange(tax === '' ? undefined : tax)
                 }}
               />
             </Grid.Col>
@@ -155,9 +147,7 @@ export default function PurchaseItemForm({
                 <Button variant="outline" onClick={handleClose}>
                   {t('common:cancel', 'Cancel')}
                 </Button>
-                <Button type="submit">
-                  {t('common:save', 'Save')}
-                </Button>
+                <Button type="submit">{t('common:save', 'Save')}</Button>
               </Group>
             </Grid.Col>
           </Form>

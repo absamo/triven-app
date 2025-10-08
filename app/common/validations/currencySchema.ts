@@ -1,8 +1,8 @@
-import { z } from "zod"
+import { z } from 'zod'
 
 export const currencySchema = z.object({
   id: z.string().optional(),
-  currencyCode: z.string().min(1, "Currency is required"),
+  currencyCode: z.string().min(1, 'Currency is required'),
   currencyName: z.string().optional(),
   countryName: z.string().optional(),
   symbol: z.string().optional().nullable(),

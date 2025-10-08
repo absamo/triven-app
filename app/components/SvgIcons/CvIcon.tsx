@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface CvIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface CvIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -22,10 +22,7 @@ export default function CvIcon({ size = 20, style, ...others }: CvIconProps) {
           fill="#0052b4"
           d="M0 0h512v256.2l-41.9 64.3 41.9 63.7V512H0V384.2L41.3 320 0 256.2z"
         />
-        <path
-          fill="#eee"
-          d="M0 256.2h512v42.9l-15.7 21.6 15.7 21v42.5H0v-42.5l15.1-21.5L0 299z"
-        />
+        <path fill="#eee" d="M0 256.2h512v42.9l-15.7 21.6 15.7 21v42.5H0v-42.5l15.1-21.5L0 299z" />
         <path fill="#d80027" d="M0 299.1h512v42.6H0z" />
         <path
           fill="#ffda44"

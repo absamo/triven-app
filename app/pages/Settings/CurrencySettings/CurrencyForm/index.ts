@@ -1,3 +1,3 @@
-import CurrencyForm from "./CurrencyForm"
+import CurrencyForm from './CurrencyForm'
 
 export default CurrencyForm

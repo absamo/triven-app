@@ -1,17 +1,15 @@
-import { z } from "zod"
-import dayjs from "dayjs"
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter"
+import { z } from 'zod'
+import dayjs from 'dayjs'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 dayjs.extend(isSameOrAfter)
 
-import { purchaseOrderSchema } from "./purchaseOrderSchema"
-import { PURCHASE_ORDER_STATUSES } from "../constants"
+import { purchaseOrderSchema } from './purchaseOrderSchema'
+import { PURCHASE_ORDER_STATUSES } from '../constants'
 
 export const purchaseReceiveSchema = z.object({
   id: z.string().optional(),
-  purchaseReceiveReference: z
-    .string()
-    .min(1, "Purchase receive reference is required"),
-  purchaseOrderId: z.string().min(1, "Purchase order is required"),
+  purchaseReceiveReference: z.string().min(1, 'Purchase receive reference is required'),
+  purchaseOrderId: z.string().min(1, 'Purchase order is required'),
   purchaseOrder: z
     .lazy(() =>
       purchaseOrderSchema.pick({
@@ -35,7 +33,7 @@ export const purchaseReceiveSchema = z.object({
       )
     },
     {
-      message: "Receive date is required",
+      message: 'Receive date is required',
     }
   ),
   purchaseReceiveItems: z.array(z.any()).optional(),

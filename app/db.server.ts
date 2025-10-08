@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from '@prisma/client'
 
 let prisma: PrismaClient
 
@@ -45,7 +45,7 @@ export const ollamaContext = OllamaContext.getInstance()
 // the server with every change, but we want to make sure we don't
 // create a new connection to the DB with every change either.
 // in production we'll have a single connection to the DB.
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === 'production') {
   prisma = getClient()
 } else {
   if (!global.__db__) {
@@ -57,8 +57,8 @@ if (process.env.NODE_ENV === "production") {
 function getClient() {
   const DATABASE_URL = process.env.DATABASE_URL
 
-  if (typeof DATABASE_URL !== "string") {
-    throw new Error("DATABASE_URL env var not set")
+  if (typeof DATABASE_URL !== 'string') {
+    throw new Error('DATABASE_URL env var not set')
   }
 
   const databaseUrl = new URL(DATABASE_URL)
@@ -73,7 +73,7 @@ function getClient() {
         url: databaseUrl.toString(),
       },
     },
-    errorFormat: "pretty",
+    errorFormat: 'pretty',
     log: [
       {
         emit: 'event',
@@ -101,11 +101,15 @@ function getClient() {
     // Only log when called from Ollama services
     if (context.isOllamaActive()) {
       const source = context.getCurrentSource()
-      console.log(`[${new Date().toISOString()}] ⏱️ OLLAMA-PRISMA [${source}] DURATION: ${e.duration}ms`)
+      console.log(
+        `[${new Date().toISOString()}] ⏱️ OLLAMA-PRISMA [${source}] DURATION: ${e.duration}ms`
+      )
 
       // Log slow queries (over 100ms) with special attention for Ollama
       if (e.duration > 100) {
-        console.log(`[${new Date().toISOString()}] 🐌 OLLAMA SLOW QUERY [${source}]: ${e.duration}ms`)
+        console.log(
+          `[${new Date().toISOString()}] 🐌 OLLAMA SLOW QUERY [${source}]: ${e.duration}ms`
+        )
       }
     }
   })

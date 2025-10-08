@@ -1,14 +1,14 @@
-import { IconCheck, IconExclamationCircle } from "@tabler/icons-react"
+import { IconCheck, IconExclamationCircle } from '@tabler/icons-react'
 
-import { notifications, showNotification } from "@mantine/notifications"
+import { notifications, showNotification } from '@mantine/notifications'
 
-import { useEffect } from "react"
-import { useNavigate } from "react-router"
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router'
 
 interface NotificationProps {
   notification: {
     message: string | null
-    status: "Success" | "Warning" | "Error" | null
+    status: 'Success' | 'Warning' | 'Error' | null
     redirectTo?: string | null
     autoClose?: boolean
   }
@@ -22,19 +22,19 @@ export default function Notification({ notification }: NotificationProps) {
 
     if (!notification) return
 
-    let color = ""
+    let color = ''
     let icon = null
     switch (notification.status) {
-      case "Success":
-        color = "teal"
+      case 'Success':
+        color = 'teal'
         icon = <IconCheck size="1rem" />
         break
-      case "Warning":
-        color = "yellow"
+      case 'Warning':
+        color = 'yellow'
         icon = <IconExclamationCircle size="1rem" />
         break
-      case "Error":
-        color = "red"
+      case 'Error':
+        color = 'red'
         icon = <IconExclamationCircle size="1rem" />
         break
     }
@@ -44,8 +44,7 @@ export default function Notification({ notification }: NotificationProps) {
     showNotification({
       color,
       message: notification.message,
-      autoClose:
-        autoClose || (notification.status !== "Error" ? 3000 : undefined),
+      autoClose: autoClose || (notification.status !== 'Error' ? 3000 : undefined),
       withCloseButton: true,
       icon,
     })

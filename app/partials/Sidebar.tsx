@@ -1,11 +1,11 @@
-import { useState } from "react"
+import { useState } from 'react'
 import {
   // createStyles,
   Navbar,
   UnstyledButton,
   Tooltip,
   Title,
-} from "@mantine/core"
+} from '@mantine/core'
 import {
   IconHome2,
   IconGauge,
@@ -15,8 +15,8 @@ import {
   IconUser,
   IconSettings,
   IconLogout,
-} from "@tabler/icons-react"
-import { MantineLogo } from "@mantine/ds"
+} from '@tabler/icons-react'
+import { MantineLogo } from '@mantine/ds'
 
 // const useStyles = createStyles((theme) => ({
 //   wrapper: {
@@ -143,34 +143,34 @@ import { MantineLogo } from "@mantine/ds"
 // }))
 
 const mainLinksMockdata = [
-  { icon: IconHome2, label: "Home" },
-  { icon: IconGauge, label: "Dashboard" },
-  { icon: IconDeviceDesktopAnalytics, label: "Analytics" },
-  { icon: IconCalendarStats, label: "Releases" },
-  { icon: IconUser, label: "Account" },
-  { icon: IconFingerprint, label: "Security" },
-  { icon: IconSettings, label: "Settings" },
-  { icon: IconLogout, label: "Logout" },
+  { icon: IconHome2, label: 'Home' },
+  { icon: IconGauge, label: 'Dashboard' },
+  { icon: IconDeviceDesktopAnalytics, label: 'Analytics' },
+  { icon: IconCalendarStats, label: 'Releases' },
+  { icon: IconUser, label: 'Account' },
+  { icon: IconFingerprint, label: 'Security' },
+  { icon: IconSettings, label: 'Settings' },
+  { icon: IconLogout, label: 'Logout' },
 ]
 
 const linksMockdata = [
-  "Security",
-  "Settings",
-  "Dashboard",
-  "Releases",
-  "Account",
-  "Orders",
-  "Clients",
-  "Databases",
-  "Pull Requests",
-  "Open Issues",
-  "Wiki pages",
+  'Security',
+  'Settings',
+  'Dashboard',
+  'Releases',
+  'Account',
+  'Orders',
+  'Clients',
+  'Databases',
+  'Pull Requests',
+  'Open Issues',
+  'Wiki pages',
 ]
 
 export function DoubleNavbar() {
   // const { classes, cx } = useStyles()
-  const [active, setActive] = useState("Releases")
-  const [activeLink, setActiveLink] = useState("Settings")
+  const [active, setActive] = useState('Releases')
+  const [activeLink, setActiveLink] = useState('Settings')
 
   const mainLinks = mainLinksMockdata.map((link) => (
     <Tooltip label={link.label} position="right" withArrow key={link.label}>

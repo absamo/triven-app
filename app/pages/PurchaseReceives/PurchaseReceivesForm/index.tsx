@@ -1,2 +1,2 @@
-import PurchaseReceivesForm from "./PurchaseReceivesForm"
+import PurchaseReceivesForm from './PurchaseReceivesForm'
 export default PurchaseReceivesForm

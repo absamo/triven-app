@@ -1,2 +1,1 @@
-export { TableActionsMenu } from './TableActionsMenu';
-
+export { TableActionsMenu } from './TableActionsMenu'

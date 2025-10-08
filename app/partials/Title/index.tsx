@@ -1,2 +1,2 @@
-import Title from "./Title"
+import Title from './Title'
 export { Title }

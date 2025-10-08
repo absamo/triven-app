@@ -1,21 +1,17 @@
-import { render } from "@react-email/render"
-import dayjs from "dayjs"
-import { nanoid } from "nanoid"
-import { Resend } from "resend"
+import { render } from '@react-email/render'
+import dayjs from 'dayjs'
+import { nanoid } from 'nanoid'
+import { Resend } from 'resend'
 
-import {
-  INVITATION_STATUSES,
-  USER_ROLES,
-  USER_STATUSES,
-} from "~/app/common/constants"
-import { type IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
-import { type ISalesOrder } from "~/app/common/validations/salesOrderSchema"
-import type { ITeam } from "~/app/common/validations/teamSchema"
-import { type IUser } from "~/app/common/validations/userSchema"
-import { InviteUserEmail } from "~/app/components/Email/UserInvite"
-import { prisma } from "~/app/db.server"
-import { getBetterAuthUser, getUserByEmail } from "~/app/services/better-auth.server"
-import { syncOnlineStatusWithSessions } from "~/app/services/session-based-online-status.server"
+import { INVITATION_STATUSES, USER_ROLES, USER_STATUSES } from '~/app/common/constants'
+import { type IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import { type ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import type { ITeam } from '~/app/common/validations/teamSchema'
+import { type IUser } from '~/app/common/validations/userSchema'
+import { InviteUserEmail } from '~/app/components/Email/UserInvite'
+import { prisma } from '~/app/db.server'
+import { getBetterAuthUser, getUserByEmail } from '~/app/services/better-auth.server'
+import { syncOnlineStatusWithSessions } from '~/app/services/session-based-online-status.server'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -41,26 +37,26 @@ export async function getTeamMembers(request: Request) {
       sessions: {
         where: {
           expiresAt: {
-            gt: now // Only get active sessions
-          }
+            gt: now, // Only get active sessions
+          },
         },
         orderBy: {
-          updatedAt: 'desc'
+          updatedAt: 'desc',
         },
-        take: 1 // Get the most recent active session
-      }
+        take: 1, // Get the most recent active session
+      },
     },
     orderBy: [
       { active: 'desc' }, // Active users first
-      { createdAt: 'desc' } // Then by creation date (stable order)
-    ]
+      { createdAt: 'desc' }, // Then by creation date (stable order)
+    ],
   })
 
   // Map members with accurate online status based on active sessions
-  const membersWithOnlineStatus = members.map(member => ({
+  const membersWithOnlineStatus = members.map((member) => ({
     ...member,
     isOnline: member.sessions.length > 0, // User is online if they have active sessions
-    lastOnlineAt: member.sessions[0]?.updatedAt || member.lastOnlineAt // Use session update time or fallback to stored lastOnlineAt
+    lastOnlineAt: member.sessions[0]?.updatedAt || member.lastOnlineAt, // Use session update time or fallback to stored lastOnlineAt
   }))
 
   // Sort to show online users first, with most recent connection first
@@ -94,7 +90,8 @@ export async function getTeamMembers(request: Request) {
   })
 
   return sortedMembers || []
-} export async function getTeamMember(teamMemberId: ITeam["id"]) {
+}
+export async function getTeamMember(teamMemberId: ITeam['id']) {
   const teamMember = await prisma.user.findUnique({
     where: { id: teamMemberId },
     include: {
@@ -109,7 +106,7 @@ export async function getTeamMembers(request: Request) {
 
 export async function createTeamMember(
   request: Request,
-  member: Pick<ITeam, "email" | "roleId" | "siteId" | "profile" | "agencyId">
+  member: Pick<ITeam, 'email' | 'roleId' | 'siteId' | 'profile' | 'agencyId'>
 ) {
   const user = await getBetterAuthUser(request)
   if (!user?.id || !user.companyId) {
@@ -121,13 +118,13 @@ export async function createTeamMember(
   if (existingUser) {
     return {
       errors: {
-        email: "A user already exists with this email",
+        email: 'A user already exists with this email',
       },
     }
   }
 
   // Set the validity of the invitation to 7 days from the current date
-  const validity = dayjs().add(7, "day").toDate()
+  const validity = dayjs().add(7, 'day').toDate()
 
   const token = nanoid()
 
@@ -141,8 +138,8 @@ export async function createTeamMember(
       status: USER_STATUSES.PENDING,
       profile: {
         create: {
-          firstName: member.profile?.firstName || "",
-          lastName: member.profile?.lastName || "",
+          firstName: member.profile?.firstName || '',
+          lastName: member.profile?.lastName || '',
           avatar: member.profile?.avatar,
           phone: member.profile?.phone,
         },
@@ -160,8 +157,8 @@ export async function createTeamMember(
           token,
           status: INVITATION_STATUSES.INVITED,
           validity,
-        }
-      }
+        },
+      },
     },
     include: {
       receivedInvitations: {
@@ -189,7 +186,7 @@ export async function updateTeamMember(
     siteId,
     profile,
     agencyId,
-  }: Pick<ITeam, "id" | "email" | "roleId" | "siteId" | "profile" | "agencyId">
+  }: Pick<ITeam, 'id' | 'email' | 'roleId' | 'siteId' | 'profile' | 'agencyId'>
 ) {
   const connectedUser = await getBetterAuthUser(request)
 
@@ -207,14 +204,13 @@ export async function updateTeamMember(
   const currentRole = await prisma.role.findUnique({ where: { id: roleId } })
 
   if (
-    members.filter(
-      ({ role, id }) => role?.name === USER_ROLES.ADMIN && id !== userIdToUpdate
-    ).length === 0 &&
+    members.filter(({ role, id }) => role?.name === USER_ROLES.ADMIN && id !== userIdToUpdate)
+      .length === 0 &&
     currentRole?.name !== USER_ROLES.ADMIN
   ) {
     return {
       errors: {
-        roleId: "At least one registered admin is required in the company",
+        roleId: 'At least one registered admin is required in the company',
       },
     }
   }
@@ -224,7 +220,7 @@ export async function updateTeamMember(
   if (existingUser && existingUser.id !== userIdToUpdate) {
     return {
       errors: {
-        email: "A user already exists with this email",
+        email: 'A user already exists with this email',
       },
     }
   }
@@ -239,8 +235,8 @@ export async function updateTeamMember(
     const url = new URL(request.url)
     return {
       notification: {
-        message: "Team member not found",
-        status: "Error",
+        message: 'Team member not found',
+        status: 'Error',
         redirectTo: url,
       },
     }
@@ -250,7 +246,7 @@ export async function updateTeamMember(
     return {
       errors: {
         siteId:
-          "User cannot be moved to a different site as they have sales orders in the current site",
+          'User cannot be moved to a different site as they have sales orders in the current site',
       },
     }
   }
@@ -259,7 +255,7 @@ export async function updateTeamMember(
     return {
       errors: {
         siteId:
-          "User cannot be moved to a different site as they have purchase orders in the current site",
+          'User cannot be moved to a different site as they have purchase orders in the current site',
       },
     }
   }
@@ -285,25 +281,22 @@ export async function updateTeamMember(
 
     return {
       notification: {
-        message: "Team member updated successfully",
-        status: "Success",
-        redirectTo: "/teams",
+        message: 'Team member updated successfully',
+        status: 'Success',
+        redirectTo: '/teams',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Team member could not be updated",
-        status: "Error",
+        message: 'Team member could not be updated',
+        status: 'Error',
       },
     }
   }
 }
 
-export async function deactivateTeamMember(
-  request: Request,
-  userId: ITeam["id"]
-) {
+export async function deactivateTeamMember(request: Request, userId: ITeam['id']) {
   const connectedUser = await getBetterAuthUser(request)
 
   if (!connectedUser?.id) {
@@ -318,14 +311,14 @@ export async function deactivateTeamMember(
   })
 
   // Check if this is the last admin
-  const userToDeactivate = members.find(member => member.id === userId)
+  const userToDeactivate = members.find((member) => member.id === userId)
   const isCurrentUserAdmin = userToDeactivate?.role?.name === USER_ROLES.ADMIN
-  const adminCount = members.filter(member => member.role?.name === USER_ROLES.ADMIN).length
+  const adminCount = members.filter((member) => member.role?.name === USER_ROLES.ADMIN).length
 
   if (isCurrentUserAdmin && adminCount <= 1) {
     return {
       errors: {
-        general: "Cannot deactivate the last admin user in the company",
+        general: 'Cannot deactivate the last admin user in the company',
       },
     }
   }
@@ -340,25 +333,22 @@ export async function deactivateTeamMember(
 
     return {
       notification: {
-        message: "Team member deactivated successfully",
-        status: "Success",
-        redirectTo: "/teams",
+        message: 'Team member deactivated successfully',
+        status: 'Success',
+        redirectTo: '/teams',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Team member could not be deactivated",
-        status: "Error",
+        message: 'Team member could not be deactivated',
+        status: 'Error',
       },
     }
   }
 }
 
-export async function activateTeamMember(
-  request: Request,
-  userId: ITeam["id"]
-) {
+export async function activateTeamMember(request: Request, userId: ITeam['id']) {
   const connectedUser = await getBetterAuthUser(request)
 
   if (!connectedUser?.id) {
@@ -375,25 +365,22 @@ export async function activateTeamMember(
 
     return {
       notification: {
-        message: "Team member activated successfully",
-        status: "Success",
-        redirectTo: "/teams",
+        message: 'Team member activated successfully',
+        status: 'Success',
+        redirectTo: '/teams',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Team member could not be activated",
-        status: "Error",
+        message: 'Team member could not be activated',
+        status: 'Error',
       },
     }
   }
 }
 
-export async function resendInvitation(
-  request: Request,
-  userId: ITeam["id"]
-) {
+export async function resendInvitation(request: Request, userId: ITeam['id']) {
   const connectedUser = await getBetterAuthUser(request)
 
   if (!connectedUser?.id) {
@@ -407,21 +394,21 @@ export async function resendInvitation(
         profile: true,
         receivedInvitations: {
           where: {
-            status: INVITATION_STATUSES.INVITED
+            status: INVITATION_STATUSES.INVITED,
           },
           orderBy: {
-            createdAt: 'desc'
+            createdAt: 'desc',
           },
-          take: 1
-        }
-      }
+          take: 1,
+        },
+      },
     })
 
     if (!user) {
       return {
         notification: {
-          message: "Team member not found",
-          status: "Error",
+          message: 'Team member not found',
+          status: 'Error',
         },
       }
     }
@@ -430,8 +417,8 @@ export async function resendInvitation(
     if (user.status !== USER_STATUSES.PENDING) {
       return {
         notification: {
-          message: "Can only resend invitations for pending users",
-          status: "Error",
+          message: 'Can only resend invitations for pending users',
+          status: 'Error',
         },
       }
     }
@@ -440,14 +427,14 @@ export async function resendInvitation(
     if (!currentInvitation) {
       return {
         notification: {
-          message: "No pending invitation found for this user",
-          status: "Error",
+          message: 'No pending invitation found for this user',
+          status: 'Error',
         },
       }
     }
 
     // Create new invitation with new token and validity
-    const validity = dayjs().add(7, "day").toDate()
+    const validity = dayjs().add(7, 'day').toDate()
     const token = nanoid()
 
     await prisma.invitation.update({
@@ -456,7 +443,7 @@ export async function resendInvitation(
         token,
         validity,
         status: INVITATION_STATUSES.INVITED,
-      }
+      },
     })
 
     // Send invitation email
@@ -466,15 +453,15 @@ export async function resendInvitation(
       const emailHtml = await render(
         InviteUserEmail({
           inviteLink,
-          username: user.profile?.firstName || "",
-          invitedByUsername: connectedUser?.profile?.firstName || "",
-          invitedByEmail: connectedUser?.email || "",
-          teamName: connectedUser?.company?.name || "",
+          username: user.profile?.firstName || '',
+          invitedByUsername: connectedUser?.profile?.firstName || '',
+          invitedByEmail: connectedUser?.email || '',
+          teamName: connectedUser?.company?.name || '',
         })
       )
 
       await resend.emails.send({
-        from: process.env.FROM_EMAIL || "Triven <onboarding@resend.dev>",
+        from: process.env.FROM_EMAIL || 'Triven <onboarding@resend.dev>',
         to: [user.email],
         subject: `${connectedUser?.profile?.firstName} resent your invitation to join ${connectedUser?.company?.name}`,
         html: emailHtml,
@@ -486,16 +473,16 @@ export async function resendInvitation(
 
     return {
       notification: {
-        message: "Invitation resent successfully",
-        status: "Success",
-        redirectTo: "/teams",
+        message: 'Invitation resent successfully',
+        status: 'Success',
+        redirectTo: '/teams',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Could not resend invitation",
-        status: "Error",
+        message: 'Could not resend invitation',
+        status: 'Error',
       },
     }
   }

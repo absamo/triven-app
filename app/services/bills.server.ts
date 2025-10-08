@@ -1,17 +1,14 @@
-import type { BillStatus, Prisma } from "@prisma/client"
-import { type IBill } from "~/app/common/validations/billSchema"
-import { prisma } from "~/app/db.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import { BILL_STATUSES, PAYMENT_STATUSES } from "../common/constants"
+import type { BillStatus, Prisma } from '@prisma/client'
+import { type IBill } from '~/app/common/validations/billSchema'
+import { prisma } from '~/app/db.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { BILL_STATUSES, PAYMENT_STATUSES } from '../common/constants'
 
 export async function getBills(
   request: Request,
-  {
-    purchaseOrderId,
-    paymentMadeId,
-  }: { purchaseOrderId?: string; paymentMadeId?: string } = {}
+  { purchaseOrderId, paymentMadeId }: { purchaseOrderId?: string; paymentMadeId?: string } = {}
 ) {
-  const user = await requireBetterAuthUser(request, ["read:bills"])
+  const user = await requireBetterAuthUser(request, ['read:bills'])
 
   const bills = await prisma.bill.findMany({
     where: {
@@ -46,7 +43,7 @@ export async function getBills(
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -55,7 +52,7 @@ export async function getBills(
 }
 
 export async function getBillsToPay(request: Request) {
-  const user = await requireBetterAuthUser(request, ["read:bills"])
+  const user = await requireBetterAuthUser(request, ['read:bills'])
 
   const bills = await prisma.bill.findMany({
     where: {
@@ -95,7 +92,7 @@ export async function getBillsToPay(request: Request) {
     },
     orderBy: [
       {
-        id: "desc",
+        id: 'desc',
       },
     ],
   })
@@ -103,7 +100,7 @@ export async function getBillsToPay(request: Request) {
   return bills || []
 }
 
-export async function getBill(billId: IBill["id"]) {
+export async function getBill(billId: IBill['id']) {
   const bill = await prisma.bill.findUnique({
     where: { id: billId },
     include: {
@@ -137,9 +134,9 @@ export async function getFilteredBills(
     billDate: Date | null
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:bills"])
+  const user = await requireBetterAuthUser(request, ['read:bills'])
 
-  const currentSearch = !!search || search === ""
+  const currentSearch = !!search || search === ''
 
   return (
     (await prisma.bill.findMany({
@@ -147,32 +144,32 @@ export async function getFilteredBills(
         companyId: user.companyId,
         OR: currentSearch
           ? [
-            {
-              purchaseOrder: {
-                supplier: {
-                  name: { contains: search, mode: "insensitive" },
-                },
-                agency: {
-                  name: { contains: search, mode: "insensitive" },
+              {
+                purchaseOrder: {
+                  supplier: {
+                    name: { contains: search, mode: 'insensitive' },
+                  },
+                  agency: {
+                    name: { contains: search, mode: 'insensitive' },
+                  },
                 },
               },
-            },
-          ]
+            ]
           : undefined,
         AND: [
           {
             status:
               statuses.length > 0
                 ? {
-                  in: statuses as BillStatus[],
-                }
+                    in: statuses as BillStatus[],
+                  }
                 : undefined,
           },
           {
             billDate: billDate
               ? {
-                gte: billDate,
-              }
+                  gte: billDate,
+                }
               : undefined,
           },
           {
@@ -185,8 +182,8 @@ export async function getFilteredBills(
             billReference:
               bills.length > 0
                 ? {
-                  in: bills,
-                }
+                    in: bills,
+                  }
                 : undefined,
           },
         ],
@@ -209,7 +206,7 @@ export async function getFilteredBills(
       },
       orderBy: [
         {
-          id: "desc",
+          id: 'desc',
         },
       ],
     })) || []
@@ -217,7 +214,7 @@ export async function getFilteredBills(
 }
 
 export async function getMaxBillNumber(request: Request): Promise<string> {
-  const user = await requireBetterAuthUser(request, ["read:bills"])
+  const user = await requireBetterAuthUser(request, ['read:bills'])
 
   const aggregateBillNumber = await prisma.bill.aggregate({
     where: { companyId: user.companyId },
@@ -226,14 +223,13 @@ export async function getMaxBillNumber(request: Request): Promise<string> {
     },
   })
 
-  const billNumber =
-    parseInt(aggregateBillNumber?._max.billNumber || "00000") + 1
+  const billNumber = parseInt(aggregateBillNumber?._max.billNumber || '00000') + 1
 
-  return billNumber.toString().padStart(5, "0")
+  return billNumber.toString().padStart(5, '0')
 }
 
 export async function createBill(request: Request, bill: IBill) {
-  const user = await requireBetterAuthUser(request, ["read:bills"])
+  const user = await requireBetterAuthUser(request, ['read:bills'])
 
   const foundBill = await prisma.bill.findFirst({
     where: {
@@ -245,7 +241,7 @@ export async function createBill(request: Request, bill: IBill) {
   if (foundBill) {
     return {
       errors: {
-        billReference: "A bill already exists with this reference",
+        billReference: 'A bill already exists with this reference',
       },
     }
   }
@@ -267,23 +263,23 @@ export async function createBill(request: Request, bill: IBill) {
 
     return {
       notification: {
-        message: "Bill created successfully",
-        status: "Success",
-        redirectTo: "/bills",
+        message: 'Bill created successfully',
+        status: 'Success',
+        redirectTo: '/bills',
       },
     }
   } catch {
     return {
       notification: {
-        message: "Bill could not be created",
-        status: "Error",
+        message: 'Bill could not be created',
+        status: 'Error',
       },
     }
   }
 }
 
 export async function updateBill(request: Request, bill: IBill) {
-  const user = await requireBetterAuthUser(request, ["read:bills"])
+  const user = await requireBetterAuthUser(request, ['read:bills'])
   if (!user?.id || !user?.companyId) {
     return null
   }
@@ -299,7 +295,7 @@ export async function updateBill(request: Request, bill: IBill) {
   if (foundBill) {
     return {
       errors: {
-        billReference: "A bill already exists with this reference",
+        billReference: 'A bill already exists with this reference',
       },
     }
   }
@@ -320,16 +316,16 @@ export async function updateBill(request: Request, bill: IBill) {
 
     return {
       notification: {
-        message: "Bill updated successfully",
-        status: "Success",
-        redirectTo: "/bills",
+        message: 'Bill updated successfully',
+        status: 'Success',
+        redirectTo: '/bills',
       },
     }
   } catch {
     return {
       notification: {
-        message: "An error occured while updating the bill",
-        status: "Error",
+        message: 'An error occured while updating the bill',
+        status: 'Error',
       },
     }
   }
@@ -341,11 +337,11 @@ export async function updateBillStatus(
     billId,
     status,
   }: {
-    billId: IBill["id"]
-    status: IBill["status"]
+    billId: IBill['id']
+    status: IBill['status']
   }
 ) {
-  const user = await requireBetterAuthUser(request, ["read:bills"])
+  const user = await requireBetterAuthUser(request, ['read:bills'])
 
   try {
     const paymentsMade =
@@ -361,9 +357,8 @@ export async function updateBillStatus(
     if (paymentsMade.length > 0) {
       return {
         notification: {
-          message:
-            "Bill status could not be updated because a payment has been made on this bill",
-          status: "Error",
+          message: 'Bill status could not be updated because a payment has been made on this bill',
+          status: 'Error',
           autoClose: false,
         },
       }
@@ -378,15 +373,15 @@ export async function updateBillStatus(
 
     return {
       notification: {
-        message: "Bill status updated successfully",
-        status: "Success",
+        message: 'Bill status updated successfully',
+        status: 'Success',
       },
     }
   } catch (error) {
     return {
       notification: {
-        message: "Bill status could not be updated",
-        status: "Error",
+        message: 'Bill status could not be updated',
+        status: 'Error',
         autoClose: false,
       },
     }

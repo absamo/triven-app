@@ -3,25 +3,23 @@ import {
   type ActionFunctionArgs,
   type LoaderFunction,
   type LoaderFunctionArgs,
-} from "react-router"
+} from 'react-router'
 
-import PurchaseReceives from "~/app/pages/PurchaseReceives"
-import { Notification } from "~/app/components"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import type { Route } from "./+types/purchaseReceives"
+import PurchaseReceives from '~/app/pages/PurchaseReceives'
+import { Notification } from '~/app/components'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import type { Route } from './+types/purchaseReceives'
 import {
   getPurchaseOrders,
   getPurchaseReceives,
   updatePurchaseReceiveStatus,
-} from "~/app/services/purchases.server"
-import type { IPurchaseReceive } from "~/app/common/validations/purchaseReceiveSchema"
-import type { IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
+} from '~/app/services/purchases.server'
+import type { IPurchaseReceive } from '~/app/common/validations/purchaseReceiveSchema'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
 
-export const loader: LoaderFunction = async ({
-  request,
-}: LoaderFunctionArgs) => {
+export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
-  const user = await requireBetterAuthUser(request, ["read:purchaseReceives"])
+  const user = await requireBetterAuthUser(request, ['read:purchaseReceives'])
   const purchaseReceives = await getPurchaseReceives(request)
   const purchaseOrders = await getPurchaseOrders(request)
 
@@ -29,21 +27,19 @@ export const loader: LoaderFunction = async ({
     purchaseReceives,
     permissions: user?.role.permissions.filter(
       (permission) =>
-        permission === "create:purchaseReceives" ||
-        permission === "update:purchaseReceives" ||
-        permission === "delete:purchaseReceives"
+        permission === 'create:purchaseReceives' ||
+        permission === 'update:purchaseReceives' ||
+        permission === 'delete:purchaseReceives'
     ),
     purchaseOrders,
   }
 }
 
-export const action: ActionFunction = async ({
-  request,
-}: ActionFunctionArgs) => {
+export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData()
 
-  const purchaseReceiveId = formData.get("purchaseReceiveId") as string
-  const status = JSON.parse(formData.get("status") as string)
+  const purchaseReceiveId = formData.get('purchaseReceiveId') as string
+  const status = JSON.parse(formData.get('status') as string)
 
   return await updatePurchaseReceiveStatus(request, {
     purchaseReceiveId,
@@ -51,17 +47,13 @@ export const action: ActionFunction = async ({
   })
 }
 
-export default function PurchaseReceivesRoute({
-  loaderData,
-  actionData,
-}: Route.ComponentProps) {
-  const { purchaseReceives, permissions, purchaseOrders } =
-    loaderData as unknown as {
-      purchaseReceives: IPurchaseReceive[]
-      permissions: string[]
-      purchaseOrders: IPurchaseOrder[]
-      purchaseOrderReference: string
-    }
+export default function PurchaseReceivesRoute({ loaderData, actionData }: Route.ComponentProps) {
+  const { purchaseReceives, permissions, purchaseOrders } = loaderData as unknown as {
+    purchaseReceives: IPurchaseReceive[]
+    permissions: string[]
+    purchaseOrders: IPurchaseOrder[]
+    purchaseOrderReference: string
+  }
 
   return (
     <>
@@ -77,7 +69,7 @@ export default function PurchaseReceivesRoute({
               actionData as unknown as {
                 notification: {
                   message: string | null
-                  status: "Success" | "Warning" | "Error" | null
+                  status: 'Success' | 'Warning' | 'Error' | null
                   redirectTo?: string | null
                   autoClose?: boolean
                 }

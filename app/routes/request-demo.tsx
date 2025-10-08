@@ -1,3 +1,3 @@
-import RequestDemo from "~/app/pages/RequestDemo"
+import RequestDemo from '~/app/pages/RequestDemo'
 
 export default RequestDemo

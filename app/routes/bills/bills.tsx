@@ -1,30 +1,24 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-} from "react-router"
-import BillsPage from "~/app/pages/Bills"
-import { getBills, updateBillStatus } from "~/app/services/bills.server"
-import { requireBetterAuthUser } from "~/app/services/better-auth.server"
-import type { Route } from "./+types/bills"
-import { type IBill } from "~/app/common/validations/billSchema"
-import type { ICurrency } from "~/app/common/validations/currencySchema"
-import { Notification } from "~/app/components"
-import { getPurchaseOrders } from "~/app/services/purchases.server"
-import type { IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
+import { type ActionFunction, type ActionFunctionArgs, type LoaderFunction } from 'react-router'
+import BillsPage from '~/app/pages/Bills'
+import { getBills, updateBillStatus } from '~/app/services/bills.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import type { Route } from './+types/bills'
+import { type IBill } from '~/app/common/validations/billSchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import { Notification } from '~/app/components'
+import { getPurchaseOrders } from '~/app/services/purchases.server'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
 
 export const loader: LoaderFunction = async ({ request }) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
-  const user = await requireBetterAuthUser(request, ["read:bills"])
+  const user = await requireBetterAuthUser(request, ['read:bills'])
 
   const url = new URL(request.url)
-  const purchaseOrderId = url.searchParams.get("purchaseOrderId") || undefined
-  const paymentMadeId = url.searchParams.get("paymentMadeId") || undefined
+  const purchaseOrderId = url.searchParams.get('purchaseOrderId') || undefined
+  const paymentMadeId = url.searchParams.get('paymentMadeId') || undefined
 
   const bills = await getBills(request, { purchaseOrderId, paymentMadeId })
-  const baseCurrency = user?.company?.currencies?.find(
-    (currency) => currency.base
-  )
+  const baseCurrency = user?.company?.currencies?.find((currency) => currency.base)
   const purchaseOrders = await getPurchaseOrders(request)
 
   return {
@@ -32,21 +26,19 @@ export const loader: LoaderFunction = async ({ request }) => {
     currency: baseCurrency,
     permissions: user?.role.permissions.filter(
       (permission) =>
-        permission === "create:bills" ||
-        permission === "update:bills" ||
-        permission === "delete:bills"
+        permission === 'create:bills' ||
+        permission === 'update:bills' ||
+        permission === 'delete:bills'
     ),
     purchaseOrders,
   }
 }
 
-export const action: ActionFunction = async ({
-  request,
-}: ActionFunctionArgs) => {
+export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData()
 
-  const billId = formData.get("billId") as string
-  const status = JSON.parse(formData.get("status") as string)
+  const billId = formData.get('billId') as string
+  const status = JSON.parse(formData.get('status') as string)
 
   return await updateBillStatus(request, {
     billId,
@@ -54,17 +46,13 @@ export const action: ActionFunction = async ({
   })
 }
 
-export default function BillsRoute({
-  loaderData,
-  actionData,
-}: Route.ComponentProps) {
-  const { bills, currency, permissions, purchaseOrders } =
-    loaderData as unknown as {
-      bills: IBill[]
-      currency: ICurrency
-      permissions: string[]
-      purchaseOrders: IPurchaseOrder[]
-    }
+export default function BillsRoute({ loaderData, actionData }: Route.ComponentProps) {
+  const { bills, currency, permissions, purchaseOrders } = loaderData as unknown as {
+    bills: IBill[]
+    currency: ICurrency
+    permissions: string[]
+    purchaseOrders: IPurchaseOrder[]
+  }
 
   return (
     <>
@@ -81,7 +69,7 @@ export default function BillsRoute({
               actionData as unknown as {
                 notification: {
                   message: string | null
-                  status: "Success" | "Warning" | "Error" | null
+                  status: 'Success' | 'Warning' | 'Error' | null
                   redirectTo?: string | null
                   autoClose?: boolean
                 }

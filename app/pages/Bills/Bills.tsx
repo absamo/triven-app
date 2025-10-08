@@ -1,24 +1,24 @@
-import { Badge, Menu, Table, Text, UnstyledButton } from "@mantine/core"
-import { IconDotsVertical } from "@tabler/icons-react"
-import dayjs from "dayjs"
-import { useTranslation } from "react-i18next"
-import { Form, Link, useLocation, useNavigate, useSubmit } from "react-router"
+import { Badge, Menu, Table, Text, UnstyledButton } from '@mantine/core'
+import { IconDotsVertical } from '@tabler/icons-react'
+import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
+import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
 
-import { BILL_STATUSES, PAYMENT_STATUSES } from "~/app/common/constants"
+import { BILL_STATUSES, PAYMENT_STATUSES } from '~/app/common/constants'
 import {
   getBillStatusLabel,
   getTotalAmountDueByBill,
   getTotalAmountPaid,
-} from "~/app/common/helpers/bill"
-import { formatCurrency } from "~/app/common/helpers/money"
-import type { IBill } from "~/app/common/validations/billSchema"
-import { Title } from "~/app/partials/Title"
+} from '~/app/common/helpers/bill'
+import { formatCurrency } from '~/app/common/helpers/money'
+import type { IBill } from '~/app/common/validations/billSchema'
+import { Title } from '~/app/partials/Title'
 // import InvoicePDF from "~/app/PDF/InvoicePDF"
-import { useForm } from "@mantine/form"
-import { useEffect, useState } from "react"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import type { IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
-import { PurchaseOrderFilters } from "~/app/partials/PurchaseOrderFilters"
+import { useForm } from '@mantine/form'
+import { useEffect, useState } from 'react'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import { PurchaseOrderFilters } from '~/app/partials/PurchaseOrderFilters'
 
 interface BillsProps {
   bills: IBill[]
@@ -38,9 +38,8 @@ export default function BillsPage({
   purchaseOrders,
 }: BillsProps) {
   const { t } = useTranslation(['bills', 'common'])
-  const [purchaseOrderReference, setPurchaseOrderReference] =
-    useState<string>("")
-  const [billReference, setBillReference] = useState<string>("")
+  const [purchaseOrderReference, setPurchaseOrderReference] = useState<string>('')
+  const [billReference, setBillReference] = useState<string>('')
   const [data, setData] = useState<FetcherData | null>(null)
   const location = useLocation()
   useEffect(() => {
@@ -53,8 +52,8 @@ export default function BillsPage({
     }
   }, [location.state?.purchaseOrderReference, location.state?.billReference])
 
-  const canCreate = permissions.includes("create:bills")
-  const canUpdate = permissions.includes("update:bills")
+  const canCreate = permissions.includes('create:bills')
+  const canUpdate = permissions.includes('update:bills')
 
   const navigate = useNavigate()
 
@@ -64,9 +63,9 @@ export default function BillsPage({
   const handleSubmit = () => {
     const { status, billId } = form.values
     const formData = new FormData()
-    formData.append("status", JSON.stringify(status))
-    formData.append("billId", billId as string)
-    submit(formData, { method: "post", action: "/bills" })
+    formData.append('status', JSON.stringify(status))
+    formData.append('billId', billId as string)
+    submit(formData, { method: 'post', action: '/bills' })
   }
 
   const rows = (data?.bills || bills).map((bill: IBill) => {
@@ -82,7 +81,7 @@ export default function BillsPage({
         }}
       >
         <Table.Td>
-          <Text size="sm">{dayjs(bill.billDate).format("DD-MM-YYYY")}</Text>
+          <Text size="sm">{dayjs(bill.billDate).format('DD-MM-YYYY')}</Text>
         </Table.Td>
         <Table.Td>{bill.billReference}</Table.Td>
         <Table.Td>{bill.purchaseOrder?.purchaseOrderReference}</Table.Td>
@@ -123,10 +122,9 @@ export default function BillsPage({
                 <Menu.Item
                   type="submit"
                   component={Link}
-                  to={"/purchase-orders"}
+                  to={'/purchase-orders'}
                   state={{
-                    purchaseOrderReference:
-                      bill.purchaseOrder?.purchaseOrderReference,
+                    purchaseOrderReference: bill.purchaseOrder?.purchaseOrderReference,
                   }}
                 >
                   {t('bills:viewPurchaseOrder')}
@@ -134,7 +132,7 @@ export default function BillsPage({
                 <Menu.Item
                   type="submit"
                   component={Link}
-                  to={"/payments-made"}
+                  to={'/payments-made'}
                   state={{
                     billReference: bill.billReference,
                   }}
@@ -164,7 +162,7 @@ export default function BillsPage({
 
   return (
     <>
-      <Title to={"/bills/create"} canCreate={canCreate} filter="bills">
+      <Title to={'/bills/create'} canCreate={canCreate} filter="bills">
         {t('bills:title')}
       </Title>
 
@@ -201,13 +199,7 @@ export default function BillsPage({
         onFilter={setData}
       />
 
-      <Table
-        verticalSpacing="xs"
-        highlightOnHover={canUpdate}
-        withTableBorder
-        striped
-        mt={35}
-      >
+      <Table verticalSpacing="xs" highlightOnHover={canUpdate} withTableBorder striped mt={35}>
         <Table.Thead fz={12}>
           <Table.Tr>
             <Table.Th>{t('bills:date')}</Table.Th>

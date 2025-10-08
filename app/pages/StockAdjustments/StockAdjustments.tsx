@@ -1,17 +1,17 @@
-import { Table, Text } from "@mantine/core"
+import { Table, Text } from '@mantine/core'
 
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from "react-router"
+import { useNavigate } from 'react-router'
 
-import dayjs from "dayjs"
+import dayjs from 'dayjs'
 
-import { useState } from "react"
-import { ADJUSTMENT_REASONS } from "~/app/common/constants"
-import { getStockAdjustmentReasonLabel } from "~/app/common/helpers/stockAdjustment"
-import { type ISite } from "~/app/common/validations/siteSchema"
-import { type IStockAdjustment } from "~/app/common/validations/stockAdjustmentsSchema"
-import StockAdjustmentFilters from "~/app/partials/StockAdjustmentFilters/StockAdjustmentFilters"
-import { Title } from "~/app/partials/Title"
+import { useState } from 'react'
+import { ADJUSTMENT_REASONS } from '~/app/common/constants'
+import { getStockAdjustmentReasonLabel } from '~/app/common/helpers/stockAdjustment'
+import { type ISite } from '~/app/common/validations/siteSchema'
+import { type IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
+import StockAdjustmentFilters from '~/app/partials/StockAdjustmentFilters/StockAdjustmentFilters'
+import { Title } from '~/app/partials/Title'
 
 interface AdjustmentsProps {
   adjustments: IStockAdjustment[]
@@ -24,15 +24,15 @@ export default function StockAdjustments({
   sites = [],
   permissions = [],
 }: AdjustmentsProps) {
-  const { t } = useTranslation(['inventory', 'common']);
+  const { t } = useTranslation(['inventory', 'common'])
   const navigate = useNavigate()
 
   const [adjustments, setAdjustments] = useState<IStockAdjustment[]>(adjustmentsProp)
   const [filteredAdjustments, setFilteredAdjustments] = useState<IStockAdjustment[]>([])
   const [isFiltered, setIsFiltered] = useState(false)
 
-  const canEdit = permissions.includes("update:stockAdjustments")
-  const canCreate = permissions.includes("create:stockAdjustments")
+  const canEdit = permissions.includes('update:stockAdjustments')
+  const canCreate = permissions.includes('create:stockAdjustments')
 
   // Convert adjustment reasons to filter options
   const reasonFilterOptions = Object.entries(ADJUSTMENT_REASONS).map(([key, value]) => ({
@@ -61,25 +61,21 @@ export default function StockAdjustments({
   // Use filtered adjustments if filtering is active, otherwise use regular adjustments
   const displayAdjustments = isFiltered ? filteredAdjustments : adjustments
 
-  const rows = (displayAdjustments || []).map(
-    ({ id, date, reason, site, reference }) => (
-      <Table.Tr
-        key={id}
-        onClick={() => canEdit && navigate(`/stock-adjustments/${id}/edit`)}
-      >
-        <Table.Td>
-          <Text size="sm"> {reference}</Text>
-        </Table.Td>
-        <Table.Td>
-          <Text size="sm"> {dayjs(date).format("DD-MM-YYYY")}</Text>
-        </Table.Td>
-        <Table.Td>
-          <Text size="sm"> {getStockAdjustmentReasonLabel(reason, t)}</Text>
-        </Table.Td>
-        <Table.Td>
-          <Text size="sm">{site?.name}</Text>
-        </Table.Td>
-        {/* <Table.Td>
+  const rows = (displayAdjustments || []).map(({ id, date, reason, site, reference }) => (
+    <Table.Tr key={id} onClick={() => canEdit && navigate(`/stock-adjustments/${id}/edit`)}>
+      <Table.Td>
+        <Text size="sm"> {reference}</Text>
+      </Table.Td>
+      <Table.Td>
+        <Text size="sm"> {dayjs(date).format('DD-MM-YYYY')}</Text>
+      </Table.Td>
+      <Table.Td>
+        <Text size="sm"> {getStockAdjustmentReasonLabel(reason, t)}</Text>
+      </Table.Td>
+      <Table.Td>
+        <Text size="sm">{site?.name}</Text>
+      </Table.Td>
+      {/* <Table.Td>
         <Group justify="flex-end">
           <Form method="post" action={`/adjustments/${id}/delete`}>
             <ActionIcon
@@ -96,13 +92,12 @@ export default function StockAdjustments({
           </Form>
         </Group>
       </Table.Td> */}
-      </Table.Tr>
-    )
-  )
+    </Table.Tr>
+  ))
 
   return (
     <>
-      <Title to={"/stock-adjustments/create"} canCreate={canCreate}>
+      <Title to={'/stock-adjustments/create'} canCreate={canCreate}>
         {t('inventory:stockAdjustments', 'Stock adjustments')}
       </Title>
 
@@ -125,13 +120,7 @@ export default function StockAdjustments({
         route="/api/stock-adjustments-search"
       />
 
-      <Table
-        verticalSpacing="xs"
-        highlightOnHover={canEdit}
-        withTableBorder
-        striped
-        mt={35}
-      >
+      <Table verticalSpacing="xs" highlightOnHover={canEdit} withTableBorder striped mt={35}>
         <Table.Thead fz={12}>
           <Table.Tr>
             <Table.Th>{t('inventory:reference', 'REFERENCE')}</Table.Th>

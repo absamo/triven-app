@@ -1,1 +1,1 @@
-export { default } from './WorkflowInstances';
+export { default } from './WorkflowInstances'

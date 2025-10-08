@@ -1,32 +1,46 @@
-import { ActionIcon, Badge, Box, Card, Group, SegmentedControl, SimpleGrid, Stack, Text, Tooltip } from "@mantine/core"
-import { IconAlertTriangle, IconBuilding, IconBuildingStore, IconEdit, IconMapPin } from "@tabler/icons-react"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router"
-import { SITE_TYPES } from "~/app/common/constants"
-import { getSiteTypeLabel } from "~/app/common/helpers/site"
+import {
+  ActionIcon,
+  Badge,
+  Box,
+  Card,
+  Group,
+  SegmentedControl,
+  SimpleGrid,
+  Stack,
+  Text,
+  Tooltip,
+} from '@mantine/core'
+import {
+  IconAlertTriangle,
+  IconBuilding,
+  IconBuildingStore,
+  IconEdit,
+  IconMapPin,
+} from '@tabler/icons-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
+import { SITE_TYPES } from '~/app/common/constants'
+import { getSiteTypeLabel } from '~/app/common/helpers/site'
 
-import { type ISite } from "~/app/common/validations/siteSchema"
-import { Title } from "~/app/partials/Title"
+import { type ISite } from '~/app/common/validations/siteSchema'
+import { Title } from '~/app/partials/Title'
 
 interface SitesProps {
   sites: ISite[]
   permissions: string[]
 }
 
-export default function SitesPage({
-  sites = [],
-  permissions = [],
-}: SitesProps) {
+export default function SitesPage({ sites = [], permissions = [] }: SitesProps) {
   const { t } = useTranslation(['sites', 'common'])
-  const canCreate = permissions.includes("create:sites")
-  const canUpdate = permissions.includes("update:sites")
+  const canCreate = permissions.includes('create:sites')
+  const canUpdate = permissions.includes('update:sites')
   const [typeFilter, setTypeFilter] = useState<string>(SITE_TYPES.WAREHOUSE)
 
   const navigate = useNavigate()
 
   // Filter sites based on selected type
-  const filteredSites = sites.filter(site => {
+  const filteredSites = sites.filter((site) => {
     return site.type === typeFilter
   })
 
@@ -43,7 +57,7 @@ export default function SitesPage({
 
   return (
     <>
-      <Title to={"/sites/create"} canCreate={canCreate}>
+      <Title to={'/sites/create'} canCreate={canCreate}>
         {t('sites:title')}
       </Title>
 
@@ -55,12 +69,12 @@ export default function SitesPage({
             data={[
               {
                 label: t('sites:warehouse'),
-                value: SITE_TYPES.WAREHOUSE
+                value: SITE_TYPES.WAREHOUSE,
               },
               {
                 label: t('sites:store'),
-                value: SITE_TYPES.STORE
-              }
+                value: SITE_TYPES.STORE,
+              },
             ]}
           />
         </Box>
@@ -76,16 +90,14 @@ export default function SitesPage({
           </Stack>
         </Card>
       ) : (
-        <SimpleGrid
-          cols={{ base: 1, sm: 2, lg: 3 }}
-          spacing="md"
-          mt={20}
-        >
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md" mt={20}>
           {filteredSites.map(({ id, name, location, type, agency }) => {
             const siteType = getSiteTypeLabel(type, t)
-            const address = location?.address ? `${location?.address}, ` : ""
-            const postalCode = location?.postalCode ? `${location?.postalCode}, ` : ""
-            const fullAddress = location ? `${address}${postalCode}${location?.city} (${location?.country})` : ""
+            const address = location?.address ? `${location?.address}, ` : ''
+            const postalCode = location?.postalCode ? `${location?.postalCode}, ` : ''
+            const fullAddress = location
+              ? `${address}${postalCode}${location?.city} (${location?.country})`
+              : ''
 
             return (
               <Card

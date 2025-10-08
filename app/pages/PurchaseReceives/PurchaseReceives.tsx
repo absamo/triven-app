@@ -1,17 +1,17 @@
-import { Badge, Menu, Table, Text, UnstyledButton } from "@mantine/core"
-import dayjs from "dayjs"
-import { useTranslation } from "react-i18next"
-import { Form, Link, useLocation, useNavigate, useSubmit } from "react-router"
-import { getPurchaseOrderStatusLabel } from "~/app/common/helpers/purchase"
+import { Badge, Menu, Table, Text, UnstyledButton } from '@mantine/core'
+import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
+import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
+import { getPurchaseOrderStatusLabel } from '~/app/common/helpers/purchase'
 
-import { useForm } from "@mantine/form"
-import { IconDotsVertical } from "@tabler/icons-react"
-import { useEffect, useState } from "react"
-import { PURCHASE_ORDER_STATUSES } from "~/app/common/constants"
-import type { IPurchaseOrder } from "~/app/common/validations/purchaseOrderSchema"
-import type { IPurchaseReceive } from "~/app/common/validations/purchaseReceiveSchema"
-import { PurchaseOrderFilters } from "~/app/partials/PurchaseOrderFilters"
-import { Title } from "~/app/partials/Title"
+import { useForm } from '@mantine/form'
+import { IconDotsVertical } from '@tabler/icons-react'
+import { useEffect, useState } from 'react'
+import { PURCHASE_ORDER_STATUSES } from '~/app/common/constants'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import type { IPurchaseReceive } from '~/app/common/validations/purchaseReceiveSchema'
+import { PurchaseOrderFilters } from '~/app/partials/PurchaseOrderFilters'
+import { Title } from '~/app/partials/Title'
 
 interface PurchaseReceivesProps {
   purchaseReceives: IPurchaseReceive[]
@@ -56,8 +56,8 @@ export default function PurchaseReceivesPage({
     }
   }, [location.state?.purchaseOrderReference])
 
-  const canCreate = permissions.includes("create:purchaseReceives")
-  const canUpdate = permissions.includes("update:purchaseReceives")
+  const canCreate = permissions.includes('create:purchaseReceives')
+  const canUpdate = permissions.includes('update:purchaseReceives')
 
   const navigate = useNavigate()
 
@@ -68,9 +68,9 @@ export default function PurchaseReceivesPage({
   const handleSubmit = () => {
     const { status, purchaseReceiveId } = form.values
     const formData = new FormData()
-    formData.append("status", JSON.stringify(status))
-    formData.append("purchaseReceiveId", purchaseReceiveId)
-    submit(formData, { method: "post", action: "/purchase-receives" })
+    formData.append('status', JSON.stringify(status))
+    formData.append('purchaseReceiveId', purchaseReceiveId)
+    submit(formData, { method: 'post', action: '/purchase-receives' })
   }
 
   const rows = (data?.purchaseReceives || purchaseReceives).map(
@@ -102,7 +102,7 @@ export default function PurchaseReceivesPage({
           <Table.Td>{purchaseReceiveReference}</Table.Td>
           <Table.Td>{receivedQuantity}</Table.Td>
           <Table.Td>
-            <Text size="sm"> {dayjs(receivedDate).format("DD-MM-YYYY")}</Text>
+            <Text size="sm"> {dayjs(receivedDate).format('DD-MM-YYYY')}</Text>
           </Table.Td>
           <Table.Td>
             <Badge color={purchaseReceivesStatus.color} variant="light">
@@ -125,10 +125,9 @@ export default function PurchaseReceivesPage({
                   <Menu.Item
                     type="submit"
                     component={Link}
-                    to={"/purchase-orders"}
+                    to={'/purchase-orders'}
                     state={{
-                      purchaseOrderReference:
-                        purchaseOrder?.purchaseOrderReference,
+                      purchaseOrderReference: purchaseOrder?.purchaseOrderReference,
                     }}
                   >
                     {t('purchaseReceives:viewPurchaseOrders', 'View Purchase Orders')}
@@ -158,7 +157,7 @@ export default function PurchaseReceivesPage({
 
   return (
     <>
-      <Title to={"/purchase-receives/create"} canCreate={canCreate}>
+      <Title to={'/purchase-receives/create'} canCreate={canCreate}>
         {t('purchaseReceives:title', 'Purchase Receives')}
       </Title>
 
@@ -168,13 +167,22 @@ export default function PurchaseReceivesPage({
         }}
         statusOrderProps={{
           data: [
-            { value: PURCHASE_ORDER_STATUSES.PENDING, label: getStatusLabel(PURCHASE_ORDER_STATUSES.PENDING) },
+            {
+              value: PURCHASE_ORDER_STATUSES.PENDING,
+              label: getStatusLabel(PURCHASE_ORDER_STATUSES.PENDING),
+            },
             {
               value: PURCHASE_ORDER_STATUSES.PARTIALLY_RECEIVED,
               label: getStatusLabel(PURCHASE_ORDER_STATUSES.PARTIALLY_RECEIVED),
             },
-            { value: PURCHASE_ORDER_STATUSES.RECEIVED, label: getStatusLabel(PURCHASE_ORDER_STATUSES.RECEIVED) },
-            { value: PURCHASE_ORDER_STATUSES.CANCELLED, label: getStatusLabel(PURCHASE_ORDER_STATUSES.CANCELLED) },
+            {
+              value: PURCHASE_ORDER_STATUSES.RECEIVED,
+              label: getStatusLabel(PURCHASE_ORDER_STATUSES.RECEIVED),
+            },
+            {
+              value: PURCHASE_ORDER_STATUSES.CANCELLED,
+              label: getStatusLabel(PURCHASE_ORDER_STATUSES.CANCELLED),
+            },
           ],
 
           description: t('purchaseReceives:filterByReceivedStatus', 'Filter by received status'),
@@ -194,12 +202,7 @@ export default function PurchaseReceivesPage({
         onFilter={setData}
       />
 
-      <Table
-        verticalSpacing="xs"
-        highlightOnHover={canUpdate}
-        withTableBorder
-        striped
-      >
+      <Table verticalSpacing="xs" highlightOnHover={canUpdate} withTableBorder striped>
         <Table.Thead fz={12}>
           <Table.Tr>
             <Table.Th>{t('purchaseReceives:supplierName', 'Supplier Name')}</Table.Th>

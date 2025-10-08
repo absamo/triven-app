@@ -8,32 +8,29 @@ import {
   Text,
   Textarea,
   TextInput,
-} from "@mantine/core"
-import { DateInput } from "@mantine/dates"
+} from '@mantine/core'
+import { DateInput } from '@mantine/dates'
 
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useTranslation } from "react-i18next"
-import { useSubmit } from "react-router"
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useTranslation } from 'react-i18next'
+import { useSubmit } from 'react-router'
 
-import { type IBill } from "~/app/common/validations/billSchema"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import {
-  type IPaymentsMade,
-  paymentsMadeSchema,
-} from "~/app/common/validations/paymentsMadeSchema"
-import { Form } from "~/app/components"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
-import { Title } from "~/app/partials/Title"
-import classes from "./PaymentsMadeForm.module.css"
+import { type IBill } from '~/app/common/validations/billSchema'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { type IPaymentsMade, paymentsMadeSchema } from '~/app/common/validations/paymentsMadeSchema'
+import { Form } from '~/app/components'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
+import classes from './PaymentsMadeForm.module.css'
 
-import { PAYMENT_STATUSES } from "~/app/common/constants"
+import { PAYMENT_STATUSES } from '~/app/common/constants'
 import {
   getAmountPaidByBill,
   getBillStatusLabel,
   getTotalAmountDueByBill,
-} from "~/app/common/helpers/bill"
-import { formatMoney } from "~/app/common/helpers/money"
+} from '~/app/common/helpers/bill'
+import { formatMoney } from '~/app/common/helpers/money'
 
 interface PaymentsMadeFormProps {
   paymentMade: IPaymentsMade
@@ -93,14 +90,14 @@ export default function PaymentsMadeFormProps({
   }: IPaymentsMade) => {
     const formData = new FormData()
 
-    formData.append("paymentReference", paymentReference)
-    formData.append("paymentDate", JSON.stringify(paymentDate))
-    formData.append("paymentMethod", JSON.stringify(paymentMethod))
-    formData.append("notes", notes || "")
-    formData.append("billId", billId)
-    formData.append("amountReceived", JSON.stringify(amountReceived))
+    formData.append('paymentReference', paymentReference)
+    formData.append('paymentDate', JSON.stringify(paymentDate))
+    formData.append('paymentMethod', JSON.stringify(paymentMethod))
+    formData.append('notes', notes || '')
+    formData.append('billId', billId)
+    formData.append('amountReceived', JSON.stringify(amountReceived))
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
   }
 
   const billsOptions = bills.map((bill: IBill) => {
@@ -110,8 +107,7 @@ export default function PaymentsMadeFormProps({
     }
   })
 
-  const canEdit =
-    !paymentMade.id || paymentMade.status !== PAYMENT_STATUSES.CANCELLED
+  const canEdit = !paymentMade.id || paymentMade.status !== PAYMENT_STATUSES.CANCELLED
 
   const status = getBillStatusLabel(form.values?.bill?.status)
 
@@ -119,8 +115,10 @@ export default function PaymentsMadeFormProps({
     <>
       <Grid>
         <Grid.Col>
-          <Title backTo={"/payments-made"}>
-            {paymentMade.id ? t('paymentsMade:editPayment', 'Edit a payment') : t('paymentsMade:addPayment', 'Add payment')}
+          <Title backTo={'/payments-made'}>
+            {paymentMade.id
+              ? t('paymentsMade:editPayment', 'Edit a payment')
+              : t('paymentsMade:addPayment', 'Add payment')}
           </Title>
 
           <Form onSubmit={canEdit ? form.onSubmit(handleSubmit) : undefined}>
@@ -129,11 +127,8 @@ export default function PaymentsMadeFormProps({
                 withAsterisk
                 label={t('paymentsMade:paymentReferenceLabel', 'Payment reference')}
                 name="paymentReference"
-                {...form.getInputProps("paymentReference")}
-                error={
-                  form.getInputProps("paymentReference").error ||
-                  errors?.paymentReference
-                }
+                {...form.getInputProps('paymentReference')}
+                error={form.getInputProps('paymentReference').error || errors?.paymentReference}
                 disabled={!canEdit}
               />
             </Grid.Col>
@@ -144,7 +139,7 @@ export default function PaymentsMadeFormProps({
                 label={t('paymentsMade:paymentDateLabel', 'Payment date')}
                 name="paymentDate"
                 minDate={new Date()}
-                {...form.getInputProps("paymentDate")}
+                {...form.getInputProps('paymentDate')}
                 disabled={!canEdit}
               />
             </Grid.Col>
@@ -159,56 +154,49 @@ export default function PaymentsMadeFormProps({
                 name="billId"
                 disabled={!!paymentMade.id}
                 onChange={(currentBill: string) => {
-                  form.setFieldValue("billId", currentBill || "")
+                  form.setFieldValue('billId', currentBill || '')
                   form.setFieldValue(
-                    "bill",
+                    'bill',
                     bills.find(({ id }) => id === currentBill)
                   )
                 }}
-                error={form.getInputProps("billId").error}
+                error={form.getInputProps('billId').error}
                 description={
                   form.values.bill && (
-                    <Group
-                      justify="space-between"
-                      component="span"
-                      align="flex-start"
-                    >
+                    <Group justify="space-between" component="span" align="flex-start">
                       <Text c="dimmed" size="xs" component="span">
-                        {t('paymentsMade:purchaseOrderStatus', 'Purchase Order Status')}:{" "}
-                        <Badge
-                          color={status.color}
-                          variant="transparent"
-                          p={0}
-                          component="span"
-                        >
+                        {t('paymentsMade:purchaseOrderStatus', 'Purchase Order Status')}:{' '}
+                        <Badge color={status.color} variant="transparent" p={0} component="span">
                           {status.label}
                         </Badge>
                       </Text>
 
                       <Stack gap={0} component="span">
                         <Text c="dimmed" size="xs" component="span">
-                          {t('paymentsMade:amountDueLabel', 'Amount Due')} :{" "}
+                          {t('paymentsMade:amountDueLabel', 'Amount Due')} :{' '}
                           <Text fw="bold" size="xs" component="span">
                             {currency.symbol}
                             {formatMoney(getTotalAmountDueByBill(form.values.bill as IBill))}
                           </Text>
                         </Text>
                         <Text c="dimmed" size="xs" component="span">
-                          {t('paymentsMade:amountPaidLabel', 'Amount Paid')} :{" "}
+                          {t('paymentsMade:amountPaidLabel', 'Amount Paid')} :{' '}
                           <Text fw="bold" size="xs" component="span">
                             {currency.symbol}
-                            {formatMoney(getAmountPaidByBill(
-                              form.values.bill as IBill,
-                              form.values.id,
-                              paymentMade.amountReceived
-                            ))}
+                            {formatMoney(
+                              getAmountPaidByBill(
+                                form.values.bill as IBill,
+                                form.values.id,
+                                paymentMade.amountReceived
+                              )
+                            )}
                           </Text>
                         </Text>
                       </Stack>
                     </Group>
                   )
                 }
-                inputWrapperOrder={["label", "input", "description", "error"]}
+                inputWrapperOrder={['label', 'input', 'description', 'error']}
                 classNames={{
                   description: classes.description,
                 }}
@@ -221,13 +209,11 @@ export default function PaymentsMadeFormProps({
                 name="amountReceived"
                 hideControls
                 allowNegative={false}
-                {...form.getInputProps("amountReceived")}
+                {...form.getInputProps('amountReceived')}
                 onChange={(amountReceived) => {
                   form
-                    .getInputProps("amountReceived")
-                    .onChange(
-                      amountReceived === "" ? undefined : amountReceived
-                    )
+                    .getInputProps('amountReceived')
+                    .onChange(amountReceived === '' ? undefined : amountReceived)
                 }}
                 disabled={!canEdit}
               />
@@ -239,13 +225,13 @@ export default function PaymentsMadeFormProps({
                 name="paymentMethod"
                 value={form.values.paymentMethod}
                 data={[
-                  { value: "BankTransfer", label: getPaymentMethodLabel("BankTransfer") },
-                  { value: "Cash", label: getPaymentMethodLabel("Cash") },
-                  { value: "CreditCard", label: getPaymentMethodLabel("CreditCard") },
-                  { value: "DebitCard", label: getPaymentMethodLabel("DebitCard") },
-                  { value: "Cheque", label: getPaymentMethodLabel("Cheque") },
+                  { value: 'BankTransfer', label: getPaymentMethodLabel('BankTransfer') },
+                  { value: 'Cash', label: getPaymentMethodLabel('Cash') },
+                  { value: 'CreditCard', label: getPaymentMethodLabel('CreditCard') },
+                  { value: 'DebitCard', label: getPaymentMethodLabel('DebitCard') },
+                  { value: 'Cheque', label: getPaymentMethodLabel('Cheque') },
                 ]}
-                {...form.getInputProps("paymentMethod")}
+                {...form.getInputProps('paymentMethod')}
                 disabled={!canEdit}
               />
             </Grid.Col>
@@ -256,7 +242,7 @@ export default function PaymentsMadeFormProps({
                 name="notes"
                 autosize
                 minRows={4}
-                {...form.getInputProps("notes")}
+                {...form.getInputProps('notes')}
                 disabled={!canEdit}
               />
             </Grid.Col>

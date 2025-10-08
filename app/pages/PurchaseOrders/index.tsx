@@ -1,2 +1,2 @@
-import PurchaseOrders from "./PurchaseOrders"
+import PurchaseOrders from './PurchaseOrders'
 export default PurchaseOrders

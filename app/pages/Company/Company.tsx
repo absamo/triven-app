@@ -1,25 +1,20 @@
-import { Grid, Box, NavLink, Paper, VisuallyHidden } from "@mantine/core"
-import { Link, Outlet } from "react-router";
-import {
-  IconGauge,
-  IconFingerprint,
-  IconActivity,
-  IconChevronRight,
-} from "@tabler/icons-react"
-import { useState } from "react"
+import { Grid, Box, NavLink, Paper, VisuallyHidden } from '@mantine/core'
+import { Link, Outlet } from 'react-router'
+import { IconGauge, IconFingerprint, IconActivity, IconChevronRight } from '@tabler/icons-react'
+import { useState } from 'react'
 
 // import Currency from "~/app/components/Currency"
 
-const data = [{ label: "Currency", description: "Set default currencies" }]
+const data = [{ label: 'Currency', description: 'Set default currencies' }]
 
 export default function Company() {
   const [active, setActive] = useState(0)
 
   const items = data.map((item, index) => (
     // eslint-disable-next-line jsx-a11y/anchor-has-content
-    (<NavLink
+    <NavLink
       component={Link}
-      to={"/company/currencies"}
+      to={'/company/currencies'}
       key={item.label}
       active={index === active}
       label={item.label}
@@ -27,14 +22,14 @@ export default function Company() {
       // rightSection={item.rightSection}
       onClick={() => setActive(index)}
       variant="subtle"
-    />)
+    />
   ))
 
   return (
     <Grid
       style={{
-        minHeight: "calc(100vh - 92px)",
-        display: "flex",
+        minHeight: 'calc(100vh - 92px)',
+        display: 'flex',
       }}
     >
       {/* <Grid.Col span={3}>
@@ -48,7 +43,7 @@ export default function Company() {
           <Box>{items}</Box>
         </Paper>
       </Grid.Col> */}
-      <Grid.Col span={"auto"}>
+      <Grid.Col span={'auto'}>
         <Paper
           // style={{
           //   height: "100%",

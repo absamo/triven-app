@@ -1,3 +1,3 @@
-import SettingsTitle from "./SettingsTitle"
+import SettingsTitle from './SettingsTitle'
 
 export default SettingsTitle

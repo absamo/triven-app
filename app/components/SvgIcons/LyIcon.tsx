@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface LyIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface LyIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function LyIcon({ size = 20, style, ...others }: LyIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#333"
-          d="m0 144.7 257-22.4 255 22.4v222.6l-254.9 31L0 367.3z"
-        />
+        <path fill="#333" d="m0 144.7 257-22.4 255 22.4v222.6l-254.9 31L0 367.3z" />
         <path fill="#d80027" d="M0 0h512v144.7H0z" />
         <path fill="#496e2d" d="M0 367.3h512V512H0z" />
         <g fill="#eee">

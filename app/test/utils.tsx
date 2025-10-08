@@ -9,23 +9,23 @@ import { vi } from 'vitest'
 // Mock React Router hooks at the module level to avoid "Cannot redefine property" errors
 // This makes the mocks available to all test files that import from this utils file
 vi.mock('react-router', async () => {
-    const actual = await vi.importActual('react-router')
-    return {
-        ...actual,
-        useNavigate: vi.fn(),
-        useSubmit: vi.fn(),
-    }
+  const actual = await vi.importActual('react-router')
+  return {
+    ...actual,
+    useNavigate: vi.fn(),
+    useSubmit: vi.fn(),
+  }
 })
 
 // Mock Mantine notifications for testing
 vi.mock('@mantine/notifications', async () => {
-    const actual = await vi.importActual('@mantine/notifications')
-    return {
-        ...actual,
-        notifications: {
-            show: vi.fn(),
-        },
-    }
+  const actual = await vi.importActual('@mantine/notifications')
+  return {
+    ...actual,
+    notifications: {
+      show: vi.fn(),
+    },
+  }
 })
 
 // Re-export createRoutesStub for convenience
@@ -35,86 +35,78 @@ export const createRoutesStub = reactRouterCreateRoutesStub
 const testTheme = createTheme({})
 
 interface CustomRenderResult extends RenderResult {
-    user: UserEvent
+  user: UserEvent
 }
 
 interface RenderWithRouterOptions {
-    initialEntries?: string[]
-    path?: string
-    loader?: () => any
-    action?: () => any
+  initialEntries?: string[]
+  path?: string
+  loader?: () => any
+  action?: () => any
 }
 
 export function render(ui: React.ReactNode): CustomRenderResult {
-    const result = testingLibraryRender(<>{ui}</>, {
-        wrapper: ({ children }: { children: React.ReactNode }) => (
-            <MantineProvider theme={testTheme}>
-                {children}
-            </MantineProvider>
-        ),
-    })
+  const result = testingLibraryRender(<>{ui}</>, {
+    wrapper: ({ children }: { children: React.ReactNode }) => (
+      <MantineProvider theme={testTheme}>{children}</MantineProvider>
+    ),
+  })
 
-    return {
-        ...result,
-        user: userEvent.setup(),
-    }
+  return {
+    ...result,
+    user: userEvent.setup(),
+  }
 }
 
 // Helper function to render components that need router context
 export function renderWithRouterContext(ui: React.ReactNode): CustomRenderResult {
-    // Create a simple router context for components that use router hooks
-    const RoutesStub = reactRouterCreateRoutesStub([
-        {
-            path: '*',
-            Component: () => <>{ui}</>,
-        },
-    ])
+  // Create a simple router context for components that use router hooks
+  const RoutesStub = reactRouterCreateRoutesStub([
+    {
+      path: '*',
+      Component: () => <>{ui}</>,
+    },
+  ])
 
-    const result = testingLibraryRender(
-        <MantineProvider theme={testTheme}>
-            <RoutesStub initialEntries={['/']} />
-        </MantineProvider>
-    )
+  const result = testingLibraryRender(
+    <MantineProvider theme={testTheme}>
+      <RoutesStub initialEntries={['/']} />
+    </MantineProvider>
+  )
 
-    return {
-        ...result,
-        user: userEvent.setup(),
-    }
+  return {
+    ...result,
+    user: userEvent.setup(),
+  }
 }
 
 export function renderWithRouter(
-    Component: React.ComponentType<any>,
-    options: RenderWithRouterOptions = {}
+  Component: React.ComponentType<any>,
+  options: RenderWithRouterOptions = {}
 ): CustomRenderResult {
-    const {
-        initialEntries = ['/'],
-        path = '/',
-        loader,
-        action
-    } = options
+  const { initialEntries = ['/'], path = '/', loader, action } = options
 
-    // Create a routes stub for testing
-    const RoutesStub = reactRouterCreateRoutesStub([
-        {
-            path,
-            Component,
-            loader,
-            action,
-        },
-    ])
+  // Create a routes stub for testing
+  const RoutesStub = reactRouterCreateRoutesStub([
+    {
+      path,
+      Component,
+      loader,
+      action,
+    },
+  ])
 
-    const result = testingLibraryRender(
-        <MantineProvider theme={testTheme}>
-            <RoutesStub initialEntries={initialEntries} />
-        </MantineProvider>
-    )
+  const result = testingLibraryRender(
+    <MantineProvider theme={testTheme}>
+      <RoutesStub initialEntries={initialEntries} />
+    </MantineProvider>
+  )
 
-    return {
-        ...result,
-        user: userEvent.setup(),
-    }
+  return {
+    ...result,
+    user: userEvent.setup(),
+  }
 }
-
 
 // Export the screen, waitFor, and userEvent from @testing-library/react
 // to allow easier access in tests
@@ -124,4 +116,3 @@ export { screen, userEvent, waitFor }
 
 // Re-export vi for test utilities
 export { vi }
-

@@ -1,123 +1,123 @@
 /* InventoryOverview Component Styles */
 
 .container {
-    padding: 0;
+  padding: 0;
 }
 
 .header {
-    margin-bottom: var(--mantine-spacing-md);
+  margin-bottom: var(--mantine-spacing-md);
 }
 
 .title {
-    margin-bottom: var(--mantine-spacing-xs);
+  margin-bottom: var(--mantine-spacing-xs);
 }
 
 .description {
-    color: var(--mantine-color-dimmed);
-    font-size: var(--mantine-font-size-sm);
-    margin-bottom: var(--mantine-spacing-md);
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-sm);
+  margin-bottom: var(--mantine-spacing-md);
 }
 
 .table {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 .tableHeader {
-    background-color: light-dark(#f8f9fa, var(--mantine-color-dark-5));
+  background-color: light-dark(#f8f9fa, var(--mantine-color-dark-5));
 }
 
 .tableHeaderCell {
-    padding: 8px;
-    font-size: 13px;
-    font-weight: bold;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: bold;
 }
 
 .tableHeaderCellRight {
-    padding: 8px;
-    font-size: 13px;
-    font-weight: bold;
-    text-align: right;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: right;
 }
 
 .tableCell {
-    padding: 8px;
+  padding: 8px;
 }
 
 .tableCellRight {
-    padding: 8px;
-    text-align: right;
+  padding: 8px;
+  text-align: right;
 }
 
 .stockValue {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .stockCritical {
-    color: var(--mantine-color-red-6);
+  color: var(--mantine-color-red-6);
 }
 
 .stockLow {
-    color: var(--mantine-color-orange-6);
+  color: var(--mantine-color-orange-6);
 }
 
 .stockGood {
-    color: var(--mantine-color-green-6);
+  color: var(--mantine-color-green-6);
 }
 
 .availableStock {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .availablePositive {
-    color: var(--mantine-color-green-6);
+  color: var(--mantine-color-green-6);
 }
 
 .availableNegative {
-    color: var(--mantine-color-red-6);
+  color: var(--mantine-color-red-6);
 }
 
 .emptyState {
-    text-align: center;
-    padding: 40px;
-    color: var(--mantine-color-gray-6);
+  text-align: center;
+  padding: 40px;
+  color: var(--mantine-color-gray-6);
 }
 
 .emptyStateText {
-    color: var(--mantine-color-dimmed);
+  color: var(--mantine-color-dimmed);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .table {
-        font-size: 11px;
-    }
+  .table {
+    font-size: 11px;
+  }
 
-    .tableHeaderCell,
-    .tableHeaderCellRight {
-        padding: 6px;
-        font-size: 12px;
-    }
+  .tableHeaderCell,
+  .tableHeaderCellRight {
+    padding: 6px;
+    font-size: 12px;
+  }
 
-    .tableCell,
-    .tableCellRight {
-        padding: 6px;
-    }
+  .tableCell,
+  .tableCellRight {
+    padding: 6px;
+  }
 
-    .emptyState {
-        padding: 20px;
-    }
+  .emptyState {
+    padding: 20px;
+  }
 }
 
 /* Print styles */
 @media print {
-    .table {
-        font-size: 10px;
-    }
+  .table {
+    font-size: 10px;
+  }
 
-    .tableHeaderCell,
-    .tableHeaderCellRight,
-    .tableCell,
-    .tableCellRight {
-        padding: 4px;
-    }
+  .tableHeaderCell,
+  .tableHeaderCellRight,
+  .tableCell,
+  .tableCellRight {
+    padding: 4px;
+  }
 }

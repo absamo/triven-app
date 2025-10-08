@@ -1,2 +1,2 @@
-import Suppliers from "./Suppliers"
+import Suppliers from './Suppliers'
 export default Suppliers

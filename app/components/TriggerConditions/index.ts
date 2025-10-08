@@ -1,1 +1,1 @@
-export { default } from './TriggerConditions';
+export { default } from './TriggerConditions'

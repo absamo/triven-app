@@ -8,13 +8,13 @@ import {
   Group,
   Title as MantineTitle,
   Paper,
-  rem
-} from "@mantine/core"
-import { IconArrowLeft } from "@tabler/icons-react"
+  rem,
+} from '@mantine/core'
+import { IconArrowLeft } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
-import { type To, Link } from "react-router"
+import { type To, Link } from 'react-router'
 
-import classes from "~/app/partials/Title/Title.module.css"
+import classes from '~/app/partials/Title/Title.module.css'
 
 interface TitleProps {
   children: React.ReactNode
@@ -57,15 +57,14 @@ export default function Title({
             <Anchor component={Link} to={backTo}>
               <Center>
                 <ActionIcon variant="light" radius="xl" size="xl" className={classes.backButton}>
-                  <IconArrowLeft
-                    style={{ width: rem(24), height: rem(24) }}
-                    stroke={1.5}
-                  />
+                  <IconArrowLeft style={{ width: rem(24), height: rem(24) }} stroke={1.5} />
                 </ActionIcon>
               </Center>
             </Anchor>
           )}
-          <MantineTitle order={order} p={0}>{children}</MantineTitle>
+          <MantineTitle order={order} p={0}>
+            {children}
+          </MantineTitle>
         </Group>
         <Group>
           {additionalButtons}

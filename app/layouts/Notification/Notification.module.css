@@ -122,7 +122,8 @@
   font-weight: 600;
   font-size: 11px;
   color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-3));
-  margin: var(--mantine-spacing-sm) var(--mantine-spacing-sm) var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  margin: var(--mantine-spacing-sm) var(--mantine-spacing-sm) var(--mantine-spacing-xs)
+    var(--mantine-spacing-sm);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   position: sticky;
@@ -132,11 +133,17 @@
 
 /* Status-specific border colors */
 .criticalStatus::before {
-  background-color: light-dark(var(--mantine-color-orange-5), var(--mantine-color-orange-6)) !important;
+  background-color: light-dark(
+    var(--mantine-color-orange-5),
+    var(--mantine-color-orange-6)
+  ) !important;
 }
 
 .lowStockStatus::before {
-  background-color: light-dark(var(--mantine-color-yellow-6), var(--mantine-color-yellow-5)) !important;
+  background-color: light-dark(
+    var(--mantine-color-yellow-6),
+    var(--mantine-color-yellow-5)
+  ) !important;
 }
 
 .outOfStockStatus::before {
@@ -148,9 +155,15 @@
 }
 
 .expiredProductStatus::before {
-  background-color: light-dark(var(--mantine-color-grape-5), var(--mantine-color-grape-6)) !important;
+  background-color: light-dark(
+    var(--mantine-color-grape-5),
+    var(--mantine-color-grape-6)
+  ) !important;
 }
 
 .expiringProductStatus::before {
-  background-color: light-dark(var(--mantine-color-orange-5), var(--mantine-color-orange-6)) !important;
+  background-color: light-dark(
+    var(--mantine-color-orange-5),
+    var(--mantine-color-orange-6)
+  ) !important;
 }

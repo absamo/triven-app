@@ -1,2 +1,2 @@
-import Integrations from "./Integrations"
+import Integrations from './Integrations'
 export default Integrations

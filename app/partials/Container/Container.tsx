@@ -1,7 +1,7 @@
-import { Container } from "@mantine/core"
+import { Container } from '@mantine/core'
 // import { IconArrowLeft } from "@tabler/icons-react"
 
-import classes from "~/app/partials/Container/Container.module.css"
+import classes from '~/app/partials/Container/Container.module.css'
 
 interface ContainerProps {
   children: React.ReactNode
@@ -14,10 +14,7 @@ interface ContainerProps {
   }
 }
 
-export default function ContainerPartialPage({
-  children,
-  filterProps,
-}: ContainerProps) {
+export default function ContainerPartialPage({ children, filterProps }: ContainerProps) {
   return (
     <>
       <Container size="responsive" className={classes.filterContainer}>

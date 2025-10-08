@@ -1,3 +1,3 @@
-import NavbarLinksGroup from "./NavbarLinksGroup"
+import NavbarLinksGroup from './NavbarLinksGroup'
 
 export default NavbarLinksGroup

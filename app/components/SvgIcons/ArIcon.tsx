@@ -1,6 +1,6 @@
-import { rem } from "@mantine/core"
+import { rem } from '@mantine/core'
 
-interface ArIconProps extends React.ComponentPropsWithoutRef<"svg"> {
+interface ArIconProps extends React.ComponentPropsWithoutRef<'svg'> {
   size?: number | string
 }
 
@@ -18,10 +18,7 @@ export default function ArIcon({ size = 20, style, ...others }: ArIconProps) {
         <circle cx="256" cy="256" r="256" fill="#fff" />
       </mask>
       <g mask="url(#a)">
-        <path
-          fill="#338af3"
-          d="M0 0h512v144.7L488 256l24 111.3V512H0V367.3L26 256 0 144.7z"
-        />
+        <path fill="#338af3" d="M0 0h512v144.7L488 256l24 111.3V512H0V367.3L26 256 0 144.7z" />
         <path fill="#eee" d="M0 144.7h512v222.6H0z" />
         <path
           fill="#ffda44"

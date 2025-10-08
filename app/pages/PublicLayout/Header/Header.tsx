@@ -9,9 +9,9 @@ import {
   Text,
   ThemeIcon,
   UnstyledButton,
-  rem
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+  rem,
+} from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
 import {
   IconBuilding,
   IconChartPie3,
@@ -19,50 +19,49 @@ import {
   IconCurrencyDollar,
   IconFileInvoice,
   IconPackage,
-  IconShoppingCart
-} from "@tabler/icons-react";
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
-import { Logo } from "~/app/components";
-import classes from "./Header.module.css";
+  IconShoppingCart,
+} from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
+import { Logo } from '~/app/components'
+import classes from './Header.module.css'
 
 const featureData = [
   {
     icon: IconPackage,
-    title: "Inventory Management",
-    description: "Real-time stock tracking and intelligent automation",
+    title: 'Inventory Management',
+    description: 'Real-time stock tracking and intelligent automation',
   },
   {
     icon: IconShoppingCart,
-    title: "Sales & Orders",
-    description: "Complete sales pipeline and order management",
+    title: 'Sales & Orders',
+    description: 'Complete sales pipeline and order management',
   },
   {
     icon: IconFileInvoice,
-    title: "Purchasing",
-    description: "Streamlined procurement and supplier management",
+    title: 'Purchasing',
+    description: 'Streamlined procurement and supplier management',
   },
   {
     icon: IconCurrencyDollar,
-    title: "Financial Operations",
-    description: "Multi-currency support and payment processing",
+    title: 'Financial Operations',
+    description: 'Multi-currency support and payment processing',
   },
   {
     icon: IconChartPie3,
-    title: "Analytics & Reports",
-    description: "Business intelligence and predictive insights",
+    title: 'Analytics & Reports',
+    description: 'Business intelligence and predictive insights',
   },
   {
     icon: IconBuilding,
-    title: "Multi-Location",
-    description: "Manage multiple sites and warehouses",
+    title: 'Multi-Location',
+    description: 'Manage multiple sites and warehouses',
   },
 ]
 
 export default function HeaderMegaMenu() {
-  const { t } = useTranslation(["home", "navigation"])
-  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
-    useDisclosure(false)
+  const { t } = useTranslation(['home', 'navigation'])
+  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false)
   const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false)
 
   // Smooth scroll to pricing section
@@ -72,22 +71,17 @@ export default function HeaderMegaMenu() {
     if (pricingSection) {
       pricingSection.scrollIntoView({
         behavior: 'smooth',
-        block: 'start'
+        block: 'start',
       })
     }
     closeDrawer() // Close mobile drawer if open
   }
 
   const links = featureData.map((item) => (
-    <UnstyledButton
-      className={classes.subLink}
-      key={item.title}
-    >
+    <UnstyledButton className={classes.subLink} key={item.title}>
       <Group wrap="nowrap" align="flex-start">
         <ThemeIcon size={34} variant="default" radius="md" className={classes.featureIcon}>
-          <item.icon
-            style={{ width: rem(22), height: rem(22) }}
-          />
+          <item.icon style={{ width: rem(22), height: rem(22) }} />
         </ThemeIcon>
         <div>
           <Text size="sm" fw={500}>
@@ -128,7 +122,11 @@ export default function HeaderMegaMenu() {
                   </SimpleGrid>
                 </HoverCard.Dropdown>
               </HoverCard>
-              <button onClick={scrollToPricing} className={classes.navLink} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+              <button
+                onClick={scrollToPricing}
+                className={classes.navLink}
+                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+              >
                 {t('home:nav.pricing')}
               </button>
             </Group>
@@ -144,12 +142,7 @@ export default function HeaderMegaMenu() {
               >
                 {t('home:nav.login')}
               </Button>
-              <Button
-                component={Link}
-                to="/signup"
-                className={classes.signupButton}
-                size="md"
-              >
+              <Button component={Link} to="/signup" className={classes.signupButton} size="md">
                 {t('home:nav.getStarted')}
               </Button>
             </Group>
@@ -174,10 +167,18 @@ export default function HeaderMegaMenu() {
         zIndex={1000000}
       >
         <div className={classes.mobileNav}>
-          <div className={classes.mobileNavLink}>
-            {t('home:nav.features')}
-          </div>
-          <button onClick={scrollToPricing} className={classes.mobileNavLink} style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
+          <div className={classes.mobileNavLink}>{t('home:nav.features')}</div>
+          <button
+            onClick={scrollToPricing}
+            className={classes.mobileNavLink}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              textAlign: 'left',
+              width: '100%',
+            }}
+          >
             {t('home:nav.pricing')}
           </button>
         </div>

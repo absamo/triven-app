@@ -1,27 +1,18 @@
-import {
-  Grid,
-  Table,
-  Text,
-  Textarea,
-  TextInput,
-} from "@mantine/core"
-import { DateInput } from "@mantine/dates"
-import { useForm } from "@mantine/form"
-import { zodResolver } from "mantine-form-zod-resolver"
-import { useTranslation } from "react-i18next"
-import { useSubmit } from "react-router"
+import { Grid, Table, Text, Textarea, TextInput } from '@mantine/core'
+import { DateInput } from '@mantine/dates'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { useTranslation } from 'react-i18next'
+import { useSubmit } from 'react-router'
 
-import { formatMoney } from "~/app/common/helpers/money"
-import { type ICurrency } from "~/app/common/validations/currencySchema"
-import {
-  type IInvoice,
-  invoiceSchema,
-} from "~/app/common/validations/invoiceSchema"
-import { type ISalesOrder } from "~/app/common/validations/salesOrderSchema"
-import { Form } from "~/app/components"
-import { SearchableSelect } from "~/app/partials/SearchableSelect"
-import { Title } from "~/app/partials/Title"
-import classes from "./InvoiceForm.module.css"
+import { formatMoney } from '~/app/common/helpers/money'
+import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { type IInvoice, invoiceSchema } from '~/app/common/validations/invoiceSchema'
+import { type ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import { Form } from '~/app/components'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
+import classes from './InvoiceForm.module.css'
 
 interface InvoiceFormProps {
   invoice: IInvoice
@@ -30,12 +21,7 @@ interface InvoiceFormProps {
   errors: Record<string, string>
 }
 
-export default function InvoiceForm({
-  invoice,
-  salesOrders,
-  errors,
-  currency,
-}: InvoiceFormProps) {
+export default function InvoiceForm({ invoice, salesOrders, errors, currency }: InvoiceFormProps) {
   const { t } = useTranslation(['invoices', 'common'])
   const form = useForm({
     validate: zodResolver(invoiceSchema),
@@ -63,14 +49,14 @@ export default function InvoiceForm({
   }: IInvoice) => {
     const formData = new FormData()
 
-    formData.append("invoiceReference", invoiceReference)
-    formData.append("invoiceDate", JSON.stringify(invoiceDate))
-    formData.append("dueDate", JSON.stringify(dueDate))
-    formData.append("salesOrderId", salesOrderId)
-    formData.append("status", JSON.stringify(status))
-    formData.append("notes", notes || "")
+    formData.append('invoiceReference', invoiceReference)
+    formData.append('invoiceDate', JSON.stringify(invoiceDate))
+    formData.append('dueDate', JSON.stringify(dueDate))
+    formData.append('salesOrderId', salesOrderId)
+    formData.append('status', JSON.stringify(status))
+    formData.append('notes', notes || '')
 
-    submit(formData, { method: "post" })
+    submit(formData, { method: 'post' })
   }
 
   const salesOrderOptions = salesOrders.map((salesOrder: ISalesOrder) => ({
@@ -78,42 +64,37 @@ export default function InvoiceForm({
     label: salesOrder.salesOrderReference,
   }))
 
-  const totalAmount = form.values.salesOrderItems.reduce(
-    (acc, item) => acc + (item.amount || 0),
-    0
-  )
+  const totalAmount = form.values.salesOrderItems.reduce((acc, item) => acc + (item.amount || 0), 0)
 
-  const rows = form.values.salesOrderItems.map(
-    ({ id, product, quantity, rate, tax, amount }) => {
-      return (
-        <Table.Tr key={product?.id || id}>
-          <Table.Td>
-            <Text size="sm" w={220}>
-              {product?.name}
-            </Text>
-          </Table.Td>
-          <Table.Td>
-            <Text size="sm">{quantity}</Text>
-          </Table.Td>
-          <Table.Td>
-            <Text size="sm">{formatMoney(rate)}</Text>
-          </Table.Td>
-          <Table.Td>
-            <Text size="sm">{tax || undefined}</Text>
-          </Table.Td>
-          <Table.Td>
-            <Text size="sm">{formatMoney(amount)}</Text>
-          </Table.Td>
-        </Table.Tr>
-      )
-    }
-  )
+  const rows = form.values.salesOrderItems.map(({ id, product, quantity, rate, tax, amount }) => {
+    return (
+      <Table.Tr key={product?.id || id}>
+        <Table.Td>
+          <Text size="sm" w={220}>
+            {product?.name}
+          </Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm">{quantity}</Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm">{formatMoney(rate)}</Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm">{tax || undefined}</Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm">{formatMoney(amount)}</Text>
+        </Table.Td>
+      </Table.Tr>
+    )
+  })
 
   return (
     <>
       <Grid>
         <Grid.Col>
-          <Title backTo={"/invoices"}>
+          <Title backTo={'/invoices'}>
             {invoice.id ? t('invoices:editInvoice') : t('invoices:addInvoice')}
           </Title>
 
@@ -123,11 +104,8 @@ export default function InvoiceForm({
                 withAsterisk
                 label={t('invoices:invoiceReferenceLabel')}
                 name="invoiceReference"
-                {...form.getInputProps("invoiceReference")}
-                error={
-                  form.getInputProps("invoiceReference").error ||
-                  errors?.invoiceReference
-                }
+                {...form.getInputProps('invoiceReference')}
+                error={form.getInputProps('invoiceReference').error || errors?.invoiceReference}
               />
             </Grid.Col>
 
@@ -141,16 +119,15 @@ export default function InvoiceForm({
                 name="salesOrderId"
                 disabled={!!invoice.id}
                 onChange={(currentSalesOrder: string) => {
-                  form.setFieldValue("salesOrderId", currentSalesOrder)
+                  form.setFieldValue('salesOrderId', currentSalesOrder)
                   form.setFieldValue(
-                    "salesOrderItems",
-                    salesOrders.find(
-                      (salesOrder) => salesOrder.id === currentSalesOrder
-                    )?.salesOrderItems || []
+                    'salesOrderItems',
+                    salesOrders.find((salesOrder) => salesOrder.id === currentSalesOrder)
+                      ?.salesOrderItems || []
                   )
                 }}
                 nothingFoundMessage={t('invoices:noSalesOrdersFound')}
-                error={form.getInputProps("salesOrderId").error}
+                error={form.getInputProps('salesOrderId').error}
               />
             </Grid.Col>
 
@@ -161,7 +138,7 @@ export default function InvoiceForm({
                 label={t('invoices:invoiceDate')}
                 name="invoiceDate"
                 minDate={new Date()}
-                {...form.getInputProps("invoiceDate")}
+                {...form.getInputProps('invoiceDate')}
               />
             </Grid.Col>
 
@@ -171,7 +148,7 @@ export default function InvoiceForm({
                 label={t('invoices:dueDate')}
                 name="dueDate"
                 minDate={new Date()}
-                {...form.getInputProps("dueDate")}
+                {...form.getInputProps('dueDate')}
               />
             </Grid.Col>
 
@@ -181,7 +158,7 @@ export default function InvoiceForm({
                 name="notes"
                 autosize
                 minRows={4}
-                {...form.getInputProps("notes")}
+                {...form.getInputProps('notes')}
               />
             </Grid.Col>
 
@@ -190,7 +167,7 @@ export default function InvoiceForm({
                 verticalSpacing="xs"
                 highlightOnHover={false}
                 striped
-                mt={"md"}
+                mt={'md'}
                 withTableBorder
               >
                 <Table.Thead fz={12}>
@@ -220,7 +197,10 @@ export default function InvoiceForm({
                     <Table.Tr className={classes.totalRow}>
                       <Table.Td colSpan={2} className={classes.totalCell}></Table.Td>
                       <Table.Td className={classes.totalCell}>
-                        <Text fw={500} ta="right">{`${t('invoices:total')} ( ${currency.symbol} )`}</Text>
+                        <Text
+                          fw={500}
+                          ta="right"
+                        >{`${t('invoices:total')} ( ${currency.symbol} )`}</Text>
                       </Table.Td>
                       <Table.Td className={classes.totalCell}></Table.Td>
                       <Table.Td className={classes.totalCell}>

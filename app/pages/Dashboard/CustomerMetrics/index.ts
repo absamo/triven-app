@@ -1,3 +1,3 @@
-import CustomerMetrics from "./CustomerMetrics";
+import CustomerMetrics from './CustomerMetrics'
 
-export default CustomerMetrics;
+export default CustomerMetrics

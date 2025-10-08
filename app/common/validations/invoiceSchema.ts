@@ -1,16 +1,16 @@
-import { INVOICE_STATUSES } from "~/app/common/constants"
+import { INVOICE_STATUSES } from '~/app/common/constants'
 
-import { z } from "zod"
-import dayjs from "dayjs"
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter"
-import { salesOrderSchema } from "./salesOrderSchema"
+import { z } from 'zod'
+import dayjs from 'dayjs'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import { salesOrderSchema } from './salesOrderSchema'
 
 dayjs.extend(isSameOrAfter)
 
 export const invoiceSchema = z.object({
   id: z.string().optional(),
-  invoiceReference: z.string().min(1, "Invoice reference is required"),
-  salesOrderId: z.string().min(1, "Sales order is required"),
+  invoiceReference: z.string().min(1, 'Invoice reference is required'),
+  salesOrderId: z.string().min(1, 'Sales order is required'),
   salesOrder: z
     .lazy(() =>
       salesOrderSchema.pick({
@@ -21,7 +21,7 @@ export const invoiceSchema = z.object({
     .optional(),
   status: z.nativeEnum(INVOICE_STATUSES, {
     errorMap: () => ({
-      message: "Invoice status is required",
+      message: 'Invoice status is required',
     }),
   }),
   // paymentTerms: z.nativeEnum(PURCHASE_ORDER_PAYMENT_TERMS, {
@@ -39,7 +39,7 @@ export const invoiceSchema = z.object({
       )
     },
     {
-      message: "Invoice date is required",
+      message: 'Invoice date is required',
     }
   ),
   dueDate: z.coerce.date().refine(
@@ -50,7 +50,7 @@ export const invoiceSchema = z.object({
       )
     },
     {
-      message: "Due date is required",
+      message: 'Due date is required',
     }
   ),
   paymentsReceived: z.array(z.any()).optional(),

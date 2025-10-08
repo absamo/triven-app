@@ -12,12 +12,10 @@
 
 .header {
   height: 80px;
-  background: light-dark(rgba(249, 249, 253, 0.95),
-      rgba(4, 3, 8, 0.95));
+  background: light-dark(rgba(249, 249, 253, 0.95), rgba(4, 3, 8, 0.95));
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid light-dark(rgba(63, 78, 87, 0.1),
-      rgba(156, 158, 180, 0.1));
+  border-bottom: 1px solid light-dark(rgba(63, 78, 87, 0.1), rgba(156, 158, 180, 0.1));
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -53,7 +51,7 @@
 /* Navigation */
 .navLink {
   text-decoration: none;
-  color: light-dark(#3F4E57, #9C9EB4);
+  color: light-dark(#3f4e57, #9c9eb4);
   font-weight: 600;
   font-size: 15px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -66,13 +64,13 @@
 }
 
 .navLink::before {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #20FE6B, #28B1DC);
+  background: linear-gradient(90deg, #20fe6b, #28b1dc);
   transition: all 0.3s ease;
   transform: translateX(-50%);
 }
@@ -83,8 +81,7 @@
 
 .navLink:hover {
   color: light-dark(#040308, white);
-  background: light-dark(rgba(32, 254, 107, 0.05),
-      rgba(32, 254, 107, 0.1));
+  background: light-dark(rgba(32, 254, 107, 0.05), rgba(32, 254, 107, 0.1));
   transform: translateY(-1px);
 }
 
@@ -104,13 +101,13 @@
 }
 
 .subLink::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #20FE6B, transparent);
+  background: linear-gradient(90deg, transparent, #20fe6b, transparent);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -120,10 +117,8 @@
 }
 
 .subLink:hover {
-  background: light-dark(rgba(32, 254, 107, 0.05),
-      rgba(32, 254, 107, 0.08));
-  border-color: light-dark(rgba(32, 254, 107, 0.15),
-      rgba(32, 254, 107, 0.2));
+  background: light-dark(rgba(32, 254, 107, 0.05), rgba(32, 254, 107, 0.08));
+  border-color: light-dark(rgba(32, 254, 107, 0.15), rgba(32, 254, 107, 0.2));
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(32, 254, 107, 0.1);
 }
@@ -143,30 +138,24 @@
 }
 
 .featureIcon {
-  background: light-dark(rgba(40, 177, 220, 0.1),
-      rgba(40, 177, 220, 0.15));
-  color: #28B1DC;
-  border: 1px solid light-dark(rgba(40, 177, 220, 0.2),
-      rgba(40, 177, 220, 0.25));
+  background: light-dark(rgba(40, 177, 220, 0.1), rgba(40, 177, 220, 0.15));
+  color: #28b1dc;
+  border: 1px solid light-dark(rgba(40, 177, 220, 0.2), rgba(40, 177, 220, 0.25));
   transition: all 0.3s ease;
 }
 
 .subLink:hover .featureIcon {
-  background: light-dark(rgba(32, 254, 107, 0.15),
-      rgba(32, 254, 107, 0.2));
-  color: #20FE6B;
-  border-color: light-dark(rgba(32, 254, 107, 0.3),
-      rgba(32, 254, 107, 0.35));
+  background: light-dark(rgba(32, 254, 107, 0.15), rgba(32, 254, 107, 0.2));
+  color: #20fe6b;
+  border-color: light-dark(rgba(32, 254, 107, 0.3), rgba(32, 254, 107, 0.35));
   transform: scale(1.05);
 }
 
 /* Theme Toggle */
 .themeToggle {
-  color: light-dark(#9C9EB4, #9C9EB4);
-  background: light-dark(rgba(156, 158, 180, 0.08),
-      rgba(156, 158, 180, 0.1));
-  border: 1px solid light-dark(rgba(156, 158, 180, 0.15),
-      rgba(156, 158, 180, 0.2));
+  color: light-dark(#9c9eb4, #9c9eb4);
+  background: light-dark(rgba(156, 158, 180, 0.08), rgba(156, 158, 180, 0.1));
+  border: 1px solid light-dark(rgba(156, 158, 180, 0.15), rgba(156, 158, 180, 0.2));
   border-radius: 12px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   width: 44px;
@@ -174,20 +163,17 @@
 }
 
 .themeToggle:hover {
-  color: light-dark(#3F4E57, white);
-  background: light-dark(rgba(76, 94, 175, 0.1),
-      rgba(76, 94, 175, 0.15));
-  border-color: light-dark(rgba(76, 94, 175, 0.2),
-      rgba(76, 94, 175, 0.25));
+  color: light-dark(#3f4e57, white);
+  background: light-dark(rgba(76, 94, 175, 0.1), rgba(76, 94, 175, 0.15));
+  border-color: light-dark(rgba(76, 94, 175, 0.2), rgba(76, 94, 175, 0.25));
   transform: scale(1.05) rotate(10deg);
 }
 
 /* Login Button - Puzzle Style */
 .loginButton {
-  color: light-dark(#3F4E57, #9C9EB4);
+  color: light-dark(#3f4e57, #9c9eb4);
   background: transparent;
-  border: 1.5px solid light-dark(rgba(63, 78, 87, 0.15),
-      rgba(156, 158, 180, 0.2));
+  border: 1.5px solid light-dark(rgba(63, 78, 87, 0.15), rgba(156, 158, 180, 0.2));
   font-weight: 600;
   padding: 10px 20px;
   border-radius: 12px;
@@ -201,15 +187,13 @@
 
 .loginButton:hover {
   color: light-dark(#040308, white);
-  background: light-dark(rgba(63, 78, 87, 0.05),
-      rgba(156, 158, 180, 0.1));
-  border-color: light-dark(rgba(63, 78, 87, 0.3),
-      rgba(156, 158, 180, 0.4));
+  background: light-dark(rgba(63, 78, 87, 0.05), rgba(156, 158, 180, 0.1));
+  border-color: light-dark(rgba(63, 78, 87, 0.3), rgba(156, 158, 180, 0.4));
 }
 
 /* Signup Button - Puzzle Style */
 .signupButton {
-  background: #20FE6B;
+  background: #20fe6b;
   color: #040308;
   font-weight: 600;
   padding: 10px 20px;
@@ -224,31 +208,28 @@
 }
 
 .signupButton:hover {
-  background: #1C9D4A;
+  background: #1c9d4a;
 }
 
 /* Mobile Elements */
 .burger {
-  color: light-dark(#3F4E57, #9C9EB4);
+  color: light-dark(#3f4e57, #9c9eb4);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   border-radius: 8px;
 }
 
 .burger:hover {
   color: light-dark(#040308, white);
-  background: light-dark(rgba(32, 254, 107, 0.05),
-      rgba(32, 254, 107, 0.1));
+  background: light-dark(rgba(32, 254, 107, 0.05), rgba(32, 254, 107, 0.1));
   transform: scale(1.05);
 }
 
 /* Mobile Drawer */
 .mobileDrawer {
-  background: light-dark(rgba(249, 249, 253, 0.98),
-      rgba(4, 3, 8, 0.98));
+  background: light-dark(rgba(249, 249, 253, 0.98), rgba(4, 3, 8, 0.98));
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-left: 1px solid light-dark(rgba(63, 78, 87, 0.1),
-      rgba(156, 158, 180, 0.1));
+  border-left: 1px solid light-dark(rgba(63, 78, 87, 0.1), rgba(156, 158, 180, 0.1));
 }
 
 .mobileNav {
@@ -261,24 +242,23 @@
 
 .mobileNavLink {
   text-decoration: none;
-  color: light-dark(#3F4E57, #9C9EB4);
+  color: light-dark(#3f4e57, #9c9eb4);
   font-weight: 600;
   font-size: 20px;
   padding: 20px 0;
-  border-bottom: 1px solid light-dark(rgba(63, 78, 87, 0.1),
-      rgba(156, 158, 180, 0.1));
+  border-bottom: 1px solid light-dark(rgba(63, 78, 87, 0.1), rgba(156, 158, 180, 0.1));
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   position: relative;
 }
 
 .mobileNavLink::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   bottom: -1px;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #20FE6B, #28B1DC);
+  background: linear-gradient(90deg, #20fe6b, #28b1dc);
   transition: width 0.3s ease;
 }
 
@@ -300,7 +280,7 @@
 }
 
 .mobileSignupBtn {
-  background: linear-gradient(135deg, #20FE6B 0%, #1C9D4A 100%);
+  background: linear-gradient(135deg, #20fe6b 0%, #1c9d4a 100%);
   border: none;
   color: #040308;
   font-weight: 700;
@@ -312,16 +292,15 @@
 }
 
 .mobileSignupBtn:hover {
-  background: linear-gradient(135deg, #1C9D4A 0%, #20FE6B 100%);
+  background: linear-gradient(135deg, #1c9d4a 0%, #20fe6b 100%);
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(32, 254, 107, 0.4);
 }
 
 .mobileLoginBtn {
-  color: light-dark(#3F4E57, #9C9EB4);
+  color: light-dark(#3f4e57, #9c9eb4);
   background: transparent;
-  border: 2px solid light-dark(rgba(63, 78, 87, 0.15),
-      rgba(156, 158, 180, 0.2));
+  border: 2px solid light-dark(rgba(63, 78, 87, 0.15), rgba(156, 158, 180, 0.2));
   font-weight: 600;
   height: 56px;
   border-radius: 16px;
@@ -330,19 +309,16 @@
 }
 
 .mobileLoginBtn:hover {
-  border-color: light-dark(rgba(40, 177, 220, 0.3),
-      rgba(40, 177, 220, 0.4));
+  border-color: light-dark(rgba(40, 177, 220, 0.3), rgba(40, 177, 220, 0.4));
   color: light-dark(#040308, white);
-  background: light-dark(rgba(40, 177, 220, 0.05),
-      rgba(40, 177, 220, 0.1));
+  background: light-dark(rgba(40, 177, 220, 0.05), rgba(40, 177, 220, 0.1));
   transform: translateY(-1px);
 }
 
 .mobileThemeToggle {
-  color: light-dark(#9C9EB4, #9C9EB4);
+  color: light-dark(#9c9eb4, #9c9eb4);
   background: transparent;
-  border: 2px solid light-dark(rgba(156, 158, 180, 0.15),
-      rgba(156, 158, 180, 0.2));
+  border: 2px solid light-dark(rgba(156, 158, 180, 0.15), rgba(156, 158, 180, 0.2));
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   align-self: center;
   width: 56px;
@@ -351,26 +327,22 @@
 }
 
 .mobileThemeToggle:hover {
-  border-color: light-dark(rgba(76, 94, 175, 0.3),
-      rgba(76, 94, 175, 0.4));
-  color: light-dark(#4C5EAF, white);
-  background: light-dark(rgba(76, 94, 175, 0.05),
-      rgba(76, 94, 175, 0.1));
+  border-color: light-dark(rgba(76, 94, 175, 0.3), rgba(76, 94, 175, 0.4));
+  color: light-dark(#4c5eaf, white);
+  background: light-dark(rgba(76, 94, 175, 0.05), rgba(76, 94, 175, 0.1));
   transform: scale(1.05) rotate(10deg);
 }
 
 /* Enhanced glass effect support */
 @supports (backdrop-filter: blur(1px)) {
   .header {
-    background: light-dark(rgba(249, 249, 253, 0.8),
-        rgba(4, 3, 8, 0.8)) !important;
+    background: light-dark(rgba(249, 249, 253, 0.8), rgba(4, 3, 8, 0.8)) !important;
   }
 }
 
 @supports not (backdrop-filter: blur(1px)) {
   .header {
-    background: light-dark(rgba(249, 249, 253, 0.98),
-        rgba(4, 3, 8, 0.98)) !important;
+    background: light-dark(rgba(249, 249, 253, 0.98), rgba(4, 3, 8, 0.98)) !important;
   }
 }
 

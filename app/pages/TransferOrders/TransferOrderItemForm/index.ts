@@ -1,1 +1,1 @@
-export { default } from "./TransferOrderItemForm";
+export { default } from './TransferOrderItemForm'
