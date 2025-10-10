@@ -631,11 +631,12 @@ export async function action({ request }: ActionFunctionArgs) {
     const response = {
       subscriptionId: subscription.id,
       clientSecret: clientSecret,
-      amount,
+      amount: isUpgrade && !clientSecret ? 0 : amount, // For automatic upgrades, amount might be 0
       currency: dbPrice.currency.toUpperCase(),
       planName: plan.name,
       isUpgrade,
       isTrialConversion,
+      paymentRequired: !!clientSecret, // Clear indication if payment is needed
     }
     console.log('✅ Returning response:', response)
 
