@@ -335,7 +335,9 @@ export async function action({ request }: ActionFunctionArgs) {
         const defaultPaymentMethod = stripeSubscription.default_payment_method
 
         if (!defaultPaymentMethod) {
-          throw new Error('No payment method found on subscription. Please add a payment method first.')
+          throw new Error(
+            'No payment method found on subscription. Please add a payment method first.'
+          )
         }
 
         // Update subscription with prorating - Stripe will automatically create and pay the invoice
@@ -346,7 +348,7 @@ export async function action({ request }: ActionFunctionArgs) {
               price: priceId,
             },
           ],
-          proration_behavior: 'create_prorations', // Enable prorating for price difference
+          proration_behavior: 'always_invoice', // Enable prorating AND create invoice immediately
           payment_behavior: 'default_incomplete', // Allow invoice to be created
           payment_settings: {
             save_default_payment_method: 'on_subscription',
@@ -360,7 +362,9 @@ export async function action({ request }: ActionFunctionArgs) {
           },
         })
 
-        console.log(`✅ Subscription updated with prorating, Stripe will handle payment automatically`)
+        console.log(
+          `✅ Subscription updated with prorating and immediate invoicing`
+        )
       } else {
         // Subscription exists but in incomplete/canceled state, create new one
         console.log(`🆕 Creating new subscription (existing was ${existingSubscription.status})`)
@@ -483,7 +487,14 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // For new subscriptions without payment method, create PaymentIntent if needed
-    if (!clientSecret && !isTrialConversion && !isUpgrade && invoiceData && invoiceData.amount_due && invoiceData.amount_due > 0) {
+    if (
+      !clientSecret &&
+      !isTrialConversion &&
+      !isUpgrade &&
+      invoiceData &&
+      invoiceData.amount_due &&
+      invoiceData.amount_due > 0
+    ) {
       console.log(`💳 Creating PaymentIntent for new subscription`)
 
       const standAlonePaymentIntent = await stripe.paymentIntents.create({
@@ -500,9 +511,7 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       clientSecret = standAlonePaymentIntent.client_secret
-      console.log(
-        `✅ Created PaymentIntent ${standAlonePaymentIntent.id} for subscription`
-      )
+      console.log(`✅ Created PaymentIntent ${standAlonePaymentIntent.id} for subscription`)
     }
 
     // Final safety check
