@@ -363,21 +363,6 @@ export async function action({ request }: ActionFunctionArgs) {
         })
 
         console.log(`✅ Subscription updated with prorating and immediate invoicing`)
-
-        // If there's an open invoice, try to pay it immediately
-        if (subscription.latest_invoice && typeof subscription.latest_invoice === 'object') {
-          const latestInvoice = subscription.latest_invoice as any
-          if (latestInvoice.status === 'open' && latestInvoice.amount_due > 0) {
-            try {
-              console.log(`💳 Attempting to pay open invoice ${latestInvoice.id} for $${latestInvoice.amount_due / 100}`)
-              await stripe.invoices.pay(latestInvoice.id)
-              console.log(`✅ Successfully paid proration invoice ${latestInvoice.id}`)
-            } catch (payError) {
-              console.error(`❌ Failed to pay proration invoice ${latestInvoice.id}:`, payError)
-              // Don't throw error - let the response include the PaymentIntent for manual payment
-            }
-          }
-        }
       } else {
         // Subscription exists but in incomplete/canceled state, create new one
         console.log(`🆕 Creating new subscription (existing was ${existingSubscription.status})`)
