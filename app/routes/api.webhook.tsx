@@ -1,14 +1,13 @@
 import type { ActionFunctionArgs } from 'react-router'
 import type Stripe from 'stripe'
 import { z } from 'zod'
-import { stripe } from '~/app/modules/stripe/stripe.server'
-
 // import {
 //   sendSubscriptionSuccessEmail,
 //   sendSubscriptionErrorEmail,
 // } from '#app/modules/email/templates/subscription-email'
 import { ERRORS } from '~/app/common/errors'
 import { prisma } from '~/app/db.server'
+import { stripe } from '~/app/modules/stripe/stripe.server'
 
 export const ROUTE_PATH = '/api/webhook' as const
 
@@ -52,8 +51,10 @@ export async function action({ request }: ActionFunctionArgs) {
         const paymentIntent = event.data.object
         console.log(`💰 PaymentIntent succeeded: ${paymentIntent.id} (${paymentIntent.amount})`)
 
-        // Handle standalone PaymentIntents for subscriptions
+        // Handle standalone PaymentIntents for subscriptions (non-trial)
         const { metadata } = paymentIntent
+
+        // Handle subscription payments
         if (
           metadata?.subscriptionId &&
           metadata?.type === 'subscription_payment' &&
@@ -107,7 +108,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
       /**
        * Occurs when a SetupIntent is succeeded.
-       * Handle subscription payment method setup.
+       * Handle trial subscription payment method setup.
+       * According to Stripe docs: SetupIntent automatically sets default_payment_method on subscription
        */
       case 'setup_intent.succeeded': {
         const setupIntent = event.data.object
@@ -116,36 +118,65 @@ export async function action({ request }: ActionFunctionArgs) {
         const { metadata } = setupIntent
         if (
           metadata?.subscriptionId &&
-          metadata?.type === 'subscription_setup' &&
+          (metadata?.type === 'trial_subscription' || metadata?.type === 'subscription_setup') &&
           setupIntent.payment_method
         ) {
-          console.log(`🔗 Processing subscription setup for ${metadata.subscriptionId}`)
+          console.log(`🎯 Processing subscription setup for ${metadata.subscriptionId}`)
 
           try {
             const paymentMethodId = setupIntent.payment_method as string
 
-            // Update subscription with the payment method
-            await stripe.subscriptions.update(metadata.subscriptionId, {
-              default_payment_method: paymentMethodId,
-            })
-            console.log(
-              `✅ Updated subscription ${metadata.subscriptionId} with payment method ${paymentMethodId}`
-            )
+            // Retrieve current subscription to check status
+            const subscription = await stripe.subscriptions.retrieve(metadata.subscriptionId)
 
-            // If subscription has an invoice that needs payment, try to pay it
-            if (metadata.invoiceId) {
-              try {
-                const invoice = await stripe.invoices.retrieve(metadata.invoiceId)
-                if (invoice.status === 'open' && invoice.amount_due > 0) {
-                  console.log(`💳 Attempting to pay invoice ${metadata.invoiceId}`)
-                  const paidInvoice = await stripe.invoices.pay(metadata.invoiceId)
-                  console.log(
-                    `✅ Invoice ${metadata.invoiceId} payment status: ${paidInvoice.status}`
-                  )
-                }
-              } catch (invoiceError) {
-                console.error('❌ Failed to pay invoice:', invoiceError)
+            // Set payment method if not already set
+            if (subscription.default_payment_method !== paymentMethodId) {
+              await stripe.subscriptions.update(metadata.subscriptionId, {
+                default_payment_method: paymentMethodId,
+              })
+              console.log(
+                `✅ Set payment method ${paymentMethodId} for subscription ${metadata.subscriptionId}`
+              )
+            } else {
+              console.log(
+                `✅ Payment method already set for subscription ${metadata.subscriptionId}`
+              )
+            }
+
+            // If subscription is trialing and this is a trial_subscription type, end trial immediately
+            if (subscription.status === 'trialing' && metadata.type === 'trial_subscription') {
+              console.log(
+                `🔄 Ending trial immediately for subscription ${metadata.subscriptionId} to activate paid subscription`
+              )
+
+              // End trial now by setting trial_end to 'now'
+              await stripe.subscriptions.update(metadata.subscriptionId, {
+                trial_end: 'now',
+              })
+
+              console.log(
+                `✅ Trial ended for subscription ${metadata.subscriptionId} - subscription will now be active`
+              )
+
+              // Update database subscription status
+              const updatedSub = await stripe.subscriptions.retrieve(metadata.subscriptionId)
+              const subData = updatedSub as unknown as {
+                status: string
+                current_period_start: number
+                current_period_end: number
               }
+
+              await prisma.subscription.update({
+                where: { id: metadata.subscriptionId },
+                data: {
+                  status: subData.status,
+                  trialEnd: 0, // Clear trial end since it's no longer trialing
+                  currentPeriodStart: subData.current_period_start,
+                  currentPeriodEnd: subData.current_period_end,
+                },
+              })
+
+              console.log(`✅ Database updated with new status: ${subData.status}`)
             }
           } catch (error) {
             console.error('❌ Failed to process SetupIntent:', error)
