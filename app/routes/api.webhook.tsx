@@ -53,14 +53,16 @@ export async function action({ request }: ActionFunctionArgs) {
 
         // Handle standalone PaymentIntents for subscriptions (non-trial)
         const { metadata } = paymentIntent
+        const piData = paymentIntent as unknown as { invoice?: string | null }
 
-        // Handle subscription payments
+        // Handle subscription payments - but only for standalone PaymentIntents, not invoice-attached ones
         if (
           metadata?.subscriptionId &&
           metadata?.type === 'subscription_payment' &&
-          paymentIntent.payment_method
+          paymentIntent.payment_method &&
+          !piData.invoice // Only process standalone PaymentIntents
         ) {
-          console.log(`🔗 Processing subscription payment for ${metadata.subscriptionId}`)
+          console.log(`🔗 Processing standalone subscription payment for ${metadata.subscriptionId}`)
 
           try {
             const paymentMethodId = paymentIntent.payment_method as string
@@ -72,10 +74,11 @@ export async function action({ request }: ActionFunctionArgs) {
                 customer: customerId,
               })
               console.log(`📎 Attached payment method ${paymentMethodId} to customer ${customerId}`)
-            } catch (attachError: any) {
+            } catch (attachError: unknown) {
+              const errorMessage = attachError instanceof Error ? attachError.message : String(attachError)
               // Payment method might already be attached
-              if (!attachError.message?.includes('already attached')) {
-                console.error(`❌ Failed to attach payment method: ${attachError.message}`)
+              if (!errorMessage.includes('already attached')) {
+                console.error(`❌ Failed to attach payment method: ${errorMessage}`)
               }
             }
 
@@ -86,21 +89,12 @@ export async function action({ request }: ActionFunctionArgs) {
             console.log(
               `✅ Updated subscription ${metadata.subscriptionId} with payment method ${paymentMethodId}`
             )
-
-            // Pay the subscription invoice manually since the PaymentIntent isn't attached
-            if (metadata.invoiceId) {
-              try {
-                const paidInvoice = await stripe.invoices.pay(metadata.invoiceId, {
-                  payment_method: paymentMethodId,
-                })
-                console.log(`💳 Paid invoice ${metadata.invoiceId} status: ${paidInvoice.status}`)
-              } catch (invoiceError) {
-                console.error('❌ Failed to pay invoice:', invoiceError)
-              }
-            }
           } catch (error) {
             console.error('❌ Failed to process subscription payment:', error)
           }
+        } else if (piData.invoice && metadata?.subscriptionId) {
+          // Invoice-attached PaymentIntent - Stripe handles everything automatically
+          console.log(`✅ Invoice payment succeeded for subscription ${metadata.subscriptionId}, Stripe handled automatically`)
         }
 
         return new Response(null, { status: 200 })

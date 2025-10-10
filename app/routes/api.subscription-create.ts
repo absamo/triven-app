@@ -329,11 +329,16 @@ export async function action({ request }: ActionFunctionArgs) {
         isUpgrade = true
         console.log(`🔄 Upgrading existing subscription ${existingSubscription.id}`)
 
-        // Get existing Stripe subscription
+        // Get existing Stripe subscription with payment method
         const stripeSubscription = await stripe.subscriptions.retrieve(existingSubscription.id)
         const subscriptionItemId = stripeSubscription.items.data[0].id
+        const defaultPaymentMethod = stripeSubscription.default_payment_method
 
-        // Update subscription with prorating
+        if (!defaultPaymentMethod) {
+          throw new Error('No payment method found on subscription. Please add a payment method first.')
+        }
+
+        // Update subscription with prorating - Stripe will automatically create and pay the invoice
         subscription = await stripe.subscriptions.update(existingSubscription.id, {
           items: [
             {
@@ -341,8 +346,8 @@ export async function action({ request }: ActionFunctionArgs) {
               price: priceId,
             },
           ],
-          proration_behavior: 'create_prorations', // Enable prorating
-          payment_behavior: 'allow_incomplete',
+          proration_behavior: 'create_prorations', // Enable prorating for price difference
+          payment_behavior: 'default_incomplete', // Allow invoice to be created
           payment_settings: {
             save_default_payment_method: 'on_subscription',
           },
@@ -354,6 +359,8 @@ export async function action({ request }: ActionFunctionArgs) {
             type: 'subscription_upgrade',
           },
         })
+
+        console.log(`✅ Subscription updated with prorating, Stripe will handle payment automatically`)
       } else {
         // Subscription exists but in incomplete/canceled state, create new one
         console.log(`🆕 Creating new subscription (existing was ${existingSubscription.status})`)
@@ -463,10 +470,21 @@ export async function action({ request }: ActionFunctionArgs) {
       )
     }
 
-    // For charge_automatically subscriptions, if no PaymentIntent is created,
-    // create a standalone PaymentIntent for immediate payment collection
-    if (!clientSecret && invoiceData && invoiceData.amount_due && invoiceData.amount_due > 0) {
-      console.log(`💳 Creating standalone PaymentIntent for immediate payment`)
+    // For upgrades with existing payment method, Stripe handles the invoice payment automatically
+    // We just need to return the payment_intent client_secret from the invoice if payment is required
+    if (isUpgrade && invoiceData && invoiceData.amount_due && invoiceData.amount_due > 0) {
+      if (paymentIntent && typeof paymentIntent === 'object' && 'client_secret' in paymentIntent) {
+        clientSecret = paymentIntent.client_secret as string | null
+        console.log(`✅ Using invoice PaymentIntent for upgrade proration payment`)
+      } else {
+        // Invoice exists but no payment intent - it might already be paid
+        console.log(`ℹ️ Invoice created but no PaymentIntent needed (might be auto-paid)`)
+      }
+    }
+
+    // For new subscriptions without payment method, create PaymentIntent if needed
+    if (!clientSecret && !isTrialConversion && !isUpgrade && invoiceData && invoiceData.amount_due && invoiceData.amount_due > 0) {
+      console.log(`💳 Creating PaymentIntent for new subscription`)
 
       const standAlonePaymentIntent = await stripe.paymentIntents.create({
         amount: invoiceData.amount_due,
@@ -483,7 +501,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
       clientSecret = standAlonePaymentIntent.client_secret
       console.log(
-        `✅ Created standalone PaymentIntent ${standAlonePaymentIntent.id} for subscription`
+        `✅ Created PaymentIntent ${standAlonePaymentIntent.id} for subscription`
       )
     }
 
