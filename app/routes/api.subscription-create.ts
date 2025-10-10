@@ -362,9 +362,7 @@ export async function action({ request }: ActionFunctionArgs) {
           },
         })
 
-        console.log(
-          `✅ Subscription updated with prorating and immediate invoicing`
-        )
+        console.log(`✅ Subscription updated with prorating and immediate invoicing`)
       } else {
         // Subscription exists but in incomplete/canceled state, create new one
         console.log(`🆕 Creating new subscription (existing was ${existingSubscription.status})`)
@@ -474,15 +472,20 @@ export async function action({ request }: ActionFunctionArgs) {
       )
     }
 
-    // For upgrades with existing payment method, Stripe handles the invoice payment automatically
-    // We just need to return the payment_intent client_secret from the invoice if payment is required
-    if (isUpgrade && invoiceData && invoiceData.amount_due && invoiceData.amount_due > 0) {
-      if (paymentIntent && typeof paymentIntent === 'object' && 'client_secret' in paymentIntent) {
-        clientSecret = paymentIntent.client_secret as string | null
-        console.log(`✅ Using invoice PaymentIntent for upgrade proration payment`)
+    // For upgrades with existing payment method, let Stripe handle everything automatically
+    // The subscription update with always_invoice will create the invoice and attempt payment
+    if (isUpgrade) {
+      // Stripe already created the invoice and attempted payment via always_invoice
+      // Just use the PaymentIntent from the invoice if it exists
+      if (invoiceData && invoiceData.amount_due && invoiceData.amount_due > 0) {
+        if (paymentIntent && typeof paymentIntent === 'object' && 'client_secret' in paymentIntent) {
+          clientSecret = paymentIntent.client_secret as string | null
+          console.log(`✅ Using Stripe's automatic proration invoice PaymentIntent`)
+        } else {
+          console.log(`ℹ️ Invoice created but no PaymentIntent (payment likely succeeded automatically)`)
+        }
       } else {
-        // Invoice exists but no payment intent - it might already be paid
-        console.log(`ℹ️ Invoice created but no PaymentIntent needed (might be auto-paid)`)
+        console.log(`ℹ️ No invoice amount due (upgrade might be free or already paid)`)
       }
     }
 
