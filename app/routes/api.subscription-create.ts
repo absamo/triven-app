@@ -478,11 +478,17 @@ export async function action({ request }: ActionFunctionArgs) {
       // Stripe already created the invoice and attempted payment via always_invoice
       // Just use the PaymentIntent from the invoice if it exists
       if (invoiceData && invoiceData.amount_due && invoiceData.amount_due > 0) {
-        if (paymentIntent && typeof paymentIntent === 'object' && 'client_secret' in paymentIntent) {
+        if (
+          paymentIntent &&
+          typeof paymentIntent === 'object' &&
+          'client_secret' in paymentIntent
+        ) {
           clientSecret = paymentIntent.client_secret as string | null
           console.log(`✅ Using Stripe's automatic proration invoice PaymentIntent`)
         } else {
-          console.log(`ℹ️ Invoice created but no PaymentIntent (payment likely succeeded automatically)`)
+          console.log(
+            `ℹ️ Invoice created but no PaymentIntent (payment likely succeeded automatically)`
+          )
         }
       } else {
         console.log(`ℹ️ No invoice amount due (upgrade might be free or already paid)`)
@@ -517,8 +523,8 @@ export async function action({ request }: ActionFunctionArgs) {
       console.log(`✅ Created PaymentIntent ${standAlonePaymentIntent.id} for subscription`)
     }
 
-    // Final safety check
-    if (!clientSecret) {
+    // Final safety check - but NOT for upgrades (they should use Stripe's proration)
+    if (!clientSecret && !isUpgrade) {
       console.log(`💳 Creating standalone PaymentIntent as final fallback with amount: ${amount}`)
 
       const standAlonePaymentIntent = await stripe.paymentIntents.create({
@@ -535,6 +541,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
       clientSecret = standAlonePaymentIntent.client_secret
       console.log(`✅ Created fallback PaymentIntent ${standAlonePaymentIntent.id}`)
+    } else if (!clientSecret && isUpgrade) {
+      console.log(`ℹ️ No client secret for upgrade - Stripe should handle proration automatically`)
     }
     console.log(
       `✅ Created subscription ${subscription.id} with PaymentIntent using price ${dbPrice.id}`
