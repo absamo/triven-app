@@ -44,6 +44,34 @@ export default {
     },
   },
 
+  // Feature Menu Items
+  featureMenu: {
+    inventoryManagement: {
+      title: 'Gestion des stocks',
+      description: 'Suivi des stocks en temps réel et automatisation intelligente',
+    },
+    salesOrders: {
+      title: 'Ventes et commandes',
+      description: 'Gestion complète du pipeline de ventes et des commandes',
+    },
+    purchasing: {
+      title: 'Achats',
+      description: 'Approvisionnement rationalisé et gestion des fournisseurs',
+    },
+    financialOperations: {
+      title: 'Opérations financières',
+      description: 'Support multi-devises et traitement des paiements',
+    },
+    analyticsReports: {
+      title: 'Analyses et rapports',
+      description: 'Intelligence économique et insights prédictifs',
+    },
+    multiLocation: {
+      title: 'Multi-emplacements',
+      description: 'Gérez plusieurs sites et entrepôts',
+    },
+  },
+
   // Final CTA Section
   finalCta: {
     title: "Besoin d'aide avec votre inventaire ? 📦",

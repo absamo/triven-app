@@ -1,15 +1,8 @@
-import { prisma } from '~/app/db.server'
-import {
-  PRICING_PLANS,
-  getStripePriceId,
-  type Currency,
-  type Interval,
-  type Plan,
-} from '~/app/modules/stripe/plans'
-import { stripe } from '~/app/modules/stripe/stripe.server'
-// import { getLocaleCurrency, HOST_URL } from "#app/utils/misc.server"
 import { ERRORS } from '~/app/common/errors'
-import { type IProfile } from '~/app/common/validations/profileSchema'
+import type { IProfile } from '~/app/common/validations/profileSchema'
+import { prisma } from '~/app/db.server'
+import { type Interval, PRICING_PLANS } from '~/app/modules/stripe/plans'
+import { stripe } from '~/app/modules/stripe/stripe.server'
 
 /**
  * Creates a Stripe customer for a user.
@@ -168,51 +161,42 @@ export async function createFreeTrialSubscription({
 }
 
 /**
- * Creates a Stripe checkout session for a user.
+ * Creates a Stripe checkout session for activating or upgrading a paid plan.
+ * This is used when converting from trial to paid or upgrading between plans.
  */
 export async function createSubscriptionCheckout({
   userId,
   planId,
   planInterval,
   currency,
-  trialDays = 14,
 }: {
   userId: string
-  planId: Plan
-  planInterval: Interval
-  currency: Currency
-  trialDays?: number
+  planId: string
+  planInterval: string
+  currency: string
 }) {
   const user = await prisma.user.findUnique({ where: { id: userId } })
 
   if (!user || !user.stripeCustomerId) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
 
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId: user.id },
+  const plan = await prisma.plan.findUnique({
+    where: { id: planId },
+    include: { prices: true },
   })
+  const currentPrice = plan?.prices.find(
+    (price) => price.interval === planInterval && price.currency === currency
+  )
+  if (!currentPrice) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
 
-  if (subscription) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
-
-  // Get the Stripe price ID directly using our utility function
-  const stripePriceId = getStripePriceId(planId, planInterval, currency)
-
-  const checkoutSessionData: any = {
+  const checkout = await stripe.checkout.sessions.create({
     customer: user.stripeCustomerId,
-    line_items: [{ price: stripePriceId, quantity: 1 }],
+    line_items: [{ price: currentPrice.id, quantity: 1 }],
     mode: 'subscription',
     payment_method_types: ['card'],
-    success_url: `${process.env.BASE_URL}/dashboard`,
-    cancel_url: `${process.env.BASE_URL}/signup`,
-  }
-
-  // Add trial period if specified
-  if (trialDays && trialDays > 0) {
-    checkoutSessionData.subscription_data = {
-      trial_period_days: trialDays,
-    }
-  }
-
-  const checkout = await stripe.checkout.sessions.create(checkoutSessionData)
+    // If upgrading from trial, subscription will be updated via webhook
+    success_url: `${process.env.BASE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.BASE_URL}/settings`,
+  })
 
   if (!checkout) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
   return checkout.url
@@ -232,13 +216,20 @@ export async function getAllInvoices(subscriptionId: string) {
 /**
  * Retrieves an upcoming invoice for a subscription.
  */
-export async function getUpcomingInvoice(subscriptionId: string) {
-  // TODO: Fix Stripe API method name
-  // const upcomingInvoice = await stripe.invoices.retrieveUpcoming({
-  //   subscription: subscriptionId,
-  // })
-  // return upcomingInvoice
-  return null
+/**
+ * Retrieves an upcoming invoice for a subscription.
+ */
+export async function getUpcomingInvoice(_subscriptionId: string) {
+  try {
+    const upcomingInvoice = await stripe.invoices.list({
+      subscription: _subscriptionId,
+      limit: 1,
+    })
+    return upcomingInvoice.data[0] || null
+  } catch (error) {
+    console.error('Error retrieving upcoming invoice:', error)
+    return null
+  }
 }
 
 // /**

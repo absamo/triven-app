@@ -21,15 +21,16 @@ import {
   getTranslatedPlanLabel,
   shouldShowUpgrade,
 } from '~/app/common/helpers/payment'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
 import StripePayment from '~/app/components/StripePayment'
-import { CURRENCY_SYMBOLS, INTERVALS, getPlanPrice } from '~/app/modules/stripe/plans'
+import { CURRENCY_SYMBOLS, getPlanPrice, INTERVALS } from '~/app/modules/stripe/plans'
 import CurrencySettings from './CurrencySettings'
 import classes from './Settings.module.css'
 
 interface SettingsProps {
   currencies: ICurrency[]
   billing: {
+    subscriptionId?: string
     planStatus: string
     currentPlan: string
     interval: string
@@ -335,6 +336,8 @@ export default function Settings({
               planId={displayTargetPlan}
               interval={displayInterval}
               createPaymentPath={'/api/subscription-create'}
+              subscriptionId={billing?.subscriptionId}
+              isTrialConversion={billing?.planStatus === 'trialing'}
             />
           ) : (
             <Text c="red" size="sm" ta="center">

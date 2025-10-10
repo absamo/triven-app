@@ -43,6 +43,34 @@ export default {
     },
   },
 
+  // Feature Menu Items
+  featureMenu: {
+    inventoryManagement: {
+      title: 'Inventory Management',
+      description: 'Real-time stock tracking and intelligent automation',
+    },
+    salesOrders: {
+      title: 'Sales & Orders',
+      description: 'Complete sales pipeline and order management',
+    },
+    purchasing: {
+      title: 'Purchasing',
+      description: 'Streamlined procurement and supplier management',
+    },
+    financialOperations: {
+      title: 'Financial Operations',
+      description: 'Multi-currency support and payment processing',
+    },
+    analyticsReports: {
+      title: 'Analytics & Reports',
+      description: 'Business intelligence and predictive insights',
+    },
+    multiLocation: {
+      title: 'Multi-Location',
+      description: 'Manage multiple sites and warehouses',
+    },
+  },
+
   // Final CTA Section
   finalCta: {
     title: 'Need help with your inventory? 📦',

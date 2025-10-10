@@ -5,11 +5,11 @@ import {
   Drawer,
   Group,
   HoverCard,
+  rem,
   SimpleGrid,
   Text,
   ThemeIcon,
   UnstyledButton,
-  rem,
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
@@ -26,43 +26,18 @@ import { Link } from 'react-router'
 import { Logo } from '~/app/components'
 import classes from './Header.module.css'
 
-const featureData = [
-  {
-    icon: IconPackage,
-    title: 'Inventory Management',
-    description: 'Real-time stock tracking and intelligent automation',
-  },
-  {
-    icon: IconShoppingCart,
-    title: 'Sales & Orders',
-    description: 'Complete sales pipeline and order management',
-  },
-  {
-    icon: IconFileInvoice,
-    title: 'Purchasing',
-    description: 'Streamlined procurement and supplier management',
-  },
-  {
-    icon: IconCurrencyDollar,
-    title: 'Financial Operations',
-    description: 'Multi-currency support and payment processing',
-  },
-  {
-    icon: IconChartPie3,
-    title: 'Analytics & Reports',
-    description: 'Business intelligence and predictive insights',
-  },
-  {
-    icon: IconBuilding,
-    title: 'Multi-Location',
-    description: 'Manage multiple sites and warehouses',
-  },
+const featureIcons = [
+  { icon: IconPackage, key: 'inventoryManagement' },
+  { icon: IconShoppingCart, key: 'salesOrders' },
+  { icon: IconFileInvoice, key: 'purchasing' },
+  { icon: IconCurrencyDollar, key: 'financialOperations' },
+  { icon: IconChartPie3, key: 'analyticsReports' },
+  { icon: IconBuilding, key: 'multiLocation' },
 ]
 
 export default function HeaderMegaMenu() {
   const { t } = useTranslation(['home', 'navigation'])
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false)
-  const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false)
 
   // Smooth scroll to pricing section
   const scrollToPricing = (e: React.MouseEvent) => {
@@ -77,18 +52,22 @@ export default function HeaderMegaMenu() {
     closeDrawer() // Close mobile drawer if open
   }
 
-  const links = featureData.map((item) => (
-    <UnstyledButton className={classes.subLink} key={item.title}>
+  const links = featureIcons.map((item) => (
+    <UnstyledButton className={classes.subLink} key={item.key}>
       <Group wrap="nowrap" align="flex-start">
         <ThemeIcon size={34} variant="default" radius="md" className={classes.featureIcon}>
           <item.icon style={{ width: rem(22), height: rem(22) }} />
         </ThemeIcon>
         <div>
           <Text size="sm" fw={500}>
-            {item.title}
+            {t(
+              `home:featureMenu.${item.key}.title` as 'home:featureMenu.inventoryManagement.title'
+            )}
           </Text>
           <Text size="xs" c="dimmed" className={classes.featureDescription}>
-            {item.description}
+            {t(
+              `home:featureMenu.${item.key}.description` as 'home:featureMenu.inventoryManagement.description'
+            )}
           </Text>
         </div>
       </Group>
@@ -123,6 +102,7 @@ export default function HeaderMegaMenu() {
                 </HoverCard.Dropdown>
               </HoverCard>
               <button
+                type="button"
                 onClick={scrollToPricing}
                 className={classes.navLink}
                 style={{ background: 'none', border: 'none', cursor: 'pointer' }}
@@ -169,6 +149,7 @@ export default function HeaderMegaMenu() {
         <div className={classes.mobileNav}>
           <div className={classes.mobileNavLink}>{t('home:nav.features')}</div>
           <button
+            type="button"
             onClick={scrollToPricing}
             className={classes.mobileNavLink}
             style={{

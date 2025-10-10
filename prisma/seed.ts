@@ -3166,10 +3166,13 @@ async function createStripeCustomers(users: any[]) {
     })
 
     // Update admin user with Stripe customer ID
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: adminUser.id },
       data: { stripeCustomerId: customer.id },
     })
+
+    // Update the user object in the array
+    adminUser.stripeCustomerId = customer.id
 
     console.log(`   ✅ Created Stripe customer for admin: ${adminUser.email} (${customer.id})`)
     stripeCustomers.push(customer)
@@ -3227,11 +3230,16 @@ async function createSubscriptionPlans(stripeProducts: any[]) {
 }
 
 async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
-  console.log('💳 Creating demo subscription for admin user...')
+  console.log('💳 Creating Stripe trial subscription for admin user...')
 
   const adminUser = users.find((u) => u.email === 'admin@flowtech.com')
   if (!adminUser) {
     console.log('⚠️  Admin user not found, skipping subscription creation')
+    return
+  }
+
+  if (!adminUser.stripeCustomerId) {
+    console.log('⚠️  Admin user has no Stripe customer ID, skipping subscription creation')
     return
   }
 
@@ -3247,7 +3255,8 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
   }
 
   const monthlyUSDPrice = standardPlan.prices.find(
-    (p: any) => p.interval === 'month' && p.currency.toUpperCase() === 'USD'
+    (p: { interval: string; currency: string }) =>
+      p.interval === 'month' && p.currency.toUpperCase() === 'USD'
   )
 
   if (!monthlyUSDPrice) {
@@ -3255,36 +3264,74 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
     return
   }
 
-  // Create subscription for admin user
-  const now = new Date()
-  const trialStart = Math.floor(now.getTime() / 1000) // Convert to Unix timestamp
-  const trialEnd = Math.floor((now.getTime() + 14 * 24 * 60 * 60 * 1000) / 1000) // 14 days from now
-  const currentPeriodStart = trialStart
-  const currentPeriodEnd = Math.floor((now.getTime() + 30 * 24 * 60 * 60 * 1000) / 1000) // 30 days from now
+  try {
+    // Create trial subscription in Stripe
+    const now = Math.floor(Date.now() / 1000) // Current time in Unix timestamp
+    const trialEnd = now + 14 * 24 * 60 * 60 // 14 days from now
 
-  const subscription = await prisma.subscription.create({
-    data: {
-      id: `demo_sub_${adminUser.id}`, // Unique ID for the demo subscription
-      userId: adminUser.id,
-      planId: standardPlan.plan.id,
-      priceId: monthlyUSDPrice.id,
-      status: 'trialing',
-      currentPeriodStart,
-      currentPeriodEnd,
-      trialStart,
-      trialEnd,
-      interval: 'month',
-      cancelAtPeriodEnd: false,
-    },
-    include: {
-      price: true,
-    },
-  })
+    const stripeSubscription = await stripe.subscriptions.create({
+      customer: adminUser.stripeCustomerId,
+      items: [
+        {
+          price: monthlyUSDPrice.id,
+        },
+      ],
+      trial_end: trialEnd,
+      payment_behavior: 'default_incomplete',
+      payment_settings: {
+        save_default_payment_method: 'on_subscription',
+      },
+      metadata: {
+        userId: adminUser.id,
+        planId: standardPlan.plan.id,
+      },
+    })
 
-  console.log(
-    `✅ Created demo subscription for admin user: ${subscription.planId} (${subscription.status})`
-  )
-  return subscription
+    // Log the subscription to debug the structure
+    console.log('   🔍 Stripe subscription:', JSON.stringify(stripeSubscription, null, 2))
+
+    // Create subscription in database using Stripe subscription data
+    const subData = stripeSubscription as unknown as {
+      id: string
+      status: string
+      current_period_start: number
+      current_period_end: number
+      trial_start: number | null
+      trial_end: number | null
+      cancel_at_period_end: boolean
+    }
+
+    const subscription = await prisma.subscription.create({
+      data: {
+        id: subData.id,
+        userId: adminUser.id,
+        planId: standardPlan.plan.id,
+        priceId: monthlyUSDPrice.id,
+        status: subData.status,
+        currentPeriodStart: subData.current_period_start || 0,
+        currentPeriodEnd: subData.current_period_end || 0,
+        trialStart: subData.trial_start || 0,
+        trialEnd: subData.trial_end || 0,
+        interval: 'month',
+        cancelAtPeriodEnd: subData.cancel_at_period_end,
+      },
+      include: {
+        price: true,
+      },
+    })
+
+    console.log(
+      `✅ Created Stripe trial subscription for admin: ${subscription.planId} (${subscription.status})`
+    )
+    console.log(`   Subscription ID: ${subscription.id}`)
+    console.log(
+      `   Trial ends: ${new Date((subscription.trialEnd || 0) * 1000).toLocaleDateString()}`
+    )
+    return subscription
+  } catch (error) {
+    console.error('❌ Failed to create Stripe trial subscription:', error)
+    throw error
+  }
 }
 
 async function seed() {

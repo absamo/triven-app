@@ -65,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
       payment_behavior: 'default_incomplete',
       payment_settings: {
         save_default_payment_method: 'on_subscription',
-        payment_method_types: ['card'],
+        // Don't specify payment_method_types here to allow automatic payment methods
       },
       expand: ['latest_invoice.payment_intent'],
       metadata: {

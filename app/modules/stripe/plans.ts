@@ -25,18 +25,18 @@ export type Interval = (typeof INTERVALS)[keyof typeof INTERVALS]
 /**
  * Enumerates supported currencies for billing.
  */
-export const us = countriesCodes.find((c) => c.isoCode === 'US')!
-export const eu = countriesCodes.find((c) => c.isoCode === 'EU')!
+export const us = countriesCodes.find((c) => c.isoCode === 'US')
+export const eu = countriesCodes.find((c) => c.isoCode === 'EU')
 
 export const CURRENCIES = {
-  DEFAULT: us.currencyCode,
-  USD: us.currencyCode,
-  EUR: eu.currencyCode,
+  DEFAULT: us?.currencyCode || 'USD',
+  USD: us?.currencyCode || 'USD',
+  EUR: eu?.currencyCode || 'EUR',
 } as const
 
 export const CURRENCY_SYMBOLS = {
-  [us.currencyCode]: us.symbol,
-  [eu.currencyCode]: eu.symbol,
+  [us?.currencyCode || 'USD']: us?.symbol || '$',
+  [eu?.currencyCode || 'EUR']: eu?.symbol || '€',
 } as const
 
 export type Currency = (typeof CURRENCIES)[keyof typeof CURRENCIES]

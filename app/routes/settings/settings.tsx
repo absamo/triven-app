@@ -1,22 +1,21 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
 
-import { type ICurrency } from '~/app/common/validations/currencySchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import { prisma } from '~/app/db.server'
+import { getAllInvoices, getUpcomingInvoice } from '~/app/modules/stripe/queries.server'
 import Settings from '~/app/pages/Settings'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import {
   createCurrency,
   deleteCurrency,
   getCurrenciesByCompany,
   updateCurrencyBase,
 } from '~/app/services/settings.server'
-
-import { prisma } from '~/app/db.server'
-import { getAllInvoices, getUpcomingInvoice } from '~/app/modules/stripe/queries.server'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import type { Route } from './+types/settings'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
@@ -101,6 +100,7 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
     }
 
     currentsubscription = {
+      subscriptionId: subscription.id,
       currentPlan: subscription.planId?.toLowerCase() || 'standard',
       currentPeriodStart: subscription.currentPeriodStart,
       currentPeriodEnd: subscription.currentPeriodEnd,
@@ -256,6 +256,7 @@ export default function SettingsRoute({ loaderData, actionData }: Route.Componen
   const { subscription, permissions, defaultCurrencies, upcomingInvoice, config } =
     loaderData as unknown as {
       subscription: {
+        subscriptionId: string
         currentPlan: string
         currentPeriodStart: number
         currentPeriodEnd: number
@@ -291,6 +292,7 @@ export default function SettingsRoute({ loaderData, actionData }: Route.Componen
     <Settings
       currencies={defaultCurrencies}
       billing={{
+        subscriptionId: subscription?.subscriptionId,
         currentPlan: subscription?.currentPlan,
         planStatus: subscription?.status,
         currentPeriodStart: subscription?.currentPeriodStart,

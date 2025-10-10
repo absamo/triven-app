@@ -36,6 +36,8 @@ interface StripePaymentProps {
   planId?: string
   interval?: string // 'month' | 'year'
   createPaymentPath?: string // endpoint to post to; defaults to '/api/subscription-create'
+  subscriptionId?: string // For confirming trial conversion after payment
+  isTrialConversion?: boolean // Flag to indicate trial conversion
 }
 
 function PaymentForm({
@@ -48,6 +50,8 @@ function PaymentForm({
   planId,
   interval,
   createPaymentPath,
+  subscriptionId,
+  isTrialConversion,
 }: {
   amount: number
   currency: string
@@ -58,6 +62,8 @@ function PaymentForm({
   planId?: string
   interval?: string
   createPaymentPath?: string
+  subscriptionId?: string
+  isTrialConversion?: boolean
 }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -79,11 +85,6 @@ function PaymentForm({
       console.error('Payment form validation error:', submitError)
       const message = submitError.message || t('payment:paymentError')
       onError(message)
-      notifications.show({
-        title: t('payment:paymentFailed'),
-        message,
-        color: 'red',
-      })
       setIsLoading(false)
       return
     }
@@ -110,39 +111,78 @@ function PaymentForm({
           throw new Error(data?.error || 'Failed to create payment')
         }
         secret = data.clientSecret as string
-      } catch (err: any) {
-        const message = err?.message || t('payment:paymentError')
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : t('payment:paymentError')
         onError(message)
-        notifications.show({
-          title: t('payment:paymentFailed'),
-          message,
-          color: 'red',
-        })
         setIsLoading(false)
         return
       }
     }
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      clientSecret: secret,
-      confirmParams: {
-        return_url: `${window.location.origin}/dashboard`,
-      },
-      redirect: 'if_required',
-    })
+    // Check if this is a SetupIntent or PaymentIntent
+    const isSetupIntent = secret.startsWith('seti_')
+
+    let error: { message?: string } | undefined
+
+    if (isSetupIntent) {
+      // Use confirmSetup for SetupIntents (trial subscriptions)
+      const result = await stripe.confirmSetup({
+        elements,
+        clientSecret: secret,
+        confirmParams: {
+          return_url: `${window.location.origin}/dashboard`,
+        },
+        redirect: 'if_required',
+      })
+      error = result.error
+    } else {
+      // Use confirmPayment for PaymentIntents
+      const result = await stripe.confirmPayment({
+        elements,
+        clientSecret: secret,
+        confirmParams: {
+          return_url: `${window.location.origin}/dashboard`,
+        },
+        redirect: 'if_required',
+      })
+      error = result.error
+    }
 
     setIsLoading(false)
 
     if (error) {
       console.error('Payment error:', error)
       onError(error.message || t('payment:paymentError'))
-      notifications.show({
-        title: t('payment:paymentFailed'),
-        message: error.message || t('payment:paymentError'),
-        color: 'red',
-      })
     } else {
+      // If this is a trial conversion, confirm payment and end trial
+      if (isTrialConversion && subscriptionId) {
+        console.log('🎯 Confirming trial conversion for subscription:', subscriptionId)
+        try {
+          const endpoint = createPaymentPath || '/api/subscription-create'
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              confirmPayment: true,
+              subscriptionId,
+              planId,
+              interval,
+              currency,
+            }),
+          })
+          const data = await res.json()
+          if (!res.ok) {
+            console.error('Failed to confirm subscription:', data)
+            // Don't fail the whole flow, user payment succeeded
+          } else {
+            console.log('✅ Subscription confirmed:', data)
+          }
+        } catch (err) {
+          console.error('Error confirming subscription:', err)
+          // Don't fail the whole flow, user payment succeeded
+        }
+      }
+
       onSuccess()
       notifications.show({
         title: t('payment:paymentSuccessful'),
@@ -246,6 +286,8 @@ export default function StripePayment({
   planId,
   interval,
   createPaymentPath = '/api/subscription-create',
+  subscriptionId,
+  isTrialConversion,
 }: StripePaymentProps) {
   const { colorScheme } = useMantineColorScheme()
   const stripePromise = getStripePromise(publishableKey)
@@ -287,12 +329,20 @@ export default function StripePayment({
         clientSecret,
         appearance,
       }
-    : ({
-        mode: 'payment',
-        amount,
-        currency: currency.toLowerCase(),
-        appearance,
-      } as any)
+    : isTrialConversion
+      ? {
+          // For trial subscriptions: use 'setup' mode WITHOUT amount
+          mode: 'setup' as const,
+          currency: currency.toLowerCase(),
+          appearance,
+        }
+      : {
+          // For regular subscriptions: use 'payment' mode WITH amount
+          mode: 'payment' as const,
+          currency: currency.toLowerCase(),
+          amount: amount,
+          appearance,
+        }
 
   return (
     <Elements stripe={stripePromise} options={options}>
@@ -306,6 +356,8 @@ export default function StripePayment({
         planId={planId}
         interval={interval}
         createPaymentPath={createPaymentPath}
+        subscriptionId={subscriptionId}
+        isTrialConversion={isTrialConversion}
       />
     </Elements>
   )
