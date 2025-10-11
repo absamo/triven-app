@@ -111,6 +111,12 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
       amount: subscription.price?.amount,
       currency: subscription.price?.currency,
       status: subscription.status,
+      paymentMethod: subscription.last4 ? {
+        last4: subscription.last4,
+        brand: subscription.brand,
+        expMonth: subscription.expMonth,
+        expYear: subscription.expYear,
+      } : null,
     }
   }
 
@@ -303,6 +309,7 @@ export default function SettingsRoute({ loaderData, actionData }: Route.Componen
         interval: subscription?.interval,
         amount: subscription?.amount,
         currency: subscription?.currency,
+        paymentMethod: subscription?.paymentMethod,
       }}
       permissions={permissions}
       config={config}

@@ -1,5 +1,6 @@
 export default {
   // Payment modal
+  payment: 'Payment',
   upgrade: 'Upgrade',
   upgradeTo: 'Upgrade to {{planName}}',
   upgradeToTitle: 'Upgrade to {{planName}}',
@@ -9,9 +10,9 @@ export default {
 
   // Payment form
   processing: 'Processing...',
-  pay: 'Pay {{amount}}',
+  pay: 'Pay',
   paymentInformation: 'Payment Information',
-  securePayment: 'Your payment information is secure and encrypted',
+  securePayment: 'Your payment information is secure and encrypted by Stripe',
 
   // Payment states
   paymentFailed: 'Payment Failed',

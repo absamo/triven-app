@@ -7,6 +7,7 @@ import { z } from 'zod'
 // } from '#app/modules/email/templates/subscription-email'
 import { ERRORS } from '~/app/common/errors'
 import { prisma } from '~/app/db.server'
+import { getPaymentMethodDetails } from '~/app/modules/stripe/queries.server'
 import { stripe } from '~/app/modules/stripe/stripe.server'
 
 export const ROUTE_PATH = '/api/webhook' as const
@@ -62,7 +63,9 @@ export async function action({ request }: ActionFunctionArgs) {
           paymentIntent.payment_method &&
           !piData.invoice // Only process standalone PaymentIntents
         ) {
-          console.log(`🔗 Processing standalone subscription payment for ${metadata.subscriptionId}`)
+          console.log(
+            `🔗 Processing standalone subscription payment for ${metadata.subscriptionId}`
+          )
 
           try {
             const paymentMethodId = paymentIntent.payment_method as string
@@ -75,7 +78,8 @@ export async function action({ request }: ActionFunctionArgs) {
               })
               console.log(`📎 Attached payment method ${paymentMethodId} to customer ${customerId}`)
             } catch (attachError: unknown) {
-              const errorMessage = attachError instanceof Error ? attachError.message : String(attachError)
+              const errorMessage =
+                attachError instanceof Error ? attachError.message : String(attachError)
               // Payment method might already be attached
               if (!errorMessage.includes('already attached')) {
                 console.error(`❌ Failed to attach payment method: ${errorMessage}`)
@@ -94,7 +98,9 @@ export async function action({ request }: ActionFunctionArgs) {
           }
         } else if (piData.invoice && metadata?.subscriptionId) {
           // Invoice-attached PaymentIntent - Stripe handles everything automatically
-          console.log(`✅ Invoice payment succeeded for subscription ${metadata.subscriptionId}, Stripe handled automatically`)
+          console.log(
+            `✅ Invoice payment succeeded for subscription ${metadata.subscriptionId}, Stripe handled automatically`
+          )
         }
 
         return new Response(null, { status: 200 })
@@ -247,6 +253,10 @@ export async function action({ request }: ActionFunctionArgs) {
           trialEnd: 0,
         })
 
+        // Get payment method details if subscription has payment method
+        const paymentMethodDetails = await getPaymentMethodDetails(stripeSubscription.id)
+        console.log('💳 Payment method details:', paymentMethodDetails)
+
         // Update subscription in database - this subscription now becomes active
         await prisma.subscription.upsert({
           where: { userId: user.id },
@@ -261,6 +271,11 @@ export async function action({ request }: ActionFunctionArgs) {
             cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end || false,
             trialStart,
             trialEnd: 0, // Force trialEnd to 0 for paid subscription - user no longer in trial
+            paymentMethodId: paymentMethodDetails?.paymentMethodId,
+            last4: paymentMethodDetails?.last4,
+            brand: paymentMethodDetails?.brand,
+            expMonth: paymentMethodDetails?.expMonth,
+            expYear: paymentMethodDetails?.expYear,
           },
           create: {
             id: stripeSubscription.id,
@@ -274,10 +289,128 @@ export async function action({ request }: ActionFunctionArgs) {
             cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end || false,
             trialStart,
             trialEnd: 0, // Force trialEnd to 0 for paid subscription - user no longer in trial
+            paymentMethodId: paymentMethodDetails?.paymentMethodId,
+            last4: paymentMethodDetails?.last4,
+            brand: paymentMethodDetails?.brand,
+            expMonth: paymentMethodDetails?.expMonth,
+            expYear: paymentMethodDetails?.expYear,
           },
         })
 
         console.log(`✅ Subscription ${stripeSubscription.id} activated for user ${user.id}`)
+        return new Response(null, { status: 200 })
+      }
+
+      /**
+       * Occurs when a payment for an invoice fails.
+       * Handle subscription renewal payment failures.
+       */
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice & {
+          subscription?: string
+          customer?: string
+        }
+        const subscriptionId = invoice.subscription
+        const customerId = invoice.customer
+
+        console.log(`💸 Invoice payment failed: ${invoice.id}`)
+        console.log(`   Subscription: ${subscriptionId}`)
+        console.log(`   Customer: ${customerId}`)
+        console.log(`   Amount due: ${invoice.amount_due}`)
+
+        if (!subscriptionId) {
+          console.log('Invoice payment failed but no subscription ID found')
+          return new Response(null, { status: 200 })
+        }
+
+        // Find the user by Stripe customer ID
+        const user = await prisma.user.findUnique({
+          where: { stripeCustomerId: customerId },
+        })
+
+        if (!user) {
+          console.error('User not found for customer:', customerId)
+          return new Response(null, { status: 200 })
+        }
+
+        // Get the subscription details from Stripe to determine the new status
+        const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
+
+        console.log(`📊 Subscription status after payment failure: ${stripeSubscription.status}`)
+
+        // Update subscription status in database to reflect payment failure
+        await prisma.subscription.update({
+          where: { id: subscriptionId },
+          data: {
+            status: stripeSubscription.status, // This will be 'incomplete' or 'past_due'
+          },
+        })
+
+        console.log(
+          `🔄 Updated subscription ${subscriptionId} status to ${stripeSubscription.status} for user ${user.id}`
+        )
+
+        // Note: Stripe handles customer notifications automatically if enabled in Dashboard
+        // You can add additional business logic here like:
+        // - Send internal notifications to admin
+        // - Update user access levels
+        // - Track failed payment analytics
+
+        return new Response(null, { status: 200 })
+      }
+
+      /**
+       * Occurs when a payment for an invoice requires additional action.
+       * Handle cases where payment needs customer intervention (like 3D Secure).
+       */
+      case 'invoice.payment_action_required': {
+        const invoice = event.data.object as Stripe.Invoice & {
+          subscription?: string
+          customer?: string
+        }
+        const subscriptionId = invoice.subscription
+        const customerId = invoice.customer
+
+        console.log(`🔐 Invoice payment requires action: ${invoice.id}`)
+        console.log(`   Subscription: ${subscriptionId}`)
+        console.log(`   Customer: ${customerId}`)
+
+        if (!subscriptionId) {
+          console.log('Invoice payment action required but no subscription ID found')
+          return new Response(null, { status: 200 })
+        }
+
+        // Find the user by Stripe customer ID
+        const user = await prisma.user.findUnique({
+          where: { stripeCustomerId: customerId },
+        })
+
+        if (!user) {
+          console.error('User not found for customer:', customerId)
+          return new Response(null, { status: 200 })
+        }
+
+        // Get the subscription details from Stripe
+        const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
+
+        console.log(
+          `📊 Subscription status after payment action required: ${stripeSubscription.status}`
+        )
+
+        // Update subscription status in database
+        await prisma.subscription.update({
+          where: { id: subscriptionId },
+          data: {
+            status: stripeSubscription.status, // This will be 'incomplete'
+          },
+        })
+
+        console.log(
+          `🔄 Updated subscription ${subscriptionId} status to ${stripeSubscription.status} for user ${user.id}`
+        )
+
+        // Note: Stripe sends emails with payment confirmation links if enabled in Dashboard
+
         return new Response(null, { status: 200 })
       }
 
@@ -358,7 +491,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
         // Map Stripe product ID to database plan ID for subscription updates
         const updatePriceData = subscription.items.data[0]
-        const updateStripeProductId = String(updatePriceData.price.product)
         let updateDbPlanId = 'standard' // Default fallback
 
         // Find the correct database plan ID by looking up the price
@@ -371,13 +503,24 @@ export async function action({ request }: ActionFunctionArgs) {
           updateDbPlanId = updateDbPrice.planId
         }
 
-        // Extract period information with proper casting
-        const updateSubscriptionData = subscription as any
+        // Extract period information
+        interface StripeSubscriptionData {
+          current_period_start?: number
+          current_period_end?: number
+          cancel_at_period_end?: boolean
+          trial_start?: number
+          trial_end?: number
+        }
+        const subscriptionData = subscription as Stripe.Subscription & StripeSubscriptionData
         const updateCurrentPeriodStart =
-          updateSubscriptionData.current_period_start || Math.floor(Date.now() / 1000)
+          subscriptionData.current_period_start || Math.floor(Date.now() / 1000)
         const updateCurrentPeriodEnd =
-          updateSubscriptionData.current_period_end ||
+          subscriptionData.current_period_end ||
           Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
+
+        // Get payment method details if subscription has payment method
+        const updatePaymentMethodDetails = await getPaymentMethodDetails(subscription.id)
+        console.log('💳 Payment method details for updated subscription:', updatePaymentMethodDetails)
 
         await prisma.subscription.upsert({
           where: { userId: user.id },
@@ -388,9 +531,14 @@ export async function action({ request }: ActionFunctionArgs) {
             status: subscription.status,
             currentPeriodStart: updateCurrentPeriodStart,
             currentPeriodEnd: updateCurrentPeriodEnd,
-            cancelAtPeriodEnd: updateSubscriptionData.cancel_at_period_end || false,
-            trialStart: updateSubscriptionData.trial_start || 0,
-            trialEnd: subscription.status === 'active' ? 0 : updateSubscriptionData.trial_end || 0, // Clear trial for active subscriptions
+            cancelAtPeriodEnd: subscriptionData.cancel_at_period_end || false,
+            trialStart: subscriptionData.trial_start || 0,
+            trialEnd: subscription.status === 'active' ? 0 : subscriptionData.trial_end || 0, // Clear trial for active subscriptions
+            paymentMethodId: updatePaymentMethodDetails?.paymentMethodId,
+            last4: updatePaymentMethodDetails?.last4,
+            brand: updatePaymentMethodDetails?.brand,
+            expMonth: updatePaymentMethodDetails?.expMonth,
+            expYear: updatePaymentMethodDetails?.expYear,
           },
           create: {
             id: subscription.id,
@@ -401,9 +549,14 @@ export async function action({ request }: ActionFunctionArgs) {
             status: subscription.status,
             currentPeriodStart: updateCurrentPeriodStart,
             currentPeriodEnd: updateCurrentPeriodEnd,
-            cancelAtPeriodEnd: updateSubscriptionData.cancel_at_period_end || false,
-            trialStart: updateSubscriptionData.trial_start || 0,
-            trialEnd: subscription.status === 'active' ? 0 : updateSubscriptionData.trial_end || 0, // Clear trial for active subscriptions
+            cancelAtPeriodEnd: subscriptionData.cancel_at_period_end || false,
+            trialStart: subscriptionData.trial_start || 0,
+            trialEnd: subscription.status === 'active' ? 0 : subscriptionData.trial_end || 0, // Clear trial for active subscriptions
+            paymentMethodId: updatePaymentMethodDetails?.paymentMethodId,
+            last4: updatePaymentMethodDetails?.last4,
+            brand: updatePaymentMethodDetails?.brand,
+            expMonth: updatePaymentMethodDetails?.expMonth,
+            expYear: updatePaymentMethodDetails?.expYear,
           },
         })
 
@@ -442,9 +595,7 @@ export async function action({ request }: ActionFunctionArgs) {
       case 'checkout.session.completed': {
         const session = event.data.object
 
-        const { customer: customerId, subscription: subscriptionId } = z
-          .object({ customer: z.string(), subscription: z.string() })
-          .parse(session)
+        const { customer: customerId } = z.object({ customer: z.string() }).parse(session)
 
         const user = await prisma.user.findUnique({ where: { stripeCustomerId: customerId } })
         if (!user) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)
@@ -456,9 +607,7 @@ export async function action({ request }: ActionFunctionArgs) {
       case 'customer.subscription.updated': {
         const subscription = event.data.object
 
-        const { id: subscriptionId, customer: customerId } = z
-          .object({ id: z.string(), customer: z.string() })
-          .parse(subscription)
+        const { customer: customerId } = z.object({ customer: z.string() }).parse(subscription)
 
         const user = await prisma.user.findUnique({ where: { stripeCustomerId: customerId } })
         if (!user) throw new Error(ERRORS.STRIPE_SOMETHING_WENT_WRONG)

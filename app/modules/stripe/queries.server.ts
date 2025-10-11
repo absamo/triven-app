@@ -232,6 +232,40 @@ export async function getUpcomingInvoice(_subscriptionId: string) {
   }
 }
 
+/**
+ * Extracts payment method details from a Stripe subscription
+ */
+export async function getPaymentMethodDetails(subscriptionId: string) {
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+    
+    if (!subscription.default_payment_method) {
+      return null
+    }
+
+    const paymentMethodId = typeof subscription.default_payment_method === 'string' 
+      ? subscription.default_payment_method 
+      : subscription.default_payment_method.id
+
+    const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
+    
+    if (paymentMethod.type === 'card' && paymentMethod.card) {
+      return {
+        paymentMethodId: paymentMethod.id,
+        last4: paymentMethod.card.last4,
+        brand: paymentMethod.card.brand,
+        expMonth: paymentMethod.card.exp_month,
+        expYear: paymentMethod.card.exp_year,
+      }
+    }
+    
+    return null
+  } catch (error) {
+    console.error('Error retrieving payment method details:', error)
+    return null
+  }
+}
+
 // /**
 //  * Creates a Stripe customer portal for a user.
 //  */

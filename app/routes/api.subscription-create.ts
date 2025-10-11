@@ -3,6 +3,7 @@ import type Stripe from 'stripe'
 import { z } from 'zod'
 import { prisma } from '~/app/db.server'
 import { CURRENCIES, INTERVALS, PLANS, PRICING_PLANS } from '~/app/modules/stripe/plans'
+import { getPaymentMethodDetails } from '~/app/modules/stripe/queries.server'
 import { stripe } from '~/app/modules/stripe/stripe.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
@@ -590,6 +591,13 @@ export async function action({ request }: ActionFunctionArgs) {
       `💾 Storing subscription with status: ${dbStatus} (Stripe status: ${subscription.status})`
     )
 
+    // Get payment method details if subscription is active or has payment method
+    let paymentMethodDetails = null
+    if (subscription.default_payment_method || dbStatus === 'active') {
+      paymentMethodDetails = await getPaymentMethodDetails(subscription.id)
+      console.log('💳 Payment method details:', paymentMethodDetails)
+    }
+
     // Store the subscription in database with proper status
     console.log('🔄 Starting database upsert...')
     try {
@@ -606,6 +614,11 @@ export async function action({ request }: ActionFunctionArgs) {
           cancelAtPeriodEnd: false,
           trialStart,
           trialEnd,
+          paymentMethodId: paymentMethodDetails?.paymentMethodId,
+          last4: paymentMethodDetails?.last4,
+          brand: paymentMethodDetails?.brand,
+          expMonth: paymentMethodDetails?.expMonth,
+          expYear: paymentMethodDetails?.expYear,
         },
         create: {
           id: subscription.id,
@@ -619,6 +632,11 @@ export async function action({ request }: ActionFunctionArgs) {
           cancelAtPeriodEnd: false,
           trialStart,
           trialEnd,
+          paymentMethodId: paymentMethodDetails?.paymentMethodId,
+          last4: paymentMethodDetails?.last4,
+          brand: paymentMethodDetails?.brand,
+          expMonth: paymentMethodDetails?.expMonth,
+          expYear: paymentMethodDetails?.expYear,
         },
       })
       console.log('✅ Database upsert completed successfully')

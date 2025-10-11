@@ -13,7 +13,7 @@ import { notifications } from '@mantine/notifications'
 import { IconCrown, IconLock } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher } from 'react-router'
+import { useFetcher, useRevalidator } from 'react-router'
 import { CURRENCIES, INTERVALS, PLANS } from '~/app/modules/stripe/plans'
 import StripePayment from '../StripePayment'
 import classes from './TrialExpirationModal.module.css'
@@ -42,9 +42,11 @@ export default function TrialExpirationModal({
 }: TrialExpirationModalProps) {
   const { colorScheme } = useMantineColorScheme()
   const { t } = useTranslation(['payment', 'common'])
+  const revalidator = useRevalidator()
   const configFetcher = useFetcher<ConfigData>()
   const paymentFetcher = useFetcher<PaymentData>()
   const [showPayment, setShowPayment] = useState(false)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
 
   // Fetch config on mount using fetcher
   useEffect(() => {
@@ -103,14 +105,49 @@ export default function TrialExpirationModal({
   const isLoadingPayment = paymentFetcher.state !== 'idle' || configFetcher.state !== 'idle'
 
   const handlePaymentSuccess = async () => {
-    // Give enough time for webhook processing to activate the subscription
-    await new Promise((resolve) => setTimeout(resolve, 3000))
-
-    // Reload the page to update user data and hide modal
+    setIsProcessingPayment(true)
+    
+    console.log('💳 Trial payment succeeded, revalidating subscription data...')
+    
+    // Use revalidator to refresh the loader data
+    revalidator.revalidate()
+    
+    // Wait for revalidation to complete or timeout after 5 seconds
+    let attempts = 0
+    const maxAttempts = 10 // 5 seconds with 500ms intervals
+    
+    const checkRevalidation = () => {
+      return new Promise<void>((resolve) => {
+        const checkInterval = setInterval(() => {
+          attempts++
+          
+          console.log(`� Trial revalidation attempt ${attempts}/${maxAttempts}, state: ${revalidator.state}`)
+          
+          // Check if revalidation is complete
+          if (revalidator.state === 'idle') {
+            clearInterval(checkInterval)
+            console.log('✅ Trial revalidation completed successfully')
+            resolve()
+          }
+          
+          // Timeout after max attempts
+          if (attempts >= maxAttempts) {
+            clearInterval(checkInterval)
+            console.log('⚠️ Trial revalidation timeout reached, reloading page')
+            resolve()
+          }
+        }, 500) // Check every 500ms
+      })
+    }
+    
+    await checkRevalidation()
+    
+    // Reload the page to ensure fresh state and close modal
     window.location.reload()
   }
 
   const handlePaymentError = (error: string) => {
+    setIsProcessingPayment(false)
     notifications.show({
       title: t('payment:paymentFailed'),
       message: error,
@@ -230,6 +267,7 @@ export default function TrialExpirationModal({
                 publishableKey={configFetcher.data.stripePublicKey}
                 onSuccess={handlePaymentSuccess}
                 onError={handlePaymentError}
+                isProcessing={isProcessingPayment}
               />
             ) : (
               <Center p="xl">

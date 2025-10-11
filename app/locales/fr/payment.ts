@@ -1,5 +1,6 @@
 export default {
   // Modale de paiement
+  payment: 'Paiement',
   upgrade: 'Mettre à niveau',
   upgradeTo: 'Passer au plan {{planName}}',
   upgradeToTitle: 'Passer au plan {{planName}}',
@@ -9,9 +10,9 @@ export default {
 
   // Formulaire de paiement
   processing: 'Traitement...',
-  pay: 'Payer {{amount}}',
+  pay: 'Payer',
   paymentInformation: 'Informations de paiement',
-  securePayment: 'Vos informations de paiement sont sécurisées et chiffrées',
+  securePayment: 'Vos informations de paiement sont sécurisées et chiffrées par Stripe',
 
   // États de paiement
   paymentFailed: 'Paiement échoué',

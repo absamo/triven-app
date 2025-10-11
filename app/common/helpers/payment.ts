@@ -1,5 +1,5 @@
 import { PAYMENT_METHODS, PAYMENT_STATUSES } from '~/app/common/constants'
-import { PLANS, type Plan } from '~/app/modules/stripe/plans'
+import { PLANS, type Plan, type Interval, type Currency, getPlanPrice, CURRENCY_SYMBOLS } from '~/app/modules/stripe/plans'
 
 export function getPaymentMethodLabel(
   paymentMethod: string,
@@ -141,5 +141,97 @@ export function getTranslatedPlanLabel(
       return t('premium', 'Premium')
     default:
       return t('standard', 'Standard')
+  }
+}
+
+// Billing calculation helper functions
+export function getCurrentPlanPrice(
+  currentPlan?: string,
+  interval?: string,
+  currency?: string,
+  fallbackAmount?: number
+): number {
+  if (!currentPlan || !interval || !currency) return fallbackAmount || 0
+  try {
+    return getPlanPrice(
+      currentPlan as Plan,
+      interval as Interval,
+      currency.toUpperCase() as Currency
+    )
+  } catch {
+    return fallbackAmount || 0
+  }
+}
+
+export function getTargetPlanPrice(
+  targetPlan: string,
+  interval: string,
+  currency: string,
+  fallbackAmount?: number
+): number {
+  try {
+    return getPlanPrice(targetPlan as Plan, interval as Interval, currency as Currency)
+  } catch {
+    return fallbackAmount || 0
+  }
+}
+
+export function calculateProratedAmount(
+  billing: {
+    planStatus?: string
+    currentPlan?: string
+    interval?: string
+    currency?: string
+    amount?: number
+    currentPeriodStart?: number
+    currentPeriodEnd?: number
+  },
+  targetPlan: string,
+  targetInterval: string,
+  targetCurrency: string
+): number {
+  if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
+    return getTargetPlanPrice(targetPlan, targetInterval, targetCurrency)
+  }
+  
+  const currentPrice = getCurrentPlanPrice(
+    billing?.currentPlan,
+    billing?.interval,
+    billing?.currency,
+    billing?.amount
+  )
+  const targetPrice = getTargetPlanPrice(targetPlan, targetInterval, targetCurrency)
+  const proratedDiff = targetPrice - currentPrice
+  
+  // For same-month billing, calculate prorated difference
+  // This is a simplified calculation - the actual server-side calculation may differ
+  if (billing?.currentPeriodEnd) {
+    const now = Date.now()
+    const periodEnd = billing.currentPeriodEnd * 1000
+    const periodStart = billing?.currentPeriodStart ? billing.currentPeriodStart * 1000 : now
+    const totalPeriod = periodEnd - periodStart
+    const remainingPeriod = Math.max(0, periodEnd - now)
+    const proratedRatio = totalPeriod > 0 ? remainingPeriod / totalPeriod : 0
+    
+    return Math.round(proratedDiff * proratedRatio)
+  }
+  
+  return proratedDiff
+}
+
+export function formatCurrency(amount: number, currency: string): string {
+  const symbol = CURRENCY_SYMBOLS[currency.toUpperCase()] || '$'
+  return `${symbol}${(amount / 100).toFixed(2)}`
+}
+
+export function getYearlySavings(planId: string, currency: string): number {
+  try {
+    const monthlyPrice = getPlanPrice(planId as Plan, 'month' as Interval, currency as Currency)
+    const yearlyPrice = getPlanPrice(planId as Plan, 'year' as Interval, currency as Currency)
+    const yearlyCostIfMonthly = monthlyPrice * 12
+    const savings = yearlyCostIfMonthly - yearlyPrice
+    return savings > 0 ? savings : 0
+  } catch {
+    return 0
   }
 }

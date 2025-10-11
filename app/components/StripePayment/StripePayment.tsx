@@ -10,7 +10,6 @@ import {
   Title,
   useMantineColorScheme,
 } from '@mantine/core'
-import { notifications } from '@mantine/notifications'
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { IconCreditCard, IconLock, IconShieldCheck } from '@tabler/icons-react'
@@ -38,6 +37,7 @@ interface StripePaymentProps {
   createPaymentPath?: string // endpoint to post to; defaults to '/api/subscription-create'
   subscriptionId?: string // For confirming trial conversion after payment
   isTrialConversion?: boolean // Flag to indicate trial conversion
+  isProcessing?: boolean // External loading state to keep button loading
 }
 
 function PaymentForm({
@@ -52,6 +52,7 @@ function PaymentForm({
   createPaymentPath,
   subscriptionId,
   isTrialConversion,
+  isProcessing,
 }: {
   amount: number
   currency: string
@@ -64,6 +65,7 @@ function PaymentForm({
   createPaymentPath?: string
   subscriptionId?: string
   isTrialConversion?: boolean
+  isProcessing?: boolean
 }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -107,8 +109,20 @@ function PaymentForm({
           body: JSON.stringify(payload),
         })
         const data = await res.json()
-        if (!res.ok || !data?.clientSecret) {
-          throw new Error(data?.error || 'Failed to create payment')
+        if (!res.ok) {
+          throw new Error(data?.error || 'Failed to create subscription')
+        }
+
+        // Check if payment is required (backend handles automatic upgrades)
+        if (data.paymentRequired === false) {
+          console.log('✅ Subscription processed automatically, no payment required')
+          setIsLoading(false)
+          onSuccess()
+          return
+        }
+
+        if (!data?.clientSecret) {
+          throw new Error('No client secret received from server')
         }
         secret = data.clientSecret as string
       } catch (err: unknown) {
@@ -183,12 +197,8 @@ function PaymentForm({
         }
       }
 
+      // Keep loading until parent onSuccess completes
       onSuccess()
-      notifications.show({
-        title: t('payment:paymentSuccessful'),
-        message: t('payment:welcomeMessage', { planName }),
-        color: 'green',
-      })
     }
   }
 
@@ -201,42 +211,42 @@ function PaymentForm({
 
   return (
     <form onSubmit={handleSubmit} className={classes.paymentForm}>
-      <Stack gap="lg">
-        {/* Header */}
-        <div className={classes.header}>
-          <Center mb="md">
-            <ThemeIcon
-              size={60}
-              radius="xl"
-              variant="gradient"
-              gradient={{ from: 'teal', to: 'blue' }}
-              className={classes.cardIcon}
-            >
-              <IconCreditCard size={30} />
-            </ThemeIcon>
-          </Center>
-
-          <Title order={3} ta="center" mb="md" className={classes.paymentTitle}>
-            {t('payment:upgradeTo', { planName: getTranslatedPlanLabel(planName, t) })}
-          </Title>
-        </div>
-
-        {/* Payment Element */}
+      <Stack gap="md">
+        {/* Payment Element with Button */}
         <Paper p="md" radius="md" className={classes.paymentElement}>
-          <PaymentElement
-            options={{
-              layout: 'tabs',
-              paymentMethodOrder: ['card', 'google_pay', 'apple_pay'],
-              terms: {
-                card: 'never',
-              },
-              wallets: {
-                applePay: 'auto',
-                googlePay: 'auto',
-                link: 'never', // This properly disables Link promotional text
-              },
-            }}
-          />
+          <Stack gap="md">
+            <PaymentElement
+              options={{
+                layout: 'tabs',
+                paymentMethodOrder: ['card', 'google_pay', 'apple_pay'],
+                terms: {
+                  card: 'never',
+                },
+                wallets: {
+                  applePay: 'auto',
+                  googlePay: 'auto',
+                  link: 'never', // This properly disables Link promotional text
+                },
+              }}
+            />
+            
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              size="lg"
+              fullWidth
+              disabled={!stripe || isLoading || isProcessing}
+              loading={isLoading || isProcessing}
+              gradient={{ from: 'teal', to: 'blue' }}
+              variant="gradient"
+              className={classes.payButton}
+              leftSection={isLoading || isProcessing ? <Loader size="sm" /> : <IconLock size={20} />}
+            >
+              {isLoading || isProcessing
+                ? t('payment:processing')
+                : t('payment:pay', 'Pay')}
+            </Button>
+          </Stack>
         </Paper>
 
         {/* Security Notice */}
@@ -248,23 +258,6 @@ function PaymentForm({
             {t('payment:securePayment')}
           </Text>
         </Group>
-
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          size="lg"
-          fullWidth
-          disabled={!stripe || isLoading}
-          loading={isLoading}
-          gradient={{ from: 'teal', to: 'blue' }}
-          variant="gradient"
-          className={classes.payButton}
-          leftSection={isLoading ? <Loader size="sm" /> : <IconLock size={20} />}
-        >
-          {isLoading
-            ? t('payment:processing')
-            : t('payment:pay', { amount: formatAmount(amount, currency) })}
-        </Button>
 
         {/* Additional Info */}
         <Text ta="center" size="xs" c="dimmed">
@@ -288,6 +281,7 @@ export default function StripePayment({
   createPaymentPath = '/api/subscription-create',
   subscriptionId,
   isTrialConversion,
+  isProcessing = false,
 }: StripePaymentProps) {
   const { colorScheme } = useMantineColorScheme()
   const stripePromise = getStripePromise(publishableKey)
@@ -358,6 +352,7 @@ export default function StripePayment({
         createPaymentPath={createPaymentPath}
         subscriptionId={subscriptionId}
         isTrialConversion={isTrialConversion}
+        isProcessing={isProcessing}
       />
     </Elements>
   )
