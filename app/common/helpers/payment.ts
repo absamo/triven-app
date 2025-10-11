@@ -1,5 +1,12 @@
 import { PAYMENT_METHODS, PAYMENT_STATUSES } from '~/app/common/constants'
-import { PLANS, type Plan, type Interval, type Currency, getPlanPrice, CURRENCY_SYMBOLS } from '~/app/modules/stripe/plans'
+import {
+  CURRENCY_SYMBOLS,
+  type Currency,
+  getPlanPrice,
+  type Interval,
+  PLANS,
+  type Plan,
+} from '~/app/modules/stripe/plans'
 
 export function getPaymentMethodLabel(
   paymentMethod: string,
@@ -193,7 +200,7 @@ export function calculateProratedAmount(
   if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
     return getTargetPlanPrice(targetPlan, targetInterval, targetCurrency)
   }
-  
+
   const currentPrice = getCurrentPlanPrice(
     billing?.currentPlan,
     billing?.interval,
@@ -202,7 +209,7 @@ export function calculateProratedAmount(
   )
   const targetPrice = getTargetPlanPrice(targetPlan, targetInterval, targetCurrency)
   const proratedDiff = targetPrice - currentPrice
-  
+
   // For same-month billing, calculate prorated difference
   // This is a simplified calculation - the actual server-side calculation may differ
   if (billing?.currentPeriodEnd) {
@@ -212,10 +219,10 @@ export function calculateProratedAmount(
     const totalPeriod = periodEnd - periodStart
     const remainingPeriod = Math.max(0, periodEnd - now)
     const proratedRatio = totalPeriod > 0 ? remainingPeriod / totalPeriod : 0
-    
+
     return Math.round(proratedDiff * proratedRatio)
   }
-  
+
   return proratedDiff
 }
 
@@ -234,4 +241,23 @@ export function getYearlySavings(planId: string, currency: string): number {
   } catch {
     return 0
   }
+}
+
+export function getSubscriptionStatusLabel(
+  status: string,
+  t?: (key: string, fallback?: string) => string
+) {
+  const statusKey = `payment:subscriptionStatus.${status}`
+  const fallbackMap: Record<string, string> = {
+    active: 'Active',
+    canceled: 'Canceled',
+    incomplete: 'Incomplete',
+    incomplete_expired: 'Incomplete Expired',
+    past_due: 'Past Due',
+    paused: 'Paused',
+    trialing: 'Trial',
+    unpaid: 'Unpaid',
+  }
+
+  return t ? t(statusKey, fallbackMap[status] || status) : fallbackMap[status] || status
 }

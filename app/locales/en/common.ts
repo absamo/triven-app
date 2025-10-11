@@ -98,6 +98,7 @@ export default {
   nextInvoiceDue: 'Next invoice due on',
   trialEndsOn: 'Trial ends on',
   noRenewalDate: 'No renewal date available',
+  expires: 'Expires',
   upgrade: 'Upgrade',
   subscribe: 'Subscribe',
   to: 'to',

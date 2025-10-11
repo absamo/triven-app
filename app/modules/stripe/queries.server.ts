@@ -266,6 +266,74 @@ export async function getPaymentMethodDetails(subscriptionId: string) {
   }
 }
 
+/**
+ * Cancels a Stripe subscription for a user.
+ */
+export async function cancelSubscription({
+  userId,
+  subscriptionId,
+  cancelAtPeriodEnd = true,
+  reason,
+}: {
+  userId: string
+  subscriptionId: string
+  cancelAtPeriodEnd?: boolean
+  reason?: string
+}) {
+  // Verify that the subscription belongs to the user
+  const dbSubscription = await prisma.subscription.findUnique({
+    where: { 
+      id: subscriptionId,
+      userId: userId,
+    },
+  })
+
+  if (!dbSubscription) {
+    throw new Error('Subscription not found or access denied')
+  }
+
+  let stripeSubscription
+  if (cancelAtPeriodEnd) {
+    // Cancel at period end - user keeps access until current period expires
+    stripeSubscription = await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: true,
+      metadata: {
+        cancellation_reason: reason || 'user_requested',
+        cancelled_by: userId,
+        cancelled_at: Math.floor(Date.now() / 1000).toString(),
+      },
+    })
+  } else {
+    // Cancel immediately - user loses access now
+    stripeSubscription = await stripe.subscriptions.cancel(subscriptionId, {
+      prorate: true,
+      invoice_now: true,
+    })
+  }
+
+  // Update database with cancellation status
+  const updatedSubscription = await prisma.subscription.update({
+    where: { id: subscriptionId },
+    data: {
+      status: stripeSubscription.status,
+      cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+      // Track cancellation details
+      cancelledAt: cancelAtPeriodEnd ? null : new Date(),
+      cancelledBy: userId,
+      cancellationReason: reason || null,
+      scheduledCancelAt: cancelAtPeriodEnd ? new Date(dbSubscription.currentPeriodEnd * 1000) : null,
+    },
+  })
+
+  return {
+    subscription: updatedSubscription,
+    cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+    message: cancelAtPeriodEnd
+      ? 'Subscription will be cancelled at the end of current billing period'
+      : 'Subscription has been cancelled immediately',
+  }
+}
+
 // /**
 //  * Creates a Stripe customer portal for a user.
 //  */

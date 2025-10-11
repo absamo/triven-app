@@ -1,12 +1,14 @@
 import ApprovalActionModal from './ApprovalActionModal'
 import AuthIconBadge from './AuthIconBadge'
 import BackButton from './BackButton'
+import CancellationModal from './CancellationModal'
 import CategoryImportModal from './CategoryImportModal'
 import Currency from './Currency'
 import DemoRequestForm from './DemoRequestForm'
 import Form from './Form'
 import Logo from './Logo'
 import Notification from './Notification'
+import PaymentMethodEditModal from './PaymentMethodEditModal'
 import ProductImportModal from './ProductImportModal'
 import StripePayment from './StripePayment'
 import { ThemeToggle } from './ThemeToggle'
@@ -28,12 +30,14 @@ export {
   ApprovalActionModal,
   AuthIconBadge,
   BackButton,
+  CancellationModal,
   CategoryImportModal,
   Currency,
   DemoRequestForm,
   Form,
   Logo,
   Notification,
+  PaymentMethodEditModal,
   ProductImportModal,
   StripePayment,
   ThemeToggle,

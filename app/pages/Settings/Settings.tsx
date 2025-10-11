@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Badge,
   Button,
   Divider,
@@ -12,23 +13,32 @@ import {
   useMantineTheme,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { IconArrowUp, IconArrowRight, IconCreditCard, IconPremiumRights } from '@tabler/icons-react'
+import {
+  IconArrowRight,
+  IconArrowUp,
+  IconCreditCard,
+  IconEdit,
+  IconPremiumRights,
+  IconX,
+} from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
+import { useRevalidator } from 'react-router'
 import {
-  canUpgrade,
   calculateProratedAmount,
+  canUpgrade,
   formatCurrency,
   getCurrentPlanPrice,
   getNextPlan,
+  getSubscriptionStatusLabel,
   getTargetPlanPrice,
   getTranslatedPlanLabel,
   getYearlySavings,
   shouldShowUpgrade,
 } from '~/app/common/helpers/payment'
 import type { ICurrency } from '~/app/common/validations/currencySchema'
+import { CancellationModal, PaymentMethodEditModal } from '~/app/components'
 import StripePayment from '~/app/components/StripePayment'
 import { CURRENCY_SYMBOLS, INTERVALS, PRICING_PLANS } from '~/app/modules/stripe/plans'
 import CurrencySettings from './CurrencySettings'
@@ -54,6 +64,11 @@ interface SettingsProps {
       expMonth: number
       expYear: number
     } | null
+    // Cancellation tracking fields
+    cancelledAt?: string | null
+    cancelledBy?: string | null
+    cancellationReason?: string | null
+    scheduledCancelAt?: string | null
   }
   permissions: string[]
   config: {
@@ -70,15 +85,15 @@ export default function Settings({
   const { t } = useTranslation(['common', 'payment'])
   const { colorScheme } = useMantineColorScheme()
   const theme = useMantineTheme()
-  const navigate = useNavigate()
+  const revalidator = useRevalidator()
   const currencySymbol = CURRENCY_SYMBOLS[billing?.currency?.toUpperCase()]
 
   // Modal and payment state
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [showCancellationModal, setShowCancellationModal] = useState(false)
+  const [showPaymentEditModal, setShowPaymentEditModal] = useState(false)
   const [targetPlan, setTargetPlan] = useState<string | null>(null)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
-
-
 
   // Handle upgrade button click - open modal and wait for manual payment setup
   const handleUpgrade = () => {
@@ -107,22 +122,15 @@ export default function Settings({
   // Payment handlers
   const handlePaymentSuccess = async () => {
     setIsProcessingPayment(true)
-    
+
     console.log('💳 Payment succeeded, refreshing settings page...')
-    
-    // Show success notification
-    notifications.show({
-      title: t('common:success', 'Success'),
-      message: t('payment:subscriptionUpdated', 'Your subscription has been updated successfully.'),
-      color: 'green',
-    })
-    
+
     // Close modal first
     setShowUpgradeModal(false)
     setIsProcessingPayment(false)
-    
-    // Reload the current route to refresh all data
-    navigate('/settings', { replace: true })
+
+    // Revalidate loader data to refresh the page with updated subscription
+    revalidator.revalidate()
   }
 
   const handlePaymentError = (error: string) => {
@@ -142,6 +150,12 @@ export default function Settings({
     setIsProcessingPayment(false)
   }
 
+  // Handle cancellation success
+  const handleCancellationSuccess = () => {
+    // Revalidate loader data to refresh the page with updated subscription
+    revalidator.revalidate()
+  }
+
   // Determine loading state
   const isLoadingPayment = false
   const isTrialOrIncomplete =
@@ -157,29 +171,32 @@ export default function Settings({
   const settings = [
     {
       id: 'billing',
-      icon: () => <IconCreditCard color={theme.colors.violet[6]} size={17} />,
-      label: t('subscriptions', 'Subscriptions'),
-      description: t('manageSubscriptions', 'Manage your subscription and billing settings'),
+      icon: () => <IconCreditCard color={theme.colors.blue[6]} size={17} />,
+      label: t('payment:subscriptions', 'Subscriptions'),
+      description: t(
+        'payment:manageSubscriptions',
+        'Manage your subscription and billing settings'
+      ),
       content: () => (
         <Grid align="center" className={classes.row} p={10}>
           <Grid.Col span={2}>
             <Text fz="xs" opacity={0.6}>
-              {t('yourCurrentPlan', 'Your current plan')}
+              {t('payment:yourCurrentPlan', 'Your current plan')}
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
             <Text fz="sm">
-              {getTranslatedPlanLabel(billing?.currentPlan, t)} {t('plan', 'plan')}
+              {getTranslatedPlanLabel(billing?.currentPlan, t)} {t('payment:plan', 'plan')}
             </Text>
             <Text fz="xs" opacity={0.6}>
               {billing?.amount ? (
                 <>
                   {currencySymbol}
                   {Number(billing.amount / 100).toFixed(2)}{' '}
-                  {t('billedEveryMonth', 'billed every month')}
+                  {t('payment:billedEveryMonth', 'billed every month')}
                 </>
               ) : (
-                t('noActiveBilling', 'No active billing')
+                t('payment:noActiveBilling', 'No active billing')
               )}
             </Text>
           </Grid.Col>
@@ -188,12 +205,14 @@ export default function Settings({
           </Grid.Col>
           <Grid.Col span={2}>
             <Text fz="xs" opacity={0.6}>
-              {t('status', 'Status')}
+              {t('payment:status', 'Status')}
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
             <Badge size="xs" variant="light" color={billing?.planStatus ? 'green' : 'gray'}>
-              {billing?.planStatus || t('noActiveSubscription', 'No Active Subscription')}
+              {billing?.planStatus
+                ? getSubscriptionStatusLabel(billing.planStatus, t)
+                : t('payment:noActiveSubscription', 'No Active Subscription')}
             </Badge>
           </Grid.Col>
           <Grid.Col span={12}>
@@ -201,23 +220,23 @@ export default function Settings({
           </Grid.Col>
           <Grid.Col span={2}>
             <Text fz="xs" opacity={0.6}>
-              {t('renews', 'Renews')}
+              {t('payment:renews', 'Renews')}
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
             <Text fz="xs">
               {billing?.trialEnd && billing?.planStatus === 'trialing' ? (
                 <>
-                  {t('trialEndsOn', 'Trial ends on')}{' '}
+                  {t('payment:trialEndsOn', 'Trial ends on')}{' '}
                   {dayjs(billing.trialEnd * 1000).format('MMM DD, YYYY')}
                 </>
               ) : billing?.currentPeriodEnd ? (
                 <>
-                  {t('nextInvoiceDue', 'Next invoice due on')}{' '}
+                  {t('payment:nextInvoiceDue', 'Next invoice due on')}{' '}
                   {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
                 </>
               ) : (
-                t('noRenewalDate', 'No renewal date available')
+                t('payment:noRenewalDate', 'No renewal date available')
               )}
             </Text>
           </Grid.Col>
@@ -228,16 +247,32 @@ export default function Settings({
               </Grid.Col>
               <Grid.Col span={2}>
                 <Text fz="xs" opacity={0.6}>
-                  {t('paymentMethod', 'Payment Method')}
+                  {t('paymentCard', 'Payment Card')}
                 </Text>
               </Grid.Col>
               <Grid.Col span={10}>
-                <Text fz="sm">
-                  {billing.paymentMethod.brand?.toUpperCase()} ending in {billing.paymentMethod.last4}
-                </Text>
-                <Text fz="xs" opacity={0.6}>
-                  {t('expires', 'Expires')} {String(billing.paymentMethod.expMonth).padStart(2, '0')}/{billing.paymentMethod.expYear}
-                </Text>
+                <Group justify="space-between" align="center">
+                  <div>
+                    <Text fz="sm">
+                      {billing.paymentMethod.brand?.toUpperCase()} ending in{' '}
+                      {billing.paymentMethod.last4}
+                    </Text>
+                    <Text fz="xs" opacity={0.6}>
+                      {t('payment:expires', 'Expires')}{' '}
+                      {String(billing.paymentMethod.expMonth).padStart(2, '0')}/
+                      {billing.paymentMethod.expYear}
+                    </Text>
+                  </div>
+                  <ActionIcon
+                    size="sm"
+                    variant="light"
+                    color="blue"
+                    onClick={() => setShowPaymentEditModal(true)}
+                    title={t('payment:editPaymentMethod', 'Edit Payment Method')}
+                  >
+                    <IconEdit size={16} />
+                  </ActionIcon>
+                </Group>
               </Grid.Col>
             </>
           )}
@@ -249,14 +284,14 @@ export default function Settings({
                 </Grid.Col>
                 <Grid.Col span={2}>
                   <Text fz="xs" opacity={0.6}>
-                    {t('upgrade', 'Upgrade')}
+                    {t('payment:upgrade', 'Upgrade')}
                   </Text>
                 </Grid.Col>
                 <Grid.Col span={10}>
                   <Button
                     size="xs"
                     variant="light"
-                    color="violet"
+                    color="blue"
                     leftSection={<IconArrowUp size={14} />}
                     loading={isLoadingPayment}
                     onClick={handleUpgrade}
@@ -266,36 +301,77 @@ export default function Settings({
                         billing?.planStatus === 'trialing' ||
                         billing?.planStatus === 'incomplete'
                       ) {
-                        return `${t('subscribe')} ${getTranslatedPlanLabel(billing?.currentPlan, t)}`
+                        return `${t('payment:subscribe')} ${getTranslatedPlanLabel(billing?.currentPlan, t)}`
                       } else {
                         const nextPlan = getNextPlan(
                           billing?.currentPlan || '',
                           billing?.planStatus
                         )
                         return nextPlan
-                          ? `${t('upgrade')} ${getTranslatedPlanLabel(nextPlan, t)}`
-                          : t('viewPlans', 'View Plans')
+                          ? `${t('payment:upgrade')} ${getTranslatedPlanLabel(nextPlan, t)}`
+                          : t('payment:viewPlans', 'View Plans')
                       }
                     })()}
                   </Button>
                 </Grid.Col>
               </>
             )}
+          {/* Cancellation Section - show for active subscriptions */}
+          {billing?.subscriptionId && billing?.planStatus === 'active' && (
+            <>
+              <Grid.Col span={12}>
+                <Divider />
+              </Grid.Col>
+              <Grid.Col span={2}>
+                <Text fz="xs" opacity={0.6}>
+                  {billing?.cancelAtPeriodEnd
+                    ? t('subscriptionEnding', 'Subscription Ending')
+                    : t('cancelSubscription', 'Cancel Subscription')}
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={10}>
+                {billing?.cancelAtPeriodEnd ? (
+                  <div>
+                    <Text fz="sm" c="orange" mb={4}>
+                      {t(
+                        'subscriptionScheduledForCancellation',
+                        'Subscription scheduled for cancellation'
+                      )}
+                    </Text>
+                    <Text fz="xs" opacity={0.6}>
+                      {t('accessUntil', 'You will have access until')}{' '}
+                      {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
+                    </Text>
+                  </div>
+                ) : (
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="red"
+                    leftSection={<IconX size={14} />}
+                    onClick={() => setShowCancellationModal(true)}
+                  >
+                    {t('payment:cancelSubscription', 'Cancel Subscription')}
+                  </Button>
+                )}
+              </Grid.Col>
+            </>
+          )}
         </Grid>
       ),
     },
     {
       id: 'currency',
-      icon: () => <IconPremiumRights color={theme.colors.violet[6]} size={17} />,
-      label: t('currency', 'Currencies'),
-      description: t('manageCurrencies', 'Manage your currencies'),
+      icon: () => <IconPremiumRights color={theme.colors.teal[6]} size={17} />,
+      label: t('payment:currency', 'Currencies'),
+      description: t('payment:manageCurrencies', 'Manage your currencies'),
       content: () => <CurrencySettings currencies={currencies} />,
     },
   ]
 
   return (
     <>
-      <Text className={classes.title}>{t('title', 'Settings')}</Text>
+      <Text className={classes.title}>{t('common:title', 'Settings')}</Text>
       <Tabs defaultValue="billing" variant="outline" radius="md">
         <Tabs.List>
           {settings.map(({ id, label, icon: Icon }) => (
@@ -318,7 +394,7 @@ export default function Settings({
         onClose={handleModalClose}
         centered
         size="xl"
-        title={t('upgrade', 'Upgrade')}
+        title={t('payment:payment', 'Payment')}
         overlayProps={{
           backgroundOpacity: 0.55,
           blur: 8,
@@ -344,29 +420,35 @@ export default function Settings({
       >
         <Stack gap="md" p="md">
           {/* Plan Comparison - Compact Layout */}
-          <div style={{
-            backgroundColor: colorScheme === 'dark'
-              ? 'var(--mantine-color-dark-6)'
-              : 'var(--mantine-color-gray-1)',
-            borderRadius: '8px',
-            padding: 'var(--mantine-spacing-sm)',
-          }}>
-      
+          <div
+            style={{
+              backgroundColor:
+                colorScheme === 'dark'
+                  ? 'var(--mantine-color-dark-6)'
+                  : 'var(--mantine-color-gray-1)',
+              borderRadius: '8px',
+              padding: 'var(--mantine-spacing-sm)',
+            }}
+          >
             {/* Single Row Comparison */}
             <Group justify="space-between" align="center" wrap="nowrap">
               {/* Current Plan */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <Text size="xs" c="dimmed" mb={2}>Current</Text>
+                <Text size="xs" c="dimmed" mb={2}>
+                  Current
+                </Text>
                 <Group gap="xs" align="center">
                   <Text size="sm" fw={500} truncate>
                     {getTranslatedPlanLabel(billing?.currentPlan, t)}
                   </Text>
                   {billing?.planStatus === 'trialing' && (
-                    <Badge size="xs" variant="light" color="orange">Trial</Badge>
+                    <Badge size="xs" variant="light" color="orange">
+                      Trial
+                    </Badge>
                   )}
                 </Group>
                 <Text size="xs" c="dimmed">
-                  {billing?.planStatus === 'trialing' 
+                  {billing?.planStatus === 'trialing'
                     ? 'Free'
                     : formatCurrency(
                         getCurrentPlanPrice(
@@ -376,8 +458,7 @@ export default function Settings({
                           billing?.amount
                         ),
                         displayCurrency
-                      ) + `/${billing?.interval}`
-                  }
+                      ) + `/${billing?.interval}`}
                 </Text>
               </div>
 
@@ -388,21 +469,35 @@ export default function Settings({
 
               {/* Target Plan */}
               <div style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
-                <Text size="xs" c="dimmed" mb={2}>Upgrading to</Text>
+                <Text size="xs" c="dimmed" mb={2}>
+                  Upgrading to
+                </Text>
                 <Text size="sm" fw={600} c="blue" truncate>
                   {getTranslatedPlanLabel(displayTargetPlan, t)}
                 </Text>
                 <Group gap="xs" justify="flex-end">
                   <Text size="xs" fw={500}>
                     {formatCurrency(
-                      getTargetPlanPrice(displayTargetPlan, displayInterval, displayCurrency, displayAmount),
+                      getTargetPlanPrice(
+                        displayTargetPlan,
+                        displayInterval,
+                        displayCurrency,
+                        displayAmount
+                      ),
                       displayCurrency
                     )}
-                    <Text span size="xs" c="dimmed">/{displayInterval}</Text>
+                    <Text span size="xs" c="dimmed">
+                      /{displayInterval}
+                    </Text>
                   </Text>
                   {displayInterval === 'year' && (
                     <Badge size="xs" variant="light" color="green">
-                      Save {formatCurrency(getYearlySavings(displayTargetPlan, displayCurrency), displayCurrency)}/yr
+                      Save{' '}
+                      {formatCurrency(
+                        getYearlySavings(displayTargetPlan, displayCurrency),
+                        displayCurrency
+                      )}
+                      /yr
                     </Badge>
                   )}
                 </Group>
@@ -411,44 +506,52 @@ export default function Settings({
           </div>
 
           {/* Billing Summary - Compact */}
-          <div style={{
-            backgroundColor: colorScheme === 'dark'
-              ? 'var(--mantine-color-dark-8)'
-              : 'var(--mantine-color-blue-0)',
-            borderRadius: '8px',
-            padding: 'var(--mantine-spacing-sm)',
-            border: `1px solid ${
-              colorScheme === 'dark'
-                ? 'var(--mantine-color-dark-5)'
-                : 'var(--mantine-color-blue-2)'
-            }`,
-          }}>
+          <div
+            style={{
+              backgroundColor:
+                colorScheme === 'dark'
+                  ? 'var(--mantine-color-dark-8)'
+                  : 'var(--mantine-color-blue-0)',
+              borderRadius: '8px',
+              padding: 'var(--mantine-spacing-sm)',
+              border: `1px solid ${
+                colorScheme === 'dark'
+                  ? 'var(--mantine-color-dark-5)'
+                  : 'var(--mantine-color-blue-2)'
+              }`,
+            }}
+          >
             <Group justify="space-between" align="center">
               <div>
                 <Text fw={600} size="sm" c="blue">
-                  {billing?.planStatus === 'trialing' 
+                  {billing?.planStatus === 'trialing'
                     ? 'Trial Conversion'
                     : billing?.planStatus === 'incomplete'
-                    ? 'Complete Setup'
-                    : 'Prorated Upgrade'
-                  }
+                      ? 'Complete Setup'
+                      : 'Prorated Upgrade'}
                 </Text>
                 <Text size="xs" c="dimmed">
-                  {billing?.planStatus === 'trialing' 
+                  {billing?.planStatus === 'trialing'
                     ? 'Billing starts immediately'
                     : billing?.planStatus === 'incomplete'
-                    ? 'Activate all features'
-                    : 'Pay difference for remaining period'
-                  }
+                      ? 'Activate all features'
+                      : 'Pay difference for remaining period'}
                 </Text>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <Text size="xs" c="dimmed">Due today</Text>
+                <Text size="xs" c="dimmed">
+                  Due today
+                </Text>
                 <Text size="lg" fw={700} c="blue">
                   {formatCurrency(
                     billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete'
                       ? displayAmount
-                      : calculateProratedAmount(billing, displayTargetPlan, displayInterval, displayCurrency),
+                      : calculateProratedAmount(
+                          billing,
+                          displayTargetPlan,
+                          displayInterval,
+                          displayCurrency
+                        ),
                     displayCurrency
                   )}
                 </Text>
@@ -458,31 +561,64 @@ export default function Settings({
 
           {/* Payment Section */}
 
-            {config ? (
-              <StripePayment
-                amount={displayAmount}
-                currency={displayCurrency}
-                planName={displayTargetPlan}
-                publishableKey={config.stripePublicKey}
-                onSuccess={handlePaymentSuccess}
-                onError={handlePaymentError}
-                planId={displayTargetPlan}
-                interval={displayInterval}
-                createPaymentPath={'/api/subscription-create'}
-                subscriptionId={billing?.subscriptionId}
-                isTrialConversion={billing?.planStatus === 'trialing'}
-                isProcessing={isProcessingPayment}
-              />
-            ) : (
-              <Text c="red" size="sm" ta="center">
-                {t(
-                  'missingPaymentConfiguration',
-                  'Unable to load payment form. Please contact support.'
-                )}
-              </Text>
-            )}
+          {config ? (
+            <StripePayment
+              amount={displayAmount}
+              currency={displayCurrency}
+              planName={displayTargetPlan}
+              publishableKey={config.stripePublicKey}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+              planId={displayTargetPlan}
+              interval={displayInterval}
+              createPaymentPath={'/api/subscription-create'}
+              subscriptionId={billing?.subscriptionId}
+              isTrialConversion={billing?.planStatus === 'trialing'}
+              isProcessing={isProcessingPayment}
+            />
+          ) : (
+            <Text c="red" size="sm" ta="center">
+              {t(
+                'missingPaymentConfiguration',
+                'Unable to load payment form. Please contact support.'
+              )}
+            </Text>
+          )}
         </Stack>
       </Modal>
+
+      {/* Cancellation Modal */}
+      {billing?.subscriptionId && (
+        <CancellationModal
+          isOpen={showCancellationModal}
+          onClose={() => setShowCancellationModal(false)}
+          onSuccess={handleCancellationSuccess}
+          subscription={{
+            id: billing.subscriptionId,
+            planId: billing.currentPlan,
+            status: billing.planStatus,
+            currentPeriodEnd: billing.currentPeriodEnd,
+            cancelAtPeriodEnd: billing.cancelAtPeriodEnd,
+          }}
+        />
+      )}
+
+      {/* Payment Method Edit Modal */}
+      {billing?.subscriptionId && config && (
+        <PaymentMethodEditModal
+          isOpen={showPaymentEditModal}
+          onClose={() => setShowPaymentEditModal(false)}
+          onSuccess={handleCancellationSuccess}
+          subscription={{
+            id: billing.subscriptionId,
+            planId: billing.currentPlan,
+            interval: billing.interval,
+            amount: billing.amount,
+            currency: billing.currency,
+          }}
+          config={config}
+        />
+      )}
     </>
   )
 }

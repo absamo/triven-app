@@ -168,13 +168,25 @@ model Subscription {
   trialStart         Int
   trialEnd           Int
   cancelAtPeriodEnd  Boolean  @default(false)
+  
+  // Payment method details
   paymentMethodId    String?  // Stripe payment method ID
   last4              String?  // Last 4 digits of payment method
   brand              String?  // Card brand (visa, mastercard, etc.)
   expMonth           Int?     // Expiration month
   expYear            Int?     // Expiration year
+  
+  // Cancellation tracking
+  cancelledAt        DateTime? // When the subscription was cancelled
+  cancelledBy        String?   // User ID who cancelled the subscription
+  cancellationReason String?   // Reason for cancellation
+  scheduledCancelAt  DateTime? // When the subscription is scheduled to be cancelled
+  
+  // Audit fields
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+  
+  // Relations
   plan               Plan     @relation(fields: [planId], references: [id])
   price              Price    @relation(fields: [priceId], references: [id])
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)

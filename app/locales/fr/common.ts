@@ -88,4 +88,7 @@ export default {
   renews: 'Renouvelle',
   nextInvoiceDue: 'Prochaine facture due le',
   noRenewalDate: 'Aucune date de renouvellement disponible',
+
+  // Page titles
+  title: 'Paramètres',
 } satisfies typeof import('../en/common').default
