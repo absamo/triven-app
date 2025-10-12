@@ -102,6 +102,7 @@ function PaymentForm({
           planId,
           interval,
           currency,
+          subscriptionId, // Include subscriptionId for payment method updates
         }
         const res = await fetch(endpoint, {
           method: 'POST',
@@ -197,6 +198,39 @@ function PaymentForm({
         }
       }
 
+      // If this is a payment method update with SetupIntent, confirm it
+      if (isSetupIntent && createPaymentPath === '/api/payment-method-update' && subscriptionId) {
+        console.log(
+          '💳 Confirming SetupIntent for payment method update:',
+          secret?.split('_secret_')[0]
+        )
+        try {
+          const setupIntentId = secret?.split('_secret_')[0] // Extract SetupIntent ID from client secret
+          const res = await fetch(createPaymentPath, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              confirmSetupIntent: true,
+              setupIntentId,
+              subscriptionId,
+            }),
+          })
+          const data = await res.json()
+          if (!res.ok) {
+            console.error('❌ Failed to confirm payment method update:', data)
+            onError(data.error || 'Failed to update payment method')
+            return
+          } else {
+            console.log('✅ Payment method update confirmed successfully:', data)
+          }
+        } catch (err) {
+          console.error('❌ Error confirming payment method update:', err)
+          onError('Failed to update payment method')
+          return
+        }
+      }
+
+      console.log('🎯 StripePayment: About to call onSuccess()')
       // Keep loading until parent onSuccess completes
       onSuccess()
     }
@@ -229,7 +263,7 @@ function PaymentForm({
                 },
               }}
             />
-            
+
             {/* Submit Button */}
             <Button
               type="submit"
@@ -240,11 +274,11 @@ function PaymentForm({
               gradient={{ from: 'teal', to: 'blue' }}
               variant="gradient"
               className={classes.payButton}
-              leftSection={isLoading || isProcessing ? <Loader size="sm" /> : <IconLock size={20} />}
+              leftSection={
+                isLoading || isProcessing ? <Loader size="sm" /> : <IconLock size={20} />
+              }
             >
-              {isLoading || isProcessing
-                ? t('payment:processing')
-                : t('payment:pay', 'Pay')}
+              {isLoading || isProcessing ? t('payment:processing') : t('payment:pay', 'Pay')}
             </Button>
           </Stack>
         </Paper>
@@ -323,9 +357,9 @@ export default function StripePayment({
         clientSecret,
         appearance,
       }
-    : isTrialConversion
+    : isTrialConversion || amount === 0
       ? {
-          // For trial subscriptions: use 'setup' mode WITHOUT amount
+          // For trial subscriptions or payment method updates: use 'setup' mode WITHOUT amount
           mode: 'setup' as const,
           currency: currency.toLowerCase(),
           appearance,

@@ -118,9 +118,62 @@ export async function action({ request }: ActionFunctionArgs) {
         const { metadata } = setupIntent
         if (
           metadata?.subscriptionId &&
-          (metadata?.type === 'trial_subscription' || metadata?.type === 'subscription_setup') &&
+          (metadata?.type === 'trial_subscription' ||
+            metadata?.type === 'subscription_setup' ||
+            metadata?.type === 'payment_method_update') &&
           setupIntent.payment_method
         ) {
+          // Handle payment method update specifically
+          if (metadata.type === 'payment_method_update') {
+            console.log(`💳 Processing payment method update for ${metadata.subscriptionId}`)
+
+            try {
+              const paymentMethodId = setupIntent.payment_method as string
+
+              // Update the subscription's default payment method
+              await stripe.subscriptions.update(metadata.subscriptionId, {
+                default_payment_method: paymentMethodId,
+              })
+
+              console.log(
+                `✅ Updated subscription ${metadata.subscriptionId} with new payment method ${paymentMethodId}`
+              )
+
+              // Get the updated payment method details
+              const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
+
+              let paymentMethodDetails = null
+              if (paymentMethod.type === 'card' && paymentMethod.card) {
+                paymentMethodDetails = {
+                  paymentMethodId: paymentMethod.id,
+                  last4: paymentMethod.card.last4,
+                  brand: paymentMethod.card.brand,
+                  expMonth: paymentMethod.card.exp_month,
+                  expYear: paymentMethod.card.exp_year,
+                }
+              }
+
+              // Update the database with new payment method details
+              await prisma.subscription.update({
+                where: { id: metadata.subscriptionId },
+                data: {
+                  paymentMethodId: paymentMethodDetails?.paymentMethodId,
+                  last4: paymentMethodDetails?.last4,
+                  brand: paymentMethodDetails?.brand,
+                  expMonth: paymentMethodDetails?.expMonth,
+                  expYear: paymentMethodDetails?.expYear,
+                },
+              })
+
+              console.log(`✅ Database updated with new payment method details`)
+            } catch (error) {
+              console.error('❌ Failed to process payment method update:', error)
+            }
+
+            return new Response(null, { status: 200 })
+          }
+
+          // Handle subscription setup (existing logic)
           console.log(`🎯 Processing subscription setup for ${metadata.subscriptionId}`)
 
           try {
@@ -520,7 +573,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
         // Get payment method details if subscription has payment method
         const updatePaymentMethodDetails = await getPaymentMethodDetails(subscription.id)
-        console.log('💳 Payment method details for updated subscription:', updatePaymentMethodDetails)
+        console.log(
+          '💳 Payment method details for updated subscription:',
+          updatePaymentMethodDetails
+        )
 
         await prisma.subscription.upsert({
           where: { userId: user.id },
@@ -565,18 +621,52 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       /**
-       * Occurs whenever a customer’s subscription ends.
+       * Occurs whenever a customer's subscription ends.
+       * This happens when a subscription is cancelled.
+       * We should update the status to 'canceled', NOT delete the record.
        */
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object
+        const subscription = event.data.object as Stripe.Subscription
         const { id } = z.object({ id: z.string() }).parse(subscription)
+        const customerId = subscription.customer as string
+
+        console.log(`🚫 Subscription cancelled: ${id}`)
+        console.log(`   Customer: ${customerId}`)
+        console.log(`   Status: ${subscription.status}`)
+
+        // Find the user by Stripe customer ID
+        const user = await prisma.user.findUnique({
+          where: { stripeCustomerId: customerId },
+        })
+
+        if (!user) {
+          console.error('User not found for customer:', customerId)
+          return new Response(null, { status: 200 })
+        }
 
         const dbSubscription = await prisma.subscription.findUnique({
           where: { id },
         })
-        if (dbSubscription) await prisma.subscription.delete({ where: { id: dbSubscription.id } })
 
-        return new Response(null)
+        if (dbSubscription) {
+          // Update status to canceled instead of deleting the record
+          // This preserves subscription history and billing information
+          await prisma.subscription.update({
+            where: { id: dbSubscription.id },
+            data: {
+              status: 'canceled',
+              cancelAtPeriodEnd: false, // Subscription is now fully cancelled
+              // Keep all other data intact for historical purposes
+            },
+          })
+
+          console.log(`✅ Updated subscription ${id} status to 'canceled' for user ${user.id}`)
+          console.log(`📊 Subscription record preserved with status: canceled`)
+        } else {
+          console.log(`⚠️ Subscription ${id} not found in database`)
+        }
+
+        return new Response(null, { status: 200 })
       }
     }
   } catch (err: unknown) {

@@ -6,31 +6,105 @@ import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 const updatePaymentMethodSchema = z.object({
   subscriptionId: z.string(),
-  paymentMethodId: z.string(),
+  // For updating with existing payment method (legacy support)
+  paymentMethodId: z.string().optional(),
+  // For confirming SetupIntent and updating payment method
+  confirmSetupIntent: z.boolean().optional(),
+  setupIntentId: z.string().optional(),
 })
 
 /**
- * Updates the payment method for a subscription
+ * Creates a SetupIntent for updating payment method or updates subscription with existing payment method
  */
 export async function action({ request }: ActionFunctionArgs) {
   try {
     const user = await requireBetterAuthUser(request)
     const body = await request.json()
-    const { subscriptionId, paymentMethodId } = updatePaymentMethodSchema.parse(body)
+
+    console.log('🔍 Payment method update request body:', JSON.stringify(body, null, 2))
+
+    const { subscriptionId, paymentMethodId, confirmSetupIntent, setupIntentId } =
+      updatePaymentMethodSchema.parse(body)
+
+    // Handle SetupIntent confirmation (similar to subscription upgrade flow)
+    if (confirmSetupIntent && setupIntentId) {
+      console.log(`🔧 Confirming SetupIntent ${setupIntentId} for payment method update`)
+
+      try {
+        // Retrieve the confirmed SetupIntent
+        const setupIntent = await stripe.setupIntents.retrieve(setupIntentId)
+
+        if (setupIntent.status !== 'succeeded') {
+          return Response.json({ error: 'SetupIntent has not succeeded yet' }, { status: 400 })
+        }
+
+        if (!setupIntent.payment_method) {
+          return Response.json({ error: 'No payment method found on SetupIntent' }, { status: 400 })
+        }
+
+        const paymentMethodId = setupIntent.payment_method as string
+
+        // Update the subscription's default payment method
+        await stripe.subscriptions.update(subscriptionId, {
+          default_payment_method: paymentMethodId,
+        })
+
+        console.log(
+          `✅ Updated subscription ${subscriptionId} with new payment method ${paymentMethodId}`
+        )
+
+        // Get the updated payment method details
+        const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
+
+        let paymentMethodDetails = null
+        if (paymentMethod.type === 'card' && paymentMethod.card) {
+          paymentMethodDetails = {
+            paymentMethodId: paymentMethod.id,
+            last4: paymentMethod.card.last4,
+            brand: paymentMethod.card.brand,
+            expMonth: paymentMethod.card.exp_month,
+            expYear: paymentMethod.card.exp_year,
+          }
+        }
+
+        // Update the database with new payment method details
+        await prisma.subscription.update({
+          where: { id: subscriptionId },
+          data: {
+            paymentMethodId: paymentMethodDetails?.paymentMethodId,
+            last4: paymentMethodDetails?.last4,
+            brand: paymentMethodDetails?.brand,
+            expMonth: paymentMethodDetails?.expMonth,
+            expYear: paymentMethodDetails?.expYear,
+          },
+        })
+
+        console.log(`✅ Database updated with new payment method details`)
+
+        return Response.json({
+          success: true,
+          subscription: {
+            id: subscriptionId,
+            paymentMethod: paymentMethodDetails,
+          },
+          message: 'Payment method updated successfully',
+        })
+      } catch (error) {
+        console.error('❌ SetupIntent confirmation error:', error)
+        return Response.json({ error: 'Failed to confirm payment method update' }, { status: 500 })
+      }
+    }
 
     // Verify that the subscription belongs to the authenticated user
     const dbSubscription = await prisma.subscription.findUnique({
-      where: { 
+      where: {
         id: subscriptionId,
         userId: user.id,
       },
     })
 
     if (!dbSubscription) {
-      return Response.json(
-        { error: 'Subscription not found or access denied' },
-        { status: 404 }
-      )
+      return Response.json({ error: 'Subscription not found or access denied' }, { status: 404 })
     }
 
     // Get the user's Stripe customer ID
@@ -40,63 +114,83 @@ export async function action({ request }: ActionFunctionArgs) {
     })
 
     if (!dbUser?.stripeCustomerId) {
-      return Response.json(
-        { error: 'No Stripe customer found' },
-        { status: 400 }
-      )
+      return Response.json({ error: 'No Stripe customer found' }, { status: 400 })
     }
 
-    // Attach the payment method to the customer
-    await stripe.paymentMethods.attach(paymentMethodId, {
-      customer: dbUser.stripeCustomerId,
-    })
+    // If paymentMethodId is provided, update the subscription directly (legacy flow)
+    if (paymentMethodId) {
+      // Attach the payment method to the customer
+      await stripe.paymentMethods.attach(paymentMethodId, {
+        customer: dbUser.stripeCustomerId,
+      })
 
-    // Update the subscription's default payment method
-    const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
-      default_payment_method: paymentMethodId,
-    })
+      // Update the subscription's default payment method
+      await stripe.subscriptions.update(subscriptionId, {
+        default_payment_method: paymentMethodId,
+      })
 
-    console.log(`✅ Updated payment method for subscription ${subscriptionId}`)
+      console.log(`✅ Updated payment method for subscription ${subscriptionId}`)
 
-    // Get the updated payment method details
-    const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
-    
-    let paymentMethodDetails = null
-    if (paymentMethod.type === 'card' && paymentMethod.card) {
-      paymentMethodDetails = {
-        paymentMethodId: paymentMethod.id,
-        last4: paymentMethod.card.last4,
-        brand: paymentMethod.card.brand,
-        expMonth: paymentMethod.card.exp_month,
-        expYear: paymentMethod.card.exp_year,
+      // Get the updated payment method details
+      const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
+
+      let paymentMethodDetails = null
+      if (paymentMethod.type === 'card' && paymentMethod.card) {
+        paymentMethodDetails = {
+          paymentMethodId: paymentMethod.id,
+          last4: paymentMethod.card.last4,
+          brand: paymentMethod.card.brand,
+          expMonth: paymentMethod.card.exp_month,
+          expYear: paymentMethod.card.exp_year,
+        }
       }
+
+      // Update the database with new payment method details
+      await prisma.subscription.update({
+        where: { id: subscriptionId },
+        data: {
+          paymentMethodId: paymentMethodDetails?.paymentMethodId,
+          last4: paymentMethodDetails?.last4,
+          brand: paymentMethodDetails?.brand,
+          expMonth: paymentMethodDetails?.expMonth,
+          expYear: paymentMethodDetails?.expYear,
+        },
+      })
+
+      console.log(`✅ Database updated with new payment method details`)
+
+      return Response.json({
+        success: true,
+        subscription: {
+          id: subscriptionId,
+          paymentMethod: paymentMethodDetails,
+        },
+        message: 'Payment method updated successfully',
+      })
     }
 
-    // Update the database with new payment method details
-    const updatedDbSubscription = await prisma.subscription.update({
-      where: { id: subscriptionId },
-      data: {
-        paymentMethodId: paymentMethodDetails?.paymentMethodId,
-        last4: paymentMethodDetails?.last4,
-        brand: paymentMethodDetails?.brand,
-        expMonth: paymentMethodDetails?.expMonth,
-        expYear: paymentMethodDetails?.expYear,
+    // Otherwise, create a SetupIntent for collecting payment method
+    const setupIntent = await stripe.setupIntents.create({
+      customer: dbUser.stripeCustomerId,
+      usage: 'off_session',
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        subscriptionId: subscriptionId,
+        type: 'payment_method_update',
       },
     })
 
-    console.log(`✅ Database updated with new payment method details`)
+    console.log(`✅ Created SetupIntent for payment method update: ${setupIntent.id}`)
 
     return Response.json({
-      success: true,
-      subscription: {
-        id: updatedDbSubscription.id,
-        paymentMethod: paymentMethodDetails,
-      },
-      message: 'Payment method updated successfully',
+      clientSecret: setupIntent.client_secret,
+      subscriptionId: subscriptionId,
     })
   } catch (error) {
     console.error('❌ Payment method update error:', error)
-    
+
     if (error instanceof z.ZodError) {
       return Response.json(
         { error: 'Invalid request data', details: error.issues },
@@ -122,9 +216,6 @@ export async function action({ request }: ActionFunctionArgs) {
       }
     }
 
-    return Response.json(
-      { error: 'Failed to update payment method' },
-      { status: 500 }
-    )
+    return Response.json({ error: 'Failed to update payment method' }, { status: 500 })
   }
 }

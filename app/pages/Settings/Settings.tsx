@@ -24,7 +24,7 @@ import {
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRevalidator } from 'react-router'
+import { useNavigate, useRevalidator } from 'react-router'
 import {
   calculateProratedAmount,
   canUpgrade,
@@ -86,6 +86,7 @@ export default function Settings({
   const { colorScheme } = useMantineColorScheme()
   const theme = useMantineTheme()
   const revalidator = useRevalidator()
+  const navigate = useNavigate()
   const currencySymbol = CURRENCY_SYMBOLS[billing?.currency?.toUpperCase()]
 
   // Modal and payment state
@@ -152,8 +153,14 @@ export default function Settings({
 
   // Handle cancellation success
   const handleCancellationSuccess = () => {
-    // Revalidate loader data to refresh the page with updated subscription
+    console.log('🔄 Settings: Revalidating page data after payment method/subscription change')
+    // Try revalidator first
     revalidator.revalidate()
+
+    // Fallback: Force navigation refresh if revalidator doesn't work
+    setTimeout(() => {
+      navigate('/settings', { replace: true })
+    }, 100)
   }
 
   // Determine loading state
@@ -251,28 +258,28 @@ export default function Settings({
                 </Text>
               </Grid.Col>
               <Grid.Col span={10}>
-                <Group justify="space-between" align="center">
-                  <div>
-                    <Text fz="sm">
+                <Stack gap={0}>
+                  <Group align="center" gap="md">
+                    <Text fz="sm" fw={500}>
                       {billing.paymentMethod.brand?.toUpperCase()} ending in{' '}
                       {billing.paymentMethod.last4}
                     </Text>
-                    <Text fz="xs" opacity={0.6}>
-                      {t('payment:expires', 'Expires')}{' '}
-                      {String(billing.paymentMethod.expMonth).padStart(2, '0')}/
-                      {billing.paymentMethod.expYear}
-                    </Text>
-                  </div>
-                  <ActionIcon
-                    size="sm"
-                    variant="light"
-                    color="blue"
-                    onClick={() => setShowPaymentEditModal(true)}
-                    title={t('payment:editPaymentMethod', 'Edit Payment Method')}
-                  >
-                    <IconEdit size={16} />
-                  </ActionIcon>
-                </Group>
+                    <ActionIcon
+                      size="md"
+                      variant="light"
+                      color="blue"
+                      onClick={() => setShowPaymentEditModal(true)}
+                      title={t('payment:editPaymentMethod', 'Edit Payment Method')}
+                    >
+                      <IconEdit size={12} />
+                    </ActionIcon>
+                  </Group>
+                  <Text fz="xs" opacity={0.6}>
+                    {t('payment:expires', 'Expires')}{' '}
+                    {String(billing.paymentMethod.expMonth).padStart(2, '0')}/
+                    {billing.paymentMethod.expYear}
+                  </Text>
+                </Stack>
               </Grid.Col>
             </>
           )}

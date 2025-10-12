@@ -42,7 +42,7 @@ export default function CancellationModal({
 
   const handleCancel = async () => {
     setIsProcessing(true)
-    
+
     try {
       const response = await fetch('/api/subscription-cancel', {
         method: 'POST',
@@ -61,12 +61,6 @@ export default function CancellationModal({
       if (!response.ok) {
         throw new Error(data.error || 'Failed to cancel subscription')
       }
-
-      notifications.show({
-        title: t('subscriptionCancelled', 'Subscription Cancelled'),
-        message: data.message || t('subscriptionCancelledSuccessfully', 'Your subscription has been cancelled successfully'),
-        color: 'blue',
-      })
 
       onSuccess()
       onClose()
@@ -97,7 +91,7 @@ export default function CancellationModal({
       opened={isOpen}
       onClose={handleClose}
       centered
-      size="md"
+      size="lg"
       title={
         <Group gap="xs">
           <IconAlertTriangle size={20} color="var(--mantine-color-orange-7)" />
@@ -127,9 +121,10 @@ export default function CancellationModal({
         {/* Warning Message */}
         <div
           style={{
-            backgroundColor: colorScheme === 'dark'
-              ? 'var(--mantine-color-dark-6)'
-              : 'var(--mantine-color-orange-0)',
+            backgroundColor:
+              colorScheme === 'dark'
+                ? 'var(--mantine-color-dark-6)'
+                : 'var(--mantine-color-orange-0)',
             border: `1px solid ${
               colorScheme === 'dark'
                 ? 'var(--mantine-color-dark-4)'
@@ -146,8 +141,8 @@ export default function CancellationModal({
             {subscription.status === 'active' && !subscription.cancelAtPeriodEnd
               ? 'You currently have an active subscription with access to all features.'
               : subscription.cancelAtPeriodEnd
-              ? 'Your subscription is already scheduled for cancellation.'
-              : 'This action cannot be undone.'}
+                ? 'Your subscription is already scheduled for cancellation.'
+                : 'This action cannot be undone.'}
           </Text>
         </div>
 
@@ -155,9 +150,10 @@ export default function CancellationModal({
         {subscription.cancelAtPeriodEnd && (
           <div
             style={{
-              backgroundColor: colorScheme === 'dark'
-                ? 'var(--mantine-color-dark-8)'
-                : 'var(--mantine-color-blue-0)',
+              backgroundColor:
+                colorScheme === 'dark'
+                  ? 'var(--mantine-color-dark-8)'
+                  : 'var(--mantine-color-blue-0)',
               borderRadius: '8px',
               padding: 'var(--mantine-spacing-sm)',
               border: `1px solid ${
@@ -173,7 +169,10 @@ export default function CancellationModal({
                   Subscription already scheduled for cancellation
                 </Text>
                 <Text size="xs" c="dimmed">
-                  {t('subscriptionScheduledForCancellation', 'Your subscription is scheduled for cancellation at the end of your billing period')}
+                  {t(
+                    'subscriptionScheduledForCancellation',
+                    'Your subscription is scheduled for cancellation at the end of your billing period'
+                  )}
                 </Text>
               </div>
               <Badge variant="light" color="orange" size="sm">
@@ -190,16 +189,22 @@ export default function CancellationModal({
               <Text size="sm" fw={500}>
                 Cancellation Options
               </Text>
-              
+
               <Stack gap="md">
                 <Checkbox
                   checked={cancelAtPeriodEnd}
                   onChange={(event) => setCancelAtPeriodEnd(event.currentTarget.checked)}
                   label={
                     <div style={{ paddingLeft: '8px' }}>
-                      <Text size="sm" mb={4}>{t('cancelAtPeriodEnd', 'Cancel at period end')}</Text>
+                      <Text size="sm" mb={4}>
+                        {t('cancelAtPeriodEnd', 'Cancel at period end')}
+                      </Text>
                       <Text size="xs" c="dimmed">
-                        {t('cancelAtPeriodEndDescription', 'Your subscription will remain active until {{date}}, then be cancelled', { date: periodEndDate })}
+                        {t(
+                          'cancelAtPeriodEndDescription',
+                          'Your subscription will remain active until {{date}}, then be cancelled',
+                          { date: periodEndDate }
+                        )}
                       </Text>
                     </div>
                   }
@@ -208,15 +213,20 @@ export default function CancellationModal({
                     input: { marginTop: '2px' },
                   }}
                 />
-                
+
                 <Checkbox
                   checked={!cancelAtPeriodEnd}
                   onChange={(event) => setCancelAtPeriodEnd(!event.currentTarget.checked)}
                   label={
                     <div style={{ paddingLeft: '8px' }}>
-                      <Text size="sm" mb={4}>{t('cancelImmediately', 'Cancel immediately')}</Text>
+                      <Text size="sm" mb={4}>
+                        {t('cancelImmediately', 'Cancel immediately')}
+                      </Text>
                       <Text size="xs" c="dimmed">
-                        {t('cancelImmediatelyDescription', 'Your subscription will be cancelled immediately and you will lose access now')}
+                        {t(
+                          'cancelImmediatelyDescription',
+                          'Your subscription will be cancelled immediately and you will lose access now'
+                        )}
                       </Text>
                     </div>
                   }
@@ -243,25 +253,22 @@ export default function CancellationModal({
         )}
 
         {/* Action Buttons */}
-        <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: `1px solid ${colorScheme === 'dark' ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}` }}>
+        <div
+          style={{
+            marginTop: '24px',
+            paddingTop: '16px',
+            borderTop: `1px solid ${colorScheme === 'dark' ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
+          }}
+        >
           <Group justify="flex-end" gap="sm">
-            <Button
-              variant="light"
-              onClick={handleClose}
-              disabled={isProcessing}
-            >
-              {subscription.cancelAtPeriodEnd 
+            <Button variant="light" onClick={handleClose} disabled={isProcessing}>
+              {subscription.cancelAtPeriodEnd
                 ? 'Close'
-                : t('keepSubscription', 'Keep Subscription')
-              }
+                : t('keepSubscription', 'Keep Subscription')}
             </Button>
-            
+
             {!subscription.cancelAtPeriodEnd && (
-              <Button
-                color="red"
-                loading={isProcessing}
-                onClick={handleCancel}
-              >
+              <Button color="red" loading={isProcessing} onClick={handleCancel}>
                 {t('proceedWithCancellation', 'Proceed with Cancellation')}
               </Button>
             )}

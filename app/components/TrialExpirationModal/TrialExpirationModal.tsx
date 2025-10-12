@@ -14,6 +14,7 @@ import { IconCrown, IconLock } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useRevalidator } from 'react-router'
+import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
 import { CURRENCIES, INTERVALS, PLANS } from '~/app/modules/stripe/plans'
 import StripePayment from '../StripePayment'
 import classes from './TrialExpirationModal.module.css'
@@ -21,7 +22,8 @@ import classes from './TrialExpirationModal.module.css'
 interface TrialExpirationModalProps {
   opened: boolean
   currentPlan: string
-  mode?: 'trial-expired' | 'incomplete-subscription'
+  planStatus: string
+  mode?: keyof typeof SUBSCRIPTION_MODAL_MODES
 }
 
 interface PaymentData {
@@ -38,6 +40,7 @@ interface ConfigData {
 export default function TrialExpirationModal({
   opened,
   currentPlan,
+  planStatus,
   mode = 'trial-expired',
 }: TrialExpirationModalProps) {
   const { colorScheme } = useMantineColorScheme()
@@ -47,6 +50,110 @@ export default function TrialExpirationModal({
   const paymentFetcher = useFetcher<PaymentData>()
   const [showPayment, setShowPayment] = useState(false)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+
+  // Helper function to get modal content based on mode
+  const getModalContent = () => {
+    switch (mode) {
+      case STRIPE_SUBSCRIPTION_STATUSES.CANCELED:
+        return {
+          title: t('payment:subscriptionCancelled', 'Subscription Cancelled'),
+          message: t('payment:cannotAccessTriven'),
+          description: t(
+            'payment:subscriptionCancelledMessage',
+            'Your subscription has been cancelled. Please reactivate your subscription to continue using Triven.'
+          ),
+          buttonText: t('payment:reactivateSubscription', 'Reactivate Subscription'),
+          icon: <IconLock size={40} />,
+          gradient: { from: 'red', to: 'orange' },
+        }
+      case STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE:
+        return {
+          title: t('payment:paymentPastDue', 'Payment Past Due'),
+          message: t('payment:cannotAccessTriven'),
+          description: t(
+            'payment:pastDueMessage',
+            'Your payment is past due. Please update your payment method to continue using Triven.'
+          ),
+          buttonText: t('payment:updatePayment', 'Update Payment'),
+          icon: <IconLock size={40} />,
+          gradient: { from: 'yellow', to: 'orange' },
+        }
+      case STRIPE_SUBSCRIPTION_STATUSES.UNPAID:
+        return {
+          title: t('payment:subscriptionUnpaid', 'Subscription Unpaid'),
+          message: t('payment:cannotAccessTriven'),
+          description: t(
+            'payment:unpaidMessage',
+            'Your subscription payment has failed. Please update your payment method to continue using Triven.'
+          ),
+          buttonText: t('payment:updatePayment', 'Update Payment'),
+          icon: <IconLock size={40} />,
+          gradient: { from: 'red', to: 'pink' },
+        }
+      case STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE:
+        return {
+          title: t('payment:subscriptionIncomplete', 'Subscription Incomplete'),
+          message: t(
+            'payment:completePaymentRequired',
+            'Payment required to activate your subscription'
+          ),
+          description: t(
+            'payment:incompleteSubscriptionMessage',
+            'Your subscription is pending payment completion. Complete your payment to continue using all features.'
+          ),
+          buttonText: t('payment:completePayment', 'Complete Payment'),
+          icon: <IconLock size={40} />,
+          gradient: { from: 'blue', to: 'cyan' },
+        }
+      case STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED:
+        return {
+          title: t('payment:subscriptionExpired', 'Subscription Expired'),
+          message: t('payment:cannotAccessTriven'),
+          description: t(
+            'payment:incompleteExpiredMessage',
+            'Your subscription setup has expired. Please start a new subscription to continue using Triven.'
+          ),
+          buttonText: t('payment:startNewSubscription', 'Start New Subscription'),
+          icon: <IconLock size={40} />,
+          gradient: { from: 'gray', to: 'red' },
+        }
+      case STRIPE_SUBSCRIPTION_STATUSES.PAUSED:
+        return {
+          title: t('payment:subscriptionPaused', 'Subscription Paused'),
+          message: t('payment:cannotAccessTriven'),
+          description: t(
+            'payment:pausedMessage',
+            'Your subscription is currently paused. Please resume your subscription to continue using Triven.'
+          ),
+          buttonText: t('payment:resumeSubscription', 'Resume Subscription'),
+          icon: <IconLock size={40} />,
+          gradient: { from: 'blue', to: 'gray' },
+        }
+      case SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION:
+        return {
+          title: t('payment:noActiveSubscription', 'No Active Subscription'),
+          message: t('payment:cannotAccessTriven'),
+          description: t(
+            'payment:noSubscriptionMessage',
+            'You need an active subscription to access Triven. Please choose a plan to continue.'
+          ),
+          buttonText: t('payment:choosePlan', 'Choose Plan'),
+          icon: <IconLock size={40} />,
+          gradient: { from: 'red', to: 'orange' },
+        }
+      default: // trial-expired (covers trialing status with expired trial)
+        return {
+          title: t('payment:trialPeriodExpired'),
+          message: t('payment:cannotAccessTriven'),
+          description: t('payment:trialEndedMessage'),
+          buttonText: t('payment:upgradeTo', { planName: currentPlan }),
+          icon: <IconLock size={40} />,
+          gradient: { from: 'red', to: 'orange' },
+        }
+    }
+  }
+
+  const modalContent = getModalContent()
 
   // Fetch config on mount using fetcher
   useEffect(() => {
@@ -106,30 +213,32 @@ export default function TrialExpirationModal({
 
   const handlePaymentSuccess = async () => {
     setIsProcessingPayment(true)
-    
+
     console.log('💳 Trial payment succeeded, revalidating subscription data...')
-    
+
     // Use revalidator to refresh the loader data
     revalidator.revalidate()
-    
+
     // Wait for revalidation to complete or timeout after 5 seconds
     let attempts = 0
     const maxAttempts = 10 // 5 seconds with 500ms intervals
-    
+
     const checkRevalidation = () => {
       return new Promise<void>((resolve) => {
         const checkInterval = setInterval(() => {
           attempts++
-          
-          console.log(`� Trial revalidation attempt ${attempts}/${maxAttempts}, state: ${revalidator.state}`)
-          
+
+          console.log(
+            `� Trial revalidation attempt ${attempts}/${maxAttempts}, state: ${revalidator.state}`
+          )
+
           // Check if revalidation is complete
           if (revalidator.state === 'idle') {
             clearInterval(checkInterval)
             console.log('✅ Trial revalidation completed successfully')
             resolve()
           }
-          
+
           // Timeout after max attempts
           if (attempts >= maxAttempts) {
             clearInterval(checkInterval)
@@ -139,9 +248,9 @@ export default function TrialExpirationModal({
         }, 500) // Check every 500ms
       })
     }
-    
+
     await checkRevalidation()
-    
+
     // Reload the page to ensure fresh state and close modal
     window.location.reload()
   }
@@ -197,39 +306,27 @@ export default function TrialExpirationModal({
                   size={80}
                   radius="xl"
                   variant="gradient"
-                  gradient={{ from: 'red', to: 'orange' }}
+                  gradient={modalContent.gradient}
                   className={classes.lockIcon}
                 >
-                  <IconLock size={40} />
+                  {modalContent.icon}
                 </ThemeIcon>
               </div>
             </Center>
 
             {/* Title */}
             <Title order={2} ta="center" mb="md" className={classes.title}>
-              {mode === 'incomplete-subscription'
-                ? t('payment:subscriptionIncomplete', 'Subscription Incomplete')
-                : t('payment:trialPeriodExpired')}
+              {modalContent.title}
             </Title>
 
             {/* Main Message */}
             <Text ta="center" size="lg" mb="xl" className={classes.message}>
-              {mode === 'incomplete-subscription'
-                ? t(
-                    'payment:completePaymentRequired',
-                    'Payment required to activate your subscription'
-                  )
-                : t('payment:cannotAccessTriven')}
+              {modalContent.message}
             </Text>
 
             {/* Description */}
             <Text ta="center" c="dimmed" mb="xl" size="sm">
-              {mode === 'incomplete-subscription'
-                ? t(
-                    'payment:incompleteSubscriptionMessage',
-                    'Your subscription is pending payment completion. Complete your payment to continue using all features.'
-                  )
-                : t('payment:trialEndedMessage')}
+              {modalContent.description}
             </Text>
 
             {/* Action Buttons */}
@@ -245,9 +342,7 @@ export default function TrialExpirationModal({
                 loading={isLoadingPayment}
                 disabled={isLoadingPayment}
               >
-                {isLoadingPayment
-                  ? t('payment:setupPayment')
-                  : t('payment:upgradeTo', { planName: currentPlan })}
+                {isLoadingPayment ? t('payment:setupPayment') : modalContent.buttonText}
               </Button>
 
               <Text ta="center" size="xs" c="dimmed">

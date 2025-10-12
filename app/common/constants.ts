@@ -398,3 +398,22 @@ export const APPROVAL_DECISIONS = {
   MORE_INFO_REQUIRED: 'more_info_required',
   CONDITIONAL_APPROVAL: 'conditional_approval',
 } as const
+
+// Stripe Subscription Statuses (Official Stripe API statuses)
+export const STRIPE_SUBSCRIPTION_STATUSES = {
+  ACTIVE: 'active',
+  CANCELED: 'canceled',
+  INCOMPLETE: 'incomplete',
+  INCOMPLETE_EXPIRED: 'incomplete_expired',
+  PAST_DUE: 'past_due',
+  PAUSED: 'paused',
+  TRIALING: 'trialing',
+  UNPAID: 'unpaid',
+} as const
+
+// Special Modal Modes for TrialExpirationModal
+export const SUBSCRIPTION_MODAL_MODES = {
+  TRIAL_EXPIRED: 'trial-expired',
+  NO_SUBSCRIPTION: 'no-subscription',
+  ...STRIPE_SUBSCRIPTION_STATUSES,
+} as const

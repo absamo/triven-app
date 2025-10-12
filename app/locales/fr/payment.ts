@@ -30,10 +30,8 @@ export default {
   trialPeriodExpired: "Période d'essai expirée",
   trialExpiring: 'Votre essai expire bientôt',
   trialExpired: 'Votre essai a expiré',
-  cannotAccessTriven: 'Vous ne pouvez pas accéder à Triven, veuillez mettre à niveau',
   trialEndedMessage:
     "Votre essai gratuit est terminé. Mettez à niveau pour continuer à profiter de toutes les fonctionnalités puissantes de gestion d'inventaire qui rendent votre entreprise plus efficace.",
-  choosePlan: 'Choisissez un plan pour continuer à utiliser Triven',
   continueWithPlan: 'Continuer avec le plan {{planName}}',
   flexiblePricing:
     'Choisissez parmi des plans tarifaires flexibles qui correspondent aux besoins de votre entreprise',
@@ -44,6 +42,40 @@ export default {
   authenticationRequired: 'Authentification requise. Veuillez actualiser la page et réessayer.',
   invalidPaymentConfig: 'Configuration de paiement invalide. Veuillez contacter le support.',
   userSessionExpired: 'Session utilisateur expirée. Veuillez actualiser la page et réessayer.',
+
+  // Subscription status messages
+  subscriptionCancelled: 'Abonnement Annulé',
+  subscriptionIncomplete: 'Abonnement Incomplet',
+  subscriptionExpired: 'Abonnement Expiré',
+  subscriptionUnpaid: 'Abonnement Impayé',
+  subscriptionPaused: 'Abonnement En Pause',
+  noActiveSubscription: 'Aucun Abonnement Actif',
+  paymentPastDue: 'Paiement En Retard',
+  cannotAccessTriven: 'Vous ne pouvez pas accéder à Triven pour le moment.',
+
+  // Subscription action messages
+  subscriptionCancelledMessage:
+    'Votre abonnement a été annulé. Veuillez réactiver votre abonnement pour continuer à utiliser Triven.',
+  incompleteSubscriptionMessage:
+    'Votre abonnement est en attente de finalisation du paiement. Finalisez votre paiement pour continuer à utiliser toutes les fonctionnalités.',
+  incompleteExpiredMessage:
+    'La configuration de votre abonnement a expiré. Veuillez commencer un nouvel abonnement pour continuer à utiliser Triven.',
+  unpaidMessage:
+    'Le paiement de votre abonnement a échoué. Veuillez mettre à jour votre méthode de paiement pour continuer à utiliser Triven.',
+  pausedMessage:
+    'Votre abonnement est actuellement en pause. Veuillez reprendre votre abonnement pour continuer à utiliser Triven.',
+  pastDueMessage:
+    'Votre paiement est en retard. Veuillez mettre à jour votre méthode de paiement pour continuer à utiliser Triven.',
+  noSubscriptionMessage:
+    "Vous avez besoin d'un abonnement actif pour accéder à Triven. Veuillez choisir un plan pour continuer.",
+
+  // Action buttons
+  reactivateSubscription: "Réactiver l'Abonnement",
+  completePayment: 'Finaliser le Paiement',
+  startNewSubscription: 'Commencer un Nouvel Abonnement',
+  resumeSubscription: "Reprendre l'Abonnement",
+  updatePayment: 'Mettre à Jour le Paiement',
+  choosePlan: 'Choisir un Plan',
 
   // Billing
   monthly: 'Mensuel',
@@ -63,7 +95,6 @@ export default {
   cancelImmediatelyDescription:
     "Votre abonnement sera annulé immédiatement et vous perdrez l'accès maintenant",
   cancellationReason: "Raison de l'annulation (optionnel)",
-  subscriptionCancelled: 'Abonnement annulé',
   subscriptionCancelledSuccessfully: 'Votre abonnement a été annulé avec succès',
   subscriptionScheduledForCancellation:
     'Votre abonnement est programmé pour être annulé à la fin de votre période de facturation',
@@ -90,7 +121,6 @@ export default {
   billedEveryMonth: 'facturé chaque mois',
   noActiveBilling: 'Aucune facturation active',
   status: 'Statut',
-  noActiveSubscription: 'Aucun abonnement actif',
   renews: 'Renouvelle',
   trialEndsOn: "L'essai se termine le",
   nextInvoiceDue: 'Prochaine facture due le',

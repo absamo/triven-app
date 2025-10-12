@@ -27,16 +27,10 @@ export default {
 
   // Trial modal specific
   trialPeriodExpired: 'Trial Period Expired',
-  subscriptionIncomplete: 'Subscription Incomplete',
-  completePaymentRequired: 'Payment required to activate your subscription',
-  incompleteSubscriptionMessage:
-    'Your subscription is pending payment completion. Complete your payment to continue using all features.',
   trialExpiring: 'Your trial is expiring',
   trialExpired: 'Your trial has expired',
-  cannotAccessTriven: 'You cannot access Triven please upgrade',
   trialEndedMessage:
     'Your free trial has ended. Upgrade to continue enjoying all the powerful inventory management features that make your business more efficient.',
-  choosePlan: 'Choose a plan to continue using Triven',
   continueWithPlan: 'Continue with {{planName}}',
   flexiblePricing: 'Choose from flexible pricing plans that fit your business needs',
 
@@ -65,7 +59,6 @@ export default {
   cancelImmediatelyDescription:
     'Your subscription will be cancelled immediately and you will lose access now',
   cancellationReason: 'Reason for cancellation (optional)',
-  subscriptionCancelled: 'Subscription Cancelled',
   subscriptionCancelledSuccessfully: 'Your subscription has been cancelled successfully',
   subscriptionScheduledForCancellation:
     'Your subscription is scheduled for cancellation at the end of your billing period',
@@ -92,7 +85,6 @@ export default {
   billedEveryMonth: 'billed every month',
   noActiveBilling: 'No active billing',
   status: 'Status',
-  noActiveSubscription: 'No Active Subscription',
   renews: 'Renews',
   trialEndsOn: 'Trial ends on',
   nextInvoiceDue: 'Next invoice due on',
@@ -103,6 +95,40 @@ export default {
   viewPlans: 'View Plans',
   currency: 'Currencies',
   manageCurrencies: 'Manage your currencies',
+
+  // Subscription status messages
+  subscriptionCancelled: 'Subscription Cancelled',
+  subscriptionIncomplete: 'Subscription Incomplete',
+  subscriptionExpired: 'Subscription Expired',
+  subscriptionUnpaid: 'Subscription Unpaid',
+  subscriptionPaused: 'Subscription Paused',
+  noActiveSubscription: 'No Active Subscription',
+  paymentPastDue: 'Payment Past Due',
+  cannotAccessTriven: 'You cannot access Triven at this time.',
+
+  // Subscription action messages
+  subscriptionCancelledMessage:
+    'Your subscription has been cancelled. Please reactivate your subscription to continue using Triven.',
+  incompleteSubscriptionMessage:
+    'Your subscription is pending payment completion. Complete your payment to continue using all features.',
+  incompleteExpiredMessage:
+    'Your subscription setup has expired. Please start a new subscription to continue using Triven.',
+  unpaidMessage:
+    'Your subscription payment has failed. Please update your payment method to continue using Triven.',
+  pausedMessage:
+    'Your subscription is currently paused. Please resume your subscription to continue using Triven.',
+  pastDueMessage:
+    'Your payment is past due. Please update your payment method to continue using Triven.',
+  noSubscriptionMessage:
+    'You need an active subscription to access Triven. Please choose a plan to continue.',
+
+  // Action buttons
+  reactivateSubscription: 'Reactivate Subscription',
+  completePayment: 'Complete Payment',
+  startNewSubscription: 'Start New Subscription',
+  resumeSubscription: 'Resume Subscription',
+  updatePayment: 'Update Payment',
+  choosePlan: 'Choose Plan',
 
   // Subscription status translations
   subscriptionStatus: {

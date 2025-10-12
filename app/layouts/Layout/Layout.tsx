@@ -21,6 +21,7 @@ import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useNavigate, useNavigation } from 'react-router'
+import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
 import { canUpgrade, shouldShowUpgrade } from '~/app/common/helpers/payment'
 import type { INotification } from '~/app/common/validations/notificationSchema'
 import type { IProfile } from '~/app/common/validations/profileSchema'
@@ -115,9 +116,23 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   const navigate = useNavigate()
   const { t } = useTranslation(['navigation'])
 
-  const trialing = user.planStatus === 'trialing'
+  const trialing = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING
   const trialExpired = trialing && user.trialPeriodDays <= 0
-  const incompleteSubscription = user.planStatus === 'incomplete'
+  const incompleteSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE
+  const cancelledSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.CANCELED
+  const pastDueSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE
+  const unpaidSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.UNPAID
+  const incompleteExpiredSubscription =
+    user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED
+  const pausedSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.PAUSED
+
+  // Handle users with no active subscription (inactive, null, undefined, etc.)
+  const noActiveSubscription =
+    !user.planStatus ||
+    user.planStatus === 'inactive' ||
+    user.planStatus === 'null' ||
+    user.planStatus === 'undefined'
+
   const hasActiveTrialBanner = trialing && user.trialPeriodDays > 0
   const showUpgradeCta =
     shouldShowUpgrade(user.planStatus) && canUpgrade(user.currentPlan, user.planStatus)
@@ -272,18 +287,68 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
       {isOverlayOpened && <Overlay backgroundOpacity={0.2} fixed />}
 
+      {/* No Active Subscription Modal - blocks access when no subscription exists */}
+      <TrialExpirationModal
+        opened={noActiveSubscription}
+        currentPlan={user.currentPlan}
+        planStatus={user.planStatus}
+        mode={SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION}
+      />
+
       {/* Trial Expiration Modal - blocks access when trial has expired */}
       <TrialExpirationModal
         opened={trialExpired}
         currentPlan={user.currentPlan}
-        mode="trial-expired"
+        planStatus={user.planStatus}
+        mode={SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED}
       />
 
       {/* Incomplete Subscription Modal - blocks access when subscription is incomplete */}
       <TrialExpirationModal
         opened={incompleteSubscription}
         currentPlan={user.currentPlan}
-        mode="incomplete-subscription"
+        planStatus={user.planStatus}
+        mode={STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE}
+      />
+
+      {/* Cancelled Subscription Modal - blocks access when subscription is cancelled */}
+      <TrialExpirationModal
+        opened={cancelledSubscription}
+        currentPlan={user.currentPlan}
+        planStatus={user.planStatus}
+        mode={STRIPE_SUBSCRIPTION_STATUSES.CANCELED}
+      />
+
+      {/* Past Due Subscription Modal - blocks access when payment is past due */}
+      <TrialExpirationModal
+        opened={pastDueSubscription}
+        currentPlan={user.currentPlan}
+        planStatus={user.planStatus}
+        mode={STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE}
+      />
+
+      {/* Unpaid Subscription Modal - blocks access when subscription is unpaid */}
+      <TrialExpirationModal
+        opened={unpaidSubscription}
+        currentPlan={user.currentPlan}
+        planStatus={user.planStatus}
+        mode={STRIPE_SUBSCRIPTION_STATUSES.UNPAID}
+      />
+
+      {/* Incomplete Expired Subscription Modal */}
+      <TrialExpirationModal
+        opened={incompleteExpiredSubscription}
+        currentPlan={user.currentPlan}
+        planStatus={user.planStatus}
+        mode={STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED}
+      />
+
+      {/* Paused Subscription Modal */}
+      <TrialExpirationModal
+        opened={pausedSubscription}
+        currentPlan={user.currentPlan}
+        planStatus={user.planStatus}
+        mode={STRIPE_SUBSCRIPTION_STATUSES.PAUSED}
       />
     </>
   )
