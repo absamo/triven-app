@@ -247,15 +247,16 @@ export default function PricingPage() {
   ]
 
   const formatPrice = (monthly: number, yearly: number) => {
-    const price = isYearly ? yearly : monthly
+    // Yearly prices are annual totals, divide by 12 to show monthly equivalent
+    const price = isYearly ? yearly / 12 : monthly
     return price === 0 ? 'Free' : `$${price}`
   }
 
   const calculateSavings = (monthly: number, yearly: number) => {
     if (monthly === 0) return 0
-    const yearlyTotal = yearly * 12
+    // yearly is already the annual total, monthly needs to be multiplied by 12
     const monthlyTotal = monthly * 12
-    const savings = monthlyTotal - yearlyTotal
+    const savings = monthlyTotal - yearly
     const percentage = Math.round((savings / monthlyTotal) * 100)
     return percentage
   }

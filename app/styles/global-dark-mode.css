@@ -157,12 +157,13 @@
 
 /* Divider components */
 [data-mantine-color-scheme="dark"] .mantine-Divider-root {
-  border-color: var(--mantine-color-dark-4) !important;
+  border-color: var(--mantine-color-dark-4);
 }
 
-[data-mantine-color-scheme="dark"] .mantine-Divider-label {
-  background-color: var(--mantine-color-dark-6) !important;
-  color: var(--mantine-color-gray-3) !important;
+/* Use :where() for lower specificity so component styles can override */
+[data-mantine-color-scheme="dark"] :where(.mantine-Divider-label) {
+  background-color: var(--mantine-color-dark-6);
+  color: var(--mantine-color-gray-3);
 }
 
 /* Badge components */

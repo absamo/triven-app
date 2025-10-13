@@ -8,10 +8,10 @@ import {
 import {
   CURRENCIES,
   INTERVALS,
-  PLANS,
-  PRICING_PLANS,
   type Interval,
+  PLANS,
   type Plan,
+  PRICING_PLANS,
 } from '~/app/modules/stripe/plans'
 
 interface PricingCardProps {
@@ -34,7 +34,8 @@ export function PricingCard({ planId, interval, currency, isPopular }: PricingCa
 
   const monthlyPrice = plan.prices[INTERVALS.MONTHLY][currency as keyof typeof plan.prices.month]
   const yearlyPrice = plan.prices[INTERVALS.YEARLY][currency as keyof typeof plan.prices.year]
-  const currentPrice = interval === INTERVALS.YEARLY ? yearlyPrice : monthlyPrice
+  // For display: yearly prices are annual totals, show monthly equivalent
+  const displayPrice = interval === INTERVALS.YEARLY ? yearlyPrice / 12 : monthlyPrice
   const savings = calculateYearlySavings(monthlyPrice, yearlyPrice)
 
   const handleSubscribe = () => {
@@ -79,9 +80,9 @@ export function PricingCard({ planId, interval, currency, isPopular }: PricingCa
         <div>
           <Group align="baseline" gap={4}>
             <Text size="3rem" fw="800">
-              {formatPrice(currentPrice, currency as any)}
+              {formatPrice(displayPrice, currency as any)}
             </Text>
-            <Text c="dimmed">/{interval === INTERVALS.YEARLY ? 'year' : 'month'}</Text>
+            <Text c="dimmed">/month</Text>
           </Group>
 
           {interval === INTERVALS.YEARLY && savings > 0 && (

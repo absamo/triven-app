@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import {
   CURRENCIES,
-  INTERVALS,
   type Currency,
+  INTERVALS,
   type Interval,
   type Plan,
 } from '~/app/modules/stripe/plans'
@@ -74,8 +74,8 @@ export function formatPrice(priceInCents: number, currency: Currency = CURRENCIE
 }
 
 export function calculateYearlySavings(monthlyPrice: number, yearlyPrice: number): number {
+  // yearlyPrice is already the annual total, monthlyPrice needs to be multiplied by 12
   const monthlyTotal = monthlyPrice * 12
-  const yearlyTotal = yearlyPrice * 12
-  const savings = monthlyTotal - yearlyTotal
+  const savings = monthlyTotal - yearlyPrice
   return Math.round((savings / monthlyTotal) * 100)
 }

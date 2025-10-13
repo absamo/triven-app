@@ -411,7 +411,7 @@ export const STRIPE_SUBSCRIPTION_STATUSES = {
   UNPAID: 'unpaid',
 } as const
 
-// Special Modal Modes for TrialExpirationModal
+// Special Modal Modes for SubscriptionStatusModal
 export const SUBSCRIPTION_MODAL_MODES = {
   TRIAL_EXPIRED: 'trial-expired',
   NO_SUBSCRIPTION: 'no-subscription',

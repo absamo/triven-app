@@ -1,0 +1,160 @@
+.planCard {
+  border: 2px solid transparent;
+  transition: all 0.1s ease-out;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.planCard:hover {
+  border-color: var(--mantine-color-gray-4);
+}
+
+.planCard.selected {
+  border-color: var(--mantine-color-blue-5);
+}
+
+.planCard.selected:hover {
+  border-color: var(--mantine-color-blue-6);
+}
+
+.planCard.previousPlan {
+  position: relative;
+}
+
+.planCard.previousPlan::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--mantine-color-orange-5), var(--mantine-color-yellow-5));
+  z-index: 1;
+}
+
+/* Light theme specific */
+[data-mantine-color-scheme="light"] .planCard {
+  background-color: var(--mantine-color-white);
+}
+
+[data-mantine-color-scheme="light"] .planCard.selected {
+  background-color: var(--mantine-color-blue-0);
+  border-color: var(--mantine-color-blue-5);
+}
+
+[data-mantine-color-scheme="light"] .planCard:hover {
+  background-color: var(--mantine-color-gray-0);
+  border-color: var(--mantine-color-gray-4);
+}
+
+/* Dark theme specific */
+[data-mantine-color-scheme="dark"] .planCard {
+  background-color: var(--mantine-color-dark-6);
+  border-color: var(--mantine-color-dark-4);
+}
+
+[data-mantine-color-scheme="dark"] .planCard.selected {
+  background-color: var(--mantine-color-dark-5);
+  border-color: var(--mantine-color-blue-4);
+}
+
+[data-mantine-color-scheme="dark"] .planCard:hover {
+  background-color: var(--mantine-color-dark-5);
+  border-color: var(--mantine-color-dark-3);
+}
+
+[data-mantine-color-scheme="dark"] .planCard.selected:hover {
+  border-color: var(--mantine-color-blue-3);
+}
+
+/* Previous plan indicator for dark theme */
+[data-mantine-color-scheme="dark"] .planCard.previousPlan::before {
+  background: linear-gradient(90deg, var(--mantine-color-orange-4), var(--mantine-color-yellow-4));
+}
+
+/* Animation for selection indicator */
+.planCard .selectionIndicator {
+  transition: all 0.3s ease;
+}
+
+/* Focus styles for accessibility */
+.planCard:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-5);
+  outline-offset: 2px;
+}
+
+/* Premium plan special styling */
+.planCard[data-plan="premium"] {
+  border-image: linear-gradient(45deg, var(--mantine-color-violet-4), var(--mantine-color-purple-4))
+    1;
+}
+
+.planCard[data-plan="premium"].selected {
+  background: linear-gradient(135deg, var(--mantine-color-violet-0), var(--mantine-color-purple-0));
+}
+
+[data-mantine-color-scheme="dark"] .planCard[data-plan="premium"].selected {
+  background: var(--mantine-color-dark-5);
+}
+
+/* Custom divider label styling */
+.dividerLabel {
+  display: inline-block;
+  position: relative;
+  padding: 0 var(--mantine-spacing-xs);
+}
+
+.dividerLabelSelected {
+  display: inline-block;
+  position: relative;
+  padding: 0 var(--mantine-spacing-xs);
+}
+
+/* Light theme divider backgrounds */
+[data-mantine-color-scheme="light"] .planCard .dividerLabel {
+  background-color: var(--mantine-color-white);
+}
+
+[data-mantine-color-scheme="light"] .planCard.selected .dividerLabelSelected {
+  background-color: var(--mantine-color-blue-0);
+}
+
+[data-mantine-color-scheme="light"] .planCard:hover .dividerLabel {
+  background-color: var(--mantine-color-gray-0);
+}
+
+/* Dark theme divider backgrounds */
+[data-mantine-color-scheme="dark"] .planCard .dividerLabel {
+  background-color: var(--mantine-color-dark-6);
+}
+
+[data-mantine-color-scheme="dark"] .planCard.selected .dividerLabelSelected {
+  background-color: var(--mantine-color-dark-5);
+}
+
+[data-mantine-color-scheme="dark"] .planCard:hover .dividerLabel,
+[data-mantine-color-scheme="dark"] .planCard:hover .dividerLabelSelected {
+  background-color: var(--mantine-color-dark-5);
+}
+
+.billingCard {
+  background: var(--mantine-color-gray-0);
+  border: 2px solid var(--mantine-color-gray-2);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--mantine-color-blue-3);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+  }
+}
+
+[data-mantine-color-scheme="dark"] .billingCard {
+  background: var(--mantine-color-dark-7);
+  border-color: var(--mantine-color-dark-4);
+
+  &:hover {
+    border-color: var(--mantine-color-blue-5);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  }
+}

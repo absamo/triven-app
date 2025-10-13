@@ -365,32 +365,150 @@ export async function action({ request }: ActionFunctionArgs) {
 
         console.log(`✅ Subscription updated with prorating and immediate invoicing`)
       } else {
-        // Subscription exists but in incomplete/canceled state, create new one
-        console.log(`🆕 Creating new subscription (existing was ${existingSubscription.status})`)
+        // Subscription exists but in incomplete/canceled state, reactivate it
+        console.log(
+          `🔄 Reactivating subscription ${existingSubscription.id} (was ${existingSubscription.status})`
+        )
 
-        subscription = await stripe.subscriptions.create({
+        // Check if customer has any attached payment methods
+        const paymentMethods = await stripe.paymentMethods.list({
           customer: stripeCustomerId,
-          items: [{ price: priceId }],
-          payment_behavior: 'allow_incomplete',
-          payment_settings: {
-            save_default_payment_method: 'on_subscription',
-          },
-          collection_method: 'charge_automatically',
-          expand: ['latest_invoice.payment_intent'],
-          metadata: {
-            userId: user.id,
-            planId,
-            interval,
+          type: 'card',
+        })
+
+        if (paymentMethods.data.length === 0) {
+          console.log(`💳 No payment methods found for customer, creating SetupIntent first`)
+
+          // Create SetupIntent to collect payment method
+          const setupIntent = await stripe.setupIntents.create({
+            customer: stripeCustomerId,
+            automatic_payment_methods: { enabled: true },
+            usage: 'off_session',
+            metadata: {
+              userId: user.id,
+              subscriptionId: existingSubscription.id,
+              type: 'subscription_reactivation_setup',
+              planId,
+              interval,
+            },
+          })
+
+          return Response.json({
+            setupRequired: true,
+            clientSecret: setupIntent.client_secret,
+            subscriptionId: existingSubscription.id,
+            message: 'Payment method setup required for reactivation',
+          })
+        }
+
+        // Set the first available payment method as default for the customer
+        const defaultPaymentMethod = paymentMethods.data[0]
+        await stripe.customers.update(stripeCustomerId, {
+          invoice_settings: {
+            default_payment_method: defaultPaymentMethod.id,
           },
         })
+
+        console.log(`✅ Set default payment method ${defaultPaymentMethod.id} for customer`)
+
+        try {
+          // Try to reactivate the existing subscription
+
+          // First check if the subscription exists in Stripe
+          const stripeSubscription = await stripe.subscriptions.retrieve(existingSubscription.id)
+
+          if (stripeSubscription.status === 'canceled') {
+            // User can choose any plan after cancellation
+            const previousPlanId = existingSubscription.planId
+            const isChangingPlan = previousPlanId !== planId
+
+            console.log(
+              `🔄 Subscription ${existingSubscription.id} is canceled. Creating new subscription for ${planId} plan${
+                isChangingPlan ? ` (was ${previousPlanId})` : ''
+              }.`
+            )
+
+            // Follow Stripe's recommendation: create a new subscription for cancelled ones
+            // User can select any plan they want
+            subscription = await stripe.subscriptions.create({
+              customer: stripeCustomerId,
+              items: [{ price: priceId }],
+              default_payment_method: defaultPaymentMethod.id,
+              payment_behavior: 'allow_incomplete',
+              payment_settings: {
+                save_default_payment_method: 'on_subscription',
+              },
+              collection_method: 'charge_automatically',
+              expand: ['latest_invoice.payment_intent'],
+              metadata: {
+                userId: user.id,
+                planId,
+                interval,
+                previous_plan: previousPlanId,
+                plan_changed: isChangingPlan.toString(),
+              },
+            })
+
+            console.log(`✅ Created new subscription ${subscription.id} for ${planId} plan`)
+          } else {
+            // Subscription exists but in incomplete state, update it
+            const subscriptionItems = stripeSubscription.items.data
+            const firstItemId = subscriptionItems[0]?.id
+
+            subscription = await stripe.subscriptions.update(existingSubscription.id, {
+              items: [
+                {
+                  id: firstItemId,
+                  price: priceId,
+                },
+              ],
+              default_payment_method: defaultPaymentMethod.id,
+              payment_behavior: 'allow_incomplete',
+              payment_settings: {
+                save_default_payment_method: 'on_subscription',
+              },
+              expand: ['latest_invoice.payment_intent'],
+              metadata: {
+                userId: user.id,
+                planId,
+                interval,
+                type: 'subscription_reactivation',
+              },
+            })
+
+            console.log(`✅ Updated existing subscription ${existingSubscription.id}`)
+          }
+        } catch (error) {
+          console.error(`❌ Failed to reactivate subscription ${existingSubscription.id}:`, error)
+          throw error
+        }
       }
     } else {
       // Create new subscription with proper Stripe defaults
       console.log(`🆕 Creating new subscription for user ${user.id}`)
 
+      // For new subscriptions, check if customer has payment methods
+      const paymentMethods = await stripe.paymentMethods.list({
+        customer: stripeCustomerId,
+        type: 'card',
+      })
+
+      let defaultPaymentMethod = null
+      if (paymentMethods.data.length > 0) {
+        defaultPaymentMethod = paymentMethods.data[0].id
+        // Set as customer's default payment method
+        await stripe.customers.update(stripeCustomerId, {
+          invoice_settings: {
+            default_payment_method: defaultPaymentMethod,
+          },
+        })
+        console.log(`✅ Using existing payment method ${defaultPaymentMethod} for new subscription`)
+      }
+
       subscription = await stripe.subscriptions.create({
         customer: stripeCustomerId,
         items: [{ price: priceId }],
+        ...(defaultPaymentMethod && { default_payment_method: defaultPaymentMethod }),
         payment_behavior: 'allow_incomplete',
         payment_settings: {
           save_default_payment_method: 'on_subscription',
@@ -496,55 +614,20 @@ export async function action({ request }: ActionFunctionArgs) {
       }
     }
 
-    // For new subscriptions without payment method, create PaymentIntent if needed
+    // For new subscriptions, use the PaymentIntent that Stripe already created with the invoice
+    // Don't create a separate PaymentIntent
     if (
       !clientSecret &&
       !isTrialConversion &&
       !isUpgrade &&
-      invoiceData &&
-      invoiceData.amount_due &&
-      invoiceData.amount_due > 0
+      paymentIntent &&
+      typeof paymentIntent === 'object' &&
+      'client_secret' in paymentIntent
     ) {
-      console.log(`💳 Creating PaymentIntent for new subscription`)
-
-      const standAlonePaymentIntent = await stripe.paymentIntents.create({
-        amount: invoiceData.amount_due,
-        currency: invoiceData.currency || currency.toLowerCase(),
-        customer: stripeCustomerId,
-        automatic_payment_methods: { enabled: true },
-        metadata: {
-          subscriptionId: subscription.id,
-          userId: user.id,
-          invoiceId: invoiceData.id || '',
-          type: 'subscription_payment',
-        },
-      })
-
-      clientSecret = standAlonePaymentIntent.client_secret
-      console.log(`✅ Created PaymentIntent ${standAlonePaymentIntent.id} for subscription`)
+      clientSecret = paymentIntent.client_secret as string | null
+      console.log(`✅ Using PaymentIntent from subscription invoice`)
     }
 
-    // Final safety check - but NOT for upgrades (they should use Stripe's proration)
-    if (!clientSecret && !isUpgrade) {
-      console.log(`💳 Creating standalone PaymentIntent as final fallback with amount: ${amount}`)
-
-      const standAlonePaymentIntent = await stripe.paymentIntents.create({
-        amount: amount,
-        currency: currency.toLowerCase(),
-        customer: stripeCustomerId,
-        automatic_payment_methods: { enabled: true },
-        metadata: {
-          subscriptionId: subscription.id,
-          userId: user.id,
-          type: 'subscription_payment_fallback',
-        },
-      })
-
-      clientSecret = standAlonePaymentIntent.client_secret
-      console.log(`✅ Created fallback PaymentIntent ${standAlonePaymentIntent.id}`)
-    } else if (!clientSecret && isUpgrade) {
-      console.log(`ℹ️ No client secret for upgrade - Stripe should handle proration automatically`)
-    }
     console.log(
       `✅ Created subscription ${subscription.id} with PaymentIntent using price ${dbPrice.id}`
     )

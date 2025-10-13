@@ -1,4 +1,5 @@
 import {
+  Alert,
   Badge,
   Button,
   Checkbox,
@@ -10,7 +11,7 @@ import {
   useMantineColorScheme,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { IconAlertTriangle } from '@tabler/icons-react'
+import { IconAlertTriangle, IconInfoCircle } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -23,6 +24,7 @@ interface CancellationModalProps {
     id: string
     planId: string
     status: string
+    interval: string
     currentPeriodEnd: number
     cancelAtPeriodEnd: boolean
   }
@@ -37,6 +39,8 @@ export default function CancellationModal({
   const { t } = useTranslation(['payment'])
   const { colorScheme } = useMantineColorScheme()
   const [isProcessing, setIsProcessing] = useState(false)
+  // Annual subscriptions can only be cancelled at period end
+  const isAnnual = subscription.interval === 'year'
   const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(true)
   const [reason, setReason] = useState('')
 
@@ -119,21 +123,7 @@ export default function CancellationModal({
     >
       <Stack gap="xl">
         {/* Warning Message */}
-        <div
-          style={{
-            backgroundColor:
-              colorScheme === 'dark'
-                ? 'var(--mantine-color-dark-6)'
-                : 'var(--mantine-color-orange-0)',
-            border: `1px solid ${
-              colorScheme === 'dark'
-                ? 'var(--mantine-color-dark-4)'
-                : 'var(--mantine-color-orange-2)'
-            }`,
-            borderRadius: '8px',
-            padding: 'var(--mantine-spacing-md)',
-          }}
-        >
+        <div>
           <Text size="sm" fw={500} mb="xs">
             {t('cancellationWarning', 'Are you sure you want to cancel your subscription?')}
           </Text>
@@ -182,8 +172,24 @@ export default function CancellationModal({
           </div>
         )}
 
+        {/* Annual Subscription Notice */}
+        {isAnnual && !subscription.cancelAtPeriodEnd && (
+          <Alert
+            icon={<IconInfoCircle size={16} />}
+            title={t('annualSubscriptionNotice', 'Annual Subscription')}
+            color="blue"
+            variant="light"
+          >
+            {t(
+              'annualSubscriptionCancellationPolicy',
+              'Annual subscriptions can only be cancelled at the end of the billing period. You will continue to have access until {{date}}.',
+              { date: periodEndDate }
+            )}
+          </Alert>
+        )}
+
         {/* Cancellation Options - only show if not already scheduled for cancellation */}
-        {!subscription.cancelAtPeriodEnd && (
+        {!subscription.cancelAtPeriodEnd && !isAnnual && (
           <>
             <Stack gap="lg">
               <Text size="sm" fw={500}>
@@ -237,19 +243,21 @@ export default function CancellationModal({
                 />
               </Stack>
             </Stack>
-
-            {/* Reason for cancellation */}
-            <div style={{ marginTop: '16px' }}>
-              <Textarea
-                label={t('cancellationReason', 'Reason for cancellation (optional)')}
-                placeholder="Help us improve by sharing why you're cancelling..."
-                value={reason}
-                onChange={(event) => setReason(event.currentTarget.value)}
-                rows={3}
-                maxLength={500}
-              />
-            </div>
           </>
+        )}
+
+        {/* Reason for cancellation - show for both monthly and annual */}
+        {!subscription.cancelAtPeriodEnd && (
+          <div style={{ marginTop: '16px' }}>
+            <Textarea
+              label={t('cancellationReason', 'Reason for cancellation (optional)')}
+              placeholder="Help us improve by sharing why you're cancelling..."
+              value={reason}
+              onChange={(event) => setReason(event.currentTarget.value)}
+              rows={3}
+              maxLength={500}
+            />
+          </div>
         )}
 
         {/* Action Buttons */}

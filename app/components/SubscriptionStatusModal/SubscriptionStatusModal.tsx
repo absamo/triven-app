@@ -15,15 +15,25 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useRevalidator } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
+import { useStripeHealth } from '~/app/lib/hooks/useStripeHealth'
 import { CURRENCIES, INTERVALS, PLANS } from '~/app/modules/stripe/plans'
+import ReactivateSubscriptionModal from '../ReactivateSubscriptionModal'
 import StripePayment from '../StripePayment'
-import classes from './TrialExpirationModal.module.css'
+import classes from './SubscriptionStatusModal.module.css'
 
-interface TrialExpirationModalProps {
+interface SubscriptionStatusModalProps {
   opened: boolean
   currentPlan: string
-  planStatus: string
-  mode?: keyof typeof SUBSCRIPTION_MODAL_MODES
+  mode?:
+    | SUBSCRIPTION_MODAL_MODES.PAID
+    | SUBSCRIPTION_MODAL_MODES.UNPAID
+    | SUBSCRIPTION_MODAL_MODES.PAST_DUE
+    | SUBSCRIPTION_MODAL_MODES.CANCELED
+    | SUBSCRIPTION_MODAL_MODES.INCOMPLETE
+    | SUBSCRIPTION_MODAL_MODES.INCOMPLETE_EXPIRED
+    | SUBSCRIPTION_MODAL_MODES.PAUSED
+    | SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION
+    | SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED
 }
 
 interface PaymentData {
@@ -37,12 +47,11 @@ interface ConfigData {
   stripePublicKey: string
 }
 
-export default function TrialExpirationModal({
+export default function SubscriptionStatusModal({
   opened,
   currentPlan,
-  planStatus,
-  mode = 'trial-expired',
-}: TrialExpirationModalProps) {
+  mode,
+}: SubscriptionStatusModalProps) {
   const { colorScheme } = useMantineColorScheme()
   const { t } = useTranslation(['payment', 'common'])
   const revalidator = useRevalidator()
@@ -50,6 +59,8 @@ export default function TrialExpirationModal({
   const paymentFetcher = useFetcher<PaymentData>()
   const [showPayment, setShowPayment] = useState(false)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [showReactivateModal, setShowReactivateModal] = useState(false)
+  const { checkStripeHealth, isChecking: isCheckingStripeHealth } = useStripeHealth()
 
   // Helper function to get modal content based on mode
   const getModalContent = () => {
@@ -163,7 +174,25 @@ export default function TrialExpirationModal({
   }, [configFetcher])
 
   // Handle subscription creation using fetcher
-  const handleUpgrade = () => {
+  const handleUpgrade = async () => {
+    // Check Stripe health before proceeding
+    const isHealthy = await checkStripeHealth()
+    if (!isHealthy) {
+      return
+    }
+
+    // Fetch config first
+    if (!configFetcher.data) {
+      configFetcher.load('/api/config')
+    }
+
+    // For cancelled subscriptions, show reactivation modal
+    if (mode === STRIPE_SUBSCRIPTION_STATUSES.CANCELED) {
+      setShowReactivateModal(true)
+      return
+    }
+
+    // For other statuses, use the default upgrade flow
     paymentFetcher.submit(
       {
         planId: PLANS.STANDARD, // Default to Standard plan
@@ -176,6 +205,14 @@ export default function TrialExpirationModal({
         encType: 'application/json',
       }
     )
+  }
+
+  // Handle reactivation success
+  const handleReactivationSuccess = () => {
+    setShowReactivateModal(false)
+
+    // Refresh the page data
+    revalidator.revalidate()
   }
 
   // Handle fetcher state changes
@@ -268,113 +305,125 @@ export default function TrialExpirationModal({
   }
 
   return (
-    <Modal
-      opened={opened}
-      onClose={() => {}} // Don't allow closing - user must upgrade
-      withCloseButton={false}
-      closeOnClickOutside={false}
-      closeOnEscape={false}
-      centered
-      size={showPayment ? 'lg' : 'md'}
-      overlayProps={{
-        backgroundOpacity: 0.55,
-        blur: 8,
-      }}
-      styles={{
-        content: {
-          backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'white',
-          border:
-            colorScheme === 'dark'
-              ? '1px solid var(--mantine-color-dark-5)'
-              : '1px solid var(--mantine-color-gray-2)',
-          borderRadius: '16px',
-          boxShadow:
-            colorScheme === 'dark'
-              ? '0 20px 60px rgba(0, 0, 0, 0.8)'
-              : '0 20px 60px rgba(0, 0, 0, 0.15)',
-        },
-      }}
-    >
-      <div className={classes.modalContent}>
-        {!showPayment ? (
-          // Initial trial expired screen
-          <>
-            {/* Icon */}
-            <Center mb="xl">
-              <div className={classes.iconContainer}>
-                <ThemeIcon
-                  size={80}
-                  radius="xl"
-                  variant="gradient"
-                  gradient={modalContent.gradient}
-                  className={classes.lockIcon}
-                >
-                  {modalContent.icon}
-                </ThemeIcon>
-              </div>
-            </Center>
-
-            {/* Title */}
-            <Title order={2} ta="center" mb="md" className={classes.title}>
-              {modalContent.title}
-            </Title>
-
-            {/* Main Message */}
-            <Text ta="center" size="lg" mb="xl" className={classes.message}>
-              {modalContent.message}
-            </Text>
-
-            {/* Description */}
-            <Text ta="center" c="dimmed" mb="xl" size="sm">
-              {modalContent.description}
-            </Text>
-
-            {/* Action Buttons */}
-            <Stack gap="md" mt="xl">
-              <Button
-                size="lg"
-                fullWidth
-                onClick={handleUpgrade}
-                gradient={{ from: 'teal', to: 'blue' }}
-                variant="gradient"
-                className={classes.upgradeButton}
-                leftSection={<IconCrown size={20} />}
-                loading={isLoadingPayment}
-                disabled={isLoadingPayment}
-              >
-                {isLoadingPayment ? t('payment:setupPayment') : modalContent.buttonText}
-              </Button>
-
-              <Text ta="center" size="xs" c="dimmed">
-                {t('payment:flexiblePricing')}
-              </Text>
-            </Stack>
-          </>
-        ) : (
-          // Stripe payment form
-          <>
-            {paymentFetcher.data && configFetcher.data && !('error' in paymentFetcher.data) ? (
-              <StripePayment
-                clientSecret={paymentFetcher.data.clientSecret}
-                amount={paymentFetcher.data.amount}
-                currency={paymentFetcher.data.currency}
-                planName={paymentFetcher.data.planName}
-                publishableKey={configFetcher.data.stripePublicKey}
-                onSuccess={handlePaymentSuccess}
-                onError={handlePaymentError}
-                isProcessing={isProcessingPayment}
-              />
-            ) : (
-              <Center p="xl">
-                <Stack gap="md" align="center">
-                  <Loader size="lg" />
-                  <Text c="dimmed">{t('payment:loadingPaymentForm')}</Text>
-                </Stack>
+    <>
+      <Modal
+        opened={opened}
+        onClose={() => {}} // Don't allow closing - user must upgrade
+        withCloseButton={false}
+        closeOnClickOutside={false}
+        closeOnEscape={false}
+        centered
+        size={showPayment ? 'lg' : 'md'}
+        overlayProps={{
+          backgroundOpacity: 0.55,
+          blur: 8,
+        }}
+        styles={{
+          content: {
+            backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'white',
+            border:
+              colorScheme === 'dark'
+                ? '1px solid var(--mantine-color-dark-5)'
+                : '1px solid var(--mantine-color-gray-2)',
+            borderRadius: '16px',
+            boxShadow:
+              colorScheme === 'dark'
+                ? '0 20px 60px rgba(0, 0, 0, 0.8)'
+                : '0 20px 60px rgba(0, 0, 0, 0.15)',
+          },
+        }}
+      >
+        <div className={classes.modalContent}>
+          {!showPayment ? (
+            // Initial trial expired screen
+            <>
+              {/* Icon */}
+              <Center mb="xl">
+                <div className={classes.iconContainer}>
+                  <ThemeIcon
+                    size={80}
+                    radius="xl"
+                    variant="gradient"
+                    gradient={modalContent.gradient}
+                    className={classes.lockIcon}
+                  >
+                    {modalContent.icon}
+                  </ThemeIcon>
+                </div>
               </Center>
-            )}
-          </>
-        )}
-      </div>
-    </Modal>
+
+              {/* Title */}
+              <Title order={2} ta="center" mb="md" className={classes.title}>
+                {modalContent.title}
+              </Title>
+
+              {/* Main Message */}
+              <Text ta="center" size="lg" mb="xl" className={classes.message}>
+                {modalContent.message}
+              </Text>
+
+              {/* Description */}
+              <Text ta="center" c="dimmed" mb="xl" size="sm">
+                {modalContent.description}
+              </Text>
+
+              {/* Action Buttons */}
+              <Stack gap="md" mt="xl">
+                <Button
+                  size="lg"
+                  fullWidth
+                  onClick={handleUpgrade}
+                  gradient={{ from: 'teal', to: 'blue' }}
+                  variant="gradient"
+                  className={classes.upgradeButton}
+                  leftSection={<IconCrown size={20} />}
+                  loading={isLoadingPayment || isCheckingStripeHealth}
+                  disabled={isLoadingPayment || isCheckingStripeHealth}
+                >
+                  {isLoadingPayment ? t('payment:setupPayment') : modalContent.buttonText}
+                </Button>
+
+                <Text ta="center" size="xs" c="dimmed">
+                  {t('payment:flexiblePricing')}
+                </Text>
+              </Stack>
+            </>
+          ) : (
+            // Stripe payment form
+            <>
+              {paymentFetcher.data && configFetcher.data && !('error' in paymentFetcher.data) ? (
+                <StripePayment
+                  clientSecret={paymentFetcher.data.clientSecret}
+                  amount={paymentFetcher.data.amount}
+                  currency={paymentFetcher.data.currency}
+                  planName={paymentFetcher.data.planName}
+                  publishableKey={configFetcher.data.stripePublicKey}
+                  onSuccess={handlePaymentSuccess}
+                  onError={handlePaymentError}
+                  isProcessing={isProcessingPayment}
+                />
+              ) : (
+                <Center p="xl">
+                  <Stack gap="md" align="center">
+                    <Loader size="lg" />
+                    <Text c="dimmed">{t('payment:loadingPaymentForm')}</Text>
+                  </Stack>
+                </Center>
+              )}
+            </>
+          )}
+        </div>
+      </Modal>
+
+      {/* Reactivate Subscription Modal for cancelled subscriptions */}
+      {showReactivateModal && (
+        <ReactivateSubscriptionModal
+          opened={showReactivateModal}
+          onClose={() => setShowReactivateModal(false)}
+          onSuccess={handleReactivationSuccess}
+          cancelledPlan={currentPlan}
+        />
+      )}
+    </>
   )
 }

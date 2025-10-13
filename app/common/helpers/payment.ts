@@ -235,6 +235,7 @@ export function getYearlySavings(planId: string, currency: string): number {
   try {
     const monthlyPrice = getPlanPrice(planId as Plan, 'month' as Interval, currency as Currency)
     const yearlyPrice = getPlanPrice(planId as Plan, 'year' as Interval, currency as Currency)
+    // yearlyPrice is already the annual total, monthlyPrice needs to be multiplied by 12
     const yearlyCostIfMonthly = monthlyPrice * 12
     const savings = yearlyCostIfMonthly - yearlyPrice
     return savings > 0 ? savings : 0

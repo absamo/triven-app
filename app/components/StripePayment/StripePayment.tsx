@@ -96,6 +96,7 @@ function PaymentForm({
     // Deferred mode: create PaymentIntent only when user clicks Pay
     if (!secret) {
       try {
+        console.log('🔄 Creating payment intent/setup intent...')
         const endpoint = createPaymentPath || '/api/subscription-create'
         // Prefer JSON to match API signature used elsewhere in the app
         const payload = {
@@ -109,10 +110,15 @@ function PaymentForm({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
-        const data = await res.json()
+
         if (!res.ok) {
+          const data = await res.json().catch(() => ({ error: 'Failed to create subscription' }))
+          console.error('❌ Failed to create subscription:', data)
           throw new Error(data?.error || 'Failed to create subscription')
         }
+
+        const data = await res.json()
+        console.log('📦 Received response from server:', data)
 
         // Check if payment is required (backend handles automatic upgrades)
         if (data.paymentRequired === false) {
@@ -126,6 +132,7 @@ function PaymentForm({
           throw new Error('No client secret received from server')
         }
         secret = data.clientSecret as string
+        console.log('🔑 Got client secret:', secret.split('_secret_')[0])
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : t('payment:paymentError')
         onError(message)
@@ -141,6 +148,7 @@ function PaymentForm({
 
     if (isSetupIntent) {
       // Use confirmSetup for SetupIntents (trial subscriptions)
+      console.log('💳 Confirming SetupIntent for trial subscription')
       const result = await stripe.confirmSetup({
         elements,
         clientSecret: secret,
@@ -150,8 +158,15 @@ function PaymentForm({
         redirect: 'if_required',
       })
       error = result.error
+
+      if (result.error) {
+        console.error('❌ SetupIntent confirmation error:', result.error)
+      } else {
+        console.log('✅ SetupIntent confirmed successfully')
+      }
     } else {
       // Use confirmPayment for PaymentIntents
+      console.log('💰 Confirming PaymentIntent')
       const result = await stripe.confirmPayment({
         elements,
         clientSecret: secret,
@@ -161,6 +176,12 @@ function PaymentForm({
         redirect: 'if_required',
       })
       error = result.error
+
+      if (result.error) {
+        console.error('❌ PaymentIntent confirmation error:', result.error)
+      } else {
+        console.log('✅ PaymentIntent confirmed successfully')
+      }
     }
 
     setIsLoading(false)
@@ -185,16 +206,33 @@ function PaymentForm({
               currency,
             }),
           })
-          const data = await res.json()
+
+          // Check if request failed (e.g., server error, network error)
           if (!res.ok) {
-            console.error('Failed to confirm subscription:', data)
-            // Don't fail the whole flow, user payment succeeded
-          } else {
-            console.log('✅ Subscription confirmed:', data)
+            const data = await res.json().catch(() => ({ error: 'Unknown error' }))
+            console.error('❌ Failed to confirm subscription:', data)
+
+            // Show error notification for API failures
+            onError(
+              data.error ||
+                t('payment:apiError') ||
+                'Failed to confirm subscription. Please ensure the webhook listener is running.'
+            )
+            setIsLoading(false)
+            return
           }
+
+          const data = await res.json()
+          console.log('✅ Subscription confirmed:', data)
         } catch (err) {
-          console.error('Error confirming subscription:', err)
-          // Don't fail the whole flow, user payment succeeded
+          console.error('❌ Error confirming subscription:', err)
+          // Network or parsing error - show to user
+          onError(
+            t('payment:networkError') ||
+              'Network error while confirming subscription. Please check your connection and try again.'
+          )
+          setIsLoading(false)
+          return
         }
       }
 

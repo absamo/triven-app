@@ -63,8 +63,8 @@ export const PRICING_PLANS = {
         [CURRENCIES.EUR]: 2900,
       },
       [INTERVALS.YEARLY]: {
-        [CURRENCIES.USD]: 1900,
-        [CURRENCIES.EUR]: 1900,
+        [CURRENCIES.USD]: 22800, // $228/year ($19/month)
+        [CURRENCIES.EUR]: 22800, // €228/year (€19/month)
       },
     },
     stripePriceIds: {
@@ -95,8 +95,8 @@ export const PRICING_PLANS = {
         [CURRENCIES.EUR]: 3900,
       },
       [INTERVALS.YEARLY]: {
-        [CURRENCIES.USD]: 2900,
-        [CURRENCIES.EUR]: 2900,
+        [CURRENCIES.USD]: 34800, // $348/year ($29/month)
+        [CURRENCIES.EUR]: 34800, // €348/year (€29/month)
       },
     },
     stripePriceIds: {
@@ -127,8 +127,8 @@ export const PRICING_PLANS = {
         [CURRENCIES.EUR]: 9900,
       },
       [INTERVALS.YEARLY]: {
-        [CURRENCIES.USD]: 7900,
-        [CURRENCIES.EUR]: 7900,
+        [CURRENCIES.USD]: 94800, // $948/year ($79/month)
+        [CURRENCIES.EUR]: 94800, // €948/year (€79/month)
       },
     },
     stripePriceIds: {

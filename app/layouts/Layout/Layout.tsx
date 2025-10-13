@@ -20,16 +20,17 @@ import clsx from 'clsx'
 import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet, useNavigate, useNavigation } from 'react-router'
+import { Outlet, useLocation, useNavigate, useNavigation, useRevalidator } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
 import { canUpgrade, shouldShowUpgrade } from '~/app/common/helpers/payment'
 import type { INotification } from '~/app/common/validations/notificationSchema'
 import type { IProfile } from '~/app/common/validations/profileSchema'
 import type { IRole } from '~/app/common/validations/roleSchema'
-import { TrialExpirationModal } from '~/app/components'
+import { SubscriptionStatusModal, UpgradePaymentModal } from '~/app/components'
 import ScrollToTop from '~/app/components/ScrollToTop'
 import { FormProvider, useFormContext } from '~/app/contexts/FormContext'
 import { useSessionBasedOnlineStatus } from '~/app/lib/hooks/useSessionBasedOnlineStatus'
+import { useStripeHealth } from '~/app/lib/hooks/useStripeHealth'
 import { useRootLoaderData } from '~/app/utils/useDetectedLanguage'
 import Footer from '../Footer/Footer'
 import Header from '../Header/Header'
@@ -50,11 +51,20 @@ function FooterWrapper() {
 // Component to handle the AppShell with dynamic footer configuration
 function LayoutContent({ user, notifications }: LayoutPageProps) {
   const { isFormActive } = useFormContext()
+  const theme = useMantineTheme()
+  const { t } = useTranslation(['navigation'])
+  const revalidator = useRevalidator()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { checkStripeHealth, isChecking } = useStripeHealth()
+
+  // Upgrade modal state
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
   // Import the IMenu type from Navbar
   type IMenu = {
     label: string
-    icon: React.FC<any>
+    icon: React.ComponentType<{ size?: number; stroke?: number }>
     link?: string
     active?: boolean
     sublinks?: { label: string; link: string; active: boolean }[]
@@ -112,10 +122,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     }
   }
 
-  const theme = useMantineTheme()
-  const navigate = useNavigate()
-  const { t } = useTranslation(['navigation'])
-
   const trialing = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING
   const trialExpired = trialing && user.trialPeriodDays <= 0
   const incompleteSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE
@@ -143,8 +149,28 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     ? HEADER_BASE_HEIGHT + TRIAL_BANNER_HEIGHT
     : HEADER_BASE_HEIGHT
 
-  const handleUpgradeClick = () => {
-    navigate('/pricing')
+  const handleUpgradeClick = async () => {
+    const isHealthy = await checkStripeHealth()
+    if (isHealthy) {
+      setShowUpgradeModal(true)
+    }
+    // If unhealthy, the hook will show an error notification
+  }
+
+  // Handle upgrade success - refresh layout data
+  const handleUpgradeSuccess = () => {
+    console.log('🔄 Layout: Subscription upgrade successful - refreshing layout data')
+
+    // Revalidate current page data
+    revalidator.revalidate()
+
+    // Force navigation refresh to ensure layout data updates (stay on current route)
+    console.log('🔄 Layout: Navigating to refresh layout and trial banner on current route')
+    setTimeout(() => {
+      navigate(location.pathname + location.search, { replace: true })
+      // Close the modal after navigation completes
+      setShowUpgradeModal(false)
+    }, 500)
   }
 
   return (
@@ -173,29 +199,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
         suppressHydrationWarning
       >
         <AppShell.Header className={classes.header}>
-          {hasActiveTrialBanner && (
-            <Alert className={classes.trialAlert} variant="light" color="orange">
-              <Group justify="center" w="100%">
-                <Text size="sm" fw={500}>
-                  {user.trialPeriodDays === 1
-                    ? t('navigation:trialExpiresIn1Day')
-                    : t('navigation:trialExpiresInDays', { days: user.trialPeriodDays })}
-                </Text>
-                {showUpgradeCta && (
-                  <Button
-                    variant="filled"
-                    color="orange"
-                    size="xs"
-                    leftSection={<IconCrown size={14} />}
-                    onClick={handleUpgradeClick}
-                  >
-                    {t('navigation:upgradeNow')}
-                  </Button>
-                )}
-              </Group>
-            </Alert>
-          )}
-
           <Flex align="center" justify="space-between" className={classes.headerBar}>
             <Flex align="center" gap="md">
               <Burger
@@ -219,6 +222,29 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
               notifications={notifications}
             />
           </Flex>
+          {hasActiveTrialBanner && (
+            <Alert className={classes.trialAlert} variant="light" color="orange">
+              <Group justify="center" w="100%">
+                <Text size="sm" fw={500}>
+                  {user.trialPeriodDays === 1
+                    ? t('navigation:trialExpiresIn1Day')
+                    : t('navigation:trialExpiresInDays', { days: user.trialPeriodDays })}
+                </Text>
+                {showUpgradeCta && (
+                  <Button
+                    variant="filled"
+                    color="orange"
+                    size="xs"
+                    leftSection={<IconCrown size={14} />}
+                    onClick={handleUpgradeClick}
+                    loading={isChecking}
+                  >
+                    {t('navigation:upgradeNow')}
+                  </Button>
+                )}
+              </Group>
+            </Alert>
+          )}
         </AppShell.Header>
         <AppShell.Navbar
           className={clsx(classes.navbar, {
@@ -288,67 +314,73 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
       {isOverlayOpened && <Overlay backgroundOpacity={0.2} fixed />}
 
       {/* No Active Subscription Modal - blocks access when no subscription exists */}
-      <TrialExpirationModal
+      <SubscriptionStatusModal
         opened={noActiveSubscription}
         currentPlan={user.currentPlan}
-        planStatus={user.planStatus}
         mode={SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION}
       />
 
       {/* Trial Expiration Modal - blocks access when trial has expired */}
-      <TrialExpirationModal
+      <SubscriptionStatusModal
         opened={trialExpired}
         currentPlan={user.currentPlan}
-        planStatus={user.planStatus}
         mode={SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED}
       />
 
       {/* Incomplete Subscription Modal - blocks access when subscription is incomplete */}
-      <TrialExpirationModal
+      <SubscriptionStatusModal
         opened={incompleteSubscription}
         currentPlan={user.currentPlan}
-        planStatus={user.planStatus}
-        mode={STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE}
+        mode={SUBSCRIPTION_MODAL_MODES.INCOMPLETE}
       />
 
       {/* Cancelled Subscription Modal - blocks access when subscription is cancelled */}
-      <TrialExpirationModal
+      <SubscriptionStatusModal
         opened={cancelledSubscription}
         currentPlan={user.currentPlan}
-        planStatus={user.planStatus}
-        mode={STRIPE_SUBSCRIPTION_STATUSES.CANCELED}
+        mode={SUBSCRIPTION_MODAL_MODES.CANCELED}
       />
 
       {/* Past Due Subscription Modal - blocks access when payment is past due */}
-      <TrialExpirationModal
+      <SubscriptionStatusModal
         opened={pastDueSubscription}
         currentPlan={user.currentPlan}
-        planStatus={user.planStatus}
-        mode={STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE}
+        mode={SUBSCRIPTION_MODAL_MODES.PAST_DUE}
       />
 
       {/* Unpaid Subscription Modal - blocks access when subscription is unpaid */}
-      <TrialExpirationModal
+      <SubscriptionStatusModal
         opened={unpaidSubscription}
         currentPlan={user.currentPlan}
-        planStatus={user.planStatus}
-        mode={STRIPE_SUBSCRIPTION_STATUSES.UNPAID}
+        mode={SUBSCRIPTION_MODAL_MODES.UNPAID}
       />
 
       {/* Incomplete Expired Subscription Modal */}
-      <TrialExpirationModal
+      <SubscriptionStatusModal
         opened={incompleteExpiredSubscription}
         currentPlan={user.currentPlan}
-        planStatus={user.planStatus}
-        mode={STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED}
+        mode={SUBSCRIPTION_MODAL_MODES.INCOMPLETE_EXPIRED}
       />
 
       {/* Paused Subscription Modal */}
-      <TrialExpirationModal
+      <SubscriptionStatusModal
         opened={pausedSubscription}
         currentPlan={user.currentPlan}
-        planStatus={user.planStatus}
-        mode={STRIPE_SUBSCRIPTION_STATUSES.PAUSED}
+        mode={SUBSCRIPTION_MODAL_MODES.PAUSED}
+      />
+
+      {/* Upgrade Payment Modal */}
+      <UpgradePaymentModal
+        opened={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onSuccess={handleUpgradeSuccess}
+        userPlanStatus={user.planStatus}
+        billing={{
+          currentPlan: user.currentPlan,
+          planStatus: user.planStatus,
+          interval: 'month', // Default for layout context
+          currency: 'USD', // Default for layout context
+        }}
       />
     </>
   )
@@ -369,9 +401,7 @@ type LayoutPageProps = {
 export default function LayoutPage({ user, notifications }: LayoutPageProps) {
   // Form state management
   const [isFormActive, setIsFormActive] = useState(false)
-  const [formOnSubmit, setFormOnSubmit] = useState<
-    React.FormEventHandler<HTMLFormElement> | undefined
-  >(undefined)
+  const [formOnSubmit] = useState<React.FormEventHandler<HTMLFormElement> | undefined>(undefined)
 
   const { state } = useNavigation()
 

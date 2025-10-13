@@ -102,6 +102,9 @@ export default {
   proceedWithCancellation: "Procéder à l'annulation",
   subscriptionEnding: "Fin d'abonnement",
   accessUntil: "Vous aurez accès jusqu'au",
+  annualSubscriptionNotice: 'Abonnement Annuel',
+  annualSubscriptionCancellationPolicy:
+    "Les abonnements annuels ne peuvent être annulés qu'à la fin de la période de facturation. Vous continuerez à avoir accès jusqu'au {{date}}.",
 
   // Payment method editing
   updatePaymentMethod: 'Mettre à jour le mode de paiement',

@@ -66,6 +66,9 @@ export default {
   proceedWithCancellation: 'Proceed with Cancellation',
   subscriptionEnding: 'Subscription Ending',
   accessUntil: 'You will have access until',
+  annualSubscriptionNotice: 'Annual Subscription',
+  annualSubscriptionCancellationPolicy:
+    'Annual subscriptions can only be cancelled at the end of the billing period. You will continue to have access until {{date}}.',
 
   // Payment method editing
   updatePaymentMethod: 'Update Payment Method',
@@ -129,6 +132,31 @@ export default {
   resumeSubscription: 'Resume Subscription',
   updatePayment: 'Update Payment',
   choosePlan: 'Choose Plan',
+
+  // Webhook error
+  webhookError:
+    'Unable to process payment at this time. Please try again or contact support if the issue persists.',
+
+  // Stripe health check errors
+  stripeUnavailable:
+    'Payment service is temporarily unavailable. Please try again in a few moments.',
+  connectionError:
+    'Unable to connect to payment service. Please check your internet connection and try again.',
+  webhookWarning:
+    'Webhook listener may not be running. Please ensure "bun run stripe:listen" is active to receive payment events properly.',
+
+  // Reactivation modal
+  reactivateSubscriptionDescription:
+    'Choose your plan to reactivate your subscription. You can select your previous plan or upgrade to a different one.',
+  billingInterval: 'Billing Interval',
+  save20Percent: 'Save 20%',
+  selectPlan: 'Select Plan',
+  previousPlan: 'Previous',
+  reactivating: 'Reactivating...',
+  reactivationFailed: 'Reactivation Failed',
+  unableToReactivate: 'Unable to reactivate subscription. Please try again.',
+  subscriptionReactivated: 'Subscription Reactivated',
+  subscriptionReactivatedSuccess: 'Your subscription has been reactivated successfully.',
 
   // Subscription status translations
   subscriptionStatus: {

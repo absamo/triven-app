@@ -32,6 +32,7 @@ async function getStripeEvent(request: Request) {
       signature,
       process.env.STRIPE_WEBHOOK_ENDPOINT
     )
+
     return event
   } catch (err: unknown) {
     // Log webhook verification error
@@ -50,11 +51,15 @@ export async function action({ request }: ActionFunctionArgs) {
        */
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object
+        const piData = paymentIntent as unknown as { invoice?: string | null }
+
         console.log(`💰 PaymentIntent succeeded: ${paymentIntent.id} (${paymentIntent.amount})`)
+        console.log(
+          `💵 Amount paid: ${paymentIntent.amount}, Invoice attached: ${!!piData.invoice}`
+        )
 
         // Handle standalone PaymentIntents for subscriptions (non-trial)
         const { metadata } = paymentIntent
-        const piData = paymentIntent as unknown as { invoice?: string | null }
 
         // Handle subscription payments - but only for standalone PaymentIntents, not invoice-attached ones
         if (
@@ -303,14 +308,17 @@ export async function action({ request }: ActionFunctionArgs) {
           currentPeriodStart,
           currentPeriodEnd,
           trialStart,
-          trialEnd: 0,
+          trialEnd: subscriptionData.trial_end || 0,
         })
 
         // Get payment method details if subscription has payment method
         const paymentMethodDetails = await getPaymentMethodDetails(stripeSubscription.id)
         console.log('💳 Payment method details:', paymentMethodDetails)
 
-        // Update subscription in database - this subscription now becomes active
+        // Update subscription in database - preserve trial status if no actual payment yet
+        const isActualPayment = invoice.amount_paid > 0 && !invoice.starting_balance
+        const shouldEndTrial = isActualPayment && stripeSubscription.status === 'active'
+
         await prisma.subscription.upsert({
           where: { userId: user.id },
           update: {
@@ -318,12 +326,12 @@ export async function action({ request }: ActionFunctionArgs) {
             planId: dbPlanId, // Use database plan ID, not Stripe product ID
             priceId: String(priceData.price.id),
             interval: String(priceData.price.recurring?.interval || 'month'),
-            status: 'active', // Force active status since payment succeeded
+            status: stripeSubscription.status, // Use actual Stripe status
             currentPeriodStart,
             currentPeriodEnd,
             cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end || false,
             trialStart,
-            trialEnd: 0, // Force trialEnd to 0 for paid subscription - user no longer in trial
+            trialEnd: shouldEndTrial ? 0 : subscriptionData.trial_end || 0, // Only clear trial after actual payment
             paymentMethodId: paymentMethodDetails?.paymentMethodId,
             last4: paymentMethodDetails?.last4,
             brand: paymentMethodDetails?.brand,
@@ -336,12 +344,12 @@ export async function action({ request }: ActionFunctionArgs) {
             planId: dbPlanId, // Use database plan ID, not Stripe product ID
             priceId: String(priceData.price.id),
             interval: String(priceData.price.recurring?.interval || 'month'),
-            status: 'active', // Force active status since payment succeeded
+            status: stripeSubscription.status, // Use actual Stripe status
             currentPeriodStart,
             currentPeriodEnd,
             cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end || false,
             trialStart,
-            trialEnd: 0, // Force trialEnd to 0 for paid subscription - user no longer in trial
+            trialEnd: shouldEndTrial ? 0 : subscriptionData.trial_end || 0, // Only clear trial after actual payment
             paymentMethodId: paymentMethodDetails?.paymentMethodId,
             last4: paymentMethodDetails?.last4,
             brand: paymentMethodDetails?.brand,

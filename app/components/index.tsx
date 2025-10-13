@@ -10,21 +10,22 @@ import Logo from './Logo'
 import Notification from './Notification'
 import PaymentMethodEditModal from './PaymentMethodEditModal'
 import ProductImportModal from './ProductImportModal'
+import ReactivateSubscriptionModal from './ReactivateSubscriptionModal'
 import StripePayment from './StripePayment'
+import SubscriptionStatusModal from './SubscriptionStatusModal'
 import { ThemeToggle } from './ThemeToggle'
-import TrialExpirationModal from './TrialExpirationModal'
+import UpgradePaymentModal from './UpgradePaymentModal'
 
-// Table components
-export { TableActionsMenu } from './TableActionsMenu'
+export type { ImageUploadProps, UploadedFile } from './ImageUpload'
 
 // ImageKit components
 export { ImageUpload } from './ImageUpload'
-export type { ImageUploadProps, UploadedFile } from './ImageUpload'
-export { Avatar, CardImage, HeroImage, OptimizedImage, Thumbnail } from './OptimizedImage'
 export type { OptimizedImageProps } from './OptimizedImage'
-
+export { Avatar, CardImage, HeroImage, OptimizedImage, Thumbnail } from './OptimizedImage'
 // Skeleton components
 export * from './Skeletons'
+// Table components
+export { TableActionsMenu } from './TableActionsMenu'
 
 export {
   ApprovalActionModal,
@@ -39,7 +40,9 @@ export {
   Notification,
   PaymentMethodEditModal,
   ProductImportModal,
+  ReactivateSubscriptionModal,
   StripePayment,
+  SubscriptionStatusModal,
   ThemeToggle,
-  TrialExpirationModal,
+  UpgradePaymentModal,
 }

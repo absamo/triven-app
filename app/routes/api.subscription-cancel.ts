@@ -23,21 +23,28 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Verify that the subscription belongs to the authenticated user
     const dbSubscription = await prisma.subscription.findUnique({
-      where: { 
+      where: {
         id: subscriptionId,
         userId: user.id,
       },
     })
 
     if (!dbSubscription) {
+      return Response.json({ error: 'Subscription not found or access denied' }, { status: 404 })
+    }
+
+    // Annual subscriptions can only be cancelled at period end
+    if (dbSubscription.interval === 'year' && !cancelAtPeriodEnd) {
       return Response.json(
-        { error: 'Subscription not found or access denied' },
-        { status: 404 }
+        { error: 'Annual subscriptions can only be cancelled at the end of the billing period' },
+        { status: 400 }
       )
     }
 
     // Cancel the subscription in Stripe
-    let stripeSubscription
+    let stripeSubscription: Awaited<
+      ReturnType<typeof stripe.subscriptions.update | typeof stripe.subscriptions.cancel>
+    >
     if (cancelAtPeriodEnd) {
       // Cancel at period end - user keeps access until current period expires
       stripeSubscription = await stripe.subscriptions.update(subscriptionId, {
@@ -69,7 +76,9 @@ export async function action({ request }: ActionFunctionArgs) {
         cancelledAt: cancelAtPeriodEnd ? null : new Date(), // Only set if immediate cancellation
         cancelledBy: user.id,
         cancellationReason: reason || null,
-        scheduledCancelAt: cancelAtPeriodEnd ? new Date(dbSubscription.currentPeriodEnd * 1000) : null,
+        scheduledCancelAt: cancelAtPeriodEnd
+          ? new Date(dbSubscription.currentPeriodEnd * 1000)
+          : null,
         // Note: If cancelled immediately, Stripe sets status to 'canceled'
         // If cancel_at_period_end is true, status remains 'active' until period ends
       },
@@ -91,7 +100,7 @@ export async function action({ request }: ActionFunctionArgs) {
     })
   } catch (error) {
     console.error('❌ Subscription cancellation error:', error)
-    
+
     if (error instanceof z.ZodError) {
       return Response.json(
         { error: 'Invalid request data', details: error.issues },
@@ -99,9 +108,6 @@ export async function action({ request }: ActionFunctionArgs) {
       )
     }
 
-    return Response.json(
-      { error: 'Failed to cancel subscription' },
-      { status: 500 }
-    )
+    return Response.json({ error: 'Failed to cancel subscription' }, { status: 500 })
   }
 }
