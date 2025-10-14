@@ -22,7 +22,7 @@ import {
 } from '@tabler/icons-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher, useRevalidator } from 'react-router'
+import { useFetcher } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES } from '~/app/common/constants'
 import {
   calculateProratedAmount,
@@ -79,7 +79,6 @@ export default function UpgradePaymentModal({
 }: UpgradePaymentModalProps) {
   const { colorScheme } = useMantineColorScheme()
   const { t } = useTranslation(['payment'])
-  const revalidator = useRevalidator()
 
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [useExistingCard, setUseExistingCard] = useState<'existing' | 'new'>('existing')
@@ -104,28 +103,22 @@ export default function UpgradePaymentModal({
 
     console.log('💳 Payment succeeded, refreshing data...')
 
-    // Close modal first
-    onClose()
-
-    // Call parent success callback if provided
+    // Call parent success callback if provided (Layout will handle the reload)
     if (onSuccess) {
       onSuccess()
     } else {
-      // Default behavior: comprehensive refresh
-      console.log('🔄 Triggering comprehensive data refresh...')
-
-      // Revalidate current route data
-      revalidator.revalidate()
-
-      // Force immediate page reload to ensure all layout and route data is fresh
-      // This is necessary for subscription status changes that affect the entire app
-      setTimeout(() => {
-        console.log('🔄 Force reloading page to ensure fresh subscription state')
-        window.location.reload()
-      }, 500) // Reduced timeout for faster refresh
+      // Default behavior: wait a bit for database to update, then reload
+      console.log('🔄 Waiting for database update before reload...')
+      
+      // Wait for database to be updated
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      console.log('🔄 Force reloading page to ensure fresh subscription state')
+      window.location.reload()
     }
 
     setIsProcessingPayment(false)
+    onClose()
   }
 
   // Handle payment error
