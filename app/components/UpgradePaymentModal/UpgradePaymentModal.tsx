@@ -101,27 +101,18 @@ export default function UpgradePaymentModal({
   const handlePaymentSuccess = async () => {
     setIsProcessingPayment(true)
 
-    console.log('💳 Payment succeeded, refreshing data...')
+    console.log('💳 Payment succeeded, subscription will update via SSE...')
 
-    // Call parent success callback if provided (Layout will handle the reload)
+    // Close modal and let real-time updates handle the UI refresh
+    onClose()
+
+    // Call parent success callback if provided
     if (onSuccess) {
       onSuccess()
-    } else {
-      // Default behavior: wait a bit for database to update, then reload
-      console.log('🔄 Waiting for database update before reload...')
-      
-      // Wait for database to be updated
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      console.log('🔄 Force reloading page to ensure fresh subscription state')
-      window.location.reload()
     }
 
     setIsProcessingPayment(false)
-    onClose()
-  }
-
-  // Handle payment error
+  }  // Handle payment error
   const handlePaymentError = (error: string) => {
     setIsProcessingPayment(false)
     console.error('Payment error:', error)

@@ -9,6 +9,7 @@ import { ERRORS } from '~/app/common/errors'
 import { prisma } from '~/app/db.server'
 import { getPaymentMethodDetails } from '~/app/modules/stripe/queries.server'
 import { stripe } from '~/app/modules/stripe/stripe.server'
+import { broadcastSubscriptionUpdate } from './api.subscription-stream'
 
 export const ROUTE_PATH = '/api/webhook' as const
 
@@ -359,6 +360,15 @@ export async function action({ request }: ActionFunctionArgs) {
         })
 
         console.log(`✅ Subscription ${stripeSubscription.id} activated for user ${user.id}`)
+
+        // Broadcast subscription update to connected clients for real-time UI updates
+        broadcastSubscriptionUpdate({
+          userId: user.id,
+          status: stripeSubscription.status,
+          planId: dbPlanId,
+          trialEnd: shouldEndTrial ? 0 : subscriptionData.trial_end || 0,
+        })
+
         return new Response(null, { status: 200 })
       }
 
@@ -626,6 +636,14 @@ export async function action({ request }: ActionFunctionArgs) {
         })
 
         console.log(`Subscription ${subscription.id} updated for user ${user.id}`)
+
+        // Broadcast subscription update to connected clients for real-time UI updates
+        broadcastSubscriptionUpdate({
+          userId: user.id,
+          status: subscription.status,
+          planId: updateDbPlanId,
+          trialEnd: subscription.status === 'active' ? 0 : subscriptionData.trial_end || 0,
+        })
 
         // IMPORTANT: Check if there are multiple active subscriptions in Stripe and cancel extras
         const allUserSubscriptions = await stripe.subscriptions.list({

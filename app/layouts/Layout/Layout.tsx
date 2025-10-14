@@ -18,9 +18,9 @@ import { useDisclosure } from '@mantine/hooks'
 import { IconChevronLeft, IconChevronRight, IconCrown } from '@tabler/icons-react'
 import clsx from 'clsx'
 import dayjs from 'dayjs'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet, useNavigation } from 'react-router'
+import { Outlet, useNavigation, useRevalidator } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
 import { canUpgrade, shouldShowUpgrade } from '~/app/common/helpers/payment'
 import type { INotification } from '~/app/common/validations/notificationSchema'
@@ -74,7 +74,70 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   useSessionBasedOnlineStatus({
     updateInterval: 60000, // Update every minute
     enabled: true,
-  }) // Get initial navbar state from root loader (cookies)
+  })
+
+  // Real-time subscription updates via SSE
+  const eventSourceRef = useRef<EventSource | null>(null)
+  const revalidator = useRevalidator()
+  
+  // Initialize subscription status from user prop, then update via SSE
+  const calculateTrialEnd = () => {
+    if (user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING && user.trialPeriodDays > 0) {
+      return Math.floor(dayjs().add(user.trialPeriodDays, 'days').valueOf() / 1000)
+    }
+    return 0
+  }
+
+  const [subscriptionStatus, setSubscriptionStatus] = useState({
+    status: user.planStatus,
+    trialEnd: calculateTrialEnd(),
+  })
+
+  useEffect(() => {
+    // Connect to subscription SSE stream
+    const eventSource = new EventSource('/api/subscription-stream')
+    eventSourceRef.current = eventSource
+
+    eventSource.addEventListener('connected', () => {
+      console.log('📡 Connected to subscription stream')
+    })
+
+    eventSource.addEventListener('subscription', (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        console.log('📡 Received subscription update:', data)
+
+        // Update local state immediately for instant UI update
+        // Note: We trust all subscription updates from the server since SSE is user-specific
+        if (data.type === 'subscription') {
+          setSubscriptionStatus({
+            status: data.status,
+            trialEnd: data.trialEnd,
+          })
+
+          // Revalidate to fetch fresh data from server
+          console.log('🔄 Revalidating layout data after subscription update')
+          revalidator.revalidate()
+        }
+      } catch (error) {
+        console.error('Error parsing subscription update:', error)
+      }
+    })
+
+    eventSource.onerror = () => {
+      console.log('📡 Subscription stream connection error, will reconnect automatically')
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close()
+        eventSourceRef.current = null
+      }
+    }
+  }, [revalidator])
+
+  // Get initial navbar state from root loader (cookies)
   const { showMiniNavbar: initialShowMiniNavbar } = useRootLoaderData()
   const [showMiniNavbar, setShowMiniNavbar] = useState(initialShowMiniNavbar)
 
@@ -119,26 +182,32 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     }
   }
 
-  const trialing = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING
+  const trialing = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.TRIALING
   const trialExpired = trialing && user.trialPeriodDays <= 0
-  const incompleteSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE
-  const cancelledSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.CANCELED
-  const pastDueSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE
-  const unpaidSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.UNPAID
+  const incompleteSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE
+  const cancelledSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.CANCELED
+  const pastDueSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE
+  const unpaidSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.UNPAID
   const incompleteExpiredSubscription =
-    user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED
-  const pausedSubscription = user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.PAUSED
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED
+  const pausedSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAUSED
 
   // Handle users with no active subscription (inactive, null, undefined, etc.)
   const noActiveSubscription =
-    !user.planStatus ||
-    user.planStatus === 'inactive' ||
-    user.planStatus === 'null' ||
-    user.planStatus === 'undefined'
+    !subscriptionStatus.status ||
+    subscriptionStatus.status === 'inactive' ||
+    subscriptionStatus.status === 'null' ||
+    subscriptionStatus.status === 'undefined'
 
-  const hasActiveTrialBanner = trialing && user.trialPeriodDays > 0
+  // Calculate trial days from trialEnd timestamp
+  const trialPeriodDays =
+    trialing && subscriptionStatus.trialEnd > 0
+      ? Math.max(0, dayjs(subscriptionStatus.trialEnd * 1000).diff(dayjs(), 'days'))
+      : 0
+
+  const hasActiveTrialBanner = trialing && trialPeriodDays > 0
   const showUpgradeCta =
-    shouldShowUpgrade(user.planStatus) && canUpgrade(user.currentPlan, user.planStatus)
+    shouldShowUpgrade(subscriptionStatus.status) && canUpgrade(user.currentPlan, subscriptionStatus.status)
 
   const HEADER_BASE_HEIGHT = 70
   const TRIAL_BANNER_HEIGHT = 60
@@ -154,17 +223,15 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     // If unhealthy, the hook will show an error notification
   }
 
-  // Handle upgrade success - refresh layout data
+  // Handle upgrade success - close modal and let real-time updates handle the rest
   const handleUpgradeSuccess = () => {
-    console.log('🔄 Layout: Subscription upgrade successful - refreshing layout data')
+    console.log('🔄 Layout: Subscription upgrade successful - real-time updates will refresh UI')
 
     // Close modal immediately
     setShowUpgradeModal(false)
 
-    // Force a full page reload to ensure all loaders (including main.tsx) are re-executed
-    // This ensures trial banner disappears and subscription status updates everywhere
-    console.log('🔄 Layout: Force reloading to refresh subscription status and trial banner')
-    window.location.reload()
+    // No need to reload - real-time SSE will update the subscription status
+    // and revalidator will refresh the data
   }
 
   return (
@@ -220,9 +287,9 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
             <Alert className={classes.trialAlert} variant="light" color="orange">
               <Group justify="center" w="100%">
                 <Text size="sm" fw={500}>
-                  {user.trialPeriodDays === 1
+                  {trialPeriodDays === 1
                     ? t('navigation:trialExpiresIn1Day')
-                    : t('navigation:trialExpiresInDays', { days: user.trialPeriodDays })}
+                    : t('navigation:trialExpiresInDays', { days: trialPeriodDays })}
                 </Text>
                 {showUpgradeCta && (
                   <Button
