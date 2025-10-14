@@ -1,6 +1,16 @@
-import { Group, Modal, Stack, Text, useMantineColorScheme } from '@mantine/core'
+import {
+  Button,
+  Group,
+  Loader,
+  Modal,
+  Stack,
+  Text,
+  ThemeIcon,
+  useMantineColorScheme,
+} from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { IconCreditCard } from '@tabler/icons-react'
+import { IconCreditCard, IconLock, IconShieldCheck } from '@tabler/icons-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import StripePayment from '~/app/components/StripePayment'
 
@@ -29,19 +39,36 @@ export default function PaymentMethodEditModal({
 }: PaymentMethodEditModalProps) {
   const { t } = useTranslation(['payment'])
   const { colorScheme } = useMantineColorScheme()
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [stripeSubmit, setStripeSubmit] = useState<(() => Promise<void>) | null>(null)
+  const [isStripeReady, setIsStripeReady] = useState(false)
 
   const handlePaymentSuccess = () => {
     console.log('🎉 PaymentMethodEditModal: Payment method update succeeded, calling onSuccess')
+    setIsProcessing(false)
     onSuccess()
     onClose()
   }
 
   const handlePaymentError = (error: string) => {
+    setIsProcessing(false)
     notifications.show({
       title: t('payment:paymentFailed', 'Error'),
       message: error,
       color: 'red',
     })
+  }
+
+  const handleStripeSubmitReady = (submitFn: () => Promise<void>, isReady: boolean) => {
+    setStripeSubmit(() => submitFn)
+    setIsStripeReady(isReady)
+  }
+
+  const handleUpdateClick = async () => {
+    if (stripeSubmit && isStripeReady) {
+      setIsProcessing(true)
+      await stripeSubmit()
+    }
   }
 
   const handleClose = () => {
@@ -53,7 +80,7 @@ export default function PaymentMethodEditModal({
       opened={isOpen}
       onClose={handleClose}
       centered
-      size="lg"
+      size="xl"
       title={
         <Group gap="xs">
           <IconCreditCard size={20} color="var(--mantine-color-blue-6)" />
@@ -115,7 +142,35 @@ export default function PaymentMethodEditModal({
           onError={handlePaymentError}
           createPaymentPath="/api/payment-method-update"
           subscriptionId={subscription.id}
+          isPaymentMethodUpdate={true}
+          onSubmitReady={handleStripeSubmitReady}
         />
+
+        {/* Update Button */}
+        <Stack gap="xs">
+          <Button
+            size="lg"
+            disabled={!isStripeReady || isProcessing}
+            loading={isProcessing}
+            gradient={{ from: 'teal', to: 'blue' }}
+            variant="gradient"
+            leftSection={isProcessing ? <Loader size="sm" /> : <IconLock size={20} />}
+            onClick={handleUpdateClick}
+            style={{ width: 'auto', minWidth: '200px', alignSelf: 'center' }}
+          >
+            {isProcessing ? t('processing', 'Processing...') : t('updateCard', 'Update Card')}
+          </Button>
+
+          {/* Security Notice */}
+          <Group justify="center" gap="xs">
+            <ThemeIcon size="sm" color="gray" variant="light">
+              <IconShieldCheck size={14} />
+            </ThemeIcon>
+            <Text size="xs" c="dimmed">
+              {t('securePayment', 'Secure payment powered by Stripe')}
+            </Text>
+          </Group>
+        </Stack>
       </Stack>
     </Modal>
   )

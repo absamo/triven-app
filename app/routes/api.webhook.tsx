@@ -589,6 +589,7 @@ export async function action({ request }: ActionFunctionArgs) {
         await prisma.subscription.upsert({
           where: { userId: user.id },
           update: {
+            id: subscription.id, // Update to new subscription ID if it changed
             planId: updateDbPlanId, // Use database plan ID, not Stripe product ID
             priceId: String(updatePriceData.price.id),
             interval: String(updatePriceData.price.recurring?.interval || 'month'),
@@ -625,6 +626,29 @@ export async function action({ request }: ActionFunctionArgs) {
         })
 
         console.log(`Subscription ${subscription.id} updated for user ${user.id}`)
+
+        // IMPORTANT: Check if there are multiple active subscriptions in Stripe and cancel extras
+        const allUserSubscriptions = await stripe.subscriptions.list({
+          customer: customerId,
+          status: 'all',
+          limit: 100,
+        })
+
+        const activeSubscriptions = allUserSubscriptions.data.filter(
+          (sub) =>
+            (sub.status === 'active' || sub.status === 'trialing') && sub.id !== subscription.id
+        )
+
+        if (activeSubscriptions.length > 0) {
+          console.log(
+            `⚠️ Found ${activeSubscriptions.length} other active subscription(s) for user. Canceling them.`
+          )
+          for (const extraSub of activeSubscriptions) {
+            await stripe.subscriptions.cancel(extraSub.id)
+            console.log(`✅ Canceled extra subscription ${extraSub.id}`)
+          }
+        }
+
         return new Response(null, { status: 200 })
       }
 

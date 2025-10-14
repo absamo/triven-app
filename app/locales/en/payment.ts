@@ -79,6 +79,11 @@ export default {
     'Add a new payment method for your subscription. Your current payment method will be replaced.',
   enterNewPaymentMethod: 'Enter your new payment method',
   paymentCard: 'Payment Card',
+  paymentMethod: 'Payment Method',
+  useNewCard: 'Use a different card',
+  cardExpired: 'Card Expired',
+  cardExpiredMessage: 'Your payment card has expired. Please add a new card to continue.',
+  confirmUpgrade: 'Confirm Upgrade',
 
   // Settings page translations
   subscriptions: 'Subscriptions',

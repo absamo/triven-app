@@ -26,6 +26,7 @@
     "ollama:down": "docker-compose down ollama",
     "ollama:build": "docker-compose build ollama",
     "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhook",
+    "stripe:cleanup-duplicates": "bun run scripts/cleanup-duplicate-subscriptions.ts",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome lint .",

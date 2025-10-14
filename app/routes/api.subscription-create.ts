@@ -13,6 +13,7 @@ const subscriptionSchema = z.object({
   currency: z.enum([CURRENCIES.USD, CURRENCIES.EUR]),
   confirmPayment: z.boolean().optional(), // Flag to confirm payment and end trial
   subscriptionId: z.string().optional(), // Subscription ID for confirmation
+  useExistingPaymentMethod: z.boolean().optional(), // Flag to use existing payment method for upgrade
 })
 
 /**
@@ -24,7 +25,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     const user = await requireBetterAuthUser(request)
     const body = await request.json()
-    const { planId, interval, currency, confirmPayment, subscriptionId } =
+    const { planId, interval, currency, confirmPayment, subscriptionId, useExistingPaymentMethod } =
       subscriptionSchema.parse(body)
 
     // For trial conversions, payment is handled directly by the subscription's invoice PaymentIntent
@@ -105,9 +106,31 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // Check if user has existing subscription for upgrade vs new subscription
-    const existingSubscription = await prisma.subscription.findUnique({
+    let existingSubscription = await prisma.subscription.findUnique({
       where: { userId: user.id },
     })
+
+    // If subscription is set to cancel at period end, treat it as if it doesn't exist
+    // so we create a fresh subscription instead of trying to upgrade
+    if (existingSubscription) {
+      try {
+        const stripeSubscription = await stripe.subscriptions.retrieve(existingSubscription.id)
+        if (stripeSubscription.cancel_at_period_end) {
+          console.log(
+            `⚠️ Subscription ${existingSubscription.id} is set to cancel at period end. Canceling it immediately and will create new subscription.`
+          )
+          // Cancel it immediately since user wants to subscribe again
+          await stripe.subscriptions.cancel(existingSubscription.id)
+          console.log(`✅ Canceled subscription ${existingSubscription.id}`)
+          // Treat as if no subscription exists
+          existingSubscription = null
+        }
+      } catch (error) {
+        console.error(`⚠️ Could not retrieve subscription from Stripe:`, error)
+        // If subscription doesn't exist in Stripe, treat as no subscription
+        existingSubscription = null
+      }
+    }
 
     let subscription: Stripe.Subscription
     let isUpgrade = false
@@ -326,7 +349,7 @@ export async function action({ request }: ActionFunctionArgs) {
           }
         }
       } else if (existingSubscription.status === 'active') {
-        // This is an upgrade - modify existing subscription with prorating
+        // This is a regular upgrade - modify existing subscription with prorating
         isUpgrade = true
         console.log(`🔄 Upgrading existing subscription ${existingSubscription.id}`)
 
@@ -335,35 +358,124 @@ export async function action({ request }: ActionFunctionArgs) {
         const subscriptionItemId = stripeSubscription.items.data[0].id
         const defaultPaymentMethod = stripeSubscription.default_payment_method
 
-        if (!defaultPaymentMethod) {
+        // If using existing payment method and payment method is available
+        if (useExistingPaymentMethod && defaultPaymentMethod) {
+          console.log(`💳 Using existing payment method for upgrade`)
+
+          // Update subscription with prorating - Stripe will automatically create and pay the invoice
+          subscription = await stripe.subscriptions.update(existingSubscription.id, {
+            items: [
+              {
+                id: subscriptionItemId,
+                price: priceId,
+              },
+            ],
+            proration_behavior: 'always_invoice', // Enable prorating AND create invoice immediately
+            payment_behavior: 'allow_incomplete', // Allow payment to proceed even if it fails initially
+            payment_settings: {
+              save_default_payment_method: 'on_subscription',
+            },
+            expand: ['latest_invoice.payment_intent'],
+            metadata: {
+              userId: user.id,
+              planId,
+              interval,
+              type: 'subscription_upgrade',
+            },
+          })
+
+          console.log(`✅ Subscription updated with existing payment method`)
+        } else if (!defaultPaymentMethod) {
           throw new Error(
             'No payment method found on subscription. Please add a payment method first.'
           )
-        }
+        } else {
+          // User wants to use a NEW payment method for the upgrade
+          // We need to create a separate invoice and PaymentIntent for the proration
+          console.log(`💳 Upgrading with new payment method - creating invoice for proration`)
 
-        // Update subscription with prorating - Stripe will automatically create and pay the invoice
-        subscription = await stripe.subscriptions.update(existingSubscription.id, {
-          items: [
-            {
-              id: subscriptionItemId,
-              price: priceId,
+          // First update subscription to new plan (without charging yet)
+          subscription = await stripe.subscriptions.update(existingSubscription.id, {
+            items: [
+              {
+                id: subscriptionItemId,
+                price: priceId,
+              },
+            ],
+            proration_behavior: 'create_prorations', // Create proration items
+            billing_cycle_anchor: 'unchanged', // Keep the same billing cycle
+            metadata: {
+              userId: user.id,
+              planId,
+              interval,
+              type: 'subscription_upgrade_new_payment_method',
             },
-          ],
-          proration_behavior: 'always_invoice', // Enable prorating AND create invoice immediately
-          payment_behavior: 'allow_incomplete', // Allow payment to proceed even if it fails initially
-          payment_settings: {
-            save_default_payment_method: 'on_subscription',
-          },
-          expand: ['latest_invoice.payment_intent'],
-          metadata: {
-            userId: user.id,
-            planId,
-            interval,
-            type: 'subscription_upgrade',
-          },
-        })
+          })
 
-        console.log(`✅ Subscription updated with prorating and immediate invoicing`)
+          console.log(`✅ Subscription updated to new plan`)
+
+          // Get the latest invoice which has the proration
+          const latestInvoice = await stripe.invoices.retrieve(
+            subscription.latest_invoice as string
+          )
+
+          console.log(`📄 Latest invoice: ${latestInvoice.id}, amount: ${latestInvoice.amount_due}`)
+
+          // If there's an amount due, we need to create a PaymentIntent for it
+          if (latestInvoice.amount_due > 0) {
+            // Void the automatic payment attempt
+            if (latestInvoice.status === 'open' && latestInvoice.payment_intent) {
+              try {
+                await stripe.paymentIntents.cancel(latestInvoice.payment_intent as string)
+                console.log(`❌ Canceled automatic payment attempt`)
+              } catch (e) {
+                console.log(`⚠️ Could not cancel payment intent: ${e}`)
+              }
+            }
+
+            // Create a new PaymentIntent for the user to pay with their new card
+            const upgradePaymentIntent = await stripe.paymentIntents.create({
+              amount: latestInvoice.amount_due,
+              currency: latestInvoice.currency,
+              customer: stripeCustomerId,
+              description: `Upgrade to ${planId} plan`,
+              automatic_payment_methods: {
+                enabled: true,
+                allow_redirects: 'never',
+              },
+              metadata: {
+                userId: user.id,
+                subscriptionId: subscription.id,
+                invoiceId: latestInvoice.id,
+                type: 'subscription_upgrade',
+              },
+            })
+
+            console.log(`✅ Created PaymentIntent ${upgradePaymentIntent.id} for upgrade`)
+
+            // Store the PaymentIntent in subscription metadata so we can finalize later
+            await stripe.subscriptions.update(subscription.id, {
+              metadata: {
+                ...subscription.metadata,
+                upgrade_payment_intent: upgradePaymentIntent.id,
+                upgrade_invoice: latestInvoice.id,
+              },
+            })
+
+            // Expand the subscription to include this new payment intent
+            subscription = await stripe.subscriptions.retrieve(subscription.id, {
+              expand: ['latest_invoice.payment_intent'],
+            })
+
+            // Override the latest_invoice to include our custom PaymentIntent
+            // @ts-expect-error - Overriding Stripe object for custom payment flow
+            subscription.latest_invoice = latestInvoice
+            // @ts-expect-error - Attaching our PaymentIntent to the invoice
+            latestInvoice.payment_intent = upgradePaymentIntent
+          }
+
+          console.log(`✅ Upgrade prepared with new payment method`)
+        }
       } else {
         // Subscription exists but in incomplete/canceled state, reactivate it
         console.log(
@@ -428,6 +540,31 @@ export async function action({ request }: ActionFunctionArgs) {
               }.`
             )
 
+            // IMPORTANT: Cancel any other active subscriptions before creating new one
+            // This prevents multiple active subscriptions
+            console.log(
+              `🔍 Checking for other active subscriptions for customer ${stripeCustomerId}`
+            )
+            const allSubscriptions = await stripe.subscriptions.list({
+              customer: stripeCustomerId,
+              status: 'all',
+              limit: 100,
+            })
+
+            const activeSubscriptions = allSubscriptions.data.filter(
+              (sub) => sub.status === 'active' || sub.status === 'trialing'
+            )
+
+            if (activeSubscriptions.length > 0) {
+              console.log(
+                `⚠️ Found ${activeSubscriptions.length} active/trialing subscription(s). Canceling them before creating new one.`
+              )
+              for (const activeSub of activeSubscriptions) {
+                await stripe.subscriptions.cancel(activeSub.id)
+                console.log(`✅ Canceled subscription ${activeSub.id}`)
+              }
+            }
+
             // Follow Stripe's recommendation: create a new subscription for cancelled ones
             // User can select any plan they want
             subscription = await stripe.subscriptions.create({
@@ -486,6 +623,29 @@ export async function action({ request }: ActionFunctionArgs) {
     } else {
       // Create new subscription with proper Stripe defaults
       console.log(`🆕 Creating new subscription for user ${user.id}`)
+
+      // IMPORTANT: Before creating a new subscription, check if customer has any active subscriptions
+      // This prevents duplicate subscriptions if database is out of sync
+      console.log(`🔍 Checking for existing active subscriptions for customer ${stripeCustomerId}`)
+      const existingStripeSubscriptions = await stripe.subscriptions.list({
+        customer: stripeCustomerId,
+        status: 'all',
+        limit: 100,
+      })
+
+      const activeStripeSubscriptions = existingStripeSubscriptions.data.filter(
+        (sub) => sub.status === 'active' || sub.status === 'trialing'
+      )
+
+      if (activeStripeSubscriptions.length > 0) {
+        console.log(
+          `⚠️ Found ${activeStripeSubscriptions.length} active/trialing subscription(s) in Stripe. Canceling them before creating new one.`
+        )
+        for (const activeSub of activeStripeSubscriptions) {
+          await stripe.subscriptions.cancel(activeSub.id)
+          console.log(`✅ Canceled subscription ${activeSub.id}`)
+        }
+      }
 
       // For new subscriptions, check if customer has payment methods
       const paymentMethods = await stripe.paymentMethods.list({
@@ -596,7 +756,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (isUpgrade) {
       // Stripe already created the invoice and attempted payment via always_invoice
       // Just use the PaymentIntent from the invoice if it exists
-      if (invoiceData && invoiceData.amount_due && invoiceData.amount_due > 0) {
+      if (invoiceData?.amount_due && invoiceData.amount_due > 0) {
         if (
           paymentIntent &&
           typeof paymentIntent === 'object' &&

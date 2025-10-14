@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import { redirect } from 'react-router'
 import { USER_STATUSES } from '~/app/common/constants'
 import type { INotification } from '~/app/common/validations/notificationSchema'
+import { prisma } from '~/app/db.server'
 import { getBetterAuthUser } from '~/app/services/better-auth.server'
 import { getNotifications } from '~/app/services/notifications.server'
 import type { Route } from './+types/main'
@@ -16,6 +17,12 @@ type LoaderData = {
     currentPlan: string
     planStatus: string
     trialPeriodDays: number
+    paymentMethod?: {
+      last4: string
+      brand: string
+      expMonth: number
+      expYear: number
+    } | null
   }
   notifications: INotification[]
 }
@@ -47,6 +54,25 @@ export async function loader({ request }: Route.LoaderArgs) {
       ? dayjs(user.subscriptions.trialEnd * 1000).diff(dayjs(), 'days')
       : undefined
 
+  // Fetch payment method if user has a subscription
+  let paymentMethod = null
+  if (user.id) {
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        userId: user.id,
+      },
+    })
+
+    if (subscription?.last4) {
+      paymentMethod = {
+        last4: subscription.last4,
+        brand: subscription.brand || 'card',
+        expMonth: subscription.expMonth || 0,
+        expYear: subscription.expYear || 0,
+      }
+    }
+  }
+
   return {
     user: {
       email: user.email,
@@ -60,6 +86,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       currentPlan: user.subscriptions?.planId || 'free',
       planStatus: user.subscriptions?.status || 'inactive',
       trialPeriodDays: trialPeriodDays || 0,
+      paymentMethod,
     },
     notifications,
   }

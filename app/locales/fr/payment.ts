@@ -112,9 +112,15 @@ export default {
   paymentMethodUpdated: 'Mode de paiement mis à jour',
   updatePaymentMethodInfo: 'Mettre à jour le mode de paiement',
   updatePaymentMethodDescription:
-    'Ajoutez un nouveau mode de paiement pour votre abonnement. Votre mode de paiement actuel sera remplacé.',
-  enterNewPaymentMethod: 'Entrez votre nouveau mode de paiement',
+    'Ajoutez une nouvelle méthode de paiement pour votre abonnement. Votre méthode de paiement actuelle sera remplacée.',
+  enterNewPaymentMethod: 'Entrez votre nouvelle méthode de paiement',
   paymentCard: 'Carte de paiement',
+  paymentMethod: 'Méthode de paiement',
+  useNewCard: 'Utiliser une autre carte',
+  cardExpired: 'Carte expirée',
+  cardExpiredMessage:
+    'Votre carte de paiement a expiré. Veuillez ajouter une nouvelle carte pour continuer.',
+  confirmUpgrade: 'Confirmer la mise à niveau',
 
   // Settings page translations
   subscriptions: 'Abonnements',

@@ -19,6 +19,7 @@ import pricing from './pricing'
 import purchaseOrders from './purchaseOrders'
 import roles from './roles'
 import salesOrders from './salesOrders'
+import settings from './settings'
 import sites from './sites'
 import suppliers from './suppliers'
 import teams from './teams'
@@ -50,6 +51,7 @@ export default {
   roles,
   agencies,
   sites,
+  settings,
   approvals,
   workflowHistory,
   workflowTemplates,

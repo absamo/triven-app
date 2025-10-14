@@ -20,7 +20,7 @@ import clsx from 'clsx'
 import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet, useLocation, useNavigate, useNavigation, useRevalidator } from 'react-router'
+import { Outlet, useNavigation } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
 import { canUpgrade, shouldShowUpgrade } from '~/app/common/helpers/payment'
 import type { INotification } from '~/app/common/validations/notificationSchema'
@@ -53,9 +53,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   const { isFormActive } = useFormContext()
   const theme = useMantineTheme()
   const { t } = useTranslation(['navigation'])
-  const revalidator = useRevalidator()
-  const navigate = useNavigate()
-  const location = useLocation()
   const { checkStripeHealth, isChecking } = useStripeHealth()
 
   // Upgrade modal state
@@ -161,16 +158,13 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   const handleUpgradeSuccess = () => {
     console.log('🔄 Layout: Subscription upgrade successful - refreshing layout data')
 
-    // Revalidate current page data
-    revalidator.revalidate()
+    // Close modal immediately
+    setShowUpgradeModal(false)
 
-    // Force navigation refresh to ensure layout data updates (stay on current route)
-    console.log('🔄 Layout: Navigating to refresh layout and trial banner on current route')
-    setTimeout(() => {
-      navigate(location.pathname + location.search, { replace: true })
-      // Close the modal after navigation completes
-      setShowUpgradeModal(false)
-    }, 500)
+    // Force a full page reload to ensure all loaders (including main.tsx) are re-executed
+    // This ensures trial banner disappears and subscription status updates everywhere
+    console.log('🔄 Layout: Force reloading to refresh subscription status and trial banner')
+    window.location.reload()
   }
 
   return (
@@ -380,6 +374,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
           planStatus: user.planStatus,
           interval: 'month', // Default for layout context
           currency: 'USD', // Default for layout context
+          paymentMethod: user.paymentMethod,
         }}
       />
     </>
@@ -394,6 +389,12 @@ type LayoutPageProps = {
     planStatus: string
     trialPeriodDays: number
     currentPlan: string
+    paymentMethod?: {
+      last4: string
+      brand: string
+      expMonth: number
+      expYear: number
+    } | null
   }
   notifications: INotification[]
 }

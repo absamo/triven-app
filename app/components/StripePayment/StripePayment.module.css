@@ -35,25 +35,16 @@
 }
 
 .paymentElement {
-  background: light-dark(
-    rgba(var(--mantine-color-gray-0-rgb), 0.8),
-    rgba(var(--mantine-color-dark-6-rgb), 0.8)
-  );
-  border: 1px solid
-    light-dark(
-      rgba(var(--mantine-color-gray-3-rgb), 0.4),
-      rgba(var(--mantine-color-dark-4-rgb), 0.4)
-    );
-  backdrop-filter: blur(10px);
+  width: 100%;
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
   transition: all 0.3s ease;
 }
 
 .paymentElement:hover {
-  border-color: light-dark(
-    rgba(var(--mantine-color-teal-4-rgb), 0.5),
-    rgba(var(--mantine-color-teal-6-rgb), 0.5)
-  );
-  box-shadow: 0 4px 15px rgba(var(--mantine-color-teal-6-rgb), 0.1);
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .securityNotice {
