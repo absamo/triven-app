@@ -23,6 +23,13 @@ type LoaderData = {
       expMonth: number
       expYear: number
     } | null
+    subscription?: {
+      id: string
+      planId: string
+      interval: string
+      amount: number
+      currency: string
+    } | null
   }
   notifications: INotification[]
 }
@@ -54,8 +61,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       ? dayjs(user.subscriptions.trialEnd * 1000).diff(dayjs(), 'days')
       : undefined
 
-  // Fetch payment method if user has a subscription
+  // Fetch payment method and subscription details if user has a subscription
   let paymentMethod = null
+  let subscriptionData = null
   if (user.id) {
     const subscription = await prisma.subscription.findFirst({
       where: {
@@ -63,12 +71,24 @@ export async function loader({ request }: Route.LoaderArgs) {
       },
     })
 
-    if (subscription?.last4) {
-      paymentMethod = {
-        last4: subscription.last4,
-        brand: subscription.brand || 'card',
-        expMonth: subscription.expMonth || 0,
-        expYear: subscription.expYear || 0,
+    if (subscription) {
+      // Extract payment method info
+      if (subscription.last4) {
+        paymentMethod = {
+          last4: subscription.last4,
+          brand: subscription.brand || 'card',
+          expMonth: subscription.expMonth || 0,
+          expYear: subscription.expYear || 0,
+        }
+      }
+
+      // Extract subscription info for payment updates
+      subscriptionData = {
+        id: subscription.id,
+        planId: subscription.planId,
+        interval: subscription.interval,
+        amount: subscription.amount,
+        currency: subscription.currency.toUpperCase(),
       }
     }
   }
@@ -87,6 +107,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       planStatus: user.subscriptions?.status || 'inactive',
       trialPeriodDays: trialPeriodDays || 0,
       paymentMethod,
+      subscription: subscriptionData,
     },
     notifications,
   }

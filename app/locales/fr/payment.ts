@@ -14,7 +14,6 @@ export default {
   securePayment: 'Vos informations de paiement sont sécurisées et chiffrées par Stripe',
 
   // États de paiement
-  paymentFailed: 'Paiement échoué',
   paymentSuccessful: 'Paiement réussi !',
   welcomeMessage: 'Bienvenue au plan {{planName}} ! Votre compte a été mis à niveau.',
   paymentError: "Une erreur s'est produite avec votre paiement",
@@ -60,12 +59,8 @@ export default {
     'Votre abonnement est en attente de finalisation du paiement. Finalisez votre paiement pour continuer à utiliser toutes les fonctionnalités.',
   incompleteExpiredMessage:
     'La configuration de votre abonnement a expiré. Veuillez commencer un nouvel abonnement pour continuer à utiliser Triven.',
-  unpaidMessage:
-    'Le paiement de votre abonnement a échoué. Veuillez mettre à jour votre méthode de paiement pour continuer à utiliser Triven.',
   pausedMessage:
     'Votre abonnement est actuellement en pause. Veuillez reprendre votre abonnement pour continuer à utiliser Triven.',
-  pastDueMessage:
-    'Votre paiement est en retard. Veuillez mettre à jour votre méthode de paiement pour continuer à utiliser Triven.',
   noSubscriptionMessage:
     "Vous avez besoin d'un abonnement actif pour accéder à Triven. Veuillez choisir un plan pour continuer.",
 
@@ -106,8 +101,7 @@ export default {
   annualSubscriptionCancellationPolicy:
     "Les abonnements annuels ne peuvent être annulés qu'à la fin de la période de facturation. Vous continuerez à avoir accès jusqu'au {{date}}.",
 
-  // Payment method editing
-  updatePaymentMethod: 'Mettre à jour le mode de paiement',
+  // Payment method updating
   editPaymentMethod: 'Modifier le mode de paiement',
   paymentMethodUpdated: 'Mode de paiement mis à jour',
   updatePaymentMethodInfo: 'Mettre à jour le mode de paiement',
@@ -121,6 +115,21 @@ export default {
   cardExpiredMessage:
     'Votre carte de paiement a expiré. Veuillez ajouter une nouvelle carte pour continuer.',
   confirmUpgrade: 'Confirmer la mise à niveau',
+
+  // Payment Failures and Card Issues
+  paymentFailed: 'Paiement échoué',
+  paymentDeclined: 'Paiement refusé',
+  updatePaymentMethod: 'Mettre à jour le mode de paiement',
+  pastDueMessage:
+    "Votre paiement a échoué. Cela peut être dû à des fonds insuffisants, une carte expirée ou d'autres problèmes de paiement. Veuillez mettre à jour votre mode de paiement pour restaurer l'accès.",
+  unpaidMessage:
+    "Plusieurs tentatives de paiement ont échoué. Votre carte peut avoir des fonds insuffisants, être expirée ou avoir été refusée. Veuillez mettre à jour immédiatement votre mode de paiement pour restaurer l'accès.",
+  insufficientFunds: 'Fonds insuffisants',
+  cardExpiredTitle: 'Carte expirée',
+  cardDeclined: 'Carte refusée',
+  paymentMethodRequired: 'Mode de paiement requis',
+  accessBlocked: 'Accès bloqué en raison de problèmes de paiement',
+  updateCardToRestore: 'Mettez à jour votre carte pour restaurer l\'accès à votre compte',
 
   // Settings page translations
   subscriptions: 'Abonnements',

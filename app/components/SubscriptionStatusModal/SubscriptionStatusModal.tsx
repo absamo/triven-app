@@ -17,6 +17,7 @@ import { useFetcher, useRevalidator } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
 import { useStripeHealth } from '~/app/lib/hooks/useStripeHealth'
 import { CURRENCIES, INTERVALS, PLANS } from '~/app/modules/stripe/plans'
+import PaymentMethodEditModal from '../PaymentMethodEditModal'
 import ReactivateSubscriptionModal from '../ReactivateSubscriptionModal'
 import StripePayment from '../StripePayment'
 import classes from './SubscriptionStatusModal.module.css'
@@ -34,6 +35,13 @@ interface SubscriptionStatusModalProps {
     | SUBSCRIPTION_MODAL_MODES.PAUSED
     | SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION
     | SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED
+  subscription?: {
+    id: string
+    planId: string
+    interval: string
+    amount: number
+    currency: string
+  }
 }
 
 interface PaymentData {
@@ -51,6 +59,7 @@ export default function SubscriptionStatusModal({
   opened,
   currentPlan,
   mode,
+  subscription,
 }: SubscriptionStatusModalProps) {
   const { colorScheme } = useMantineColorScheme()
   const { t } = useTranslation(['payment', 'common'])
@@ -60,6 +69,7 @@ export default function SubscriptionStatusModal({
   const [showPayment, setShowPayment] = useState(false)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [showReactivateModal, setShowReactivateModal] = useState(false)
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false)
   const { checkStripeHealth, isChecking: isCheckingStripeHealth } = useStripeHealth()
 
   // Helper function to get modal content based on mode
@@ -79,25 +89,25 @@ export default function SubscriptionStatusModal({
         }
       case STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE:
         return {
-          title: t('payment:paymentPastDue', 'Payment Past Due'),
+          title: t('payment:paymentFailed', 'Payment Failed'),
           message: t('payment:cannotAccessTriven'),
           description: t(
             'payment:pastDueMessage',
-            'Your payment is past due. Please update your payment method to continue using Triven.'
+            'Your payment has failed. This could be due to insufficient funds, an expired card, or other payment issues. Please update your payment method to restore access.'
           ),
-          buttonText: t('payment:updatePayment', 'Update Payment'),
+          buttonText: t('payment:updatePaymentMethod', 'Update Payment Method'),
           icon: <IconLock size={40} />,
-          gradient: { from: 'yellow', to: 'orange' },
+          gradient: { from: 'red', to: 'orange' },
         }
       case STRIPE_SUBSCRIPTION_STATUSES.UNPAID:
         return {
-          title: t('payment:subscriptionUnpaid', 'Subscription Unpaid'),
+          title: t('payment:paymentDeclined', 'Payment Declined'),
           message: t('payment:cannotAccessTriven'),
           description: t(
             'payment:unpaidMessage',
-            'Your subscription payment has failed. Please update your payment method to continue using Triven.'
+            'Multiple payment attempts have failed. Your card may have insufficient funds, be expired, or been declined. Please update your payment method immediately to restore access.'
           ),
-          buttonText: t('payment:updatePayment', 'Update Payment'),
+          buttonText: t('payment:updatePaymentMethod', 'Update Payment Method'),
           icon: <IconLock size={40} />,
           gradient: { from: 'red', to: 'pink' },
         }
@@ -192,6 +202,16 @@ export default function SubscriptionStatusModal({
       return
     }
 
+    // For past_due or unpaid subscriptions, show payment method update modal
+    if (
+      (mode === STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE ||
+        mode === STRIPE_SUBSCRIPTION_STATUSES.UNPAID) &&
+      subscription
+    ) {
+      setShowPaymentMethodModal(true)
+      return
+    }
+
     // For other statuses, use the default upgrade flow
     paymentFetcher.submit(
       {
@@ -215,12 +235,21 @@ export default function SubscriptionStatusModal({
     revalidator.revalidate()
   }
 
+  // Handle payment method update success
+  const handlePaymentMethodUpdateSuccess = () => {
+    console.log('💳 Payment method updated successfully, reloading page...')
+    setShowPaymentMethodModal(false)
+
+    // Force page reload to ensure subscription status updates
+    window.location.reload()
+  }
+
   // Handle fetcher state changes
   useEffect(() => {
     if (paymentFetcher.state === 'idle' && paymentFetcher.data) {
       if ('error' in paymentFetcher.data) {
         // Handle error
-        const error = (paymentFetcher.data as any).error
+        const error = (paymentFetcher.data as { error: unknown }).error
         let errorMessage: string = t('payment:unableToSetupPayment')
 
         if (typeof error === 'string') {
@@ -243,7 +272,7 @@ export default function SubscriptionStatusModal({
         setShowPayment(true)
       }
     }
-  }, [paymentFetcher.state, paymentFetcher.data])
+  }, [paymentFetcher.state, paymentFetcher.data, t])
 
   // Determine loading state
   const isLoadingPayment = paymentFetcher.state !== 'idle' || configFetcher.state !== 'idle'
@@ -422,6 +451,17 @@ export default function SubscriptionStatusModal({
           onClose={() => setShowReactivateModal(false)}
           onSuccess={handleReactivationSuccess}
           cancelledPlan={currentPlan}
+        />
+      )}
+
+      {/* Payment Method Edit Modal for past_due/unpaid subscriptions */}
+      {showPaymentMethodModal && subscription && configFetcher.data && (
+        <PaymentMethodEditModal
+          isOpen={showPaymentMethodModal}
+          onClose={() => setShowPaymentMethodModal(false)}
+          onSuccess={handlePaymentMethodUpdateSuccess}
+          subscription={subscription}
+          config={configFetcher.data}
         />
       )}
     </>

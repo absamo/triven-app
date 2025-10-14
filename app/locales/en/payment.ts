@@ -14,7 +14,6 @@ export default {
   securePayment: 'Your payment information is secure and encrypted by Stripe',
 
   // Payment states
-  paymentFailed: 'Payment Failed',
   paymentSuccessful: 'Payment Successful!',
   welcomeMessage: 'Welcome to {{planName}}! Your account has been upgraded.',
   paymentError: 'Something went wrong with your payment',
@@ -71,7 +70,6 @@ export default {
     'Annual subscriptions can only be cancelled at the end of the billing period. You will continue to have access until {{date}}.',
 
   // Payment method editing
-  updatePaymentMethod: 'Update Payment Method',
   editPaymentMethod: 'Edit Payment Method',
   paymentMethodUpdated: 'Payment Method Updated',
   updatePaymentMethodInfo: 'Update Payment Method',
@@ -84,6 +82,21 @@ export default {
   cardExpired: 'Card Expired',
   cardExpiredMessage: 'Your payment card has expired. Please add a new card to continue.',
   confirmUpgrade: 'Confirm Upgrade',
+
+  // Payment Failures and Card Issues
+  paymentFailed: 'Payment Failed',
+  paymentDeclined: 'Payment Declined',
+  updatePaymentMethod: 'Update Payment Method',
+  pastDueMessage:
+    'Your payment has failed. This could be due to insufficient funds, an expired card, or other payment issues. Please update your payment method to restore access.',
+  unpaidMessage:
+    'Multiple payment attempts have failed. Your card may have insufficient funds, be expired, or been declined. Please update your payment method immediately to restore access.',
+  insufficientFunds: 'Insufficient Funds',
+  cardExpiredTitle: 'Card Expired',
+  cardDeclined: 'Card Declined',
+  paymentMethodRequired: 'Payment Method Required',
+  accessBlocked: 'Access Blocked Due to Payment Issues',
+  updateCardToRestore: 'Update your card to restore access to your account',
 
   // Settings page translations
   subscriptions: 'Subscriptions',
@@ -121,12 +134,8 @@ export default {
     'Your subscription is pending payment completion. Complete your payment to continue using all features.',
   incompleteExpiredMessage:
     'Your subscription setup has expired. Please start a new subscription to continue using Triven.',
-  unpaidMessage:
-    'Your subscription payment has failed. Please update your payment method to continue using Triven.',
   pausedMessage:
     'Your subscription is currently paused. Please resume your subscription to continue using Triven.',
-  pastDueMessage:
-    'Your payment is past due. Please update your payment method to continue using Triven.',
   noSubscriptionMessage:
     'You need an active subscription to access Triven. Please choose a plan to continue.',
 

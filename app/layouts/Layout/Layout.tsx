@@ -340,6 +340,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
         opened={pastDueSubscription}
         currentPlan={user.currentPlan}
         mode={SUBSCRIPTION_MODAL_MODES.PAST_DUE}
+        subscription={user.subscription || undefined}
       />
 
       {/* Unpaid Subscription Modal - blocks access when subscription is unpaid */}
@@ -347,6 +348,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
         opened={unpaidSubscription}
         currentPlan={user.currentPlan}
         mode={SUBSCRIPTION_MODAL_MODES.UNPAID}
+        subscription={user.subscription || undefined}
       />
 
       {/* Incomplete Expired Subscription Modal */}
@@ -394,6 +396,13 @@ type LayoutPageProps = {
       brand: string
       expMonth: number
       expYear: number
+    } | null
+    subscription?: {
+      id: string
+      planId: string
+      interval: string
+      amount: number
+      currency: string
     } | null
   }
   notifications: INotification[]
