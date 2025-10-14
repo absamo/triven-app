@@ -115,13 +115,13 @@ export const theme = createTheme({
     Switch: {
       styles: {
         track: {
-          '&[data-checked]': {
+          '[dataChecked]': {
             backgroundColor: '#00ff88',
             borderColor: '#00ff88',
           },
         },
         thumb: {
-          '&[data-checked]': {
+          '[dataChecked]': {
             backgroundColor: '#000000',
             borderColor: '#00ff88',
           },
