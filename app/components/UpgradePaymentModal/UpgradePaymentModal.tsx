@@ -101,18 +101,20 @@ export default function UpgradePaymentModal({
   const handlePaymentSuccess = async () => {
     setIsProcessingPayment(true)
 
-    console.log('💳 Payment succeeded, subscription will update via SSE...')
+    console.log('💳 Payment succeeded, waiting for confirmed subscription update...')
 
-    // Close modal and let real-time updates handle the UI refresh
-    onClose()
+    // DON'T close modal immediately - let parent handle it after confirmed SSE event
+    // The Layout component will wait for the final confirmed broadcast before closing
 
     // Call parent success callback if provided
+    // This sets pendingUpgradeRef.current = true in Layout
     if (onSuccess) {
       onSuccess()
     }
 
-    setIsProcessingPayment(false)
-  }  // Handle payment error
+    // Keep loading state active until modal is closed by parent
+    // (parent will close after receiving confirmed SSE broadcast)
+  } // Handle payment error
   const handlePaymentError = (error: string) => {
     setIsProcessingPayment(false)
     console.error('Payment error:', error)
@@ -173,20 +175,7 @@ export default function UpgradePaymentModal({
 
   // Reset state when modal closes
   const handleClose = () => {
-    // If payment was processing when closed, it likely means subscription is now active
-    // Trigger refresh to update the UI state
-    if (isProcessingPayment) {
-      console.log('🔄 Modal closed after payment processing, triggering immediate refresh...')
-
-      if (onSuccess) {
-        onSuccess()
-      } else {
-        // Force immediate refresh when payment was in progress
-        console.log('🔄 Payment was processing, force reloading for fresh subscription state')
-        window.location.reload()
-      }
-    }
-
+    // Reset processing state when modal closes
     setIsProcessingPayment(false)
     onClose()
   }

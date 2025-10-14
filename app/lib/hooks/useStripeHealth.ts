@@ -20,18 +20,23 @@ export function useStripeHealth() {
   })
 
   const checkStripeHealth = async (): Promise<boolean> => {
+    console.log('💳 [useStripeHealth] Starting health check...')
     setStatus({ isHealthy: true, isChecking: true })
 
     try {
+      console.log('💳 [useStripeHealth] Fetching /api/stripe-health...')
       const response = await fetch('/api/stripe-health')
       const data = await response.json()
+      console.log('💳 [useStripeHealth] Response:', { status: response.status, data })
 
       if (response.ok && data.status === 'healthy') {
+        console.log('✅ [useStripeHealth] Stripe is healthy')
         setStatus({ isHealthy: true, isChecking: false })
         return true
       }
 
       // Stripe API is unavailable
+      console.log('❌ [useStripeHealth] Stripe is unavailable')
       const errorMessage = t('stripeUnavailable')
 
       notifications.show({
@@ -50,6 +55,7 @@ export function useStripeHealth() {
       return false
     } catch (error) {
       // Network error or other issue
+      console.log('❌ [useStripeHealth] Error:', error)
       const errorMessage = t('connectionError')
 
       notifications.show({

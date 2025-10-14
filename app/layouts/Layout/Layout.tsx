@@ -79,33 +79,55 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   // Real-time subscription updates via SSE
   const eventSourceRef = useRef<EventSource | null>(null)
   const revalidator = useRevalidator()
-  
-  // Initialize subscription status from user prop, then update via SSE
-  const calculateTrialEnd = () => {
-    if (user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING && user.trialPeriodDays > 0) {
-      return Math.floor(dayjs().add(user.trialPeriodDays, 'days').valueOf() / 1000)
-    }
-    return 0
-  }
+  const pendingUpgradeRef = useRef<boolean>(false)
 
-  const [subscriptionStatus, setSubscriptionStatus] = useState({
-    status: user.planStatus,
-    trialEnd: calculateTrialEnd(),
+  // Initialize subscription status from user prop, then update via SSE
+  const [subscriptionStatus, setSubscriptionStatus] = useState(() => {
+    const trialEnd =
+      user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING && user.trialPeriodDays > 0
+        ? Math.floor(dayjs().add(user.trialPeriodDays, 'days').valueOf() / 1000)
+        : 0
+    return {
+      status: user.planStatus,
+      trialEnd,
+    }
   })
 
+  // Sync subscription status when user prop changes (from revalidation)
+  // IMPORTANT: Don't sync during pending upgrade - we need to wait for the confirmed SSE event
   useEffect(() => {
+    // Skip sync if we're waiting for upgrade confirmation
+    if (pendingUpgradeRef.current) {
+      return
+    }
+
+    const trialEnd =
+      user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING && user.trialPeriodDays > 0
+        ? Math.floor(dayjs().add(user.trialPeriodDays, 'days').valueOf() / 1000)
+        : 0
+    setSubscriptionStatus({
+      status: user.planStatus,
+      trialEnd,
+    })
+  }, [user.planStatus, user.trialPeriodDays])
+
+  useEffect(() => {
+    // Prevent duplicate connections
+    if (eventSourceRef.current) {
+      return
+    }
+
     // Connect to subscription SSE stream
     const eventSource = new EventSource('/api/subscription-stream')
     eventSourceRef.current = eventSource
 
     eventSource.addEventListener('connected', () => {
-      console.log('📡 Connected to subscription stream')
+      // Connected to subscription stream
     })
 
     eventSource.addEventListener('subscription', (event) => {
       try {
         const data = JSON.parse(event.data)
-        console.log('📡 Received subscription update:', data)
 
         // Update local state immediately for instant UI update
         // Note: We trust all subscription updates from the server since SSE is user-specific
@@ -115,17 +137,27 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
             trialEnd: data.trialEnd,
           })
 
+          // If we're waiting for upgrade completion and this is the CONFIRMED update with active status
+          if (
+            pendingUpgradeRef.current &&
+            data.confirmed === true &&
+            data.status === 'active' &&
+            data.trialEnd === 0
+          ) {
+            setShowUpgradeModal(false)
+            pendingUpgradeRef.current = false
+          }
+
           // Revalidate to fetch fresh data from server
-          console.log('🔄 Revalidating layout data after subscription update')
           revalidator.revalidate()
         }
       } catch (error) {
-        console.error('Error parsing subscription update:', error)
+        console.error('[Layout] Error parsing subscription update:', error)
       }
     })
 
-    eventSource.onerror = () => {
-      console.log('📡 Subscription stream connection error, will reconnect automatically')
+    eventSource.onerror = (error) => {
+      console.error('[Layout] EventSource error:', error)
     }
 
     // Cleanup on unmount
@@ -135,7 +167,8 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
         eventSourceRef.current = null
       }
     }
-  }, [revalidator])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty dependency array - only create connection once on mount
 
   // Get initial navbar state from root loader (cookies)
   const { showMiniNavbar: initialShowMiniNavbar } = useRootLoaderData()
@@ -184,7 +217,8 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
   const trialing = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.TRIALING
   const trialExpired = trialing && user.trialPeriodDays <= 0
-  const incompleteSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE
+  const incompleteSubscription =
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE
   const cancelledSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.CANCELED
   const pastDueSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE
   const unpaidSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.UNPAID
@@ -206,8 +240,10 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
       : 0
 
   const hasActiveTrialBanner = trialing && trialPeriodDays > 0
+
   const showUpgradeCta =
-    shouldShowUpgrade(subscriptionStatus.status) && canUpgrade(user.currentPlan, subscriptionStatus.status)
+    shouldShowUpgrade(subscriptionStatus.status) &&
+    canUpgrade(user.currentPlan, subscriptionStatus.status)
 
   const HEADER_BASE_HEIGHT = 70
   const TRIAL_BANNER_HEIGHT = 60
@@ -223,15 +259,21 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     // If unhealthy, the hook will show an error notification
   }
 
-  // Handle upgrade success - close modal and let real-time updates handle the rest
+  // Handle upgrade success - set flag and wait for SSE event to close modal
   const handleUpgradeSuccess = () => {
-    console.log('🔄 Layout: Subscription upgrade successful - real-time updates will refresh UI')
+    // Set flag to indicate we're waiting for the upgrade to complete
+    pendingUpgradeRef.current = true
 
-    // Close modal immediately
+    // The modal will stay open until the SSE event arrives with status: 'active', trialEnd: 0
+    // Then the subscription event handler will close the modal automatically
+  }
+
+  // Handle modal close - prevent closing during pending upgrade
+  const handleModalClose = () => {
+    if (pendingUpgradeRef.current) {
+      return
+    }
     setShowUpgradeModal(false)
-
-    // No need to reload - real-time SSE will update the subscription status
-    // and revalidator will refresh the data
   }
 
   return (
@@ -435,7 +477,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
       {/* Upgrade Payment Modal */}
       <UpgradePaymentModal
         opened={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
+        onClose={handleModalClose}
         onSuccess={handleUpgradeSuccess}
         userPlanStatus={user.planStatus}
         billing={{

@@ -362,11 +362,13 @@ export async function action({ request }: ActionFunctionArgs) {
         console.log(`✅ Subscription ${stripeSubscription.id} activated for user ${user.id}`)
 
         // Broadcast subscription update to connected clients for real-time UI updates
+        // This is the final, confirmed update after invoice payment succeeds
         broadcastSubscriptionUpdate({
           userId: user.id,
           status: stripeSubscription.status,
           planId: dbPlanId,
           trialEnd: shouldEndTrial ? 0 : subscriptionData.trial_end || 0,
+          confirmed: true, // Mark as confirmed after invoice payment
         })
 
         return new Response(null, { status: 200 })
@@ -637,13 +639,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
         console.log(`Subscription ${subscription.id} updated for user ${user.id}`)
 
-        // Broadcast subscription update to connected clients for real-time UI updates
-        broadcastSubscriptionUpdate({
-          userId: user.id,
-          status: subscription.status,
-          planId: updateDbPlanId,
-          trialEnd: subscription.status === 'active' ? 0 : subscriptionData.trial_end || 0,
-        })
+        // Note: We don't broadcast here because customer.subscription.updated fires during
+        // the upgrade process BEFORE invoice.payment_succeeded. We only want to broadcast
+        // the final confirmed update after the invoice payment succeeds to avoid premature
+        // UI updates and modal closures. The invoice.payment_succeeded event will handle
+        // the final broadcast with confirmed: true.
 
         // IMPORTANT: Check if there are multiple active subscriptions in Stripe and cancel extras
         const allUserSubscriptions = await stripe.subscriptions.list({

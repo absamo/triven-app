@@ -32,6 +32,7 @@ export default [
     route('api/subscription-create', 'routes/api.subscription-create.ts'),
     route('api/subscription-cancel', 'routes/api.subscription-cancel.ts'),
     route('api/subscription-status', 'routes/api.subscription-status.ts'),
+    route('api/subscription-stream', 'routes/api.subscription-stream.ts'),
     route('api/webhook', 'routes/api.webhook.tsx'),
     route('api/check-user-status', 'routes/api/check-user-status.ts'),
     route('api/update-online-status', 'routes/api/update-online-status.ts'),
