@@ -129,7 +129,7 @@ export default {
   cardDeclined: 'Carte refusée',
   paymentMethodRequired: 'Mode de paiement requis',
   accessBlocked: 'Accès bloqué en raison de problèmes de paiement',
-  updateCardToRestore: 'Mettez à jour votre carte pour restaurer l\'accès à votre compte',
+  updateCardToRestore: "Mettez à jour votre carte pour restaurer l'accès à votre compte",
 
   // Settings page translations
   subscriptions: 'Abonnements',

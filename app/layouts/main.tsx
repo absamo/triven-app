@@ -88,7 +88,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         planId: subscription.planId,
         interval: subscription.interval,
         amount: subscription.amount,
-        currency: subscription.currency.toUpperCase(),
+        currency: subscription.currency?.toUpperCase() || 'USD',
       }
     }
   }
