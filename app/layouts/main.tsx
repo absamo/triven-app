@@ -69,6 +69,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       where: {
         userId: user.id,
       },
+      include: {
+        price: true, // Include price relation to get amount and currency
+      },
     })
 
     if (subscription) {
@@ -87,8 +90,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         id: subscription.id,
         planId: subscription.planId,
         interval: subscription.interval,
-        amount: subscription.amount,
-        currency: subscription.currency?.toUpperCase() || 'USD',
+        amount: subscription.price.amount,
+        currency: subscription.price.currency.toUpperCase(),
       }
     }
   }
