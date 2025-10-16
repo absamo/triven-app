@@ -611,6 +611,7 @@ export default function Products({
       <Title
         to={'/products/create'}
         canCreate={permissions.includes('create:products')}
+        description={t('description', 'Manage your product catalog and inventory items')}
         additionalButtons={
           <Group>
             <Button

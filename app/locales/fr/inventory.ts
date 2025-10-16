@@ -119,6 +119,7 @@ export default {
   products: 'Produits',
   product: 'Produit',
   title: 'Produits',
+  description: 'Gérez votre catalogue de produits et articles en stock',
   nameHeader: 'Nom',
   inStockQtyHeader: 'Qté en Stock',
   sellingPriceHeader: 'Prix de Vente',
