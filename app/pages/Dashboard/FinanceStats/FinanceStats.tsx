@@ -31,95 +31,100 @@ export default function FinanceStats({ finances }: FinanceStatsProps) {
     totalCashMovement > 0 ? (finances.recentPaymentsReceived / totalCashMovement) * 100 : 50
 
   return (
-    <Paper withBorder p="md" radius="md" mb={0} shadow="sm">
-      <Group justify="space-between" align="flex-start" mb="md">
-        <Title order={5}>{t('financialOverview')}</Title>
+    <Paper withBorder p="lg" radius="md" shadow="xs">
+      <Group justify="space-between" align="center" mb="lg">
+        <Title order={4} fw={600}>{t('financialOverview')}</Title>
       </Group>
 
-      <Stack gap="md">
-        <Group justify="space-between" wrap="nowrap">
-          <Group gap="xs">
-            <ThemeIcon color="green" variant="light" size="lg" radius="md">
-              <IconReceipt size="1.2rem" stroke={1.5} />
+      <Stack gap="lg">
+        <Group justify="space-between" wrap="nowrap" gap="md">
+          <Group gap="sm">
+            <ThemeIcon color="green" variant="light" size="xl" radius="md">
+              <IconReceipt size="1.4rem" stroke={1.5} />
             </ThemeIcon>
-            <Text fw={500}>{t('pendingInvoices')}</Text>
+            <div>
+              <Text size="sm" c="dimmed" mb={2}>
+                {t('pendingInvoices')}
+              </Text>
+              <Text fw={700} size="xl">
+                {finances.pendingInvoices}
+              </Text>
+            </div>
           </Group>
-          <Text fw={700} size="lg">
-            {finances.pendingInvoices}
-          </Text>
         </Group>
 
-        <Group justify="space-between" wrap="nowrap">
-          <Group gap="xs">
-            <ThemeIcon color="orange" variant="light" size="lg" radius="md">
-              <IconReceiptOff size="1.2rem" stroke={1.5} />
+        <Group justify="space-between" wrap="nowrap" gap="md">
+          <Group gap="sm">
+            <ThemeIcon color="orange" variant="light" size="xl" radius="md">
+              <IconReceiptOff size="1.4rem" stroke={1.5} />
             </ThemeIcon>
-            <Text fw={500}>{t('pendingBills')}</Text>
+            <div>
+              <Text size="sm" c="dimmed" mb={2}>
+                {t('pendingBills')}
+              </Text>
+              <Text fw={700} size="xl">
+                {finances.pendingBills}
+              </Text>
+            </div>
           </Group>
-          <Text fw={700} size="lg">
-            {finances.pendingBills}
-          </Text>
         </Group>
 
         {/* Always show payment metrics */}
-        <Group
-          justify="space-between"
-          wrap="nowrap"
-          mt="xs"
-          pt="xs"
-          style={{ borderTop: '1px solid #e2e8f0' }}
-        >
-          <Text size="sm" c="dimmed">
-            {t('paymentsReceived')}
-          </Text>
-          <Text fw={600} size="sm" c="green">
-            ${finances.recentPaymentsReceived.toLocaleString()}
-          </Text>
-        </Group>
-
-        <Group justify="space-between" wrap="nowrap">
-          <Text size="sm" c="dimmed">
-            {t('paymentsMade')}
-          </Text>
-          <Text fw={600} size="sm" c="red">
-            ${finances.recentPaymentsMade.toLocaleString()}
-          </Text>
-        </Group>
-
-        <Group
-          justify="space-between"
-          wrap="nowrap"
-          pt="xs"
-          style={{ borderTop: '1px solid #e2e8f0' }}
-        >
-          <Group gap="xs">
-            <ThemeIcon
-              color={finances.cashflow >= 0 ? 'green' : 'red'}
-              variant="light"
-              size="sm"
-              radius="md"
-            >
-              {finances.cashflow >= 0 ? (
-                <IconArrowUpRight size="0.8rem" stroke={1.5} />
-              ) : (
-                <IconArrowDownRight size="0.8rem" stroke={1.5} />
-              )}
-            </ThemeIcon>
-            <Text fw={500} size="sm">
-              {t('netCashflow')}
+        <Stack gap="sm" mt="md" pt="md" style={{ borderTop: '1px solid light-dark(#e2e8f0, var(--mantine-color-dark-4))' }}>
+          <Group justify="space-between" wrap="nowrap">
+            <Text size="sm" c="dimmed" fw={500}>
+              {t('paymentsReceived')}
             </Text>
-            <Tooltip
-              label={`${t('cashFlowRatio')}: ${incomingPercentage.toFixed(1)}% ${t('incoming')}`}
-              position="top"
-              withArrow
-            >
-              <IconInfoCircle size="1rem" style={{ color: '#6c757d', cursor: 'pointer' }} />
-            </Tooltip>
+            <Text fw={600} size="md" c="green">
+              ${finances.recentPaymentsReceived.toLocaleString()}
+            </Text>
           </Group>
-          <Text fw={700} size="sm" c={finances.cashflow >= 0 ? 'green' : 'red'}>
-            ${finances.cashflow.toLocaleString()}
-          </Text>
-        </Group>
+
+          <Group justify="space-between" wrap="nowrap">
+            <Text size="sm" c="dimmed" fw={500}>
+              {t('paymentsMade')}
+            </Text>
+            <Text fw={600} size="md" c="red">
+              ${finances.recentPaymentsMade.toLocaleString()}
+            </Text>
+          </Group>
+
+          <Group
+            justify="space-between"
+            wrap="nowrap"
+            pt="sm"
+            mt="sm"
+            style={{ borderTop: '1px solid light-dark(#e2e8f0, var(--mantine-color-dark-4))' }}
+          >
+            <Group gap="xs">
+              <ThemeIcon
+                color={finances.cashflow >= 0 ? 'teal' : 'red'}
+                variant="light"
+                size="md"
+                radius="md"
+              >
+                {finances.cashflow >= 0 ? (
+                  <IconArrowUpRight size="1rem" stroke={2} />
+                ) : (
+                  <IconArrowDownRight size="1rem" stroke={2} />
+                )}
+              </ThemeIcon>
+              <Text fw={600} size="sm">
+                {t('netCashflow')}
+              </Text>
+              <Tooltip
+                label={`${t('cashFlowRatio')}: ${incomingPercentage.toFixed(1)}% ${t('incoming')}`}
+                position="top"
+                withArrow
+              >
+                <IconInfoCircle size="1rem" style={{ color: 'var(--mantine-color-gray-6)', cursor: 'pointer' }} />
+              </Tooltip>
+            </Group>
+            <Text fw={700} size="lg" c={finances.cashflow >= 0 ? 'teal' : 'red'}>
+              ${Math.abs(finances.cashflow).toLocaleString()}
+            </Text>
+          </Group>
+        </Stack>
       </Stack>
     </Paper>
   )

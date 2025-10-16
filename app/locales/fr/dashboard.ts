@@ -33,6 +33,7 @@ export default {
   inventoryAccuracy: "Précision de l'Inventaire",
   inventoryAccuracyTooltip:
     "Mesure à quel point votre stock physique correspond à vos enregistrements système. Calculé en comparant le Stock Physique en Main vs le Stock Comptable en Main pour chaque produit. Des pourcentages plus élevés indiquent un meilleur contrôle de l'inventaire.",
+  accurate: 'précis',
   reorderPointAlerts: 'Alertes Point de Réapprovisionnement',
   reorderPointAlertsTooltip:
     "Affiche le nombre de produits qui sont à ou en dessous de leur seuil de point de réapprovisionnement. Ces produits peuvent avoir besoin d'être réapprovisionnés bientôt pour éviter les ruptures de stock.",
@@ -93,8 +94,8 @@ export default {
   incoming: 'entrants',
 
   // Order Stats
-  salesTotal: 'Total des ventes',
-  purchaseTotal: 'Total des achats',
+  salesTotal: 'Revenus des Ventes',
+  purchaseTotal: 'Coûts d\'Achat',
 
   // Stock Status Stats
   stockStatusOverview: 'Aperçu du statut des stocks',

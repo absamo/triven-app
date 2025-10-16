@@ -1,5 +1,13 @@
-import { Badge, Flex, Group, Paper, Stack, Text, ThemeIcon, Title, Tooltip } from '@mantine/core'
-import { IconArrowDownRight, IconArrowUpRight, IconInfoCircle } from '@tabler/icons-react'
+import { Badge, Flex, Group, Paper, SimpleGrid, Stack, Text, ThemeIcon, Title, Tooltip } from '@mantine/core'
+import { 
+  IconArrowDownRight, 
+  IconArrowUpRight, 
+  IconInfoCircle,
+  IconAlertTriangle,
+  IconPackage,
+  IconTrendingUp,
+  IconCheckbox
+} from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
 
@@ -88,67 +96,92 @@ export default function InventoryStats({ inventory }: InventoryStats) {
   const accuracyStatus = getAccuracyStatus(inventory.accuracyPercentage)
 
   return (
-    <Paper withBorder p="md" radius="md" mb={0} shadow="sm">
-      <Group justify="space-between" align="flex-start" mb="md">
-        <Title order={5}>{t('inventoryOverview')}</Title>
+    <Stack gap="md">
+      <Group justify="space-between" align="center">
+        <div>
+          <Title order={4} fw={600}>{t('inventoryOverview')}</Title>
+          <Text size="sm" c="dimmed" mt={4}>{t('inventoryOverviewTooltip')}</Text>
+        </div>
       </Group>
 
-      <Stack gap="xl" mt={25}>
-        <Flex justify="space-between" gap="xl">
-          <div style={{ flex: 1 }}>
-            <Group gap="xs" align="center">
-              <Text c="dimmed" fz="sm" tt="uppercase" fw={500}>
-                {t('totalValue')}
-              </Text>
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
+        {/* Total Value Card */}
+        <Paper 
+          withBorder 
+          p="lg" 
+          radius="md" 
+          shadow="xs"
+          style={{ 
+            cursor: 'pointer',
+            transition: 'background-color 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-0)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = ''
+          }}
+          onClick={handleTotalValueClick}
+        >
+          <Stack gap="sm">
+            <Group justify="space-between" align="flex-start">
+              <ThemeIcon size="xl" radius="md" variant="light" color="blue">
+                <IconPackage size={24} stroke={1.5} />
+              </ThemeIcon>
               {inventory.productsInStockValueDiff !== 0 && (
-                <Group gap={4}>
-                  <ThemeIcon
-                    size="xs"
-                    variant="transparent"
-                    c={inventory.productsInStockValueDiff > 0 ? 'teal' : 'red'}
-                  >
-                    {inventory.productsInStockValueDiff > 0 ? (
-                      <IconArrowUpRight style={{ width: 12, height: 12 }} />
+                <Badge 
+                  color={inventory.productsInStockValueDiff > 0 ? 'teal' : 'red'} 
+                  variant="light" 
+                  size="sm"
+                  leftSection={
+                    inventory.productsInStockValueDiff > 0 ? (
+                      <IconArrowUpRight size={12} />
                     ) : (
-                      <IconArrowDownRight style={{ width: 12, height: 12 }} />
-                    )}
-                  </ThemeIcon>
-                  <Text
-                    size="xs"
-                    c={inventory.productsInStockValueDiff > 0 ? 'teal' : 'red'}
-                    fw={500}
-                  >
-                    {Math.abs(inventory.productsInStockValueDiff)}%{' '}
-                    {inventory.productsInStockValueDiff > 0 ? t('increase') : t('decrease')}{' '}
-                    {t('comparedToLastMonth')}
-                  </Text>
-                </Group>
+                      <IconArrowDownRight size={12} />
+                    )
+                  }
+                >
+                  {Math.abs(inventory.productsInStockValueDiff)}%
+                </Badge>
               )}
             </Group>
-            <Group gap="xs" align="center">
-              <Text
-                fw={700}
-                fz="xl"
-                style={{
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                onClick={handleTotalValueClick}
-              >
+            <div>
+              <Text size="xs" c="dimmed" fw={500} mb={4}>
+                {t('totalValue')}
+              </Text>
+              <Text size="xl" fw={700} mb={4}>
                 {formatCurrency(inventory.productsInStockValue)}
               </Text>
-              <Badge color="blue" variant="light" size="sm">
+              <Text size="xs" c="dimmed">
                 {formatNumber(inventory.totalProductsInStock)} {t('items')}
-              </Badge>
-            </Group>
-          </div>
-          <div style={{ flex: 1 }}>
-            <Group gap="xs" align="center">
-              <Text c="dimmed" fz="sm" tt="uppercase" fw={500}>
-                {t('inventoryAccuracy')}
               </Text>
+            </div>
+          </Stack>
+        </Paper>
+
+        {/* Inventory Accuracy Card */}
+        <Paper 
+          withBorder 
+          p="lg" 
+          radius="md" 
+          shadow="xs"
+          style={{ 
+            cursor: 'pointer',
+            transition: 'background-color 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-0)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = ''
+          }}
+          onClick={handleAccuracyClick}
+        >
+          <Stack gap="sm">
+            <Group justify="space-between" align="flex-start">
+              <ThemeIcon size="xl" radius="md" variant="light" color={accuracyStatus.color}>
+                <IconCheckbox size={24} stroke={1.5} />
+              </ThemeIcon>
               <Tooltip
                 position="top"
                 withArrow
@@ -158,7 +191,7 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                   <div>
                     <Text size="sm" fw={500} mb={6}>
                       {t('inventoryAccuracy')}
-                    </Text>{' '}
+                    </Text>
                     <Text size="xs" c="dimmed" mb={8}>
                       {t('inventoryAccuracyTooltip')}
                     </Text>
@@ -167,55 +200,62 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                         {t('calculationDetails')}
                       </Text>
                       <Text size="xs" mb={2}>
-                        • {t('totalProducts')} {inventory.totalItemsTracked} {t('items')}
+                        • {t('accurateItems')} {inventory.accurateItems} / {inventory.totalItemsTracked}
                       </Text>
-                      <Text size="xs" mb={2}>
-                        • {t('accurateItems')} {inventory.accurateItems} {t('items')} (
-                        {t('wherePhysicalEqualsAccounting')})
-                      </Text>
-                      <Text size="xs" mb={2}>
-                        • {t('inaccurateItems')} {inventory.inaccurateItems} {t('items')} (
-                        {t('whereTheresDifference')})
-                      </Text>
-                      <Text size="xs" fw={500}>
-                        • {t('accuracyPercentage')} {inventory.accurateItems}/
-                        {inventory.totalItemsTracked} = {inventory.accuracyPercentage}%
+                      <Text size="xs">
+                        • {t('inaccurateItems')} {inventory.inaccurateItems} {t('items')}
                       </Text>
                     </div>
                   </div>
                 }
               >
-                <ThemeIcon radius="xl" size="xs" variant="transparent" c="dimmed">
-                  <IconInfoCircle style={{ width: 14, height: 14 }} />
+                <ThemeIcon radius="xl" size="sm" variant="transparent" c="dimmed">
+                  <IconInfoCircle size={16} />
                 </ThemeIcon>
               </Tooltip>
             </Group>
-            <Group gap="xs" align="center">
-              <Text
-                fw={700}
-                fz="xl"
-                style={{
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                onClick={handleAccuracyClick}
-              >
+            <div>
+              <Text size="xs" c="dimmed" fw={500} mb={4}>
+                {t('inventoryAccuracy')}
+              </Text>
+              <Text size="xl" fw={700} c={accuracyStatus.color} mb={4}>
                 {inventory.accuracyPercentage}%
               </Text>
-              <Badge color={accuracyStatus.color} variant="light" size="sm">
-                {inventory.accurateItems}/{inventory.totalItemsTracked}
-              </Badge>
-            </Group>
-          </div>
-        </Flex>
-        <Flex justify="space-between" gap="xl">
-          <div style={{ flex: 1 }}>
-            <Group gap="xs" align="center">
-              <Text c="dimmed" fz="sm" tt="uppercase" fw={500}>
-                {t('reorderPointAlerts')}
+              <Text size="xs" c="dimmed">
+                {inventory.accurateItems}/{inventory.totalItemsTracked} {t('accurate')}
               </Text>
+            </div>
+          </Stack>
+        </Paper>
+
+        {/* Reorder Alerts Card */}
+        <Paper 
+          withBorder 
+          p="lg" 
+          radius="md" 
+          shadow="xs"
+          style={{ 
+            cursor: 'pointer',
+            transition: 'background-color 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-0)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = ''
+          }}
+          onClick={handleReorderAlertsClick}
+        >
+          <Stack gap="sm">
+            <Group justify="space-between" align="flex-start">
+              <ThemeIcon 
+                size="xl" 
+                radius="md" 
+                variant="light" 
+                color={inventory.reorderPointAlerts > 0 ? 'orange' : 'gray'}
+              >
+                <IconAlertTriangle size={24} stroke={1.5} />
+              </ThemeIcon>
               <Tooltip
                 position="top"
                 withArrow
@@ -226,46 +266,68 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                     <Text size="sm" fw={500} mb={6}>
                       {t('reorderPointAlerts')}
                     </Text>
-                    <Text size="xs" c="dimmed" mb={8}>
+                    <Text size="xs" c="dimmed">
                       {t('reorderPointAlertsTooltip')}
                     </Text>
                   </div>
                 }
               >
-                <ThemeIcon radius="xl" size="xs" variant="transparent" c="dimmed">
-                  <IconInfoCircle style={{ width: 14, height: 14 }} />
+                <ThemeIcon radius="xl" size="sm" variant="transparent" c="dimmed">
+                  <IconInfoCircle size={16} />
                 </ThemeIcon>
               </Tooltip>
             </Group>
-            <Group gap="xs" align="center">
-              <Text
-                fw={700}
-                fz="xl"
+            <div>
+              <Text size="xs" c="dimmed" fw={500} mb={4}>
+                {t('reorderPointAlerts')}
+              </Text>
+              <Text 
+                size="xl" 
+                fw={700} 
                 c={inventory.reorderPointAlerts > 0 ? 'orange' : 'dimmed'}
-                style={{
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                onClick={handleReorderAlertsClick}
+                mb={4}
               >
                 {inventory.reorderPointAlerts}
               </Text>
-              <Badge
-                color={inventory.reorderPointAlerts > 0 ? 'orange' : 'gray'}
-                variant="light"
+              <Badge 
+                color={inventory.reorderPointAlerts > 0 ? 'orange' : 'gray'} 
+                variant="light" 
                 size="sm"
               >
                 {inventory.reorderPointAlerts > 0 ? t('actionRequired') : t('allGood')}
               </Badge>
-            </Group>
-          </div>
-          <div style={{ flex: 1 }}>
-            <Group gap="xs" align="center">
-              <Text c="dimmed" fz="sm" tt="uppercase" fw={500}>
-                {t('deadStockValue')}
-              </Text>
+            </div>
+          </Stack>
+        </Paper>
+
+        {/* Dead Stock Card */}
+        <Paper 
+          withBorder 
+          p="lg" 
+          radius="md" 
+          shadow="xs"
+          style={{ 
+            cursor: 'pointer',
+            transition: 'background-color 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-0)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = ''
+          }}
+          onClick={handleDeadStockClick}
+        >
+          <Stack gap="sm">
+            <Group justify="space-between" align="flex-start">
+              <ThemeIcon 
+                size="xl" 
+                radius="md" 
+                variant="light" 
+                color={inventory.deadStockValue > 0 ? 'red' : 'gray'}
+              >
+                <IconTrendingUp size={24} stroke={1.5} style={{ transform: 'rotate(180deg)' }} />
+              </ThemeIcon>
               <Tooltip
                 position="top"
                 withArrow
@@ -284,44 +346,37 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                         {t('details')}
                       </Text>
                       <Text size="xs" mb={2}>
-                        • {t('deadStockItems')} {inventory.deadStockItems} {t('products')}
+                        • {inventory.deadStockItems} {t('products')}
                       </Text>
                       <Text size="xs">• {t('noSalesAdjustmentsLast90Days')}</Text>
                     </div>
                   </div>
                 }
               >
-                <ThemeIcon radius="xl" size="xs" variant="transparent" c="dimmed">
-                  <IconInfoCircle style={{ width: 14, height: 14 }} />
+                <ThemeIcon radius="xl" size="sm" variant="transparent" c="dimmed">
+                  <IconInfoCircle size={16} />
                 </ThemeIcon>
               </Tooltip>
             </Group>
-            <Group gap="xs" align="center">
-              <Text
-                fw={700}
-                fz="xl"
+            <div>
+              <Text size="xs" c="dimmed" fw={500} mb={4}>
+                {t('deadStockValue')}
+              </Text>
+              <Text 
+                size="xl" 
+                fw={700} 
                 c={inventory.deadStockValue > 0 ? 'red' : 'dimmed'}
-                style={{
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                onClick={handleDeadStockClick}
+                mb={4}
               >
                 {formatCurrency(inventory.deadStockValue)}
               </Text>
-              <Badge
-                color={inventory.deadStockValue > 0 ? 'red' : 'gray'}
-                variant="light"
-                size="sm"
-              >
+              <Text size="xs" c="dimmed">
                 {inventory.deadStockItems} {t('items')}
-              </Badge>
-            </Group>
-          </div>
-        </Flex>
-      </Stack>
-    </Paper>
+              </Text>
+            </div>
+          </Stack>
+        </Paper>
+      </SimpleGrid>
+    </Stack>
   )
 }

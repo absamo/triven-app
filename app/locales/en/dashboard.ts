@@ -33,6 +33,7 @@ export default {
   inventoryAccuracy: 'Inventory Accuracy',
   inventoryAccuracyTooltip:
     'Measures how well your physical stock matches your system records. Calculated by comparing Physical Stock On Hand vs Accounting Stock On Hand for each product. Higher percentages indicate better inventory control.',
+  accurate: 'accurate',
   reorderPointAlerts: 'Reorder Point Alerts',
   reorderPointAlertsTooltip:
     'Shows the number of products that are at or below their reorder point threshold. These products may need to be restocked soon to avoid stockouts.',
@@ -90,6 +91,10 @@ export default {
   netCashflow: 'Net Cashflow',
   cashFlowRatio: 'Cash Flow Ratio',
   incoming: 'incoming',
+
+  // Order Stats
+  salesTotal: 'Sales Revenue',
+  purchaseTotal: 'Purchase Costs',
 
   // Stock Status Stats
   stockStatusOverview: 'Stock Status Overview',

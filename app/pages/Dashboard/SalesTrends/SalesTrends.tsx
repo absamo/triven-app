@@ -23,24 +23,25 @@ export default function SalesTrends({ salesTrends }: SalesTrendsProps) {
     salesTrends.some((trend) => trend.salesCount > 0 || trend.salesValue > 0)
 
   return (
-    <Paper withBorder p="md" radius="md" mb={0} shadow="sm">
-      <Group justify="space-between">
-        <Title order={5} mb="md">
-          {t('dashboard:salesTrends')}
-        </Title>
-        <ThemeIcon color="blue" variant="light" size="lg" radius="md">
-          <IconChartLine size="1.2rem" stroke={1.5} />
+    <Paper withBorder p="lg" radius="md" shadow="xs">
+      <Group justify="space-between" mb="lg">
+        <div>
+          <Title order={4} fw={600} mb={4}>
+            {t('dashboard:salesTrends')}
+          </Title>
+          <Text c="dimmed" size="sm">
+            {t('dashboard:monthlySalesData')}
+          </Text>
+        </div>
+        <ThemeIcon color="blue" variant="light" size="xl" radius="md">
+          <IconChartLine size="1.4rem" stroke={1.5} />
         </ThemeIcon>
       </Group>
-
-      <Text c="dimmed" fz="sm" mb="md">
-        {t('dashboard:monthlySalesData')}
-      </Text>
 
       {hasData ? (
         <div className={classes.chartContainer}>
           <LineChart
-            h={180}
+            h={200}
             data={salesTrends}
             dataKey="month"
             withLegend

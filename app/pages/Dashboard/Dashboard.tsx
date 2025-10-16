@@ -3,6 +3,7 @@ import {
   Grid,
   Group,
   Loader,
+  Paper,
   SimpleGrid,
   Stack,
   Text,
@@ -414,31 +415,32 @@ export default function Dashboard({
     <div className={classes.root}>
       {/* Header with Controls */}
       <div className={classes.headerSection}>
-        <div>
-          <Title order={1} className={classes.headerTitle}>
-            {t('analyticsOverview')}
-          </Title>
-          <Group gap="xs" align="center">
-            <Text size="lg" c="dimmed" className={classes.headerSubtitle}>
-              {t('realtimeInsights')}
-            </Text>
-            <div
-              style={{
-                position: 'relative',
-                display: 'inline-flex',
-                alignItems: 'center',
-                marginLeft: '8px',
-              }}
-            >
-              {loading && <Loader size={16} color="blue" />}
+        <Stack gap="xs" mb="xl">
+          <Group justify="space-between" align="flex-start">
+            <div>
+              <Title order={1} className={classes.headerTitle}>
+                {t('analyticsOverview')}
+              </Title>
+              <Group gap="xs" align="center" mt={4}>
+                <Text size="sm" c="dimmed" className={classes.headerSubtitle}>
+                  {t('realtimeInsights')}
+                </Text>
+                {loading && <Loader size={14} color="blue" />}
+              </Group>
             </div>
           </Group>
-        </div>
+        </Stack>
       </div>
 
       <Stack gap="xl">
-        <Group justify="flex-end">
-          <DatePickerInput
+        {/* Filters Section */}
+        <Paper withBorder p="md" radius="md" shadow="xs">
+          <Group justify="space-between" wrap="nowrap">
+            <Text size="sm" fw={500} c="dimmed">
+              Filter Dashboard
+            </Text>
+            <Group gap="sm">
+              <DatePickerInput
             type="range"
             placeholder={
               dateRange && dateRange[0] && dateRange[1]
@@ -500,25 +502,29 @@ export default function Dashboard({
             </Grid>
           )}
 
-          {hasActiveFilters() && (
-            <Tooltip label={t('clearAllFilters')} position="bottom">
-              <ActionIcon
-                variant="light"
-                color="gray"
-                size="md"
-                onClick={clearAllFilters}
-                disabled={loading}
-              >
-                <IconFilterOff size={16} />
-              </ActionIcon>
-            </Tooltip>
-          )}
-        </Group>
+              {hasActiveFilters() && (
+                <Tooltip label={t('clearAllFilters')} position="bottom">
+                  <ActionIcon
+                    variant="light"
+                    color="gray"
+                    size="md"
+                    onClick={clearAllFilters}
+                    disabled={loading}
+                  >
+                    <IconFilterOff size={16} />
+                  </ActionIcon>
+                </Tooltip>
+              )}
+            </Group>
+          </Group>
+        </Paper>
         {/* Key Metrics */}
-        <InventoryStats inventory={currentInventoryData} />
+        <Stack gap="lg">
+          <InventoryStats inventory={currentInventoryData} />
+        </Stack>
 
-        {/* Orders and Finance Stats - Horizontal Layout */}
-        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
+        {/* Orders and Finance Stats */}
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
           {/* Orders Stats */}
           <OrderStats
             orders={

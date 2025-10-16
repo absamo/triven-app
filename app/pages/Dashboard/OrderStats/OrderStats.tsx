@@ -37,50 +37,50 @@ export default function OrderStats({ orders }: OrderStatsProps) {
   ]
 
   return (
-    <Paper withBorder p="md" radius="md" mb={0} shadow="sm">
-      <Group justify="space-between" align="flex-start" mb="md">
-        <Title order={5}>{t('ordersOverview')}</Title>
+    <Paper withBorder p="lg" radius="md" shadow="xs">
+      <Group justify="space-between" align="center" mb="lg">
+        <Title order={4} fw={600}>{t('ordersOverview')}</Title>
       </Group>
 
-      <Stack gap="md">
+      <Stack gap="lg">
         {data.map((stat) => (
-          <Group key={stat.title} justify="space-between" wrap="nowrap">
-            <Group gap="xs">
-              <ThemeIcon color={stat.color} variant="light" size="lg" radius="md">
-                <stat.icon size="1.2rem" stroke={1.5} />
+          <Group key={stat.title} justify="space-between" wrap="nowrap" gap="md">
+            <Group gap="sm">
+              <ThemeIcon color={stat.color} variant="light" size="xl" radius="md">
+                <stat.icon size="1.4rem" stroke={1.5} />
               </ThemeIcon>
-              <Text fw={500}>{stat.title}</Text>
+              <div>
+                <Text size="sm" c="dimmed" mb={2}>
+                  {stat.title}
+                </Text>
+                <Text fw={700} size="xl">
+                  {stat.value}
+                </Text>
+              </div>
             </Group>
-            <Text fw={700} size="lg">
-              {stat.value}
-            </Text>
           </Group>
         ))}
 
         {/* Always show order totals with dynamic labels */}
-        <Group
-          justify="space-between"
-          wrap="nowrap"
-          mt="xs"
-          pt="xs"
-          style={{ borderTop: '1px solid #e2e8f0' }}
-        >
-          <Text size="sm" c="dimmed">
-            {t('salesTotal')}
-          </Text>
-          <Text fw={600} size="sm">
-            ${orders.recentSalesTotal.toLocaleString()}
-          </Text>
-        </Group>
+        <Stack gap="sm" mt="md" pt="md" style={{ borderTop: '1px solid light-dark(#e2e8f0, var(--mantine-color-dark-4))' }}>
+          <Group justify="space-between" wrap="nowrap">
+            <Text size="sm" c="dimmed" fw={500}>
+              {t('salesTotal')}
+            </Text>
+            <Text fw={600} size="md" c="teal">
+              ${orders.recentSalesTotal.toLocaleString()}
+            </Text>
+          </Group>
 
-        <Group justify="space-between" wrap="nowrap">
-          <Text size="sm" c="dimmed">
-            {t('purchaseTotal')}
-          </Text>
-          <Text fw={600} size="sm">
-            ${orders.recentPurchasesTotal.toLocaleString()}
-          </Text>
-        </Group>
+          <Group justify="space-between" wrap="nowrap">
+            <Text size="sm" c="dimmed" fw={500}>
+              {t('purchaseTotal')}
+            </Text>
+            <Text fw={600} size="md" c="blue">
+              ${orders.recentPurchasesTotal.toLocaleString()}
+            </Text>
+          </Group>
+        </Stack>
       </Stack>
     </Paper>
   )

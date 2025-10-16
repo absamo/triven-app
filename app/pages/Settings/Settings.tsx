@@ -441,7 +441,7 @@ export default function Settings({
           {t('common:title', 'Settings')}
         </PageTitle>
 
-        <Tabs defaultValue="billing" variant="default" radius="md" color="cyan.5">
+        <Tabs defaultValue="billing" variant="outline" radius="md" color="cyan.5">
           <Tabs.List mb="lg">
             {settings.map(({ id, label }) => (
               <Tabs.Tab value={id} key={id}>
