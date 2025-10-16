@@ -6,7 +6,6 @@
 
 .iconContainer {
   position: relative;
-  animation: pulse 2s ease-in-out infinite;
 }
 
 .lockIcon {
@@ -60,7 +59,6 @@
 }
 
 .upgradeButton:hover {
-  transform: translateY(-2px);
   box-shadow:
     0 12px 35px rgba(var(--mantine-color-teal-6-rgb), 0.4),
     0 6px 15px rgba(var(--mantine-color-blue-6-rgb), 0.3);

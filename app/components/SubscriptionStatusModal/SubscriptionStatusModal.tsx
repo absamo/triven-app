@@ -70,6 +70,7 @@ export default function SubscriptionStatusModal({
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [showReactivateModal, setShowReactivateModal] = useState(false)
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false)
+  const [isButtonLoading, setIsButtonLoading] = useState(false)
   const { checkStripeHealth, isChecking: isCheckingStripeHealth } = useStripeHealth()
 
   // Helper function to get modal content based on mode
@@ -185,31 +186,36 @@ export default function SubscriptionStatusModal({
 
   // Handle subscription creation using fetcher
   const handleUpgrade = async () => {
-    // Check Stripe health before proceeding
-    const isHealthy = await checkStripeHealth()
-    if (!isHealthy) {
-      return
-    }
+    setIsButtonLoading(true)
 
-    // Fetch config first
-    if (!configFetcher.data) {
-      configFetcher.load('/api/config')
-    }
-
-    // For cancelled subscriptions, show reactivation modal
+    // For cancelled subscriptions, show reactivation modal immediately (no health check needed)
     if (mode === STRIPE_SUBSCRIPTION_STATUSES.CANCELED) {
       setShowReactivateModal(true)
+      setIsButtonLoading(false)
       return
     }
 
-    // For past_due or unpaid subscriptions, show payment method update modal
+    // For past_due or unpaid subscriptions, show payment method update modal immediately
     if (
       (mode === STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE ||
         mode === STRIPE_SUBSCRIPTION_STATUSES.UNPAID) &&
       subscription
     ) {
       setShowPaymentMethodModal(true)
+      setIsButtonLoading(false)
       return
+    }
+
+    // For other statuses that require API calls, check Stripe health before proceeding
+    const isHealthy = await checkStripeHealth()
+    if (!isHealthy) {
+      setIsButtonLoading(false)
+      return
+    }
+
+    // Fetch config first
+    if (!configFetcher.data) {
+      configFetcher.load('/api/config')
     }
 
     // For other statuses, use the default upgrade flow
@@ -247,6 +253,8 @@ export default function SubscriptionStatusModal({
   // Handle fetcher state changes
   useEffect(() => {
     if (paymentFetcher.state === 'idle' && paymentFetcher.data) {
+      setIsButtonLoading(false) // Reset button loading when fetcher completes
+      
       if ('error' in paymentFetcher.data) {
         // Handle error
         const error = (paymentFetcher.data as { error: unknown }).error
@@ -370,7 +378,7 @@ export default function SubscriptionStatusModal({
               <Center mb="xl">
                 <div className={classes.iconContainer}>
                   <ThemeIcon
-                    size={80}
+                    size={50}
                     radius="xl"
                     variant="gradient"
                     gradient={modalContent.gradient}
@@ -406,10 +414,10 @@ export default function SubscriptionStatusModal({
                   variant="gradient"
                   className={classes.upgradeButton}
                   leftSection={<IconCrown size={20} />}
-                  loading={isLoadingPayment || isCheckingStripeHealth}
-                  disabled={isLoadingPayment || isCheckingStripeHealth}
+                  loading={isButtonLoading || isLoadingPayment}
+                  disabled={isButtonLoading || isLoadingPayment}
                 >
-                  {isLoadingPayment ? t('payment:setupPayment') : modalContent.buttonText}
+                  {isButtonLoading || isLoadingPayment ? t('payment:setupPayment') : modalContent.buttonText}
                 </Button>
 
                 <Text ta="center" size="xs" c="dimmed">

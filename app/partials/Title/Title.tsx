@@ -8,6 +8,8 @@ import {
   Group,
   Title as MantineTitle,
   Paper,
+  Stack,
+  Text,
   rem,
 } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
@@ -18,6 +20,7 @@ import classes from '~/app/partials/Title/Title.module.css'
 
 interface TitleProps {
   children: React.ReactNode
+  description?: string
   order?: TitleOrder
   to?: To
   backTo?: string
@@ -30,7 +33,8 @@ interface TitleProps {
 
 export default function Title({
   children,
-  order = 3,
+  description,
+  order = 1,
   to,
   backTo,
   canCreate,
@@ -47,25 +51,33 @@ export default function Title({
   return (
     <Paper
       radius={0}
-      className={sticky ? classes.title : classes.nonSticky}
+      className={sticky ? classes.titleContainer : classes.nonSticky}
       pt={sticky ? 20 : 0}
       pb={sticky ? 20 : 0}
+      mb={15}
     >
-      <Flex justify="space-between" align="center">
-        <Group justify="flex-start" align="center">
-          {backTo && (
-            <Anchor component={Link} to={backTo}>
-              <Center>
-                <ActionIcon variant="light" radius="xl" size="xl" className={classes.backButton}>
-                  <IconArrowLeft style={{ width: rem(24), height: rem(24) }} stroke={1.5} />
-                </ActionIcon>
-              </Center>
-            </Anchor>
+      <Flex justify="space-between" align="flex-start" gap="md">
+        <Stack gap="xs" style={{ flex: 1 }}>
+          <Group justify="flex-start" align="center">
+            {backTo && (
+              <Anchor component={Link} to={backTo}>
+                <Center>
+                  <ActionIcon variant="light" radius="xl" size="xl" className={classes.backButton}>
+                    <IconArrowLeft style={{ width: rem(24), height: rem(24) }} stroke={1.5} />
+                  </ActionIcon>
+                </Center>
+              </Anchor>
+            )}
+            <MantineTitle order={order} p={0} className={classes.titleText}>
+              {children}
+            </MantineTitle>
+          </Group>
+          {description && (
+            <Text size="sm" c="dimmed" ml={backTo ? 56 : 0}>
+              {description}
+            </Text>
           )}
-          <MantineTitle order={order} p={0}>
-            {children}
-          </MantineTitle>
-        </Group>
+        </Stack>
         <Group>
           {additionalButtons}
           {to && canCreate && (

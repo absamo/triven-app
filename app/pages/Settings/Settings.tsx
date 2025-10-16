@@ -13,7 +13,6 @@ import {
   Tabs,
   Text,
   ThemeIcon,
-  Title,
   Tooltip,
   useMantineColorScheme,
   useMantineTheme,
@@ -28,9 +27,6 @@ import {
   IconEdit,
   IconInfoCircle,
   IconPremiumRights,
-  IconShieldCheck,
-  IconStar,
-  IconTrendingUp,
   IconX,
 } from '@tabler/icons-react'
 import dayjs from 'dayjs'
@@ -48,8 +44,8 @@ import type { ICurrency } from '~/app/common/validations/currencySchema'
 import { CancellationModal, PaymentMethodEditModal, UpgradePaymentModal } from '~/app/components'
 import { useStripeHealth } from '~/app/lib/hooks/useStripeHealth'
 import { CURRENCY_SYMBOLS } from '~/app/modules/stripe/plans'
+import PageTitle from '~/app/partials/Title/Title'
 import CurrencySettings from './CurrencySettings'
-import classes from './Settings.module.css'
 
 interface SettingsProps {
   currencies: ICurrency[]
@@ -326,44 +322,6 @@ export default function Settings({
                 </Paper>
               </>
             )}
-
-            {/* Action Buttons */}
-            <Group gap="sm" justify="flex-end" mt="md">
-              {false && shouldShowUpgrade(billing?.planStatus) &&
-                canUpgrade(billing?.currentPlan || '', billing?.planStatus) && (
-                  <Button
-                    size="md"
-                    variant="gradient"
-                    gradient={{ from: 'violet', to: 'blue' }}
-                    leftSection={<IconArrowUp size={18} />}
-                    onClick={handleUpgrade}
-                    loading={isChecking}
-                  >
-                    {(() => {
-                      if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
-                        return `${t('payment:subscribe')} ${getTranslatedPlanLabel(billing?.currentPlan, t)}`
-                      } else {
-                        const nextPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus)
-                        return nextPlan
-                          ? `${t('payment:upgrade')} ${getTranslatedPlanLabel(nextPlan, t)}`
-                          : t('payment:viewPlans', 'View Plans')
-                      }
-                    })()}
-                  </Button>
-                )}
-              
-              {false && billing?.subscriptionId && billing?.planStatus === 'active' && !billing?.cancelAtPeriodEnd && (
-                <Button
-                  size="md"
-                  variant="light"
-                  color="red"
-                  leftSection={<IconX size={16} />}
-                  onClick={() => setShowCancellationModal(true)}
-                >
-                  {t('payment:cancel', 'Cancel')}
-                </Button>
-              )}
-            </Group>
           </Card>
 
           {/* Payment Method Card */}
@@ -462,14 +420,9 @@ export default function Settings({
   return (
     <>
       <Stack gap="xl">
-        <div>
-          <Title order={1} className={classes.title}>
-            {t('common:title', 'Settings')}
-          </Title>
-          <Text size="sm" c="dimmed">
-            {t('common:manageSettings', 'Manage your account settings and preferences')}
-          </Text>
-        </div>
+        <PageTitle description={t('common:manageSettings', 'Manage your account settings and preferences')}>
+          {t('common:title', 'Settings')}
+        </PageTitle>
 
         <Tabs defaultValue="billing" variant="pills" radius="md" color="cyan.5">
           <Tabs.List mb="xl">

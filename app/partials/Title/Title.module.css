@@ -1,23 +1,49 @@
-.title {
+.titleContainer {
   position: sticky;
-  top: 70px;
+  top: 0;
   z-index: 100;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(0);
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  border-bottom: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
 }
 
 .nonSticky {
   position: relative;
-  z-index: 100;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(0);
+}
+
+.titleText {
+  font-family:
+    Greycliff CF,
+    var(--mantine-font-family);
+  font-size: rem(28px);
+  font-weight: 700;
+  color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-gray-0));
+  margin-bottom: 0;
+  padding-bottom: var(--mantine-spacing-md);
+  position: relative;
+}
+
+.titleText::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--mantine-color-blue-6), var(--mantine-color-cyan-5));
+  border-radius: 2px;
 }
 
 .backButton {
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-4));
-  transition: color 0.2s ease-in-out;
+  transition: transform 0.2s ease;
 }
 
 .backButton:hover {
-  color: light-dark(var(--mantine-color-teal-6), var(--mantine-color-teal-4));
+  transform: translateX(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .titleText {
+    font-size: rem(22px);
+  }
 }
