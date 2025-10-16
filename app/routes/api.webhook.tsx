@@ -451,6 +451,10 @@ export async function action({ request }: ActionFunctionArgs) {
           return new Response(null, { status: 200 })
         }
 
+        // CRITICAL: Fetch the LATEST subscription state from Stripe
+        // Event data can be stale, especially during rapid state changes
+        const latestSubscription = await stripe.subscriptions.retrieve(subscription.id)
+
         const user = await prisma.user.findUnique({
           where: { stripeCustomerId: customerId },
         })
@@ -462,7 +466,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 
         // Map Stripe product ID to database plan ID for subscription updates
-        const updatePriceData = subscription.items.data[0]
+        const updatePriceData = latestSubscription.items.data[0]
         let updateDbPlanId = 'standard' // Default fallback
 
         // Find the correct database plan ID by looking up the price
@@ -483,7 +487,7 @@ export async function action({ request }: ActionFunctionArgs) {
           trial_start?: number
           trial_end?: number
         }
-        const subscriptionData = subscription as Stripe.Subscription & StripeSubscriptionData
+        const subscriptionData = latestSubscription as Stripe.Subscription & StripeSubscriptionData
         const updateCurrentPeriodStart =
           subscriptionData.current_period_start || Math.floor(Date.now() / 1000)
         const updateCurrentPeriodEnd =
@@ -491,28 +495,37 @@ export async function action({ request }: ActionFunctionArgs) {
           Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
 
         // Get payment method details if subscription has payment method
-        const updatePaymentMethodDetails = await getPaymentMethodDetails(subscription.id)
+        const updatePaymentMethodDetails = await getPaymentMethodDetails(latestSubscription.id)
 
         // Check if subscription is being reactivated (was canceled, now active)
         const existingSubscription = await prisma.subscription.findUnique({
           where: { userId: user.id },
         })
         const wasCanceled = existingSubscription?.status === 'canceled'
-        const isReactivation = subscription.status === 'active' && !subscriptionData.cancel_at_period_end && wasCanceled
+        const isNowActive = latestSubscription.status === 'active'
+        const isReactivation = isNowActive && !subscriptionData.cancel_at_period_end && wasCanceled
+
+        console.log(`📋 Subscription update for user ${user.id}:`)
+        console.log(`   Previous status: ${existingSubscription?.status || 'none'}`)
+        console.log(`   New Stripe status: ${latestSubscription.status}`)
+        console.log(`   Cancel at period end: ${subscriptionData.cancel_at_period_end}`)
+        if (isReactivation) {
+          console.log(`   ✅ Reactivation detected - clearing cancellation fields`)
+        }
 
         await prisma.subscription.upsert({
           where: { userId: user.id },
           update: {
-            id: subscription.id, // Update to new subscription ID if it changed
+            id: latestSubscription.id, // Update to new subscription ID if it changed
             planId: updateDbPlanId, // Use database plan ID, not Stripe product ID
             priceId: String(updatePriceData.price.id),
             interval: String(updatePriceData.price.recurring?.interval || 'month'),
-            status: subscription.status,
+            status: latestSubscription.status,
             currentPeriodStart: updateCurrentPeriodStart,
             currentPeriodEnd: updateCurrentPeriodEnd,
             cancelAtPeriodEnd: subscriptionData.cancel_at_period_end || false,
             trialStart: subscriptionData.trial_start || 0,
-            trialEnd: subscription.status === 'active' ? 0 : subscriptionData.trial_end || 0, // Clear trial for active subscriptions
+            trialEnd: latestSubscription.status === 'active' ? 0 : subscriptionData.trial_end || 0, // Clear trial for active subscriptions
             paymentMethodId: updatePaymentMethodDetails?.paymentMethodId,
             last4: updatePaymentMethodDetails?.last4,
             brand: updatePaymentMethodDetails?.brand,
@@ -527,17 +540,17 @@ export async function action({ request }: ActionFunctionArgs) {
             }),
           },
           create: {
-            id: subscription.id,
+            id: latestSubscription.id,
             userId: user.id,
             planId: updateDbPlanId, // Use database plan ID, not Stripe product ID
             priceId: String(updatePriceData.price.id),
             interval: String(updatePriceData.price.recurring?.interval || 'month'),
-            status: subscription.status,
+            status: latestSubscription.status,
             currentPeriodStart: updateCurrentPeriodStart,
             currentPeriodEnd: updateCurrentPeriodEnd,
             cancelAtPeriodEnd: subscriptionData.cancel_at_period_end || false,
             trialStart: subscriptionData.trial_start || 0,
-            trialEnd: subscription.status === 'active' ? 0 : subscriptionData.trial_end || 0, // Clear trial for active subscriptions
+            trialEnd: latestSubscription.status === 'active' ? 0 : subscriptionData.trial_end || 0, // Clear trial for active subscriptions
             paymentMethodId: updatePaymentMethodDetails?.paymentMethodId,
             last4: updatePaymentMethodDetails?.last4,
             brand: updatePaymentMethodDetails?.brand,
@@ -548,13 +561,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
         // Broadcast subscription update to connected clients for real-time UI updates
         // Add 'confirmed: true' when subscription is fully active (no trial)
-        const trialEndValue = subscription.status === 'active' ? 0 : subscriptionData.trial_end || 0
+        const trialEndValue = latestSubscription.status === 'active' ? 0 : subscriptionData.trial_end || 0
         broadcastSubscriptionUpdate({
           userId: user.id,
-          status: subscription.status,
+          status: latestSubscription.status,
           planId: updateDbPlanId,
           trialEnd: trialEndValue,
-          confirmed: subscription.status === 'active' && trialEndValue === 0,
+          confirmed: latestSubscription.status === 'active' && trialEndValue === 0,
         })
 
         // IMPORTANT: Check if there are multiple active subscriptions in Stripe and cancel extras
@@ -566,7 +579,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
         const activeSubscriptions = allUserSubscriptions.data.filter(
           (sub) =>
-            (sub.status === 'active' || sub.status === 'trialing') && sub.id !== subscription.id
+            (sub.status === 'active' || sub.status === 'trialing') && sub.id !== latestSubscription.id
         )
 
         if (activeSubscriptions.length > 0) {
