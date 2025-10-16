@@ -8,7 +8,7 @@ import {
   IconUpload,
 } from '@tabler/icons-react'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useNavigate } from 'react-router'
 import { PRODUCT_STATUSES, USER_ROLES } from '~/app/common/constants'
@@ -141,7 +141,7 @@ export default function Products({
     }))
 
   // Convert categories to filter options
-  const categoryFilterOptions = categories
+  const categoryFilterOptions = (categories || [])
     .filter((category) => category.id) // Only include categories with valid IDs
     .map((category) => ({
       value: category.id!,
@@ -149,20 +149,46 @@ export default function Products({
     }))
 
   // Convert agencies to filter options
-  const agencyFilterOptions = agencies
+  const agencyFilterOptions = (agencies || [])
     .filter((agency) => agency.id) // Only include agencies with valid IDs
     .map((agency) => ({
       value: agency.id!,
       label: agency.name,
     }))
 
-  // Convert sites to filter options
-  const siteFilterOptions = sites
-    .filter((site) => site.id) // Only include sites with valid IDs
-    .map((site) => ({
-      value: site.id!,
-      label: site.name,
-    }))
+  // Convert sites to filter options grouped by type
+  const siteFilterOptions = useMemo(() => {
+    const sitesArray = sites || []
+    const warehouses = sitesArray
+      .filter((site) => site.id && site.type === 'Warehouse')
+      .map((site) => ({
+        value: site.id!,
+        label: site.name,
+      }))
+    
+    const stores = sitesArray
+      .filter((site) => site.id && (!site.type || site.type === 'Store'))
+      .map((site) => ({
+        value: site.id!,
+        label: site.name,
+      }))
+    
+    const result = []
+    if (warehouses.length > 0) {
+      result.push({
+        group: 'Warehouse',
+        items: warehouses,
+      })
+    }
+    if (stores.length > 0) {
+      result.push({
+        group: 'Store',
+        items: stores,
+      })
+    }
+    
+    return result
+  }, [sites])
 
   const handleFilter = useCallback(
     (data: {
@@ -622,14 +648,6 @@ export default function Products({
           description: t('filterByCategory'),
           data: categoryFilterOptions,
         }}
-        agencyProps={
-          isAdmin
-            ? {
-                description: 'Filter by Agency',
-                data: agencyFilterOptions,
-              }
-            : undefined
-        }
         siteProps={
           isAdmin
             ? {

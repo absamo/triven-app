@@ -331,9 +331,9 @@ export default function ProductFilters({
   }
 
   return (
-    <Grid mb={20} grow>
+    <Grid mb={20}>
       {searchProps && (
-        <Grid.Col span={3}>
+        <Grid.Col span="auto">
           <TextInput
             radius="md"
             size="sm"
@@ -356,7 +356,7 @@ export default function ProductFilters({
       {statusProps && (
         <Grid.Col span={2}>
           <MultiSelect
-            data={statusProps?.data}
+            data={statusProps?.data || []}
             value={statuses || []}
             onChange={handleStatusChange}
             label={statusProps?.description}
@@ -378,7 +378,7 @@ export default function ProductFilters({
       {categoryProps && (
         <Grid.Col span={2}>
           <MultiSelect
-            data={categoryProps?.data}
+            data={categoryProps?.data || []}
             value={categories || []}
             onChange={handleCategoryChange}
             label={categoryProps?.description}
@@ -397,32 +397,10 @@ export default function ProductFilters({
         </Grid.Col>
       )}
 
-      {agencyProps && (
-        <Grid.Col span={2}>
-          <MultiSelect
-            data={agencyProps?.data}
-            value={agencies || []}
-            onChange={handleAgencyChange}
-            label={agencyProps?.description}
-            placeholder={agencies.length > 0 ? '' : 'Select agencies'}
-            hidePickedOptions
-            comboboxProps={{
-              width: 200,
-              position: 'bottom-start',
-              shadow: 'md',
-            }}
-            classNames={{
-              label: classes.label,
-            }}
-            clearable
-          />
-        </Grid.Col>
-      )}
-
       {siteProps && (
         <Grid.Col span={2}>
           <MultiSelect
-            data={siteProps?.data}
+            data={siteProps?.data || []}
             value={sites || []}
             onChange={handleSiteChange}
             label={siteProps?.description}
@@ -442,44 +420,32 @@ export default function ProductFilters({
       )}
 
       {/* Reset Filters Button */}
-      <Grid.Col span="auto">
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <div
+      <Grid.Col span="content">
+        <Tooltip label={t('resetAllFilters')} position="top" withArrow>
+          <ActionIcon
+            variant={hasActiveFilters ? 'filled' : 'default'}
+            color={hasActiveFilters ? 'blue' : undefined}
+            size="lg"
+            disabled={!hasActiveFilters}
+            onClick={(e) => {
+              e.preventDefault()
+              if (hasActiveFilters) {
+                handleResetFilters()
+              }
+            }}
             style={{
-              height: '20px', // Match the label height of other inputs
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '8px', // Match the spacing of other inputs
+              marginTop: '27px',
+              opacity: hasActiveFilters ? 1 : 0.5,
+              cursor: hasActiveFilters ? 'pointer' : 'not-allowed',
             }}
           >
-            <span style={{ fontSize: '14px', color: 'transparent' }}>.</span>{' '}
-            {/* Invisible placeholder for alignment */}
-          </div>
-          <Tooltip label={t('resetAllFilters')} position="top" withArrow>
-            <ActionIcon
-              variant={hasActiveFilters ? 'filled' : 'default'}
-              color={hasActiveFilters ? 'blue' : undefined}
-              size="md"
-              disabled={!hasActiveFilters}
-              onClick={(e) => {
-                e.preventDefault()
-                if (hasActiveFilters) {
-                  handleResetFilters()
-                }
-              }}
-              style={{
-                opacity: hasActiveFilters ? 1 : 0.5,
-                cursor: hasActiveFilters ? 'pointer' : 'not-allowed',
-              }}
-            >
-              {hasActiveFilters ? (
-                <IconFilterOff size={16} stroke={1.5} color="white" />
-              ) : (
-                <IconFilter size={16} stroke={1.5} />
-              )}
-            </ActionIcon>
-          </Tooltip>
-        </div>
+            {hasActiveFilters ? (
+              <IconFilterOff size={18} stroke={1.5} color="white" />
+            ) : (
+              <IconFilter size={18} stroke={1.5} />
+            )}
+          </ActionIcon>
+        </Tooltip>
       </Grid.Col>
     </Grid>
   )
