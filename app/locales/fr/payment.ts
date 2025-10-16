@@ -18,12 +18,13 @@ export default {
   welcomeMessage: 'Bienvenue au plan {{planName}} ! Votre compte a été mis à niveau.',
   paymentError: "Une erreur s'est produite avec votre paiement",
 
-  // Informations d'abonnement
+    // Subscription info
+  price: 'Prix',
   cancelAnytime:
     'Vous pouvez annuler votre abonnement à tout moment depuis les paramètres de votre compte',
   proratedDifference:
     'Vous serez facturé de la différence au prorata pour le reste de votre cycle de facturation.',
-  trialEndsBilling: 'Votre essai se terminera et la facturation commencera immédiatement.',
+  trialEndsBilling: 'Votre période d\'essai se terminera et la facturation commencera immédiatement.',
 
   // Modale d'essai spécifique
   trialPeriodExpired: "Période d'essai expirée",
@@ -132,10 +133,12 @@ export default {
   updateCardToRestore: "Mettez à jour votre carte pour restaurer l'accès à votre compte",
 
   // Settings page translations
+  subscription: 'Abonnement',
   subscriptions: 'Abonnements',
-  manageSubscriptions: 'Gérez votre abonnement et vos paramètres de facturation',
-  yourCurrentPlan: 'Votre plan actuel',
-  plan: 'plan',
+  manageSubscription: 'Gérer l\'abonnement',
+  manageSubscriptions: 'Gérer votre abonnement et vos paramètres de facturation',
+  yourCurrentPlan: 'Consultez et gérez les détails de votre abonnement',
+  plan: 'Plan actuel',
   billedEveryMonth: 'facturé chaque mois',
   noActiveBilling: 'Aucune facturation active',
   status: 'Statut',

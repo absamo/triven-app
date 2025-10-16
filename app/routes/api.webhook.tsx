@@ -54,11 +54,6 @@ export async function action({ request }: ActionFunctionArgs) {
         const paymentIntent = event.data.object
         const piData = paymentIntent as unknown as { invoice?: string | null }
 
-        console.log(`💰 PaymentIntent succeeded: ${paymentIntent.id} (${paymentIntent.amount})`)
-        console.log(
-          `💵 Amount paid: ${paymentIntent.amount}, Invoice attached: ${!!piData.invoice}`
-        )
-
         // Handle standalone PaymentIntents for subscriptions (non-trial)
         const { metadata } = paymentIntent
 
@@ -69,10 +64,6 @@ export async function action({ request }: ActionFunctionArgs) {
           paymentIntent.payment_method &&
           !piData.invoice // Only process standalone PaymentIntents
         ) {
-          console.log(
-            `🔗 Processing standalone subscription payment for ${metadata.subscriptionId}`
-          )
-
           try {
             const paymentMethodId = paymentIntent.payment_method as string
             const customerId = paymentIntent.customer as string
@@ -82,7 +73,6 @@ export async function action({ request }: ActionFunctionArgs) {
               await stripe.paymentMethods.attach(paymentMethodId, {
                 customer: customerId,
               })
-              console.log(`📎 Attached payment method ${paymentMethodId} to customer ${customerId}`)
             } catch (attachError: unknown) {
               const errorMessage =
                 attachError instanceof Error ? attachError.message : String(attachError)
@@ -96,17 +86,11 @@ export async function action({ request }: ActionFunctionArgs) {
             await stripe.subscriptions.update(metadata.subscriptionId, {
               default_payment_method: paymentMethodId,
             })
-            console.log(
-              `✅ Updated subscription ${metadata.subscriptionId} with payment method ${paymentMethodId}`
-            )
           } catch (error) {
             console.error('❌ Failed to process subscription payment:', error)
           }
         } else if (piData.invoice && metadata?.subscriptionId) {
           // Invoice-attached PaymentIntent - Stripe handles everything automatically
-          console.log(
-            `✅ Invoice payment succeeded for subscription ${metadata.subscriptionId}, Stripe handled automatically`
-          )
         }
 
         return new Response(null, { status: 200 })
@@ -119,8 +103,6 @@ export async function action({ request }: ActionFunctionArgs) {
        */
       case 'setup_intent.succeeded': {
         const setupIntent = event.data.object
-        console.log(`🔧 SetupIntent succeeded: ${setupIntent.id}`)
-
         const { metadata } = setupIntent
         if (
           metadata?.subscriptionId &&
@@ -131,8 +113,6 @@ export async function action({ request }: ActionFunctionArgs) {
         ) {
           // Handle payment method update specifically
           if (metadata.type === 'payment_method_update') {
-            console.log(`💳 Processing payment method update for ${metadata.subscriptionId}`)
-
             try {
               const paymentMethodId = setupIntent.payment_method as string
 
@@ -140,10 +120,6 @@ export async function action({ request }: ActionFunctionArgs) {
               await stripe.subscriptions.update(metadata.subscriptionId, {
                 default_payment_method: paymentMethodId,
               })
-
-              console.log(
-                `✅ Updated subscription ${metadata.subscriptionId} with new payment method ${paymentMethodId}`
-              )
 
               // Get the updated payment method details
               const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
@@ -170,8 +146,6 @@ export async function action({ request }: ActionFunctionArgs) {
                   expYear: paymentMethodDetails?.expYear,
                 },
               })
-
-              console.log(`✅ Database updated with new payment method details`)
             } catch (error) {
               console.error('❌ Failed to process payment method update:', error)
             }
@@ -180,8 +154,6 @@ export async function action({ request }: ActionFunctionArgs) {
           }
 
           // Handle subscription setup (existing logic)
-          console.log(`🎯 Processing subscription setup for ${metadata.subscriptionId}`)
-
           try {
             const paymentMethodId = setupIntent.payment_method as string
 
@@ -193,29 +165,13 @@ export async function action({ request }: ActionFunctionArgs) {
               await stripe.subscriptions.update(metadata.subscriptionId, {
                 default_payment_method: paymentMethodId,
               })
-              console.log(
-                `✅ Set payment method ${paymentMethodId} for subscription ${metadata.subscriptionId}`
-              )
-            } else {
-              console.log(
-                `✅ Payment method already set for subscription ${metadata.subscriptionId}`
-              )
-            }
-
+            } 
             // If subscription is trialing and this is a trial_subscription type, end trial immediately
             if (subscription.status === 'trialing' && metadata.type === 'trial_subscription') {
-              console.log(
-                `🔄 Ending trial immediately for subscription ${metadata.subscriptionId} to activate paid subscription`
-              )
-
               // End trial now by setting trial_end to 'now'
               await stripe.subscriptions.update(metadata.subscriptionId, {
                 trial_end: 'now',
               })
-
-              console.log(
-                `✅ Trial ended for subscription ${metadata.subscriptionId} - subscription will now be active`
-              )
 
               // Update database subscription status
               const updatedSub = await stripe.subscriptions.retrieve(metadata.subscriptionId)
@@ -234,8 +190,6 @@ export async function action({ request }: ActionFunctionArgs) {
                   currentPeriodEnd: subData.current_period_end,
                 },
               })
-
-              console.log(`✅ Database updated with new status: ${subData.status}`)
             }
           } catch (error) {
             console.error('❌ Failed to process SetupIntent:', error)
@@ -252,13 +206,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const subscriptionId = (invoice as any).subscription as string
         const customerId = invoice.customer as string
 
-        console.log(`🧾 Invoice payment succeeded: ${invoice.id}`)
-        console.log(`   Subscription: ${subscriptionId}`)
-        console.log(`   Customer: ${customerId}`)
-        console.log(`   Amount paid: ${invoice.amount_paid}`)
-
         if (!subscriptionId) {
-          console.log('Invoice payment succeeded but no subscription ID found')
           return new Response(null, { status: 200 })
         }
 
@@ -289,12 +237,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
         if (dbPrice) {
           dbPlanId = dbPrice.planId
-          console.log(`✅ Found database plan: ${dbPlanId} for Stripe product: ${stripeProductId}`)
-        } else {
-          console.log(
-            `⚠️ Could not find database plan for price ${priceData.price.id}, using fallback: ${dbPlanId}`
-          )
-        }
+        } 
 
         // Extract period information with proper defaults
         const subscriptionData = stripeSubscription as any // Cast to access Stripe properties
@@ -305,16 +248,8 @@ export async function action({ request }: ActionFunctionArgs) {
           Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
         const trialStart = subscriptionData.trial_start || 0
 
-        console.log('🔍 Webhook subscription periods:', {
-          currentPeriodStart,
-          currentPeriodEnd,
-          trialStart,
-          trialEnd: subscriptionData.trial_end || 0,
-        })
-
         // Get payment method details if subscription has payment method
         const paymentMethodDetails = await getPaymentMethodDetails(stripeSubscription.id)
-        console.log('💳 Payment method details:', paymentMethodDetails)
 
         // Update subscription in database - preserve trial status if no actual payment yet
         const isActualPayment = invoice.amount_paid > 0 && !invoice.starting_balance
@@ -359,7 +294,6 @@ export async function action({ request }: ActionFunctionArgs) {
           },
         })
 
-        console.log(`✅ Subscription ${stripeSubscription.id} activated for user ${user.id}`)
         return new Response(null, { status: 200 })
       }
 
@@ -375,13 +309,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const subscriptionId = invoice.subscription
         const customerId = invoice.customer
 
-        console.log(`💸 Invoice payment failed: ${invoice.id}`)
-        console.log(`   Subscription: ${subscriptionId}`)
-        console.log(`   Customer: ${customerId}`)
-        console.log(`   Amount due: ${invoice.amount_due}`)
-
         if (!subscriptionId) {
-          console.log('Invoice payment failed but no subscription ID found')
           return new Response(null, { status: 200 })
         }
 
@@ -398,8 +326,6 @@ export async function action({ request }: ActionFunctionArgs) {
         // Get the subscription details from Stripe to determine the new status
         const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
 
-        console.log(`📊 Subscription status after payment failure: ${stripeSubscription.status}`)
-
         // Update subscription status in database to reflect payment failure
         await prisma.subscription.update({
           where: { id: subscriptionId },
@@ -407,10 +333,6 @@ export async function action({ request }: ActionFunctionArgs) {
             status: stripeSubscription.status, // This will be 'incomplete' or 'past_due'
           },
         })
-
-        console.log(
-          `🔄 Updated subscription ${subscriptionId} status to ${stripeSubscription.status} for user ${user.id}`
-        )
 
         // Note: Stripe handles customer notifications automatically if enabled in Dashboard
         // You can add additional business logic here like:
@@ -433,12 +355,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const subscriptionId = invoice.subscription
         const customerId = invoice.customer
 
-        console.log(`🔐 Invoice payment requires action: ${invoice.id}`)
-        console.log(`   Subscription: ${subscriptionId}`)
-        console.log(`   Customer: ${customerId}`)
-
         if (!subscriptionId) {
-          console.log('Invoice payment action required but no subscription ID found')
           return new Response(null, { status: 200 })
         }
 
@@ -455,10 +372,6 @@ export async function action({ request }: ActionFunctionArgs) {
         // Get the subscription details from Stripe
         const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
 
-        console.log(
-          `📊 Subscription status after payment action required: ${stripeSubscription.status}`
-        )
-
         // Update subscription status in database
         await prisma.subscription.update({
           where: { id: subscriptionId },
@@ -466,10 +379,6 @@ export async function action({ request }: ActionFunctionArgs) {
             status: stripeSubscription.status, // This will be 'incomplete'
           },
         })
-
-        console.log(
-          `🔄 Updated subscription ${subscriptionId} status to ${stripeSubscription.status} for user ${user.id}`
-        )
 
         // Note: Stripe sends emails with payment confirmation links if enabled in Dashboard
 
@@ -551,6 +460,7 @@ export async function action({ request }: ActionFunctionArgs) {
           return new Response(null, { status: 200 })
         }
 
+
         // Map Stripe product ID to database plan ID for subscription updates
         const updatePriceData = subscription.items.data[0]
         let updateDbPlanId = 'standard' // Default fallback
@@ -565,7 +475,7 @@ export async function action({ request }: ActionFunctionArgs) {
           updateDbPlanId = updateDbPrice.planId
         }
 
-        // Extract period information
+        // Extract period information from LATEST subscription
         interface StripeSubscriptionData {
           current_period_start?: number
           current_period_end?: number
@@ -582,10 +492,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
         // Get payment method details if subscription has payment method
         const updatePaymentMethodDetails = await getPaymentMethodDetails(subscription.id)
-        console.log(
-          '💳 Payment method details for updated subscription:',
-          updatePaymentMethodDetails
-        )
+
+        // Check if subscription is being reactivated (was canceled, now active)
+        const existingSubscription = await prisma.subscription.findUnique({
+          where: { userId: user.id },
+        })
+        const wasCanceled = existingSubscription?.status === 'canceled'
+        const isReactivation = subscription.status === 'active' && !subscriptionData.cancel_at_period_end && wasCanceled
 
         await prisma.subscription.upsert({
           where: { userId: user.id },
@@ -605,6 +518,13 @@ export async function action({ request }: ActionFunctionArgs) {
             brand: updatePaymentMethodDetails?.brand,
             expMonth: updatePaymentMethodDetails?.expMonth,
             expYear: updatePaymentMethodDetails?.expYear,
+            // Clear cancellation fields when subscription is reactivated
+            ...(isReactivation && {
+              cancelledAt: null,
+              cancelledBy: null,
+              cancellationReason: null,
+              scheduledCancelAt: null,
+            }),
           },
           create: {
             id: subscription.id,
@@ -625,8 +545,6 @@ export async function action({ request }: ActionFunctionArgs) {
             expYear: updatePaymentMethodDetails?.expYear,
           },
         })
-
-        console.log(`Subscription ${subscription.id} updated for user ${user.id}`)
 
         // Broadcast subscription update to connected clients for real-time UI updates
         // Add 'confirmed: true' when subscription is fully active (no trial)
@@ -652,12 +570,9 @@ export async function action({ request }: ActionFunctionArgs) {
         )
 
         if (activeSubscriptions.length > 0) {
-          console.log(
-            `⚠️ Found ${activeSubscriptions.length} other active subscription(s) for user. Canceling them.`
-          )
+
           for (const extraSub of activeSubscriptions) {
             await stripe.subscriptions.cancel(extraSub.id)
-            console.log(`✅ Canceled extra subscription ${extraSub.id}`)
           }
         }
 
@@ -673,10 +588,6 @@ export async function action({ request }: ActionFunctionArgs) {
         const subscription = event.data.object as Stripe.Subscription
         const { id } = z.object({ id: z.string() }).parse(subscription)
         const customerId = subscription.customer as string
-
-        console.log(`🚫 Subscription cancelled: ${id}`)
-        console.log(`   Customer: ${customerId}`)
-        console.log(`   Status: ${subscription.status}`)
 
         // Find the user by Stripe customer ID
         const user = await prisma.user.findUnique({
@@ -703,13 +614,7 @@ export async function action({ request }: ActionFunctionArgs) {
               // Keep all other data intact for historical purposes
             },
           })
-
-          console.log(`✅ Updated subscription ${id} status to 'canceled' for user ${user.id}`)
-          console.log(`📊 Subscription record preserved with status: canceled`)
-        } else {
-          console.log(`⚠️ Subscription ${id} not found in database`)
-        }
-
+        } 
         return new Response(null, { status: 200 })
       }
     }

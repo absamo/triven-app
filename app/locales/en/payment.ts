@@ -19,6 +19,7 @@ export default {
   paymentError: 'Something went wrong with your payment',
 
   // Subscription info
+  price: 'Price',
   cancelAnytime: 'You can cancel your subscription at any time from your account settings',
   proratedDifference:
     "You'll be charged the prorated difference for the remainder of your billing cycle.",
@@ -99,10 +100,12 @@ export default {
   updateCardToRestore: 'Update your card to restore access to your account',
 
   // Settings page translations
+  subscription: 'Subscription',
   subscriptions: 'Subscriptions',
+  manageSubscription: 'Manage subscription',
   manageSubscriptions: 'Manage your subscription and billing settings',
-  yourCurrentPlan: 'Your current plan',
-  plan: 'plan',
+  yourCurrentPlan: 'View and manage your subscription details',
+  plan: 'Current Plan',
   billedEveryMonth: 'billed every month',
   noActiveBilling: 'No active billing',
   status: 'Status',

@@ -128,3 +128,12 @@
     padding: var(--mantine-spacing-sm);
   }
 }
+
+/* Tab Icon Styles */
+.tabIcon {
+  color: inherit;
+}
+
+:global([data-active]) .tabIcon {
+  color: white !important;
+}
