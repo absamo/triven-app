@@ -2,19 +2,33 @@ import {
   ActionIcon,
   Badge,
   Button,
+  Card,
   Divider,
   Grid,
   Group,
+  Paper,
+  Progress,
   Stack,
   Tabs,
   Text,
+  ThemeIcon,
+  Title,
+  Tooltip,
+  useMantineColorScheme,
   useMantineTheme,
 } from '@mantine/core'
 import {
   IconArrowUp,
+  IconCalendar,
+  IconCheck,
   IconCreditCard,
+  IconCrown,
   IconEdit,
+  IconInfoCircle,
   IconPremiumRights,
+  IconShieldCheck,
+  IconStar,
+  IconTrendingUp,
   IconX,
 } from '@tabler/icons-react'
 import dayjs from 'dayjs'
@@ -74,6 +88,7 @@ export default function Settings({
 }: SettingsProps) {
   const { t } = useTranslation(['common', 'payment'])
   const theme = useMantineTheme()
+  const { colorScheme } = useMantineColorScheme()
   const revalidator = useRevalidator()
   const { checkStripeHealth, isChecking } = useStripeHealth()
 
@@ -141,186 +156,297 @@ export default function Settings({
         'Manage your subscription and billing settings'
       ),
       content: () => (
-        <Grid align="center" className={classes.row} p={10}>
-          <Grid.Col span={2}>
-            <Text fz="xs" opacity={0.6}>
-              {t('payment:yourCurrentPlan', 'Your current plan')}
-            </Text>
-          </Grid.Col>
-          <Grid.Col span={10}>
-            <Text fz="sm">
-              {getTranslatedPlanLabel(billing?.currentPlan, t)} {t('payment:plan', 'plan')}
-            </Text>
-            <Text fz="xs" opacity={0.6}>
-              {billing?.amount ? (
-                <>
-                  {currencySymbol}
-                  {billing?.amount / 100} / {billing?.interval}
-                </>
-              ) : (
-                t('payment:noActiveBilling', 'No active billing')
-              )}
-            </Text>
-          </Grid.Col>
-          <Grid.Col span={12}>
-            <Divider />
-          </Grid.Col>
-          <Grid.Col span={2}>
-            <Text fz="xs" opacity={0.6}>
-              {t('payment:status', 'Status')}
-            </Text>
-          </Grid.Col>
-          <Grid.Col span={10}>
-            <Badge size="xs" variant="light" color={billing?.planStatus ? 'green' : 'gray'}>
-              {billing?.planStatus
-                ? getSubscriptionStatusLabel(billing.planStatus, translate)
-                : t('payment:noActiveSubscription', 'No Active Subscription')}
-            </Badge>
-          </Grid.Col>
-          <Grid.Col span={12}>
-            <Divider />
-          </Grid.Col>
-          <Grid.Col span={2}>
-            <Text fz="xs" opacity={0.6}>
-              {t('payment:renews', 'Renews')}
-            </Text>
-          </Grid.Col>
-          <Grid.Col span={10}>
-            <Text fz="xs">
-              {billing?.trialEnd && billing?.planStatus === 'trialing' ? (
-                <>
-                  {t('payment:trialEndsOn', 'Trial ends on')}{' '}
-                  {dayjs(billing.trialEnd * 1000).format('MMM DD, YYYY')}
-                </>
-              ) : billing?.currentPeriodEnd ? (
-                <>
-                  {t('payment:nextInvoiceDue', 'Next invoice due on')}{' '}
-                  {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
-                </>
-              ) : (
-                t('payment:noRenewalDate', 'No renewal date available')
-              )}
-            </Text>
-          </Grid.Col>
-          {billing?.paymentMethod && (
-            <>
-              <Grid.Col span={12}>
-                <Divider />
-              </Grid.Col>
-              <Grid.Col span={2}>
-                <Text fz="xs" opacity={0.6}>
-                  {t('paymentCard', 'Payment Card')}
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={10}>
-                <Stack gap={0}>
-                  <Group align="center" gap="md">
-                    <Text fz="sm" fw={500}>
-                      {billing.paymentMethod.brand?.toUpperCase()} ending in{' '}
-                      {billing.paymentMethod.last4}
+        <Stack gap="lg">
+          {/* Current Plan Card */}
+          <Card shadow="sm" padding="xl" radius="md" withBorder>
+            <Group justify="space-between" mb="md">
+              <Group>
+                <ThemeIcon size="xl" radius="md" variant="gradient" gradient={{ from: 'blue', to: 'cyan' }}>
+                  <IconCrown size={24} />
+                </ThemeIcon>
+                <div>
+                  <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                    {t('payment:currentPlan', 'Current Plan')}
+                  </Text>
+                  <Title order={3}>
+                    {getTranslatedPlanLabel(billing?.currentPlan, t)}
+                  </Title>
+                </div>
+              </Group>
+              <Badge
+                size="lg"
+                variant="gradient"
+                gradient={{ from: billing?.planStatus === 'active' ? 'teal' : 'orange', to: billing?.planStatus === 'active' ? 'lime' : 'red' }}
+                leftSection={<IconShieldCheck size={14} />}
+              >
+                {billing?.planStatus
+                  ? getSubscriptionStatusLabel(billing.planStatus, translate)
+                  : t('payment:noActiveSubscription', 'No Active Subscription')}
+              </Badge>
+            </Group>
+
+            <Paper p="md" radius="md" withBorder mb="md" style={{ 
+              background: colorScheme === 'dark' 
+                ? 'linear-gradient(135deg, rgba(16, 152, 173, 0.1) 0%, rgba(56, 189, 248, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%)'
+            }}>
+              <Group justify="space-between" align="center">
+                <div>
+                  <Text size="sm" c="dimmed" mb={4}>
+                    {billing?.trialEnd && billing?.planStatus === 'trialing'
+                      ? t('payment:trialPeriod', 'Trial Period')
+                      : t('payment:subscriptionPrice', 'Subscription Price')}
+                  </Text>
+                  <Group gap="xs" align="baseline">
+                    <Text size="xl" fw={700}>
+                      {billing?.amount ? `${currencySymbol}${billing?.amount / 100}` : t('payment:free', 'Free')}
                     </Text>
-                    <ActionIcon
-                      size="md"
-                      variant="light"
-                      color="blue"
-                      onClick={handleEditPaymentMethod}
-                      loading={isChecking}
-                      title={t('payment:editPaymentMethod', 'Edit Payment Method')}
-                    >
-                      <IconEdit size={12} />
-                    </ActionIcon>
+                    {billing?.interval && (
+                      <Text size="sm" c="dimmed">
+                        / {billing?.interval}
+                      </Text>
+                    )}
                   </Group>
-                  <Text fz="xs" opacity={0.6}>
-                    {t('payment:expires', 'Expires')}{' '}
-                    {String(billing.paymentMethod.expMonth).padStart(2, '0')}/
-                    {billing.paymentMethod.expYear}
+                </div>
+                <ThemeIcon size={50} radius="md" variant="light" color="blue">
+                  <IconTrendingUp size={28} />
+                </ThemeIcon>
+              </Group>
+            </Paper>
+
+            <Grid gutter="md">
+              <Grid.Col span={6}>
+                <Paper p="sm" radius="md" style={{ border: `1px solid ${theme.colors.gray[3]}` }}>
+                  <Group gap="xs" mb={4}>
+                    <IconCalendar size={16} color={theme.colors.gray[6]} />
+                    <Text size="xs" c="dimmed" fw={500}>
+                      {billing?.trialEnd && billing?.planStatus === 'trialing'
+                        ? t('payment:trialEnds', 'Trial Ends')
+                        : t('payment:nextBilling', 'Next Billing')}
+                    </Text>
+                  </Group>
+                  <Text size="sm" fw={600}>
+                    {billing?.trialEnd && billing?.planStatus === 'trialing' ? (
+                      dayjs(billing.trialEnd * 1000).format('MMM DD, YYYY')
+                    ) : billing?.currentPeriodEnd ? (
+                      dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')
+                    ) : (
+                      t('payment:noRenewalDate', 'N/A')
+                    )}
                   </Text>
-                </Stack>
+                </Paper>
               </Grid.Col>
-            </>
-          )}
-          {shouldShowUpgrade(billing?.planStatus) &&
-            canUpgrade(billing?.currentPlan || '', billing?.planStatus) && (
-              <>
-                <Grid.Col span={12}>
-                  <Divider />
-                </Grid.Col>
-                <Grid.Col span={2}>
-                  <Text fz="xs" opacity={0.6}>
-                    {t('payment:upgrade', 'Upgrade')}
+              <Grid.Col span={6}>
+                <Paper p="sm" radius="md" style={{ border: `1px solid ${theme.colors.gray[3]}` }}>
+                  <Group gap="xs" mb={4}>
+                    <IconStar size={16} color={theme.colors.yellow[6]} />
+                    <Text size="xs" c="dimmed" fw={500}>
+                      {t('payment:memberSince', 'Member Since')}
+                    </Text>
+                  </Group>
+                  <Text size="sm" fw={600}>
+                    {billing?.currentPeriodStart
+                      ? dayjs(billing.currentPeriodStart * 1000).format('MMM YYYY')
+                      : t('payment:recently', 'Recently')}
                   </Text>
-                </Grid.Col>
-                <Grid.Col span={10}>
-                  <Button
-                    size="xs"
-                    variant="light"
-                    color="blue"
-                    leftSection={<IconArrowUp size={14} />}
-                    onClick={handleUpgrade}
-                    loading={isChecking}
-                  >
-                    {(() => {
-                      if (
-                        billing?.planStatus === 'trialing' ||
-                        billing?.planStatus === 'incomplete'
-                      ) {
-                        return `${t('payment:subscribe')} ${getTranslatedPlanLabel(billing?.currentPlan, t)}`
-                      } else {
-                        const nextPlan = getNextPlan(
-                          billing?.currentPlan || '',
-                          billing?.planStatus
-                        )
-                        return nextPlan
-                          ? `${t('payment:upgrade')} ${getTranslatedPlanLabel(nextPlan, t)}`
-                          : t('payment:viewPlans', 'View Plans')
-                      }
-                    })()}
-                  </Button>
-                </Grid.Col>
+                </Paper>
+              </Grid.Col>
+            </Grid>
+
+            {billing?.trialEnd && billing?.planStatus === 'trialing' && (
+              <>
+                <Divider my="md" />
+                <Paper p="md" radius="md" style={{ 
+                  background: colorScheme === 'dark'
+                    ? 'rgba(255, 193, 7, 0.1)'
+                    : 'rgba(255, 243, 205, 0.5)',
+                  border: `1px solid ${theme.colors.yellow[3]}`
+                }}>
+                  <Group gap="xs" mb="xs">
+                    <IconInfoCircle size={18} color={theme.colors.yellow[7]} />
+                    <Text size="sm" fw={600} c="yellow.7">
+                      {t('payment:trialRemaining', 'Trial Period Active')}
+                    </Text>
+                  </Group>
+                  <Text size="xs" c="dimmed">
+                    {t('payment:trialEndsMessage', 'Your trial period will end on')} {dayjs(billing.trialEnd * 1000).format('MMM DD, YYYY')}. 
+                    {' '}{t('payment:upgradeToKeepAccess', 'Upgrade now to keep access to all features.')}
+                  </Text>
+                  <Progress
+                    value={Math.max(0, Math.min(100, ((Date.now() / 1000 - billing.trialStart) / (billing.trialEnd - billing.trialStart)) * 100))}
+                    color="yellow"
+                    size="sm"
+                    mt="xs"
+                    animated
+                  />
+                </Paper>
               </>
             )}
-          {/* Cancellation Section - show for active subscriptions */}
-          {billing?.subscriptionId && billing?.planStatus === 'active' && (
-            <>
-              <Grid.Col span={12}>
-                <Divider />
-              </Grid.Col>
-              <Grid.Col span={2}>
-                <Text fz="xs" opacity={0.6}>
-                  {billing?.cancelAtPeriodEnd
-                    ? t('subscriptionEnding', 'Subscription Ending')
-                    : t('cancelSubscription', 'Cancel Subscription')}
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={10}>
-                {billing?.cancelAtPeriodEnd ? (
+          </Card>
+
+          {/* Payment Method Card */}
+          {billing?.paymentMethod && (
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Group justify="space-between" mb="md">
+                <Group>
+                  <ThemeIcon size="lg" radius="md" variant="light" color="violet">
+                    <IconCreditCard size={20} />
+                  </ThemeIcon>
                   <div>
-                    <Text fz="sm" c="orange" mb={4}>
-                      {t(
-                        'subscriptionScheduledForCancellation',
-                        'Subscription scheduled for cancellation'
-                      )}
+                    <Text size="sm" fw={600}>
+                      {t('payment:paymentMethod', 'Payment Method')}
                     </Text>
-                    <Text fz="xs" opacity={0.6}>
-                      {t('accessUntil', 'You will have access until')}{' '}
-                      {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
+                    <Text size="xs" c="dimmed">
+                      {t('payment:securelyStored', 'Securely stored with Stripe')}
                     </Text>
                   </div>
-                ) : (
+                </Group>
+                <Tooltip label={t('payment:editPaymentMethod', 'Edit Payment Method')}>
+                  <ActionIcon
+                    size="lg"
+                    variant="light"
+                    color="blue"
+                    onClick={handleEditPaymentMethod}
+                    loading={isChecking}
+                  >
+                    <IconEdit size={18} />
+                  </ActionIcon>
+                </Tooltip>
+              </Group>
+
+              <Paper p="md" radius="md" withBorder>
+                <Group justify="space-between">
+                  <Group>
+                    <ThemeIcon size="md" radius="md" variant="light" color="gray">
+                      <IconCreditCard size={16} />
+                    </ThemeIcon>
+                    <div>
+                      <Text size="sm" fw={600}>
+                        {billing.paymentMethod.brand?.toUpperCase()}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        •••• •••• •••• {billing.paymentMethod.last4}
+                      </Text>
+                    </div>
+                  </Group>
+                  <Badge variant="outline" color="gray">
+                    {String(billing.paymentMethod.expMonth).padStart(2, '0')}/{billing.paymentMethod.expYear}
+                  </Badge>
+                </Group>
+              </Paper>
+            </Card>
+          )}
+
+          {/* Upgrade Card */}
+          {shouldShowUpgrade(billing?.planStatus) &&
+            canUpgrade(billing?.currentPlan || '', billing?.planStatus) && (
+              <Card shadow="md" padding="xl" radius="md" withBorder style={{
+                background: colorScheme === 'dark'
+                  ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)'
+                  : 'linear-gradient(135deg, rgba(219, 234, 254, 0.5) 0%, rgba(224, 242, 254, 0.5) 100%)',
+                borderColor: theme.colors.blue[4]
+              }}>
+                <Group justify="space-between" align="flex-start">
+                  <div style={{ flex: 1 }}>
+                    <Group gap="xs" mb="xs">
+                      <ThemeIcon size="lg" radius="md" variant="gradient" gradient={{ from: 'violet', to: 'blue' }}>
+                        <IconCrown size={20} />
+                      </ThemeIcon>
+                      <div>
+                        <Text size="lg" fw={700}>
+                          {(() => {
+                            if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
+                              return t('payment:convertTrial', 'Complete Your Subscription')
+                            } else {
+                              const nextPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus)
+                              return nextPlan
+                                ? `${t('payment:upgradeTo', 'Upgrade to')} ${getTranslatedPlanLabel(nextPlan, t)}`
+                                : t('payment:exploreUpgrades', 'Explore Upgrades')
+                            }
+                          })()}
+                        </Text>
+                        <Text size="sm" c="dimmed">
+                          {billing?.planStatus === 'trialing'
+                            ? t('payment:unlockAllFeatures', 'Continue with all premium features after your trial')
+                            : t('payment:getMoreFeatures', 'Unlock advanced features and higher limits')}
+                        </Text>
+                      </div>
+                    </Group>
+
+                    <Stack gap="xs" mt="md" mb="md">
+                      {[
+                        t('payment:benefit1', 'Higher usage limits'),
+                        t('payment:benefit2', 'Advanced reporting'),
+                        t('payment:benefit3', 'Priority support'),
+                      ].map((benefit, idx) => (
+                        <Group gap="xs" key={idx}>
+                          <ThemeIcon size="sm" radius="xl" color="teal" variant="light">
+                            <IconCheck size={12} />
+                          </ThemeIcon>
+                          <Text size="sm">{benefit}</Text>
+                        </Group>
+                      ))}
+                    </Stack>
+
+                    <Button
+                      size="md"
+                      variant="gradient"
+                      gradient={{ from: 'violet', to: 'blue' }}
+                      leftSection={<IconArrowUp size={18} />}
+                      onClick={handleUpgrade}
+                      loading={isChecking}
+                      fullWidth
+                    >
+                      {(() => {
+                        if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
+                          return `${t('payment:subscribe')} ${getTranslatedPlanLabel(billing?.currentPlan, t)}`
+                        } else {
+                          const nextPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus)
+                          return nextPlan
+                            ? `${t('payment:upgrade')} ${getTranslatedPlanLabel(nextPlan, t)}`
+                            : t('payment:viewPlans', 'View Plans')
+                        }
+                      })()}
+                    </Button>
+                  </div>
+                </Group>
+              </Card>
+            )}
+
+          {/* Cancellation Section */}
+          {billing?.subscriptionId && billing?.planStatus === 'active' && (
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Group justify="space-between" align="center">
+                <div>
+                  <Text size="sm" fw={600} mb={4}>
+                    {billing?.cancelAtPeriodEnd
+                      ? t('payment:subscriptionEnding', 'Subscription Ending')
+                      : t('payment:manageSubscription', 'Manage Subscription')}
+                  </Text>
+                  {billing?.cancelAtPeriodEnd ? (
+                    <Text size="xs" c="orange">
+                      {t('payment:accessUntil', 'You will have access until')} {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
+                    </Text>
+                  ) : (
+                    <Text size="xs" c="dimmed">
+                      {t('payment:cancelAnytime', 'You can cancel your subscription at any time')}
+                    </Text>
+                  )}
+                </div>
+                {!billing?.cancelAtPeriodEnd && (
                   <Button
-                    size="xs"
                     variant="light"
                     color="red"
-                    leftSection={<IconX size={14} />}
+                    leftSection={<IconX size={16} />}
                     onClick={() => setShowCancellationModal(true)}
                   >
-                    {t('payment:cancelSubscription', 'Cancel Subscription')}
+                    {t('payment:cancel', 'Cancel')}
                   </Button>
                 )}
-              </Grid.Col>
-            </>
+              </Group>
+            </Card>
           )}
-        </Grid>
+        </Stack>
       ),
     },
     {
@@ -334,22 +460,32 @@ export default function Settings({
 
   return (
     <>
-      <Text className={classes.title}>{t('common:title', 'Settings')}</Text>
-      <Tabs defaultValue="billing" variant="outline" radius="md">
-        <Tabs.List>
-          {settings.map(({ id, label, icon: Icon }) => (
-            <Tabs.Tab value={id} key={id} leftSection={<Icon />}>
-              {label}
-            </Tabs.Tab>
-          ))}
-        </Tabs.List>
+      <Stack gap="xl">
+        <div>
+          <Title order={1} className={classes.title}>
+            {t('common:title', 'Settings')}
+          </Title>
+          <Text size="sm" c="dimmed">
+            {t('common:manageSettings', 'Manage your account settings and preferences')}
+          </Text>
+        </div>
 
-        {settings.map(({ id, content: Content }) => (
-          <Tabs.Panel value={id} key={id} pt="md">
-            <Content />
-          </Tabs.Panel>
-        ))}
-      </Tabs>
+        <Tabs defaultValue="billing" variant="pills" radius="md">
+          <Tabs.List mb="xl">
+            {settings.map(({ id, label, icon: Icon }) => (
+              <Tabs.Tab value={id} key={id} leftSection={<Icon />}>
+                {label}
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+
+          {settings.map(({ id, content: Content }) => (
+            <Tabs.Panel value={id} key={id}>
+              <Content />
+            </Tabs.Panel>
+          ))}
+        </Tabs>
+      </Stack>
 
       {/* Upgrade Modal */}
       <UpgradePaymentModal
