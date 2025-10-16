@@ -37,6 +37,9 @@ import Header from '../Header/Header'
 import Navbar from '../Navbar'
 import classes from './Layout.module.css'
 
+// Global singleton to prevent duplicate SSE connections
+let globalEventSource: EventSource | null = null
+
 // Component to handle footer visibility based on form context
 function FooterWrapper() {
   const { isFormActive } = useFormContext()
@@ -112,14 +115,15 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   }, [user.planStatus, user.trialPeriodDays])
 
   useEffect(() => {
-    // Prevent duplicate connections
-    if (eventSourceRef.current) {
+    // Prevent duplicate connections - check both ref and global
+    if (eventSourceRef.current || globalEventSource) {
       return
     }
 
     // Connect to subscription SSE stream
     const eventSource = new EventSource('/api/subscription-stream')
     eventSourceRef.current = eventSource
+    globalEventSource = eventSource
 
     eventSource.addEventListener('connected', () => {
       // Connected to subscription stream
@@ -144,7 +148,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
             data.status === 'active' &&
             data.trialEnd === 0
           ) {
-            setShowUpgradeModal(false)
+            // Clear pending flag - upgrade is complete
             pendingUpgradeRef.current = false
           }
 
@@ -165,6 +169,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
       if (eventSourceRef.current) {
         eventSourceRef.current.close()
         eventSourceRef.current = null
+        globalEventSource = null
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -233,6 +238,23 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     subscriptionStatus.status === 'null' ||
     subscriptionStatus.status === 'undefined'
 
+  // Log when Payment Declined modals open/close
+  useEffect(() => {
+    if (pastDueSubscription) {
+      console.log('🚨 [Layout] Payment Declined modal OPENED (past_due)')
+    } else {
+      console.log('✅ [Layout] Payment Declined modal CLOSED (past_due)')
+    }
+  }, [pastDueSubscription])
+
+  useEffect(() => {
+    if (unpaidSubscription) {
+      console.log('🚨 [Layout] Payment Declined modal OPENED (unpaid)')
+    } else {
+      console.log('✅ [Layout] Payment Declined modal CLOSED (unpaid)')
+    }
+  }, [unpaidSubscription])
+
   // Calculate trial days from trialEnd timestamp
   const trialPeriodDays =
     trialing && subscriptionStatus.trialEnd > 0
@@ -259,21 +281,21 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     // If unhealthy, the hook will show an error notification
   }
 
-  // Handle upgrade success - set flag and wait for SSE event to close modal
+  // Handle upgrade success - set flag for SSE tracking
   const handleUpgradeSuccess = () => {
-    // Set flag to indicate we're waiting for the upgrade to complete
+    // Set flag to indicate payment succeeded, waiting for final confirmation
     pendingUpgradeRef.current = true
-
-    // The modal will stay open until the SSE event arrives with status: 'active', trialEnd: 0
-    // Then the subscription event handler will close the modal automatically
+    
+    // Close modal immediately after payment success
+    // SSE will update subscription status in the background
+    setShowUpgradeModal(false)
   }
 
-  // Handle modal close - prevent closing during pending upgrade
+  // Handle modal close
   const handleModalClose = () => {
-    if (pendingUpgradeRef.current) {
-      return
-    }
     setShowUpgradeModal(false)
+    // Reset pending flag when manually closing
+    pendingUpgradeRef.current = false
   }
 
   return (

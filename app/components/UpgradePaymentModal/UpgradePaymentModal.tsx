@@ -20,7 +20,7 @@ import {
   IconPlus,
   IconShieldCheck,
 } from '@tabler/icons-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES } from '~/app/common/constants'
@@ -81,26 +81,19 @@ export default function UpgradePaymentModal({
   const { t } = useTranslation(['payment'])
 
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
-  const [useExistingCard, setUseExistingCard] = useState<'existing' | 'new'>('existing')
-  const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [stripeSubmit, setStripeSubmit] = useState<(() => Promise<void>) | null>(null)
   const [isStripeReady, setIsStripeReady] = useState(false)
-  const hasInitializedRef = useRef(false)
 
   // Fetcher for config only (if not provided as prop)
   const configFetcher = useFetcher<ConfigData>()
 
   // Fetch config when modal opens (only if not provided as prop)
-  useEffect(() => {
-    if (opened && !config && configFetcher.state === 'idle' && !configFetcher.data) {
-      configFetcher.load('/api/config')
-    }
-  }, [opened, config, configFetcher])
+  if (opened && !config && configFetcher.state === 'idle' && !configFetcher.data) {
+    configFetcher.load('/api/config')
+  }
 
   // Handle payment success
   const handlePaymentSuccess = async () => {
-    setIsProcessingPayment(true)
-
     console.log('💳 Payment succeeded, waiting for confirmed subscription update...')
 
     // DON'T close modal immediately - let parent handle it after confirmed SSE event
@@ -112,8 +105,9 @@ export default function UpgradePaymentModal({
       onSuccess()
     }
 
-    // Keep loading state active until modal is closed by parent
-    // (parent will close after receiving confirmed SSE broadcast)
+    // Reset processing state to stop button spinning
+    // Modal stays open waiting for SSE confirmation, but button should show success
+    setIsProcessingPayment(false)
   } // Handle payment error
   const handlePaymentError = (error: string) => {
     setIsProcessingPayment(false)
@@ -136,7 +130,7 @@ export default function UpgradePaymentModal({
 
     try {
       // Check which payment method the user selected via radio button
-      if (useExistingCard === 'existing') {
+      if (finalPaymentMethod === 'existing') {
         // User explicitly selected existing card - use existing payment method
         const response = await fetch('/api/subscription-create', {
           method: 'POST',
@@ -177,6 +171,7 @@ export default function UpgradePaymentModal({
   const handleClose = () => {
     // Reset processing state when modal closes
     setIsProcessingPayment(false)
+    setSelectedPaymentMethod(useExistingCard) // Reset to default
     onClose()
   }
 
@@ -184,44 +179,34 @@ export default function UpgradePaymentModal({
   const availableConfig = config || configFetcher.data
   const hasConfig = Boolean(availableConfig)
 
-  // Check if payment method exists and is valid
+  // Derive payment method state directly from props
   const hasPaymentMethod = Boolean(billing?.paymentMethod)
-  const isCardExpired =
-    hasPaymentMethod && billing?.paymentMethod
-      ? (() => {
-          const now = new Date()
-          const expYear = billing.paymentMethod.expYear
-          const expMonth = billing.paymentMethod.expMonth
-          const cardExpDate = new Date(expYear, expMonth) // Month is 0-indexed, so this gives us the first day of the month after expiry
-          return now >= cardExpDate
-        })()
-      : false
-
-  // Determine if we should show payment form immediately
+  const isCardExpired = hasPaymentMethod && billing?.paymentMethod
+    ? (() => {
+        const now = new Date()
+        const expYear = billing.paymentMethod.expYear
+        const expMonth = billing.paymentMethod.expMonth
+        const cardExpDate = new Date(expYear, expMonth)
+        return now >= cardExpDate
+      })()
+    : false
+  
   const shouldShowFormImmediately = !hasPaymentMethod || isCardExpired
-
-  // Initialize form visibility based on card status (only once when modal opens)
-  useEffect(() => {
-    if (opened && !hasInitializedRef.current) {
-      hasInitializedRef.current = true
-      if (shouldShowFormImmediately) {
-        setShowPaymentForm(true)
-        setUseExistingCard('new')
-      } else {
-        setShowPaymentForm(false)
-        setUseExistingCard('existing')
-      }
-    } else if (!opened) {
-      // Reset the flag when modal closes
-      hasInitializedRef.current = false
-    }
-  }, [opened, shouldShowFormImmediately])
+  
+  // Derive UI state from payment method state
+  const useExistingCard = shouldShowFormImmediately ? 'new' : 'existing'
+  const showPaymentForm = shouldShowFormImmediately
 
   // Handle payment method selection change
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'existing' | 'new'>(useExistingCard)
+  
   const handlePaymentMethodChange = (value: string) => {
-    setUseExistingCard(value as 'existing' | 'new')
-    setShowPaymentForm(value === 'new')
+    setSelectedPaymentMethod(value as 'existing' | 'new')
   }
+  
+  // Use selected method if user has made a choice, otherwise use derived default
+  const finalPaymentMethod = selectedPaymentMethod
+  const finalShowPaymentForm = finalPaymentMethod === 'new'
 
   // Handle stripe submit function ready callback (memoized to prevent loops)
   const handleStripeSubmitReady = useCallback((submitFn: () => Promise<void>, isReady: boolean) => {
@@ -412,7 +397,7 @@ export default function UpgradePaymentModal({
             <Text size="sm" fw={500} mb="xs">
               {t('paymentMethod', 'Payment Method')}
             </Text>
-            <Radio.Group value={useExistingCard} onChange={handlePaymentMethodChange}>
+            <Radio.Group value={finalPaymentMethod} onChange={handlePaymentMethodChange}>
               <Stack gap="8px">
                 {/* Existing Card Option */}
                 {(() => {
@@ -425,10 +410,10 @@ export default function UpgradePaymentModal({
                       style={{
                         cursor: 'pointer',
                         borderColor:
-                          useExistingCard === 'existing'
+                          finalPaymentMethod === 'existing'
                             ? 'var(--mantine-color-blue-6)'
                             : undefined,
-                        borderWidth: useExistingCard === 'existing' ? 2 : 1,
+                        borderWidth: finalPaymentMethod === 'existing' ? 2 : 1,
                         transition: 'all 0.2s ease',
                       }}
                       onClick={() => handlePaymentMethodChange('existing')}
@@ -460,8 +445,8 @@ export default function UpgradePaymentModal({
                   style={{
                     cursor: 'pointer',
                     borderColor:
-                      useExistingCard === 'new' ? 'var(--mantine-color-blue-6)' : undefined,
-                    borderWidth: useExistingCard === 'new' ? 2 : 1,
+                      finalPaymentMethod === 'new' ? 'var(--mantine-color-blue-6)' : undefined,
+                    borderWidth: finalPaymentMethod === 'new' ? 2 : 1,
                     transition: 'all 0.2s ease',
                   }}
                   onClick={() => handlePaymentMethodChange('new')}
@@ -554,11 +539,11 @@ export default function UpgradePaymentModal({
           </Center>
         )}
         {/* Pay Button - show when payment form is visible OR when using existing card */}
-        {hasConfig && (showPaymentForm || useExistingCard === 'existing') && (
+        {hasConfig && (finalShowPaymentForm || finalPaymentMethod === 'existing') && (
           <Stack gap="xs">
             <Button
               size="lg"
-              disabled={!isStripeReady || isProcessingPayment}
+              disabled={(finalPaymentMethod === 'new' && !isStripeReady) || isProcessingPayment}
               loading={isProcessingPayment}
               gradient={{ from: 'teal', to: 'blue' }}
               variant="gradient"

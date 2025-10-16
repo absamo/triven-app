@@ -10,7 +10,7 @@ import {
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { IconCreditCard, IconLock, IconShieldCheck } from '@tabler/icons-react'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import StripePayment from '~/app/components/StripePayment'
 
@@ -43,37 +43,46 @@ export default function PaymentMethodEditModal({
   const [stripeSubmit, setStripeSubmit] = useState<(() => Promise<void>) | null>(null)
   const [isStripeReady, setIsStripeReady] = useState(false)
 
-  const handlePaymentSuccess = () => {
+  // Reset state when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setIsProcessing(false)
+      setStripeSubmit(null)
+      setIsStripeReady(false)
+    }
+  }, [isOpen])
+
+  const handlePaymentSuccess = useCallback(() => {
     console.log('🎉 PaymentMethodEditModal: Payment method update succeeded, calling onSuccess')
     setIsProcessing(false)
     onSuccess()
     onClose()
-  }
+  }, [onSuccess, onClose])
 
-  const handlePaymentError = (error: string) => {
+  const handlePaymentError = useCallback((error: string) => {
     setIsProcessing(false)
     notifications.show({
       title: t('payment:paymentFailed', 'Error'),
       message: error,
       color: 'red',
     })
-  }
+  }, [t])
 
-  const handleStripeSubmitReady = (submitFn: () => Promise<void>, isReady: boolean) => {
+  const handleStripeSubmitReady = useCallback((submitFn: () => Promise<void>, isReady: boolean) => {
     setStripeSubmit(() => submitFn)
     setIsStripeReady(isReady)
-  }
+  }, [])
 
-  const handleUpdateClick = async () => {
+  const handleUpdateClick = useCallback(async () => {
     if (stripeSubmit && isStripeReady) {
       setIsProcessing(true)
       await stripeSubmit()
     }
-  }
+  }, [stripeSubmit, isStripeReady])
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     onClose()
-  }
+  }, [onClose])
 
   return (
     <Modal

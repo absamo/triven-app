@@ -85,77 +85,10 @@ export default function Settings({
   const [showCancellationModal, setShowCancellationModal] = useState(false)
   const [showPaymentEditModal, setShowPaymentEditModal] = useState(false)
 
-  // Real-time subscription updates via SSE
-  const eventSourceRef = useRef<EventSource | null>(null)
+  // Use billing prop directly - no need for local state since Layout handles SSE updates
   const pendingUpgradeRef = useRef<boolean>(false)
-  const [realTimeBilling, setRealTimeBilling] = useState(billing)
 
-  const currencySymbol = CURRENCY_SYMBOLS[realTimeBilling?.currency?.toUpperCase()]
-
-  useEffect(() => {
-    // Prevent duplicate connections
-    if (eventSourceRef.current) {
-      return
-    }
-
-    // Connect to subscription SSE stream
-    const eventSource = new EventSource('/api/subscription-stream')
-    eventSourceRef.current = eventSource
-
-    eventSource.addEventListener('connected', () => {
-      // Connected to subscription stream
-    })
-
-    eventSource.addEventListener('subscription', (event) => {
-      try {
-        const data = JSON.parse(event.data)
-
-        if (data.type === 'subscription') {
-          // Update billing data with new subscription status
-          setRealTimeBilling((prev) => ({
-            ...prev,
-            planStatus: data.status,
-            currentPlan: data.planId,
-            trialEnd: data.trialEnd,
-          }))
-
-          // If we're waiting for upgrade completion and this is the CONFIRMED update
-          if (
-            pendingUpgradeRef.current &&
-            data.confirmed === true &&
-            data.status === 'active' &&
-            data.trialEnd === 0
-          ) {
-            setShowUpgradeModal(false)
-            pendingUpgradeRef.current = false
-          }
-
-          // Revalidate to fetch fresh data from server (including payment method updates)
-          revalidator.revalidate()
-        }
-      } catch (error) {
-        console.error('[Settings] Error parsing subscription update:', error)
-      }
-    })
-
-    eventSource.onerror = () => {
-      // Connection error, will reconnect automatically
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close()
-        eventSourceRef.current = null
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Empty dependency array - only create connection once on mount
-
-  // Update real-time billing when prop changes (from revalidation)
-  useEffect(() => {
-    setRealTimeBilling(billing)
-  }, [billing])
+  const currencySymbol = CURRENCY_SYMBOLS[billing?.currency?.toUpperCase()]
 
   // Handle upgrade button click - check Stripe health before opening modal
   const handleUpgrade = async () => {
@@ -166,12 +99,11 @@ export default function Settings({
     // If unhealthy, the hook will show an error notification
   }
 
-  // Handle modal close - prevent closing during pending upgrade
+  // Handle modal close
   const handleModalClose = () => {
-    if (pendingUpgradeRef.current) {
-      return
-    }
     setShowUpgradeModal(false)
+    // Reset pending flag when manually closing
+    pendingUpgradeRef.current = false
   }
 
   // Handle payment method edit - check Stripe health first
@@ -182,13 +114,14 @@ export default function Settings({
     }
   }
 
-  // Handle upgrade success - set flag and wait for SSE event to close modal
+  // Handle upgrade success - close modal immediately
   const handleUpgradeSuccess = () => {
-    // Set flag to indicate we're waiting for the upgrade to complete
+    // Set flag to indicate payment succeeded
     pendingUpgradeRef.current = true
-
-    // The modal will stay open until the SSE event arrives with confirmed: true
-    // Then the subscription event handler will close the modal automatically
+    
+    // Close modal immediately after payment success
+    // SSE will update subscription status in the background
+    setShowUpgradeModal(false)
   }
 
   // Handle cancellation success
@@ -216,13 +149,13 @@ export default function Settings({
           </Grid.Col>
           <Grid.Col span={10}>
             <Text fz="sm">
-              {getTranslatedPlanLabel(realTimeBilling?.currentPlan, t)} {t('payment:plan', 'plan')}
+              {getTranslatedPlanLabel(billing?.currentPlan, t)} {t('payment:plan', 'plan')}
             </Text>
             <Text fz="xs" opacity={0.6}>
-              {realTimeBilling?.amount ? (
+              {billing?.amount ? (
                 <>
                   {currencySymbol}
-                  {realTimeBilling?.amount / 100} / {realTimeBilling?.interval}
+                  {billing?.amount / 100} / {billing?.interval}
                 </>
               ) : (
                 t('payment:noActiveBilling', 'No active billing')
@@ -238,9 +171,9 @@ export default function Settings({
             </Text>
           </Grid.Col>
           <Grid.Col span={10}>
-            <Badge size="xs" variant="light" color={realTimeBilling?.planStatus ? 'green' : 'gray'}>
-              {realTimeBilling?.planStatus
-                ? getSubscriptionStatusLabel(realTimeBilling.planStatus, translate)
+            <Badge size="xs" variant="light" color={billing?.planStatus ? 'green' : 'gray'}>
+              {billing?.planStatus
+                ? getSubscriptionStatusLabel(billing.planStatus, translate)
                 : t('payment:noActiveSubscription', 'No Active Subscription')}
             </Badge>
           </Grid.Col>
@@ -254,22 +187,22 @@ export default function Settings({
           </Grid.Col>
           <Grid.Col span={10}>
             <Text fz="xs">
-              {realTimeBilling?.trialEnd && realTimeBilling?.planStatus === 'trialing' ? (
+              {billing?.trialEnd && billing?.planStatus === 'trialing' ? (
                 <>
                   {t('payment:trialEndsOn', 'Trial ends on')}{' '}
-                  {dayjs(realTimeBilling.trialEnd * 1000).format('MMM DD, YYYY')}
+                  {dayjs(billing.trialEnd * 1000).format('MMM DD, YYYY')}
                 </>
-              ) : realTimeBilling?.currentPeriodEnd ? (
+              ) : billing?.currentPeriodEnd ? (
                 <>
                   {t('payment:nextInvoiceDue', 'Next invoice due on')}{' '}
-                  {dayjs(realTimeBilling.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
+                  {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
                 </>
               ) : (
                 t('payment:noRenewalDate', 'No renewal date available')
               )}
             </Text>
           </Grid.Col>
-          {realTimeBilling?.paymentMethod && (
+          {billing?.paymentMethod && (
             <>
               <Grid.Col span={12}>
                 <Divider />
@@ -283,8 +216,8 @@ export default function Settings({
                 <Stack gap={0}>
                   <Group align="center" gap="md">
                     <Text fz="sm" fw={500}>
-                      {realTimeBilling.paymentMethod.brand?.toUpperCase()} ending in{' '}
-                      {realTimeBilling.paymentMethod.last4}
+                      {billing.paymentMethod.brand?.toUpperCase()} ending in{' '}
+                      {billing.paymentMethod.last4}
                     </Text>
                     <ActionIcon
                       size="md"
@@ -299,15 +232,15 @@ export default function Settings({
                   </Group>
                   <Text fz="xs" opacity={0.6}>
                     {t('payment:expires', 'Expires')}{' '}
-                    {String(realTimeBilling.paymentMethod.expMonth).padStart(2, '0')}/
-                    {realTimeBilling.paymentMethod.expYear}
+                    {String(billing.paymentMethod.expMonth).padStart(2, '0')}/
+                    {billing.paymentMethod.expYear}
                   </Text>
                 </Stack>
               </Grid.Col>
             </>
           )}
-          {shouldShowUpgrade(realTimeBilling?.planStatus) &&
-            canUpgrade(realTimeBilling?.currentPlan || '', realTimeBilling?.planStatus) && (
+          {shouldShowUpgrade(billing?.planStatus) &&
+            canUpgrade(billing?.currentPlan || '', billing?.planStatus) && (
               <>
                 <Grid.Col span={12}>
                   <Divider />
@@ -328,14 +261,14 @@ export default function Settings({
                   >
                     {(() => {
                       if (
-                        realTimeBilling?.planStatus === 'trialing' ||
-                        realTimeBilling?.planStatus === 'incomplete'
+                        billing?.planStatus === 'trialing' ||
+                        billing?.planStatus === 'incomplete'
                       ) {
-                        return `${t('payment:subscribe')} ${getTranslatedPlanLabel(realTimeBilling?.currentPlan, t)}`
+                        return `${t('payment:subscribe')} ${getTranslatedPlanLabel(billing?.currentPlan, t)}`
                       } else {
                         const nextPlan = getNextPlan(
-                          realTimeBilling?.currentPlan || '',
-                          realTimeBilling?.planStatus
+                          billing?.currentPlan || '',
+                          billing?.planStatus
                         )
                         return nextPlan
                           ? `${t('payment:upgrade')} ${getTranslatedPlanLabel(nextPlan, t)}`
@@ -347,20 +280,20 @@ export default function Settings({
               </>
             )}
           {/* Cancellation Section - show for active subscriptions */}
-          {realTimeBilling?.subscriptionId && realTimeBilling?.planStatus === 'active' && (
+          {billing?.subscriptionId && billing?.planStatus === 'active' && (
             <>
               <Grid.Col span={12}>
                 <Divider />
               </Grid.Col>
               <Grid.Col span={2}>
                 <Text fz="xs" opacity={0.6}>
-                  {realTimeBilling?.cancelAtPeriodEnd
+                  {billing?.cancelAtPeriodEnd
                     ? t('subscriptionEnding', 'Subscription Ending')
                     : t('cancelSubscription', 'Cancel Subscription')}
                 </Text>
               </Grid.Col>
               <Grid.Col span={10}>
-                {realTimeBilling?.cancelAtPeriodEnd ? (
+                {billing?.cancelAtPeriodEnd ? (
                   <div>
                     <Text fz="sm" c="orange" mb={4}>
                       {t(
@@ -370,7 +303,7 @@ export default function Settings({
                     </Text>
                     <Text fz="xs" opacity={0.6}>
                       {t('accessUntil', 'You will have access until')}{' '}
-                      {dayjs(realTimeBilling.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
+                      {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
                     </Text>
                   </div>
                 ) : (
@@ -423,48 +356,48 @@ export default function Settings({
         opened={showUpgradeModal}
         onClose={handleModalClose}
         onSuccess={handleUpgradeSuccess}
-        userPlanStatus={realTimeBilling?.planStatus || ''}
+        userPlanStatus={billing?.planStatus || ''}
         planId={
-          realTimeBilling?.planStatus === 'trialing' || realTimeBilling?.planStatus === 'incomplete'
-            ? realTimeBilling?.currentPlan || 'standard'
-            : getNextPlan(realTimeBilling?.currentPlan || '', realTimeBilling?.planStatus || '') ||
+          billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete'
+            ? billing?.currentPlan || 'standard'
+            : getNextPlan(billing?.currentPlan || '', billing?.planStatus || '') ||
               'standard'
         }
-        interval={realTimeBilling?.interval || 'month'}
-        currency={(realTimeBilling?.currency || 'USD').toUpperCase()}
+        interval={billing?.interval || 'month'}
+        currency={(billing?.currency || 'USD').toUpperCase()}
         config={config}
         billing={billing}
       />
 
       {/* Cancellation Modal */}
-      {realTimeBilling?.subscriptionId && (
+      {billing?.subscriptionId && (
         <CancellationModal
           isOpen={showCancellationModal}
           onClose={() => setShowCancellationModal(false)}
           onSuccess={handleCancellationSuccess}
           subscription={{
-            id: realTimeBilling.subscriptionId,
-            planId: realTimeBilling.currentPlan,
-            status: realTimeBilling.planStatus,
-            interval: realTimeBilling.interval,
-            currentPeriodEnd: realTimeBilling.currentPeriodEnd,
-            cancelAtPeriodEnd: realTimeBilling.cancelAtPeriodEnd,
+            id: billing.subscriptionId,
+            planId: billing.currentPlan,
+            status: billing.planStatus,
+            interval: billing.interval,
+            currentPeriodEnd: billing.currentPeriodEnd,
+            cancelAtPeriodEnd: billing.cancelAtPeriodEnd,
           }}
         />
       )}
 
       {/* Payment Method Edit Modal */}
-      {realTimeBilling?.subscriptionId && config && (
+      {billing?.subscriptionId && config && (
         <PaymentMethodEditModal
           isOpen={showPaymentEditModal}
           onClose={() => setShowPaymentEditModal(false)}
           onSuccess={handleCancellationSuccess}
           subscription={{
-            id: realTimeBilling.subscriptionId,
-            planId: realTimeBilling.currentPlan,
-            interval: realTimeBilling.interval,
-            amount: realTimeBilling.amount,
-            currency: realTimeBilling.currency,
+            id: billing.subscriptionId,
+            planId: billing.currentPlan,
+            interval: billing.interval,
+            amount: billing.amount,
+            currency: billing.currency,
           }}
           config={config}
         />

@@ -70,6 +70,17 @@ function PaymentForm({
   const elements = useElements()
   const { t } = useTranslation(['payment', 'common'])
 
+  // Store static values to prevent handleSubmit recreation
+  const staticValues = useMemo(() => ({
+    planId,
+    interval, 
+    currency,
+    subscriptionId,
+    createPaymentPath: createPaymentPath || '/api/subscription-create',
+    isTrialConversion: !!isTrialConversion,
+    isPaymentMethodUpdate: !!isPaymentMethodUpdate,
+  }), [planId, interval, currency, subscriptionId, createPaymentPath, isTrialConversion, isPaymentMethodUpdate])
+
   const handleSubmit = useCallback(
     async (event?: React.FormEvent) => {
       if (event) event.preventDefault()
@@ -93,13 +104,13 @@ function PaymentForm({
       if (!secret) {
         try {
           console.log('🔄 Creating payment intent/setup intent...')
-          const endpoint = createPaymentPath || '/api/subscription-create'
+          const endpoint = staticValues.createPaymentPath
           // Prefer JSON to match API signature used elsewhere in the app
           const payload = {
-            planId,
-            interval,
-            currency,
-            subscriptionId, // Include subscriptionId for payment method updates
+            planId: staticValues.planId,
+            interval: staticValues.interval,
+            currency: staticValues.currency,
+            subscriptionId: staticValues.subscriptionId, // Include subscriptionId for payment method updates
             useExistingPaymentMethod: false, // Explicitly indicate we're collecting a new payment method
           }
           const res = await fetch(endpoint, {
@@ -184,19 +195,19 @@ function PaymentForm({
         onError(error.message || t('payment:paymentError'))
       } else {
         // If this is a trial conversion, confirm payment and end trial
-        if (isTrialConversion && subscriptionId) {
-          console.log('🎯 Confirming trial conversion for subscription:', subscriptionId)
+        if (staticValues.isTrialConversion && staticValues.subscriptionId) {
+          console.log('🎯 Confirming trial conversion for subscription:', staticValues.subscriptionId)
           try {
-            const endpoint = createPaymentPath || '/api/subscription-create'
+            const endpoint = staticValues.createPaymentPath
             const res = await fetch(endpoint, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 confirmPayment: true,
-                subscriptionId,
-                planId,
-                interval,
-                currency,
+                subscriptionId: staticValues.subscriptionId,
+                planId: staticValues.planId,
+                interval: staticValues.interval,
+                currency: staticValues.currency,
               }),
             })
 
@@ -228,20 +239,20 @@ function PaymentForm({
         }
 
         // If this is a payment method update with SetupIntent, confirm it
-        if (isSetupIntent && createPaymentPath === '/api/payment-method-update' && subscriptionId) {
+        if (isSetupIntent && staticValues.createPaymentPath === '/api/payment-method-update' && staticValues.subscriptionId) {
           console.log(
             '💳 Confirming SetupIntent for payment method update:',
             secret?.split('_secret_')[0]
           )
           try {
             const setupIntentId = secret?.split('_secret_')[0] // Extract SetupIntent ID from client secret
-            const res = await fetch(createPaymentPath, {
+            const res = await fetch(staticValues.createPaymentPath, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 confirmSetupIntent: true,
                 setupIntentId,
-                subscriptionId,
+                subscriptionId: staticValues.subscriptionId,
               }),
             })
             const data = await res.json()
@@ -264,20 +275,8 @@ function PaymentForm({
         onSuccess()
       }
     },
-    [
-      stripe,
-      elements,
-      clientSecret,
-      createPaymentPath,
-      isTrialConversion,
-      subscriptionId,
-      planId,
-      interval,
-      currency,
-      onSuccess,
-      onError,
-      t,
-    ]
+    // Reduced dependencies to prevent excessive re-renders
+    [stripe, elements, clientSecret, onSuccess, onError, staticValues, t]
   )
 
   // Expose submit function to parent via callback
@@ -285,7 +284,8 @@ function PaymentForm({
     if (onSubmitReady) {
       onSubmitReady(handleSubmit, !!(stripe && elements))
     }
-  }, [onSubmitReady, stripe, elements, handleSubmit])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onSubmitReady, stripe, elements])
 
   return (
     <Paper p={0} radius="md" className={classes.paymentElement} withBorder={false}>
