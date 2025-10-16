@@ -79,6 +79,7 @@ export default {
 
   // Settings
   title: 'Settings',
+  manageSettings: 'Manage your account settings and preferences',
   subscriptions: 'Subscriptions',
   manageSubscriptions: 'Manage your subscription and billing settings',
   manageCurrencies: 'Manage your currencies',

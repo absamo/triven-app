@@ -161,11 +161,10 @@ export default function PaymentMethodEditModal({
             size="lg"
             disabled={!isStripeReady || isProcessing}
             loading={isProcessing}
-            gradient={{ from: 'teal', to: 'blue' }}
-            variant="gradient"
+            color="teal"
             leftSection={isProcessing ? <Loader size="sm" /> : <IconLock size={20} />}
             onClick={handleUpdateClick}
-            style={{ width: 'auto', minWidth: '200px', alignSelf: 'center' }}
+            fullWidth
           >
             {isProcessing ? t('processing', 'Processing...') : t('updateCard', 'Update Card')}
           </Button>

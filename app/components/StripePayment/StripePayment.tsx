@@ -323,6 +323,7 @@ export default function StripePayment({
   onSubmitReady,
 }: StripePaymentProps) {
   const { colorScheme } = useMantineColorScheme()
+  const { i18n } = useTranslation()
 
   // Memoize stripePromise to prevent re-creation on every render
   const stripePromise = useMemo(() => getStripePromise(publishableKey), [publishableKey])
@@ -370,6 +371,7 @@ export default function StripePayment({
         ? {
             clientSecret,
             appearance,
+            locale: i18n.language === 'fr' ? ('fr' as const) : ('en' as const),
           }
         : isTrialConversion || isPaymentMethodUpdate
           ? {
@@ -377,6 +379,7 @@ export default function StripePayment({
               mode: 'setup' as const,
               currency: currency.toLowerCase(),
               appearance,
+              locale: i18n.language === 'fr' ? ('fr' as const) : ('en' as const),
             }
           : {
               // For regular subscriptions and upgrades: use 'payment' mode
@@ -385,8 +388,9 @@ export default function StripePayment({
               currency: currency.toLowerCase(),
               amount: amount || 100, // Minimum amount for payment mode (will be overridden by API)
               appearance,
+              locale: i18n.language === 'fr' ? ('fr' as const) : ('en' as const),
             },
-    [clientSecret, isTrialConversion, isPaymentMethodUpdate, amount, currency, appearance]
+    [clientSecret, isTrialConversion, isPaymentMethodUpdate, amount, currency, appearance, i18n.language]
   )
 
   return (

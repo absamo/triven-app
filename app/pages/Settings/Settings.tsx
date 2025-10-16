@@ -1,10 +1,8 @@
 import {
   ActionIcon,
   Badge,
-  Button,
   Card,
   Divider,
-  Grid,
   Group,
   Menu,
   Paper,
@@ -13,14 +11,11 @@ import {
   Tabs,
   Text,
   ThemeIcon,
-  Tooltip,
   useMantineColorScheme,
   useMantineTheme,
 } from '@mantine/core'
 import {
   IconArrowUp,
-  IconCalendar,
-  IconCheck,
   IconCreditCard,
   IconCrown,
   IconDots,
@@ -28,6 +23,8 @@ import {
   IconInfoCircle,
   IconPremiumRights,
   IconX,
+  IconBrandMastercard,
+  IconBrandVisa,
 } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { useEffect, useRef, useState } from 'react'
@@ -46,6 +43,23 @@ import { useStripeHealth } from '~/app/lib/hooks/useStripeHealth'
 import { CURRENCY_SYMBOLS } from '~/app/modules/stripe/plans'
 import PageTitle from '~/app/partials/Title/Title'
 import CurrencySettings from './CurrencySettings'
+
+// Helper function to get card brand icon
+const getCardIcon = (brand: string | undefined, size: number = 16) => {
+  if (!brand) return <IconCreditCard size={size} />
+  
+  const brandLower = brand.toLowerCase()
+  
+  if (brandLower === 'mastercard') {
+    return <IconBrandMastercard size={size} />
+  }
+  if (brandLower === 'visa') {
+    return <IconBrandVisa size={size} />
+  }
+  
+  // Default to generic card icon for all other brands (including Amex)
+  return <IconCreditCard size={size} />
+}
 
 interface SettingsProps {
   currencies: ICurrency[]
@@ -156,7 +170,7 @@ export default function Settings({
       content: () => (
         <Stack gap="lg">
           {/* Current Plan Card */}
-          <Card shadow="sm" padding="xl" radius="md" withBorder>
+          <Card  padding="xl" radius="md" withBorder>
             <Group justify="space-between" mb="lg">
               <Group>
                 <ThemeIcon size="lg" radius="md" variant="light" color="blue">
@@ -171,7 +185,7 @@ export default function Settings({
                   </Text>
                 </div>
               </Group>
-              <Menu shadow="md" width={200}>
+              <Menu shadow="md" width={260} position="bottom-end">
                 <Menu.Target>
                   <ActionIcon variant="subtle" color="gray" size="lg">
                     <IconDots size={18} />
@@ -326,7 +340,7 @@ export default function Settings({
 
           {/* Payment Method Card */}
           {billing?.paymentMethod && (
-            <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <Card  padding="lg" radius="md" withBorder>
               <Group justify="space-between" mb="md">
                 <Group>
                   <ThemeIcon size="lg" radius="md" variant="light" color="violet">
@@ -341,7 +355,7 @@ export default function Settings({
                     </Text>
                   </div>
                 </Group>
-                <Menu shadow="md" width={200}>
+                <Menu shadow="md" width={260} position="bottom-end">
                   <Menu.Target>
                     <ActionIcon variant="subtle" color="gray" size="lg">
                       <IconDots size={18} />
@@ -363,11 +377,14 @@ export default function Settings({
                 <Group justify="space-between">
                   <Group>
                     <ThemeIcon size="md" radius="md" variant="light" color="gray">
-                      <IconCreditCard size={16} />
+                      {getCardIcon(billing.paymentMethod.brand, 16)}
                     </ThemeIcon>
                     <div>
                       <Text size="sm" fw={600}>
-                        {billing.paymentMethod.brand?.toUpperCase()}
+                        {billing.paymentMethod.brand
+                          ? billing.paymentMethod.brand.charAt(0).toUpperCase() + 
+                            billing.paymentMethod.brand.slice(1).toLowerCase()
+                          : ''}
                       </Text>
                       <Text size="xs" c="dimmed">
                         •••• •••• •••• {billing.paymentMethod.last4}
@@ -384,7 +401,7 @@ export default function Settings({
 
           {/* Cancelled Subscription Notice */}
           {billing?.subscriptionId && billing?.planStatus === 'active' && billing?.cancelAtPeriodEnd && (
-            <Card shadow="sm" padding="lg" radius="md" withBorder style={{
+            <Card  padding="lg" radius="md" withBorder style={{
               borderColor: theme.colors.orange[4],
               background: colorScheme === 'dark'
                 ? 'rgba(255, 152, 0, 0.1)'
@@ -419,19 +436,21 @@ export default function Settings({
 
   return (
     <>
-      <Stack gap="xl">
+      <Stack>
         <PageTitle description={t('common:manageSettings', 'Manage your account settings and preferences')}>
           {t('common:title', 'Settings')}
         </PageTitle>
 
-        <Tabs defaultValue="billing" variant="pills" radius="md" color="cyan.5">
-          <Tabs.List mb="xl">
+        <Tabs defaultValue="billing" variant="default" radius="md" color="cyan.5">
+          <Tabs.List mb="lg">
             {settings.map(({ id, label }) => (
               <Tabs.Tab value={id} key={id}>
                 {label}
               </Tabs.Tab>
             ))}
           </Tabs.List>
+
+  
 
           {settings.map(({ id, content: Content }) => (
             <Tabs.Panel value={id} key={id}>

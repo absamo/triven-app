@@ -79,6 +79,7 @@ export default {
 
   // Settings
   subscriptions: 'Abonnements',
+  manageSettings: 'Gérer les paramètres et préférences de votre compte',
   manageSubscriptions: "Gérez vos paramètres d'abonnement et de facturation",
   yourCurrentPlan: 'Votre forfait actuel',
   plan: 'forfait',
