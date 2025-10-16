@@ -92,4 +92,10 @@ export default {
 
   // Page titles
   title: 'Paramètres',
+
+  // Selection placeholders
+  selectCustomer: 'Sélectionner un client',
+  selectStatus: 'Sélectionner un statut',
+  enterNotes: 'Entrer des notes supplémentaires',
+  viewSalesOrder: 'Voir la Commande de Vente',
 } satisfies typeof import('../en/common').default

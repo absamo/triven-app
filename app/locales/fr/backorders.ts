@@ -1,6 +1,7 @@
 export default {
   // Main title and labels
   title: 'Commandes en Attente',
+  description: 'Gérer et suivre les commandes en attente pour les articles en rupture de stock',
   backorders: 'Commandes en Attente',
   backorder: 'Commande en Attente',
 

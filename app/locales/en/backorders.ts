@@ -1,6 +1,7 @@
 export default {
   // Main title and labels
   title: 'Backorders',
+  description: 'Manage and track backorders for out-of-stock items',
   backorders: 'Backorders',
   backorder: 'Backorder',
 

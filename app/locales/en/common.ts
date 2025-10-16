@@ -104,4 +104,10 @@ export default {
   subscribe: 'Subscribe',
   to: 'to',
   viewPlans: 'View Plans',
+
+  // Selection placeholders
+  selectCustomer: 'Select customer',
+  selectStatus: 'Select status',
+  enterNotes: 'Enter any additional notes',
+  viewSalesOrder: 'View Sales Order',
 }

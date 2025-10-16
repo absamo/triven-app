@@ -102,7 +102,7 @@ export default function BackordersPage({ backorders = [], permissions = [] }: Ba
                     })
                   }}
                 >
-                  {t('fulfillOrder')}
+                  {t('backorders:fulfillOrder')}
                 </Menu.Item>
                 <Menu.Item
                   type="submit"
@@ -118,7 +118,7 @@ export default function BackordersPage({ backorders = [], permissions = [] }: Ba
                     })
                   }}
                 >
-                  {t('cancelOrder')}
+                  {t('backorders:cancelOrder')}
                 </Menu.Item>
               </Form>
             </TableActionsMenu>
@@ -130,33 +130,37 @@ export default function BackordersPage({ backorders = [], permissions = [] }: Ba
 
   return (
     <>
-      <Title to={'/backorders/create'} canCreate={canCreate}>
-        Backorders
+      <Title
+        to={'/backorders/create'}
+        canCreate={canCreate}
+        description={t('backorders:description', 'Manage and track backorders for out-of-stock items')}
+      >
+        {t('backorders:title')}
       </Title>
 
       <BackorderFilters
         searchProps={{
-          description: t('search'),
+          description: t('backorders:search'),
         }}
         statusOrderProps={{
           data: [
-            { value: BACKORDER_STATUSES.PENDING, label: t('pending') },
-            { value: BACKORDER_STATUSES.PARTIAL, label: t('partial') },
-            { value: BACKORDER_STATUSES.FULFILLED, label: t('fulfilled') },
-            { value: BACKORDER_STATUSES.CANCELLED, label: t('cancelled') },
+            { value: BACKORDER_STATUSES.PENDING, label: t('backorders:pending') },
+            { value: BACKORDER_STATUSES.PARTIAL, label: t('backorders:partial') },
+            { value: BACKORDER_STATUSES.FULFILLED, label: t('backorders:fulfilled') },
+            { value: BACKORDER_STATUSES.CANCELLED, label: t('backorders:cancelled') },
           ],
-          description: t('filterByOrderStatuses'),
+          description: t('backorders:filterByOrderStatuses'),
         }}
         backorderProps={{
           data: backorders.map((backorder: IBackorder) => {
             return backorder?.backorderReference
           }),
           values: backorderReference ? [backorderReference] : [],
-          description: t('filterByBackorder'),
+          description: t('backorders:filterByBackorder'),
           backorderReference: location.state?.backorderReference,
         }}
         dateProps={{
-          description: t('filterByOrderDate'),
+          description: t('backorders:filterByOrderDate'),
         }}
         route="/api/backorders-search"
         onFilter={setData}
@@ -164,12 +168,12 @@ export default function BackordersPage({ backorders = [], permissions = [] }: Ba
       <Table verticalSpacing="xs" highlightOnHover={canUpdate} withTableBorder striped mt={35}>
         <Table.Thead fz={12}>
           <Table.Tr>
-            <Table.Th>{t('orderDate')}</Table.Th>
-            <Table.Th>{t('backorderReference')}</Table.Th>
-            <Table.Th>{t('customerName')}</Table.Th>
-            <Table.Th>{t('agency')}</Table.Th>
-            <Table.Th>{t('orderStatus')}</Table.Th>
-            <Table.Th>{t('amount')}</Table.Th>
+            <Table.Th>{t('backorders:orderDate')}</Table.Th>
+            <Table.Th>{t('backorders:backorderReference')}</Table.Th>
+            <Table.Th>{t('backorders:customerName')}</Table.Th>
+            <Table.Th>{t('backorders:agency')}</Table.Th>
+            <Table.Th>{t('backorders:orderStatus')}</Table.Th>
+            <Table.Th>{t('backorders:amount')}</Table.Th>
             <Table.Th></Table.Th>
           </Table.Tr>
         </Table.Thead>
@@ -180,7 +184,7 @@ export default function BackordersPage({ backorders = [], permissions = [] }: Ba
             <Table.Tr>
               <Table.Td colSpan={7} align="center">
                 <Text size="sm" c="dimmed">
-                  {t('noBackordersFound')}
+                  {t('backorders:noBackordersFound')}
                 </Text>
               </Table.Td>
             </Table.Tr>
@@ -190,11 +194,8 @@ export default function BackordersPage({ backorders = [], permissions = [] }: Ba
 
       <Text size="sm" c="dimmed" mt="md" ta="center">
         {rows.length === 1
-          ? t('showingCountSingular', 'Showing {{count}} backorder').replace('{{count}}', '1')
-          : t('showingCount', 'Showing {{count}} backorders').replace(
-              '{{count}}',
-              rows.length.toString()
-            )}
+          ? t('backorders:showingCountSingular', { count: 1 })
+          : t('backorders:showingCount', { count: rows.length })}
       </Text>
     </>
   )

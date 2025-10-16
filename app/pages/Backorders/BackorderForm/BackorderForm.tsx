@@ -37,7 +37,7 @@ export default function BackorderForm({
   errors,
   isEdit = false,
 }: BackorderFormProps) {
-  const { t, i18n } = useTranslation('inventory')
+  const { t, i18n } = useTranslation(['backorders', 'common'])
 
   const form = useForm({
     mode: 'uncontrolled',
@@ -112,7 +112,9 @@ export default function BackorderForm({
 
   return (
     <>
-      <Title backTo="/backorders">{isEdit ? `${t('editBackorder')}` : t('createBackorder')}</Title>
+      <Title backTo="/backorders">
+        {isEdit ? t('backorders:editBackorder') : t('backorders:createBackorder')}
+      </Title>
 
       {/* Show linked sales order information when editing */}
       {isEdit && (backorder as any)?.salesOrder && (
@@ -120,14 +122,14 @@ export default function BackorderForm({
           <Group justify="space-between" align="center">
             <div>
               <Text size="sm" fw={500}>
-                Linked Sales Order: {(backorder as any).salesOrder.salesOrderReference}
+                {t('backorders:salesOrder')}: {(backorder as any).salesOrder.salesOrderReference}
               </Text>
               <Text size="xs" c="dimmed">
-                Order Date:{' '}
+                {t('backorders:orderDate')}:{' '}
                 {(backorder as any).salesOrder.orderDate
                   ? formatLocalizedDate((backorder as any).salesOrder.orderDate, i18n.language, 'L')
                   : 'N/A'}{' '}
-                | Status: {(backorder as any).salesOrder.status}
+                | {t('common:status')}: {(backorder as any).salesOrder.status}
               </Text>
             </div>
             <Button
@@ -137,7 +139,7 @@ export default function BackorderForm({
               to={`/salesOrders/${(backorder as any).salesOrder.id}/edit`}
               leftSection={<IconEye size={14} />}
             >
-              View Sales Order
+              {t('common:viewSalesOrder', 'View Sales Order')}
             </Button>
           </Group>
         </Alert>
@@ -167,8 +169,8 @@ export default function BackorderForm({
         <Grid>
           <Grid.Col span={{ base: 12, md: 6 }}>
             <TextInput
-              label={t('backorderReference')}
-              placeholder="Enter backorder reference"
+              label={t('backorders:backorderReference')}
+              placeholder={t('backorders:backorderReference')}
               {...form.getInputProps('backorderReference')}
               error={form.getInputProps('backorderReference').error || errors?.backorderReference}
               withAsterisk
@@ -176,8 +178,8 @@ export default function BackorderForm({
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Select
-              label={t('customerName')}
-              placeholder="Select customer"
+              label={t('backorders:customerName')}
+              placeholder={t('common:selectCustomer', 'Select customer')}
               data={customerOptions}
               searchable
               {...form.getInputProps('customerId')}
@@ -191,8 +193,8 @@ export default function BackorderForm({
 
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Select
-              label={t('status', 'Status')}
-              placeholder="Select status"
+              label={t('common:status', 'Status')}
+              placeholder={t('common:selectStatus', 'Select status')}
               data={statusOptions}
               {...form.getInputProps('status')}
               error={form.getInputProps('status').error || errors?.status}
@@ -202,7 +204,7 @@ export default function BackorderForm({
 
           <Grid.Col span={{ base: 12, md: 6 }}>
             <DateInput
-              label={t('originalOrderDate')}
+              label={t('backorders:originalOrderDate')}
               placeholder="DD/MM/YYYY"
               valueFormat="DD/MM/YYYY"
               clearable
@@ -230,8 +232,8 @@ export default function BackorderForm({
 
           <Grid.Col span={12}>
             <Textarea
-              label={t('notes')}
-              placeholder="Enter any additional notes"
+              label={t('backorders:notes')}
+              placeholder={t('common:enterNotes', 'Enter any additional notes')}
               rows={3}
               {...form.getInputProps('notes')}
               error={form.getInputProps('notes').error || errors?.notes}
