@@ -13,7 +13,8 @@ import {
   Text,
   TextInput,
   ThemeIcon,
-  Title,
+  Title as MantineTitle,
+  useMantineColorScheme,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import {
@@ -33,6 +34,7 @@ import { useFetcher, useLoaderData, useNavigate, useRevalidator } from 'react-ro
 import { TableActionsMenu } from '~/app/components'
 import WorkflowTemplateModal from '~/app/components/WorkflowTemplateModal/WorkflowTemplateModal'
 import { formatLocalizedDate } from '~/app/lib/dayjs'
+import { Title } from '~/app/partials/Title'
 
 interface WorkflowStep {
   id: string
@@ -100,6 +102,7 @@ interface RoleOption {
 }
 
 export default function WorkflowTemplatesPage() {
+  const { colorScheme } = useMantineColorScheme()
   const { t, i18n } = useTranslation(['workflows', 'common'])
   const navigate = useNavigate()
   const { workflowTemplates, currentUser, users, roles } = useLoaderData<{
@@ -362,15 +365,17 @@ export default function WorkflowTemplatesPage() {
 
   // Helper functions
   const getFilterGradient = () => {
-    return 'var(--mantine-color-body)'
+    return colorScheme === 'dark'
+      ? 'linear-gradient(135deg, var(--mantine-color-dark-7) 0%, var(--mantine-color-dark-6) 50%, var(--mantine-color-dark-5) 100%)'
+      : 'linear-gradient(135deg, var(--mantine-color-gray-0) 0%, var(--mantine-color-gray-1) 50%, var(--mantine-color-gray-2) 100%)'
   }
 
   const getCardTextColor = () => {
-    return 'var(--mantine-color-text)'
+    return colorScheme === 'dark' ? 'gray.0' : 'dark.8'
   }
 
   const getTitleColor = () => {
-    return 'var(--mantine-color-text)'
+    return colorScheme === 'dark' ? 'gray.1' : 'gray.7'
   }
 
   const getTriggerTypeColor = (triggerType: string) => {
@@ -424,14 +429,12 @@ export default function WorkflowTemplatesPage() {
       />
       {/* Header */}
       <Group justify="space-between" mb="xl">
-        <div>
-          <Title order={2} c={getTitleColor()}>
-            {t('workflows:title', 'Workflow Templates')}
-          </Title>
-          <Text c="dimmed" size="sm">
-            {t('workflows:description', 'Create and manage reusable approval workflow templates')}
-          </Text>
-        </div>
+        <Title
+          order={2}
+          description={t('workflows:description', 'Create and manage reusable approval workflow templates')}
+        >
+          {t('workflows:title', 'Workflow Templates')}
+        </Title>
         <Button
           leftSection={<IconPlus size={16} />}
           onClick={() => navigate('/workflow-templates/create')}
@@ -441,108 +444,21 @@ export default function WorkflowTemplatesPage() {
         </Button>
       </Group>
 
-      {/* Summary Cards */}
-      <Grid gutter="lg" mb="xl">
-        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-          <Card
-            withBorder
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: 'var(--mantine-color-green-light)',
-              height: '120px',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
-              <div style={{ flex: 1 }}>
-                <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
-                  {t('workflows:summary.activeTemplates', 'Active Templates')}
-                </Text>
-                <Text size="xl" fw={700} c={getCardTextColor()}>
-                  {filteredTemplates.filter((t) => t.isActive).length}
-                </Text>
-              </div>
-              <ThemeIcon size={40} radius="md" variant="light" color="green">
-                <IconCheck size={20} />
-              </ThemeIcon>
-            </Group>
-          </Card>
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-          <Card
-            withBorder
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: 'var(--mantine-color-red-light)',
-              height: '120px',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
-              <div style={{ flex: 1 }}>
-                <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
-                  {t('workflows:summary.inactiveTemplates', 'Inactive Templates')}
-                </Text>
-                <Text size="xl" fw={700} c={getCardTextColor()}>
-                  {filteredTemplates.filter((t) => !t.isActive).length}
-                </Text>
-              </div>
-              <ThemeIcon size={40} radius="md" variant="light" color="red">
-                <IconX size={20} />
-              </ThemeIcon>
-            </Group>
-          </Card>
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-          <Card
-            withBorder
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: 'var(--mantine-color-yellow-light)',
-              height: '120px',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
-              <div style={{ flex: 1 }}>
-                <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
-                  {t('workflows:summary.totalUsage', 'Total Usage')}
-                </Text>
-                <Text size="xl" fw={700} c={getCardTextColor()}>
-                  {filteredTemplates.reduce((sum, t) => sum + t.usageCount, 0)}
-                </Text>
-              </div>
-              <ThemeIcon size={40} radius="md" variant="light" color="orange">
-                <IconChartBar size={20} />
-              </ThemeIcon>
-            </Group>
-          </Card>
-        </Grid.Col>
-      </Grid>
-
       {/* Filters */}
       <Paper p="xl" withBorder mb="xl" radius="md" style={{ background: getFilterGradient() }}>
         <Group justify="space-between" mb="md">
           <Group>
-            <ThemeIcon variant="light" color="blue" size="lg">
+            <ThemeIcon variant="light" color={colorScheme === 'dark' ? 'blue' : 'gray'} size="lg">
               <IconFilter size={18} />
             </ThemeIcon>
-            <Title order={4} c={getTitleColor()}>
+            <MantineTitle order={4} c={getTitleColor()}>
               {t('workflows:filters.title', 'Filter Templates')}
-            </Title>
+            </MantineTitle>
           </Group>
           <Button
             variant="subtle"
             size="xs"
-            color="blue"
+            color={colorScheme === 'dark' ? 'blue' : 'gray'}
             onClick={() => {
               setSearchQuery('')
               setTriggerTypeFilter(null)
@@ -599,6 +515,93 @@ export default function WorkflowTemplatesPage() {
           </Grid.Col>
         </Grid>
       </Paper>
+
+      {/* Summary Cards */}
+      <Grid gutter="lg" mb="xl">
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Card
+            withBorder
+            padding="lg"
+            radius="md"
+            style={{
+              backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+              height: '120px',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
+              <div style={{ flex: 1 }}>
+                <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
+                  {t('workflows:summary.activeTemplates', 'Active Templates')}
+                </Text>
+                <Text size="xl" fw={700} c={getCardTextColor()}>
+                  {filteredTemplates.filter((t) => t.isActive).length}
+                </Text>
+              </div>
+              <ThemeIcon size={40} radius="md" variant="light" color="green">
+                <IconCheck size={20} />
+              </ThemeIcon>
+            </Group>
+          </Card>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Card
+            withBorder
+            padding="lg"
+            radius="md"
+            style={{
+              backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+              height: '120px',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
+              <div style={{ flex: 1 }}>
+                <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
+                  {t('workflows:summary.inactiveTemplates', 'Inactive Templates')}
+                </Text>
+                <Text size="xl" fw={700} c={getCardTextColor()}>
+                  {filteredTemplates.filter((t) => !t.isActive).length}
+                </Text>
+              </div>
+              <ThemeIcon size={40} radius="md" variant="light" color="red">
+                <IconX size={20} />
+              </ThemeIcon>
+            </Group>
+          </Card>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          <Card
+            withBorder
+            padding="lg"
+            radius="md"
+            style={{
+              backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+              height: '120px',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
+              <div style={{ flex: 1 }}>
+                <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
+                  {t('workflows:summary.totalUsage', 'Total Usage')}
+                </Text>
+                <Text size="xl" fw={700} c={getCardTextColor()}>
+                  {filteredTemplates.reduce((sum, t) => sum + t.usageCount, 0)}
+                </Text>
+              </div>
+              <ThemeIcon size={40} radius="md" variant="light" color="orange">
+                <IconChartBar size={20} />
+              </ThemeIcon>
+            </Group>
+          </Card>
+        </Grid.Col>
+      </Grid>
 
       {/* Templates List */}
       {filteredTemplates.length > 0 ? (
@@ -771,9 +774,9 @@ export default function WorkflowTemplatesPage() {
               <ThemeIcon size={60} radius="md" variant="light" color="blue" mx="auto" mb="md">
                 <IconGitBranch size={30} />
               </ThemeIcon>
-              <Title order={4} c={getTitleColor()} mb="xs">
+              <MantineTitle order={4} c={getTitleColor()} mb="xs">
                 {t('workflows:messages.noTemplates', 'No Workflow Templates')}
-              </Title>
+              </MantineTitle>
               <Text c="dimmed" size="sm" mb="lg">
                 {(workflowTemplates || []).length === 0
                   ? t(

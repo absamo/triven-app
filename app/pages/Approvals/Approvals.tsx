@@ -11,7 +11,7 @@ import {
   Stack,
   Text,
   ThemeIcon,
-  Title,
+  Title as MantineTitle,
   useMantineColorScheme,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
@@ -41,6 +41,7 @@ import {
 } from '~/app/components'
 import ClientOnly from '~/app/components/ClientOnly'
 import { formatLocalizedDate } from '~/app/lib/dayjs'
+import { Title } from '~/app/partials/Title'
 
 interface ApprovalComment {
   id: string
@@ -444,156 +445,12 @@ export default function ApprovalsPage() {
     >
       <Container size="xl" py="md" w={'100%'}>
         {/* Header */}
-        <Group justify="space-between" mb="xl">
-          <div>
-            <Title order={2} c={getTitleColor()}>
-              {t('approvals:title', 'Approvals')}
-            </Title>
-            <Text c="dimmed" size="sm">
-              {t('approvals:description', 'Review and manage approval requests')}
-            </Text>
-          </div>
-        </Group>
-
-        {/* Summary Cards */}
-        <Grid gutter="lg" mb="xl">
-          {/* 1. Pending */}
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <Card
-              withBorder
-              padding="lg"
-              radius="md"
-              style={{
-                backgroundColor: colorScheme === 'dark' ? '#25262b' : '#f8f9fa',
-                height: '140px',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
-                <div style={{ flex: 1 }}>
-                  <Text size="xs" c="gray.6" fw={700} tt="uppercase" mb="xs">
-                    {t('approvals:statuses.pending')}
-                  </Text>
-                  <Text size="xl" fw={700} c={getCardTextColor()} mb="xs">
-                    {filteredRequests.filter((r: ApprovalRequest) => r.status === 'pending').length}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {t('approvals:summary.pendingRequests', 'Pending requests')}
-                  </Text>
-                </div>
-                <ThemeIcon size={48} radius="md" variant="light" color="gray">
-                  <IconClock size={24} />
-                </ThemeIcon>
-              </Group>
-            </Card>
-          </Grid.Col>
-
-          {/* 2. In Review */}
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <Card
-              withBorder
-              padding="lg"
-              radius="md"
-              style={{
-                backgroundColor: colorScheme === 'dark' ? '#1a2332' : '#e7f5ff',
-                height: '140px',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
-                <div style={{ flex: 1 }}>
-                  <Text size="xs" c="blue.6" fw={700} tt="uppercase" mb="xs">
-                    {t('approvals:statuses.in_review')}
-                  </Text>
-                  <Text size="xl" fw={700} c={getCardTextColor()} mb="xs">
-                    {
-                      filteredRequests.filter((r: ApprovalRequest) => r.status === 'in_review')
-                        .length
-                    }
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {t('approvals:summary.inReviewRequests', 'In review requests')}
-                  </Text>
-                </div>
-                <ThemeIcon size={48} radius="md" variant="light" color="blue">
-                  <IconEye size={24} />
-                </ThemeIcon>
-              </Group>
-            </Card>
-          </Grid.Col>
-
-          {/* 3. Approved */}
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <Card
-              withBorder
-              padding="lg"
-              radius="md"
-              style={{
-                backgroundColor: colorScheme === 'dark' ? '#1a4a1a' : '#e6fffa',
-                height: '140px',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
-                <div style={{ flex: 1 }}>
-                  <Text size="xs" c="green.6" fw={700} tt="uppercase" mb="xs">
-                    {t('approvals:statuses.approved')}
-                  </Text>
-                  <Text size="xl" fw={700} c={getCardTextColor()} mb="xs">
-                    {
-                      filteredRequests.filter((r: ApprovalRequest) => r.status === 'approved')
-                        .length
-                    }
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {t('approvals:summary.approvedRequests', 'Approved requests')}
-                  </Text>
-                </div>
-                <ThemeIcon size={48} radius="md" variant="light" color="green">
-                  <IconCircleCheck size={24} />
-                </ThemeIcon>
-              </Group>
-            </Card>
-          </Grid.Col>
-
-          {/* 4. Rejected */}
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <Card
-              withBorder
-              padding="lg"
-              radius="md"
-              style={{
-                backgroundColor: colorScheme === 'dark' ? '#4a1a1a' : '#fff5f5',
-                height: '140px',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
-                <div style={{ flex: 1 }}>
-                  <Text size="xs" c="red.6" fw={700} tt="uppercase" mb="xs">
-                    {t('approvals:statuses.rejected')}
-                  </Text>
-                  <Text size="xl" fw={700} c={getCardTextColor()} mb="xs">
-                    {
-                      filteredRequests.filter((r: ApprovalRequest) => r.status === 'rejected')
-                        .length
-                    }
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {t('approvals:summary.rejectedRequests', 'Rejected requests')}
-                  </Text>
-                </div>
-                <ThemeIcon size={48} radius="md" variant="light" color="red">
-                  <IconCircleX size={24} />
-                </ThemeIcon>
-              </Group>
-            </Card>
-          </Grid.Col>
-        </Grid>
+        <Title
+          order={2}
+          description={t('approvals:description', 'Review and manage approval requests')}
+        >
+          {t('approvals:title', 'Approvals')}
+        </Title>
 
         {/* Filters */}
         <Paper p="xl" withBorder mb="xl" radius="md" style={{ background: getFilterGradient() }}>
@@ -602,9 +459,9 @@ export default function ApprovalsPage() {
               <ThemeIcon variant="light" color={colorScheme === 'dark' ? 'blue' : 'gray'} size="lg">
                 <IconFilter size={18} />
               </ThemeIcon>
-              <Title order={4} c={getTitleColor()}>
+              <MantineTitle order={4} c={getTitleColor()}>
                 {t('approvals:filters.title', 'Filter Requests')}
-              </Title>
+              </MantineTitle>
             </Group>
             <Button
               variant="subtle"
@@ -667,6 +524,146 @@ export default function ApprovalsPage() {
             </Grid.Col>
           </Grid>
         </Paper>
+
+        {/* Summary Cards */}
+        <Grid gutter="lg" mb="xl">
+          {/* 1. Pending */}
+          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+            <Card
+              withBorder
+              padding="lg"
+              radius="md"
+              style={{
+                backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                height: '140px',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
+                <div style={{ flex: 1 }}>
+                  <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
+                    {t('approvals:statuses.pending')}
+                  </Text>
+                  <Text size="xl" fw={700} c={getCardTextColor()} mb="xs">
+                    {filteredRequests.filter((r: ApprovalRequest) => r.status === 'pending').length}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {t('approvals:summary.pendingRequests', 'Pending requests')}
+                  </Text>
+                </div>
+                <ThemeIcon size={48} radius="md" variant="light" color="orange">
+                  <IconClock size={24} />
+                </ThemeIcon>
+              </Group>
+            </Card>
+          </Grid.Col>
+
+          {/* 2. In Review */}
+          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+            <Card
+              withBorder
+              padding="lg"
+              radius="md"
+              style={{
+                backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                height: '140px',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
+                <div style={{ flex: 1 }}>
+                  <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
+                    {t('approvals:statuses.in_review')}
+                  </Text>
+                  <Text size="xl" fw={700} c={getCardTextColor()} mb="xs">
+                    {
+                      filteredRequests.filter((r: ApprovalRequest) => r.status === 'in_review')
+                        .length
+                    }
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {t('approvals:summary.inReviewRequests', 'In review requests')}
+                  </Text>
+                </div>
+                <ThemeIcon size={48} radius="md" variant="light" color="blue">
+                  <IconEye size={24} />
+                </ThemeIcon>
+              </Group>
+            </Card>
+          </Grid.Col>
+
+          {/* 3. Approved */}
+          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+            <Card
+              withBorder
+              padding="lg"
+              radius="md"
+              style={{
+                backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                height: '140px',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
+                <div style={{ flex: 1 }}>
+                  <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
+                    {t('approvals:statuses.approved')}
+                  </Text>
+                  <Text size="xl" fw={700} c={getCardTextColor()} mb="xs">
+                    {
+                      filteredRequests.filter((r: ApprovalRequest) => r.status === 'approved')
+                        .length
+                    }
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {t('approvals:summary.approvedRequests', 'Approved requests')}
+                  </Text>
+                </div>
+                <ThemeIcon size={48} radius="md" variant="light" color="green">
+                  <IconCircleCheck size={24} />
+                </ThemeIcon>
+              </Group>
+            </Card>
+          </Grid.Col>
+
+          {/* 4. Rejected */}
+          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+            <Card
+              withBorder
+              padding="lg"
+              radius="md"
+              style={{
+                backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                height: '140px',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
+                <div style={{ flex: 1 }}>
+                  <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
+                    {t('approvals:statuses.rejected')}
+                  </Text>
+                  <Text size="xl" fw={700} c={getCardTextColor()} mb="xs">
+                    {
+                      filteredRequests.filter((r: ApprovalRequest) => r.status === 'rejected')
+                        .length
+                    }
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {t('approvals:summary.rejectedRequests', 'Rejected requests')}
+                  </Text>
+                </div>
+                <ThemeIcon size={48} radius="md" variant="light" color="red">
+                  <IconCircleX size={24} />
+                </ThemeIcon>
+              </Group>
+            </Card>
+          </Grid.Col>
+        </Grid>
 
         {/* Approval Requests List */}
         {filteredRequests.length > 0 ? (
@@ -1037,9 +1034,9 @@ export default function ApprovalsPage() {
                 >
                   <IconFileText size={30} />
                 </ThemeIcon>
-                <Title order={4} c={getTitleColor()} mb="xs">
+                <MantineTitle order={4} c={getTitleColor()} mb="xs">
                   {t('approvals:messages.noRequests')}
-                </Title>
+                </MantineTitle>
                 <Text c="dimmed" size="sm">
                   {(approvalRequests || []).length === 0
                     ? t(
