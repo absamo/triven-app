@@ -39,7 +39,9 @@ export default function OrderStats({ orders }: OrderStatsProps) {
   return (
     <Paper withBorder p="lg" radius="md" shadow="xs">
       <Group justify="space-between" align="center" mb="lg">
-        <Title order={4} fw={600}>{t('ordersOverview')}</Title>
+        <Title order={4} fw={600}>
+          {t('ordersOverview')}
+        </Title>
       </Group>
 
       <Stack gap="lg">
@@ -62,7 +64,12 @@ export default function OrderStats({ orders }: OrderStatsProps) {
         ))}
 
         {/* Always show order totals with dynamic labels */}
-        <Stack gap="sm" mt="md" pt="md" style={{ borderTop: '1px solid light-dark(#e2e8f0, var(--mantine-color-dark-4))' }}>
+        <Stack
+          gap="sm"
+          mt="md"
+          pt="md"
+          style={{ borderTop: '1px solid light-dark(#e2e8f0, var(--mantine-color-dark-4))' }}
+        >
           <Group justify="space-between" wrap="nowrap">
             <Text size="sm" c="dimmed" fw={500}>
               {t('salesTotal')}

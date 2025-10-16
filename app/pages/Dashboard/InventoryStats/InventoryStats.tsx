@@ -1,12 +1,23 @@
-import { Badge, Flex, Group, Paper, SimpleGrid, Stack, Text, ThemeIcon, Title, Tooltip } from '@mantine/core'
-import { 
-  IconArrowDownRight, 
-  IconArrowUpRight, 
+import {
+  Badge,
+  Flex,
+  Group,
+  Paper,
+  SimpleGrid,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
+  Tooltip,
+} from '@mantine/core'
+import {
+  IconArrowDownRight,
+  IconArrowUpRight,
   IconInfoCircle,
   IconAlertTriangle,
   IconPackage,
   IconTrendingUp,
-  IconCheckbox
+  IconCheckbox,
 } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
@@ -99,24 +110,29 @@ export default function InventoryStats({ inventory }: InventoryStats) {
     <Stack gap="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={4} fw={600}>{t('inventoryOverview')}</Title>
-          <Text size="sm" c="dimmed" mt={4}>{t('inventoryOverviewTooltip')}</Text>
+          <Title order={4} fw={600}>
+            {t('inventoryOverview')}
+          </Title>
+          <Text size="sm" c="dimmed" mt={4}>
+            {t('inventoryOverviewTooltip')}
+          </Text>
         </div>
       </Group>
 
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
         {/* Total Value Card */}
-        <Paper 
-          withBorder 
-          p="lg" 
-          radius="md" 
+        <Paper
+          withBorder
+          p="lg"
+          radius="md"
           shadow="xs"
-          style={{ 
+          style={{
             cursor: 'pointer',
             transition: 'background-color 0.2s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-0)'
+            e.currentTarget.style.backgroundColor =
+              'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = ''
@@ -129,9 +145,9 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                 <IconPackage size={24} stroke={1.5} />
               </ThemeIcon>
               {inventory.productsInStockValueDiff !== 0 && (
-                <Badge 
-                  color={inventory.productsInStockValueDiff > 0 ? 'teal' : 'red'} 
-                  variant="light" 
+                <Badge
+                  color={inventory.productsInStockValueDiff > 0 ? 'teal' : 'red'}
+                  variant="light"
                   size="sm"
                   leftSection={
                     inventory.productsInStockValueDiff > 0 ? (
@@ -160,17 +176,18 @@ export default function InventoryStats({ inventory }: InventoryStats) {
         </Paper>
 
         {/* Inventory Accuracy Card */}
-        <Paper 
-          withBorder 
-          p="lg" 
-          radius="md" 
+        <Paper
+          withBorder
+          p="lg"
+          radius="md"
           shadow="xs"
-          style={{ 
+          style={{
             cursor: 'pointer',
             transition: 'background-color 0.2s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-0)'
+            e.currentTarget.style.backgroundColor =
+              'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = ''
@@ -200,7 +217,8 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                         {t('calculationDetails')}
                       </Text>
                       <Text size="xs" mb={2}>
-                        • {t('accurateItems')} {inventory.accurateItems} / {inventory.totalItemsTracked}
+                        • {t('accurateItems')} {inventory.accurateItems} /{' '}
+                        {inventory.totalItemsTracked}
                       </Text>
                       <Text size="xs">
                         • {t('inaccurateItems')} {inventory.inaccurateItems} {t('items')}
@@ -229,17 +247,18 @@ export default function InventoryStats({ inventory }: InventoryStats) {
         </Paper>
 
         {/* Reorder Alerts Card */}
-        <Paper 
-          withBorder 
-          p="lg" 
-          radius="md" 
+        <Paper
+          withBorder
+          p="lg"
+          radius="md"
           shadow="xs"
-          style={{ 
+          style={{
             cursor: 'pointer',
             transition: 'background-color 0.2s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-0)'
+            e.currentTarget.style.backgroundColor =
+              'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = ''
@@ -248,10 +267,10 @@ export default function InventoryStats({ inventory }: InventoryStats) {
         >
           <Stack gap="sm">
             <Group justify="space-between" align="flex-start">
-              <ThemeIcon 
-                size="xl" 
-                radius="md" 
-                variant="light" 
+              <ThemeIcon
+                size="xl"
+                radius="md"
+                variant="light"
                 color={inventory.reorderPointAlerts > 0 ? 'orange' : 'gray'}
               >
                 <IconAlertTriangle size={24} stroke={1.5} />
@@ -281,17 +300,17 @@ export default function InventoryStats({ inventory }: InventoryStats) {
               <Text size="xs" c="dimmed" fw={500} mb={4}>
                 {t('reorderPointAlerts')}
               </Text>
-              <Text 
-                size="xl" 
-                fw={700} 
+              <Text
+                size="xl"
+                fw={700}
                 c={inventory.reorderPointAlerts > 0 ? 'orange' : 'dimmed'}
                 mb={4}
               >
                 {inventory.reorderPointAlerts}
               </Text>
-              <Badge 
-                color={inventory.reorderPointAlerts > 0 ? 'orange' : 'gray'} 
-                variant="light" 
+              <Badge
+                color={inventory.reorderPointAlerts > 0 ? 'orange' : 'gray'}
+                variant="light"
                 size="sm"
               >
                 {inventory.reorderPointAlerts > 0 ? t('actionRequired') : t('allGood')}
@@ -301,17 +320,18 @@ export default function InventoryStats({ inventory }: InventoryStats) {
         </Paper>
 
         {/* Dead Stock Card */}
-        <Paper 
-          withBorder 
-          p="lg" 
-          radius="md" 
+        <Paper
+          withBorder
+          p="lg"
+          radius="md"
           shadow="xs"
-          style={{ 
+          style={{
             cursor: 'pointer',
             transition: 'background-color 0.2s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-0)'
+            e.currentTarget.style.backgroundColor =
+              'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = ''
@@ -320,10 +340,10 @@ export default function InventoryStats({ inventory }: InventoryStats) {
         >
           <Stack gap="sm">
             <Group justify="space-between" align="flex-start">
-              <ThemeIcon 
-                size="xl" 
-                radius="md" 
-                variant="light" 
+              <ThemeIcon
+                size="xl"
+                radius="md"
+                variant="light"
                 color={inventory.deadStockValue > 0 ? 'red' : 'gray'}
               >
                 <IconTrendingUp size={24} stroke={1.5} style={{ transform: 'rotate(180deg)' }} />
@@ -362,12 +382,7 @@ export default function InventoryStats({ inventory }: InventoryStats) {
               <Text size="xs" c="dimmed" fw={500} mb={4}>
                 {t('deadStockValue')}
               </Text>
-              <Text 
-                size="xl" 
-                fw={700} 
-                c={inventory.deadStockValue > 0 ? 'red' : 'dimmed'}
-                mb={4}
-              >
+              <Text size="xl" fw={700} c={inventory.deadStockValue > 0 ? 'red' : 'dimmed'} mb={4}>
                 {formatCurrency(inventory.deadStockValue)}
               </Text>
               <Text size="xs" c="dimmed">

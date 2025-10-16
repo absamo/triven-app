@@ -47,16 +47,16 @@ import CurrencySettings from './CurrencySettings'
 // Helper function to get card brand icon
 const getCardIcon = (brand: string | undefined, size: number = 16) => {
   if (!brand) return <IconCreditCard size={size} />
-  
+
   const brandLower = brand.toLowerCase()
-  
+
   if (brandLower === 'mastercard') {
     return <IconBrandMastercard size={size} />
   }
   if (brandLower === 'visa') {
     return <IconBrandVisa size={size} />
   }
-  
+
   // Default to generic card icon for all other brands (including Amex)
   return <IconCreditCard size={size} />
 }
@@ -145,7 +145,7 @@ export default function Settings({
   const handleUpgradeSuccess = () => {
     // Set flag to indicate payment succeeded
     pendingUpgradeRef.current = true
-    
+
     // Close modal immediately after payment success
     // SSE will update subscription status in the background
     setShowUpgradeModal(false)
@@ -170,7 +170,7 @@ export default function Settings({
       content: () => (
         <Stack gap="lg">
           {/* Current Plan Card */}
-          <Card  padding="xl" radius="md" withBorder>
+          <Card padding="xl" radius="md" withBorder>
             <Group justify="space-between" mb="lg">
               <Group>
                 <ThemeIcon size="lg" radius="md" variant="light" color="blue">
@@ -200,10 +200,16 @@ export default function Settings({
                         disabled={isChecking}
                       >
                         {(() => {
-                          if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
+                          if (
+                            billing?.planStatus === 'trialing' ||
+                            billing?.planStatus === 'incomplete'
+                          ) {
                             return `${t('payment:subscribe')} ${getTranslatedPlanLabel(billing?.currentPlan, t)}`
                           } else {
-                            const nextPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus)
+                            const nextPlan = getNextPlan(
+                              billing?.currentPlan || '',
+                              billing?.planStatus
+                            )
                             return nextPlan
                               ? `${t('payment:upgrade')} ${getTranslatedPlanLabel(nextPlan, t)}`
                               : t('payment:viewPlans', 'View Plans')
@@ -211,15 +217,17 @@ export default function Settings({
                         })()}
                       </Menu.Item>
                     )}
-                  {billing?.subscriptionId && billing?.planStatus === 'active' && !billing?.cancelAtPeriodEnd && (
-                    <Menu.Item
-                      color="red"
-                      leftSection={<IconX size={16} />}
-                      onClick={() => setShowCancellationModal(true)}
-                    >
-                      {t('payment:cancelSubscription', 'Cancel Subscription')}
-                    </Menu.Item>
-                  )}
+                  {billing?.subscriptionId &&
+                    billing?.planStatus === 'active' &&
+                    !billing?.cancelAtPeriodEnd && (
+                      <Menu.Item
+                        color="red"
+                        leftSection={<IconX size={16} />}
+                        onClick={() => setShowCancellationModal(true)}
+                      >
+                        {t('payment:cancelSubscription', 'Cancel Subscription')}
+                      </Menu.Item>
+                    )}
                 </Menu.Dropdown>
               </Menu>
             </Group>
@@ -262,7 +270,9 @@ export default function Settings({
                 </Text>
                 <Group gap={6} align="baseline">
                   <Text size="sm" fw={600}>
-                    {billing?.amount ? `${currencySymbol}${billing?.amount / 100}` : t('payment:free', 'Free')}
+                    {billing?.amount
+                      ? `${currencySymbol}${billing?.amount / 100}`
+                      : t('payment:free', 'Free')}
                   </Text>
                   {billing?.interval && (
                     <Text size="xs" c="dimmed" fw={400}>
@@ -282,13 +292,11 @@ export default function Settings({
                     : t('payment:nextBilling', 'Next Billing')}
                 </Text>
                 <Text size="sm" fw={600}>
-                  {billing?.trialEnd && billing?.planStatus === 'trialing' ? (
-                    dayjs(billing.trialEnd * 1000).format('MMM DD, YYYY')
-                  ) : billing?.currentPeriodEnd ? (
-                    dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')
-                  ) : (
-                    t('payment:noRenewalDate', 'N/A')
-                  )}
+                  {billing?.trialEnd && billing?.planStatus === 'trialing'
+                    ? dayjs(billing.trialEnd * 1000).format('MMM DD, YYYY')
+                    : billing?.currentPeriodEnd
+                      ? dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')
+                      : t('payment:noRenewalDate', 'N/A')}
                 </Text>
               </Group>
 
@@ -310,12 +318,17 @@ export default function Settings({
             {billing?.trialEnd > 0 && billing?.planStatus === 'trialing' && (
               <>
                 <Divider my="md" />
-                <Paper p="md" radius="md" style={{ 
-                  background: colorScheme === 'dark'
-                    ? 'rgba(255, 193, 7, 0.1)'
-                    : 'rgba(255, 243, 205, 0.5)',
-                  border: `1px solid ${theme.colors.yellow[3]}`
-                }}>
+                <Paper
+                  p="md"
+                  radius="md"
+                  style={{
+                    background:
+                      colorScheme === 'dark'
+                        ? 'rgba(255, 193, 7, 0.1)'
+                        : 'rgba(255, 243, 205, 0.5)',
+                    border: `1px solid ${theme.colors.yellow[3]}`,
+                  }}
+                >
                   <Group gap="xs" mb="xs">
                     <IconInfoCircle size={18} color={theme.colors.yellow[7]} />
                     <Text size="sm" fw={600} c="yellow.7">
@@ -323,11 +336,23 @@ export default function Settings({
                     </Text>
                   </Group>
                   <Text size="xs" c="dimmed">
-                    {t('payment:trialEndsMessage', 'Your trial period will end on')} {dayjs(billing.trialEnd * 1000).format('MMM DD, YYYY')}. 
-                    {' '}{t('payment:upgradeToKeepAccess', 'Upgrade now to keep access to all features.')}
+                    {t('payment:trialEndsMessage', 'Your trial period will end on')}{' '}
+                    {dayjs(billing.trialEnd * 1000).format('MMM DD, YYYY')}.{' '}
+                    {t(
+                      'payment:upgradeToKeepAccess',
+                      'Upgrade now to keep access to all features.'
+                    )}
                   </Text>
                   <Progress
-                    value={Math.max(0, Math.min(100, ((Date.now() / 1000 - billing.trialStart) / (billing.trialEnd - billing.trialStart)) * 100))}
+                    value={Math.max(
+                      0,
+                      Math.min(
+                        100,
+                        ((Date.now() / 1000 - billing.trialStart) /
+                          (billing.trialEnd - billing.trialStart)) *
+                          100
+                      )
+                    )}
                     color="yellow"
                     size="sm"
                     mt="xs"
@@ -340,7 +365,7 @@ export default function Settings({
 
           {/* Payment Method Card */}
           {billing?.paymentMethod && (
-            <Card  padding="lg" radius="md" withBorder>
+            <Card padding="lg" radius="md" withBorder>
               <Group justify="space-between" mb="md">
                 <Group>
                   <ThemeIcon size="lg" radius="md" variant="light" color="violet">
@@ -382,7 +407,7 @@ export default function Settings({
                     <div>
                       <Text size="sm" fw={600}>
                         {billing.paymentMethod.brand
-                          ? billing.paymentMethod.brand.charAt(0).toUpperCase() + 
+                          ? billing.paymentMethod.brand.charAt(0).toUpperCase() +
                             billing.paymentMethod.brand.slice(1).toLowerCase()
                           : ''}
                       </Text>
@@ -392,7 +417,8 @@ export default function Settings({
                     </div>
                   </Group>
                   <Badge variant="outline" color="gray">
-                    {String(billing.paymentMethod.expMonth).padStart(2, '0')}/{billing.paymentMethod.expYear}
+                    {String(billing.paymentMethod.expMonth).padStart(2, '0')}/
+                    {billing.paymentMethod.expYear}
                   </Badge>
                 </Group>
               </Paper>
@@ -400,28 +426,35 @@ export default function Settings({
           )}
 
           {/* Cancelled Subscription Notice */}
-          {billing?.subscriptionId && billing?.planStatus === 'active' && billing?.cancelAtPeriodEnd && (
-            <Card  padding="lg" radius="md" withBorder style={{
-              borderColor: theme.colors.orange[4],
-              background: colorScheme === 'dark'
-                ? 'rgba(255, 152, 0, 0.1)'
-                : 'rgba(255, 243, 224, 0.5)'
-            }}>
-              <Group gap="xs">
-                <ThemeIcon size="lg" radius="md" variant="light" color="orange">
-                  <IconInfoCircle size={20} />
-                </ThemeIcon>
-                <div>
-                  <Text size="sm" fw={600} c="orange.7" mb={4}>
-                    {t('payment:subscriptionEnding', 'Subscription Ending')}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {t('payment:accessUntil', 'You will have access until')} {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
-                  </Text>
-                </div>
-              </Group>
-            </Card>
-          )}
+          {billing?.subscriptionId &&
+            billing?.planStatus === 'active' &&
+            billing?.cancelAtPeriodEnd && (
+              <Card
+                padding="lg"
+                radius="md"
+                withBorder
+                style={{
+                  borderColor: theme.colors.orange[4],
+                  background:
+                    colorScheme === 'dark' ? 'rgba(255, 152, 0, 0.1)' : 'rgba(255, 243, 224, 0.5)',
+                }}
+              >
+                <Group gap="xs">
+                  <ThemeIcon size="lg" radius="md" variant="light" color="orange">
+                    <IconInfoCircle size={20} />
+                  </ThemeIcon>
+                  <div>
+                    <Text size="sm" fw={600} c="orange.7" mb={4}>
+                      {t('payment:subscriptionEnding', 'Subscription Ending')}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {t('payment:accessUntil', 'You will have access until')}{' '}
+                      {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
+                    </Text>
+                  </div>
+                </Group>
+              </Card>
+            )}
         </Stack>
       ),
     },
@@ -437,7 +470,9 @@ export default function Settings({
   return (
     <>
       <Stack>
-        <PageTitle description={t('common:manageSettings', 'Manage your account settings and preferences')}>
+        <PageTitle
+          description={t('common:manageSettings', 'Manage your account settings and preferences')}
+        >
           {t('common:title', 'Settings')}
         </PageTitle>
 
@@ -449,8 +484,6 @@ export default function Settings({
               </Tabs.Tab>
             ))}
           </Tabs.List>
-
-  
 
           {settings.map(({ id, content: Content }) => (
             <Tabs.Panel value={id} key={id}>
@@ -469,8 +502,7 @@ export default function Settings({
         planId={
           billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete'
             ? billing?.currentPlan || 'standard'
-            : getNextPlan(billing?.currentPlan || '', billing?.planStatus || '') ||
-              'standard'
+            : getNextPlan(billing?.currentPlan || '', billing?.planStatus || '') || 'standard'
         }
         interval={billing?.interval || 'month'}
         currency={(billing?.currency || 'USD').toUpperCase()}

@@ -165,14 +165,14 @@ export default function Products({
         value: site.id!,
         label: site.name,
       }))
-    
+
     const stores = sitesArray
       .filter((site) => site.id && (!site.type || site.type === 'Store'))
       .map((site) => ({
         value: site.id!,
         label: site.name,
       }))
-    
+
     const result = []
     if (warehouses.length > 0) {
       result.push({
@@ -186,7 +186,7 @@ export default function Products({
         items: stores,
       })
     }
-    
+
     return result
   }, [sites])
 

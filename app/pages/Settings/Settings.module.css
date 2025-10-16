@@ -76,7 +76,7 @@
 }
 
 .title::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -98,7 +98,8 @@
 
 /* Badge Pulse Animation */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -123,7 +124,7 @@
   .title {
     font-size: rem(22px);
   }
-  
+
   .container {
     padding: var(--mantine-spacing-sm);
   }

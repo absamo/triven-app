@@ -111,12 +111,14 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
       amount: subscription.price?.amount,
       currency: subscription.price?.currency,
       status: subscription.status,
-      paymentMethod: subscription.last4 ? {
-        last4: subscription.last4,
-        brand: subscription.brand,
-        expMonth: subscription.expMonth,
-        expYear: subscription.expYear,
-      } : null,
+      paymentMethod: subscription.last4
+        ? {
+            last4: subscription.last4,
+            brand: subscription.brand,
+            expMonth: subscription.expMonth,
+            expYear: subscription.expYear,
+          }
+        : null,
     }
   }
 

@@ -95,7 +95,7 @@ export default {
 
   // Order Stats
   salesTotal: 'Revenus des Ventes',
-  purchaseTotal: 'Coûts d\'Achat',
+  purchaseTotal: "Coûts d'Achat",
 
   // Stock Status Stats
   stockStatusOverview: 'Aperçu du statut des stocks',

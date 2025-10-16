@@ -181,29 +181,32 @@ export default function UpgradePaymentModal({
 
   // Derive payment method state directly from props
   const hasPaymentMethod = Boolean(billing?.paymentMethod)
-  const isCardExpired = hasPaymentMethod && billing?.paymentMethod
-    ? (() => {
-        const now = new Date()
-        const expYear = billing.paymentMethod.expYear
-        const expMonth = billing.paymentMethod.expMonth
-        const cardExpDate = new Date(expYear, expMonth)
-        return now >= cardExpDate
-      })()
-    : false
-  
+  const isCardExpired =
+    hasPaymentMethod && billing?.paymentMethod
+      ? (() => {
+          const now = new Date()
+          const expYear = billing.paymentMethod.expYear
+          const expMonth = billing.paymentMethod.expMonth
+          const cardExpDate = new Date(expYear, expMonth)
+          return now >= cardExpDate
+        })()
+      : false
+
   const shouldShowFormImmediately = !hasPaymentMethod || isCardExpired
-  
+
   // Derive UI state from payment method state
   const useExistingCard = shouldShowFormImmediately ? 'new' : 'existing'
   const showPaymentForm = shouldShowFormImmediately
 
   // Handle payment method selection change
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'existing' | 'new'>(useExistingCard)
-  
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'existing' | 'new'>(
+    useExistingCard
+  )
+
   const handlePaymentMethodChange = (value: string) => {
     setSelectedPaymentMethod(value as 'existing' | 'new')
   }
-  
+
   // Use selected method if user has made a choice, otherwise use derived default
   const finalPaymentMethod = selectedPaymentMethod
   const finalShowPaymentForm = finalPaymentMethod === 'new'

@@ -24,9 +24,11 @@ import FinanceStats from './FinanceStats'
 import InventoryStats from './InventoryStats'
 import OrderStats from './OrderStats'
 import SalesTrends from './SalesTrends'
+import { G } from '@react-pdf/renderer'
 
 interface DashboardProps {
   firstName: string
+  userAgencyId?: string
   inventory: {
     totalProductsInStock: number
     totalProductsInStockDiff: number
@@ -95,6 +97,7 @@ interface DashboardProps {
 
 export default function Dashboard({
   firstName,
+  userAgencyId,
   inventory,
   stockStatus,
   orders,
@@ -109,7 +112,7 @@ export default function Dashboard({
   const [searchParams, setSearchParams] = useSearchParams()
 
   // Initialize state from URL parameters
-  const [agency, setAgency] = useState<string>(searchParams.get('agency') || '')
+  const [agency, setAgency] = useState<string>(searchParams.get('agency') || userAgencyId || '')
   const [site, setSite] = useState<string>(searchParams.get('site') || '')
   const [dateRange, setDateRange] = useState<DatesRangeValue>(() => {
     const startDate = searchParams.get('startDate')
@@ -117,7 +120,11 @@ export default function Dashboard({
     if (startDate && endDate) {
       return [new Date(startDate), new Date(endDate)]
     }
-    return [null, null]
+    // Default to last 7 days
+    const today = new Date()
+    const sevenDaysAgo = new Date(today)
+    sevenDaysAgo.setDate(today.getDate() - 7)
+    return [sevenDaysAgo, today]
   })
 
   // Real-time dashboard updates via SSE
@@ -345,7 +352,24 @@ export default function Dashboard({
     if (lastUpdate) {
       // Dashboard received SSE update
     }
-  }, [lastUpdate]) // Effect to handle initial dashboard load with current filters
+  }, [lastUpdate])
+
+  // Effect to set default date range in URL on initial load
+  useEffect(() => {
+    const currentStartDate = searchParams.get('startDate')
+    const currentEndDate = searchParams.get('endDate')
+
+    // If no date range in URL, set the default (last 7 days)
+    if (!currentStartDate && !currentEndDate && dateRange[0] && dateRange[1]) {
+      updateUrlWithFilters(agency || undefined, site || undefined, dateRange)
+      const queryString = buildDashboardQuery(agency || undefined, site || undefined, dateRange)
+      if (fetcher.state === 'idle') {
+        fetcher.load(`/dashboard${queryString}`)
+      }
+    }
+  }, []) // Only run on mount
+
+  // Effect to handle initial dashboard load with current filters
   useEffect(() => {
     if (
       (agency !== '' || site !== '' || dateRange[0] !== null || dateRange[1] !== null) &&
@@ -435,53 +459,53 @@ export default function Dashboard({
       <Stack gap="xl">
         {/* Filters Section */}
         <Paper withBorder p="md" radius="md" shadow="xs">
-          <Group justify="space-between" wrap="nowrap">
-            <Text size="sm" fw={500} c="dimmed">
-              Filter Dashboard
-            </Text>
-            <Group gap="sm">
+          <Grid justify="space-between" align="center" grow>
+            <Grid.Col span={2}>
+              <Text size="sm" fw={500} c="dimmed">
+                Filter Dashboard
+              </Text>
+            </Grid.Col>
+            <Grid.Col span={3}>
               <DatePickerInput
-            type="range"
-            placeholder={
-              dateRange && dateRange[0] && dateRange[1]
-                ? `${getFormattedDateRange()?.start} - ${getFormattedDateRange()?.end}`
-                : t('selectDateRange')
-            }
-            value={dateRange}
-            onChange={(newDateRange) => {
-              setDateRange(newDateRange)
-              updateUrlWithFilters(agency || undefined, site || undefined, newDateRange)
-              // If the range is cleared (both values are null), use the clear function
-              if (!newDateRange || (!newDateRange[0] && !newDateRange[1])) {
-                clearDateFilter()
-              } else if (fetcher.state === 'idle') {
-                const queryString = buildDashboardQuery(
-                  agency || undefined,
-                  site || undefined,
-                  newDateRange
-                )
-                fetcher.load(`/dashboard${queryString}`)
-              }
-            }}
-            leftSection={<IconCalendar size={20} />}
-            size="md"
-            radius="md"
-            w={300}
-            valueFormat="MMM D, YYYY"
-            getDayProps={(date) => ({
-              style: {
-                fontSize: '14px',
-              },
-            })}
-            classNames={{
-              input: `${classes.inputField} ${classes.datePickerInput}`,
-            }}
-            presets={getPresetDates()}
-            clearable
-          />
+                type="range"
+                placeholder={
+                  dateRange && dateRange[0] && dateRange[1]
+                    ? `${getFormattedDateRange()?.start} - ${getFormattedDateRange()?.end}`
+                    : t('selectDateRange')
+                }
+                value={dateRange}
+                onChange={(newDateRange) => {
+                  setDateRange(newDateRange)
+                  updateUrlWithFilters(agency || undefined, site || undefined, newDateRange)
+                  // If the range is cleared (both values are null), use the clear function
+                  if (!newDateRange || (!newDateRange[0] && !newDateRange[1])) {
+                    clearDateFilter()
+                  } else if (fetcher.state === 'idle') {
+                    const queryString = buildDashboardQuery(
+                      agency || undefined,
+                      site || undefined,
+                      newDateRange
+                    )
+                    fetcher.load(`/dashboard${queryString}`)
+                  }
+                }}
+                leftSection={<IconCalendar size={20} />}
+                radius="md"
+                valueFormat="MMM D, YYYY"
+                getDayProps={(date) => ({
+                  style: {
+                    fontSize: '14px',
+                  },
+                })}
+                classNames={{
+                  input: `${classes.inputField} ${classes.datePickerInput}`,
+                }}
+                presets={getPresetDates()}
+                clearable
+              />
+            </Grid.Col>
 
-          {showAgencies && (
-            <Grid w="auto" style={{ flexShrink: 0 }}>
+            {showAgencies && (
               <AgencySites
                 agencyId={agency}
                 siteId={site}
@@ -497,11 +521,10 @@ export default function Dashboard({
                   }
                 }}
                 error={{ agencyId: '', siteId: '' }}
-                extraProps={{ colSpan: 6, hideLabels: true }}
+                extraProps={{ colSpan: 3, hideLabels: true }}
               />
-            </Grid>
-          )}
-
+            )}
+            <Grid.Col span={'auto'} style={{ marginLeft: 'auto' }}>
               {hasActiveFilters() && (
                 <Tooltip label={t('clearAllFilters')} position="bottom">
                   <ActionIcon
@@ -515,17 +538,16 @@ export default function Dashboard({
                   </ActionIcon>
                 </Tooltip>
               )}
-            </Group>
-          </Group>
+            </Grid.Col>
+          </Grid>
         </Paper>
         {/* Key Metrics */}
         <Stack gap="lg">
           <InventoryStats inventory={currentInventoryData} />
         </Stack>
 
-        {/* Orders and Finance Stats */}
+        {/* Orders and Finance Stats - Side by Side */}
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-          {/* Orders Stats */}
           <OrderStats
             orders={
               orderData || {
@@ -538,7 +560,6 @@ export default function Dashboard({
             }
           />
 
-          {/* Finance Stats */}
           <FinanceStats
             finances={
               financeData || {

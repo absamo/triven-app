@@ -71,15 +71,26 @@ function PaymentForm({
   const { t } = useTranslation(['payment', 'common'])
 
   // Store static values to prevent handleSubmit recreation
-  const staticValues = useMemo(() => ({
-    planId,
-    interval, 
-    currency,
-    subscriptionId,
-    createPaymentPath: createPaymentPath || '/api/subscription-create',
-    isTrialConversion: !!isTrialConversion,
-    isPaymentMethodUpdate: !!isPaymentMethodUpdate,
-  }), [planId, interval, currency, subscriptionId, createPaymentPath, isTrialConversion, isPaymentMethodUpdate])
+  const staticValues = useMemo(
+    () => ({
+      planId,
+      interval,
+      currency,
+      subscriptionId,
+      createPaymentPath: createPaymentPath || '/api/subscription-create',
+      isTrialConversion: !!isTrialConversion,
+      isPaymentMethodUpdate: !!isPaymentMethodUpdate,
+    }),
+    [
+      planId,
+      interval,
+      currency,
+      subscriptionId,
+      createPaymentPath,
+      isTrialConversion,
+      isPaymentMethodUpdate,
+    ]
+  )
 
   const handleSubmit = useCallback(
     async (event?: React.FormEvent) => {
@@ -196,7 +207,10 @@ function PaymentForm({
       } else {
         // If this is a trial conversion, confirm payment and end trial
         if (staticValues.isTrialConversion && staticValues.subscriptionId) {
-          console.log('🎯 Confirming trial conversion for subscription:', staticValues.subscriptionId)
+          console.log(
+            '🎯 Confirming trial conversion for subscription:',
+            staticValues.subscriptionId
+          )
           try {
             const endpoint = staticValues.createPaymentPath
             const res = await fetch(endpoint, {
@@ -239,7 +253,11 @@ function PaymentForm({
         }
 
         // If this is a payment method update with SetupIntent, confirm it
-        if (isSetupIntent && staticValues.createPaymentPath === '/api/payment-method-update' && staticValues.subscriptionId) {
+        if (
+          isSetupIntent &&
+          staticValues.createPaymentPath === '/api/payment-method-update' &&
+          staticValues.subscriptionId
+        ) {
           console.log(
             '💳 Confirming SetupIntent for payment method update:',
             secret?.split('_secret_')[0]
@@ -390,7 +408,15 @@ export default function StripePayment({
               appearance,
               locale: i18n.language === 'fr' ? ('fr' as const) : ('en' as const),
             },
-    [clientSecret, isTrialConversion, isPaymentMethodUpdate, amount, currency, appearance, i18n.language]
+    [
+      clientSecret,
+      isTrialConversion,
+      isPaymentMethodUpdate,
+      amount,
+      currency,
+      appearance,
+      i18n.language,
+    ]
   )
 
   return (

@@ -238,17 +238,18 @@ export async function getUpcomingInvoice(_subscriptionId: string) {
 export async function getPaymentMethodDetails(subscriptionId: string) {
   try {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-    
+
     if (!subscription.default_payment_method) {
       return null
     }
 
-    const paymentMethodId = typeof subscription.default_payment_method === 'string' 
-      ? subscription.default_payment_method 
-      : subscription.default_payment_method.id
+    const paymentMethodId =
+      typeof subscription.default_payment_method === 'string'
+        ? subscription.default_payment_method
+        : subscription.default_payment_method.id
 
     const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
-    
+
     if (paymentMethod.type === 'card' && paymentMethod.card) {
       return {
         paymentMethodId: paymentMethod.id,
@@ -258,7 +259,7 @@ export async function getPaymentMethodDetails(subscriptionId: string) {
         expYear: paymentMethod.card.exp_year,
       }
     }
-    
+
     return null
   } catch (error) {
     console.error('Error retrieving payment method details:', error)
@@ -282,7 +283,7 @@ export async function cancelSubscription({
 }) {
   // Verify that the subscription belongs to the user
   const dbSubscription = await prisma.subscription.findUnique({
-    where: { 
+    where: {
       id: subscriptionId,
       userId: userId,
     },
@@ -321,7 +322,9 @@ export async function cancelSubscription({
       cancelledAt: cancelAtPeriodEnd ? null : new Date(),
       cancelledBy: userId,
       cancellationReason: reason || null,
-      scheduledCancelAt: cancelAtPeriodEnd ? new Date(dbSubscription.currentPeriodEnd * 1000) : null,
+      scheduledCancelAt: cancelAtPeriodEnd
+        ? new Date(dbSubscription.currentPeriodEnd * 1000)
+        : null,
     },
   })
 

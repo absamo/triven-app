@@ -254,7 +254,7 @@ export default function SubscriptionStatusModal({
   useEffect(() => {
     if (paymentFetcher.state === 'idle' && paymentFetcher.data) {
       setIsButtonLoading(false) // Reset button loading when fetcher completes
-      
+
       if ('error' in paymentFetcher.data) {
         // Handle error
         const error = (paymentFetcher.data as { error: unknown }).error
@@ -417,7 +417,9 @@ export default function SubscriptionStatusModal({
                   loading={isButtonLoading || isLoadingPayment}
                   disabled={isButtonLoading || isLoadingPayment}
                 >
-                  {isButtonLoading || isLoadingPayment ? t('payment:setupPayment') : modalContent.buttonText}
+                  {isButtonLoading || isLoadingPayment
+                    ? t('payment:setupPayment')
+                    : modalContent.buttonText}
                 </Button>
 
                 <Text ta="center" size="xs" c="dimmed">

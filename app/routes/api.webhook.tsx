@@ -165,7 +165,7 @@ export async function action({ request }: ActionFunctionArgs) {
               await stripe.subscriptions.update(metadata.subscriptionId, {
                 default_payment_method: paymentMethodId,
               })
-            } 
+            }
             // If subscription is trialing and this is a trial_subscription type, end trial immediately
             if (subscription.status === 'trialing' && metadata.type === 'trial_subscription') {
               // End trial now by setting trial_end to 'now'
@@ -237,7 +237,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
         if (dbPrice) {
           dbPlanId = dbPrice.planId
-        } 
+        }
 
         // Extract period information with proper defaults
         const subscriptionData = stripeSubscription as any // Cast to access Stripe properties
@@ -464,7 +464,6 @@ export async function action({ request }: ActionFunctionArgs) {
           return new Response(null, { status: 200 })
         }
 
-
         // Map Stripe product ID to database plan ID for subscription updates
         const updatePriceData = latestSubscription.items.data[0]
         let updateDbPlanId = 'standard' // Default fallback
@@ -561,7 +560,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
         // Broadcast subscription update to connected clients for real-time UI updates
         // Add 'confirmed: true' when subscription is fully active (no trial)
-        const trialEndValue = latestSubscription.status === 'active' ? 0 : subscriptionData.trial_end || 0
+        const trialEndValue =
+          latestSubscription.status === 'active' ? 0 : subscriptionData.trial_end || 0
         broadcastSubscriptionUpdate({
           userId: user.id,
           status: latestSubscription.status,
@@ -579,11 +579,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
         const activeSubscriptions = allUserSubscriptions.data.filter(
           (sub) =>
-            (sub.status === 'active' || sub.status === 'trialing') && sub.id !== latestSubscription.id
+            (sub.status === 'active' || sub.status === 'trialing') &&
+            sub.id !== latestSubscription.id
         )
 
         if (activeSubscriptions.length > 0) {
-
           for (const extraSub of activeSubscriptions) {
             await stripe.subscriptions.cancel(extraSub.id)
           }
@@ -627,7 +627,7 @@ export async function action({ request }: ActionFunctionArgs) {
               // Keep all other data intact for historical purposes
             },
           })
-        } 
+        }
         return new Response(null, { status: 200 })
       }
     }

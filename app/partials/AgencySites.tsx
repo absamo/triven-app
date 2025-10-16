@@ -71,7 +71,7 @@ export function AgencySites({
           name="agencyId"
           clearable
           disabled={disabled}
-          size="md"
+          size="sm"
           data={agencies.map((agency) => {
             return {
               value: agency.id as string,
@@ -95,7 +95,7 @@ export function AgencySites({
           placeholder={t('forms:selectSite')}
           name="siteId"
           clearable
-          size="md"
+          size="sm"
           data={groupedData}
           disabled={disabled || !agencyId}
           onChange={(currentSiteId: string) => {

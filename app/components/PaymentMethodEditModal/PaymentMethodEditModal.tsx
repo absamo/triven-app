@@ -59,14 +59,17 @@ export default function PaymentMethodEditModal({
     onClose()
   }, [onSuccess, onClose])
 
-  const handlePaymentError = useCallback((error: string) => {
-    setIsProcessing(false)
-    notifications.show({
-      title: t('payment:paymentFailed', 'Error'),
-      message: error,
-      color: 'red',
-    })
-  }, [t])
+  const handlePaymentError = useCallback(
+    (error: string) => {
+      setIsProcessing(false)
+      notifications.show({
+        title: t('payment:paymentFailed', 'Error'),
+        message: error,
+        color: 'red',
+      })
+    },
+    [t]
+  )
 
   const handleStripeSubmitReady = useCallback((submitFn: () => Promise<void>, isReady: boolean) => {
     setStripeSubmit(() => submitFn)

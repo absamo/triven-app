@@ -285,7 +285,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   const handleUpgradeSuccess = () => {
     // Set flag to indicate payment succeeded, waiting for final confirmation
     pendingUpgradeRef.current = true
-    
+
     // Close modal immediately after payment success
     // SSE will update subscription status in the background
     setShowUpgradeModal(false)

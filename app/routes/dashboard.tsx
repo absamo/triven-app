@@ -25,6 +25,7 @@ export function meta({}: Route.MetaArgs) {
 
 type LoaderData = {
   firstName: string
+  userAgencyId?: string
   agencies: IAgency[]
   sites: ISite[]
   stats: {
@@ -513,6 +514,7 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
 
     const dashboardData = {
       firstName: user?.profile?.firstName,
+      userAgencyId: user?.agencyId || undefined,
       stats: {
         ...(inventoryStats || stats || {}),
         orders: {
@@ -548,11 +550,12 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
 }
 
 export default function DashboardRoute({ loaderData }: Route.ComponentProps) {
-  const { firstName, agencies, sites, stats } = loaderData as unknown as LoaderData
+  const { firstName, userAgencyId, agencies, sites, stats } = loaderData as unknown as LoaderData
 
   return (
     <Dashboard
       firstName={firstName}
+      userAgencyId={userAgencyId}
       inventory={stats.inventory}
       stockStatus={stats.stockStatus}
       orders={stats.orders}

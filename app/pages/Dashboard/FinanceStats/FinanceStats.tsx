@@ -33,7 +33,9 @@ export default function FinanceStats({ finances }: FinanceStatsProps) {
   return (
     <Paper withBorder p="lg" radius="md" shadow="xs">
       <Group justify="space-between" align="center" mb="lg">
-        <Title order={4} fw={600}>{t('financialOverview')}</Title>
+        <Title order={4} fw={600}>
+          {t('financialOverview')}
+        </Title>
       </Group>
 
       <Stack gap="lg">
@@ -70,7 +72,12 @@ export default function FinanceStats({ finances }: FinanceStatsProps) {
         </Group>
 
         {/* Always show payment metrics */}
-        <Stack gap="sm" mt="md" pt="md" style={{ borderTop: '1px solid light-dark(#e2e8f0, var(--mantine-color-dark-4))' }}>
+        <Stack
+          gap="sm"
+          mt="md"
+          pt="md"
+          style={{ borderTop: '1px solid light-dark(#e2e8f0, var(--mantine-color-dark-4))' }}
+        >
           <Group justify="space-between" wrap="nowrap">
             <Text size="sm" c="dimmed" fw={500}>
               {t('paymentsReceived')}
@@ -117,7 +124,10 @@ export default function FinanceStats({ finances }: FinanceStatsProps) {
                 position="top"
                 withArrow
               >
-                <IconInfoCircle size="1rem" style={{ color: 'var(--mantine-color-gray-6)', cursor: 'pointer' }} />
+                <IconInfoCircle
+                  size="1rem"
+                  style={{ color: 'var(--mantine-color-gray-6)', cursor: 'pointer' }}
+                />
               </Tooltip>
             </Group>
             <Text fw={700} size="lg" c={finances.cashflow >= 0 ? 'teal' : 'red'}>
