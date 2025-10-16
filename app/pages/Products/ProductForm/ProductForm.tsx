@@ -864,7 +864,7 @@ export default function ProductForm({
                   </Grid.Col> */}
                     <Grid.Col>
                       <Textarea
-                        label={t('description')}
+                        label={t('productDescription')}
                         name="description"
                         autosize
                         minRows={4}

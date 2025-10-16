@@ -120,6 +120,7 @@ export default {
   product: 'Produit',
   title: 'Produits',
   description: 'Gérez votre catalogue de produits et articles en stock',
+  productDescription: 'Description',
   nameHeader: 'Nom',
   inStockQtyHeader: 'Qté en Stock',
   sellingPriceHeader: 'Prix de Vente',
@@ -312,7 +313,7 @@ export default {
   categoryUpdated: 'Catégorie mise à jour avec succès',
   categoryDeleted: 'Catégorie supprimée avec succès',
   name: 'Nom',
-  description: 'Description',
+  categoryDescription: 'Description',
 
   // Image management
   primary: 'Primaire',

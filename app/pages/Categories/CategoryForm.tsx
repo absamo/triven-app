@@ -52,7 +52,7 @@ export default function CategoryForm({ category, errors }: CategoryFormProps) {
 
           <Grid.Col>
             <Textarea
-              label={t('description')}
+              label={t('categoryDescription')}
               name="description"
               autosize
               minRows={4}

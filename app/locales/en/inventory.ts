@@ -120,6 +120,7 @@ export default {
   product: 'Product',
   title: 'Products',
   description: 'Manage your product catalog and inventory items',
+  productDescription: 'Description',
   nameHeader: 'Name',
   inStockQtyHeader: 'In Stock Qty',
   sellingPriceHeader: 'Selling Price',
@@ -306,7 +307,7 @@ export default {
   categoryUpdated: 'Category updated successfully',
   categoryDeleted: 'Category deleted successfully',
   name: 'Name',
-  description: 'Description',
+  categoryDescription: 'Description',
 
   // Image management
   primary: 'Primary',
