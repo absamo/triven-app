@@ -5,15 +5,16 @@ import {
   Container,
   Grid,
   Group,
+  Title as MantineTitle,
   Menu,
   Modal,
   Paper,
   Select,
+  Skeleton,
   Stack,
   Text,
   TextInput,
   ThemeIcon,
-  Title as MantineTitle,
   useMantineColorScheme,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
@@ -31,12 +32,7 @@ import {
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useLoaderData, useNavigate, useRevalidator } from 'react-router'
-import {
-  TableActionsMenu,
-  CardsGridSkeleton,
-  FiltersSkeleton,
-  TableSkeleton,
-} from '~/app/components'
+import { FiltersSkeleton, TableActionsMenu, TableSkeleton } from '~/app/components'
 import ClientOnly from '~/app/components/ClientOnly'
 import WorkflowTemplateModal from '~/app/components/WorkflowTemplateModal/WorkflowTemplateModal'
 import { formatLocalizedDate } from '~/app/lib/dayjs'
@@ -426,433 +422,460 @@ export default function WorkflowTemplatesPage() {
       fallback={
         <Container size="xl" py="md" w={'100%'}>
           <FiltersSkeleton columns={3} />
-          <CardsGridSkeleton count={3} />
+          <Grid gutter="lg" mb="xl">
+            {[...Array(3)].map((_, index) => (
+              <Grid.Col key={index} span={{ base: 12, sm: 6, md: 4 }}>
+                <Card withBorder padding="lg" radius="md" style={{ height: '120px' }}>
+                  <Stack gap="xs">
+                    <Group justify="space-between">
+                      <Skeleton height={12} width={100} />
+                      <Skeleton height={40} width={40} radius="md" />
+                    </Group>
+                    <Skeleton height={24} width={60} />
+                  </Stack>
+                </Card>
+              </Grid.Col>
+            ))}
+          </Grid>
           <TableSkeleton rows={6} />
         </Container>
       }
     >
       <Container size="xl" py="md" w={'100%'}>
         <WorkflowTemplateModal
-        opened={modalOpened}
-        onClose={closeModal}
-        actionType={actionType}
-        template={selectedTemplate}
-        onSubmit={handleTemplateAction}
-        loading={loading}
-        users={users}
-        roles={roles}
-      />
-      {/* Header */}
-      <Group justify="space-between" mb="xl">
-        <Title
-          order={2}
-          description={t('workflows:description', 'Create and manage reusable approval workflow templates')}
-        >
-          {t('workflows:title', 'Workflow Templates')}
-        </Title>
-        <Button
-          leftSection={<IconPlus size={16} />}
-          onClick={() => navigate('/workflow-templates/create')}
+          opened={modalOpened}
+          onClose={closeModal}
+          actionType={actionType}
+          template={selectedTemplate}
+          onSubmit={handleTemplateAction}
           loading={loading}
-        >
-          {t('workflows:actions.createTemplate', 'Create Template')}
-        </Button>
-      </Group>
-
-      {/* Filters */}
-      <Paper p="xl" withBorder mb="xl" radius="md" style={{ background: getFilterGradient() }}>
-        <Group justify="space-between" mb="md">
-          <Group>
-            <ThemeIcon variant="light" color={colorScheme === 'dark' ? 'blue' : 'gray'} size="lg">
-              <IconFilter size={18} />
-            </ThemeIcon>
-            <MantineTitle order={4} c={getTitleColor()}>
-              {t('workflows:filters.title', 'Filter Templates')}
-            </MantineTitle>
-          </Group>
-          <Button
-            variant="subtle"
-            size="xs"
-            color={colorScheme === 'dark' ? 'blue' : 'gray'}
-            onClick={() => {
-              setSearchQuery('')
-              setTriggerTypeFilter(null)
-              setStatusFilter(null)
-            }}
+          users={users}
+          roles={roles}
+        />
+        {/* Header */}
+        <Group justify="space-between" mb="xl">
+          <Title
+            order={2}
+            description={t(
+              'workflows:description',
+              'Create and manage reusable approval workflow templates'
+            )}
           >
-            {t('workflows:filters.clearFilters', 'Clear Filters')}
+            {t('workflows:title', 'Workflow Templates')}
+          </Title>
+          <Button
+            leftSection={<IconPlus size={16} />}
+            onClick={() => navigate('/workflow-templates/create')}
+            loading={loading}
+          >
+            {t('workflows:actions.createTemplate', 'Create Template')}
           </Button>
         </Group>
-        <Grid gutter="md">
+
+        {/* Filters */}
+        <Paper p="xl" withBorder mb="xl" radius="md" style={{ background: getFilterGradient() }}>
+          <Group justify="space-between" mb="md">
+            <Group>
+              <ThemeIcon variant="light" color={colorScheme === 'dark' ? 'blue' : 'gray'} size="lg">
+                <IconFilter size={18} />
+              </ThemeIcon>
+              <MantineTitle order={4} c={getTitleColor()}>
+                {t('workflows:filters.title', 'Filter Templates')}
+              </MantineTitle>
+            </Group>
+            <Button
+              variant="subtle"
+              size="xs"
+              color={colorScheme === 'dark' ? 'blue' : 'gray'}
+              onClick={() => {
+                setSearchQuery('')
+                setTriggerTypeFilter(null)
+                setStatusFilter(null)
+              }}
+            >
+              {t('workflows:filters.clearFilters', 'Clear Filters')}
+            </Button>
+          </Group>
+          <Grid gutter="md">
+            <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+              <TextInput
+                placeholder={t('workflows:filters.searchTemplates', 'Search templates...')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                leftSection={<IconFilter size={16} />}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+              <Select
+                placeholder={t('workflows:filters.filterByTrigger', 'Filter by trigger type')}
+                data={[
+                  { value: 'manual', label: 'Manual' },
+                  { value: 'purchase_order_create', label: 'Purchase Order Create' },
+                  { value: 'purchase_order_threshold', label: 'Purchase Order Threshold' },
+                  { value: 'sales_order_create', label: 'Sales Order Create' },
+                  { value: 'sales_order_threshold', label: 'Sales Order Threshold' },
+                  { value: 'stock_adjustment_create', label: 'Stock Adjustment Create' },
+                  { value: 'transfer_order_create', label: 'Transfer Order Create' },
+                  { value: 'invoice_create', label: 'Invoice Create' },
+                  { value: 'bill_create', label: 'Bill Create' },
+                  { value: 'customer_create', label: 'Customer Create' },
+                  { value: 'supplier_create', label: 'Supplier Create' },
+                  { value: 'product_create', label: 'Product Create' },
+                  { value: 'low_stock_alert', label: 'Low Stock Alert' },
+                  { value: 'high_value_transaction', label: 'High Value Transaction' },
+                ]}
+                value={triggerTypeFilter}
+                onChange={setTriggerTypeFilter}
+                clearable
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+              <Select
+                placeholder={t('workflows:filters.filterByStatus', 'Filter by status')}
+                data={[
+                  { value: 'active', label: t('workflows:statuses.active', 'Active') },
+                  { value: 'inactive', label: t('workflows:statuses.inactive', 'Inactive') },
+                ]}
+                value={statusFilter}
+                onChange={setStatusFilter}
+                clearable
+              />
+            </Grid.Col>
+          </Grid>
+        </Paper>
+
+        {/* Summary Cards */}
+        <Grid gutter="lg" mb="xl">
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <TextInput
-              placeholder={t('workflows:filters.searchTemplates', 'Search templates...')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              leftSection={<IconFilter size={16} />}
-            />
+            <Card
+              withBorder
+              padding="lg"
+              radius="md"
+              style={{
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? 'var(--mantine-color-dark-6)'
+                    : 'var(--mantine-color-gray-0)',
+                height: '120px',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
+                <div style={{ flex: 1 }}>
+                  <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
+                    {t('workflows:summary.activeTemplates', 'Active Templates')}
+                  </Text>
+                  <Text size="xl" fw={700} c={getCardTextColor()}>
+                    {filteredTemplates.filter((t) => t.isActive).length}
+                  </Text>
+                </div>
+                <ThemeIcon size={40} radius="md" variant="light" color="green">
+                  <IconCheck size={20} />
+                </ThemeIcon>
+              </Group>
+            </Card>
           </Grid.Col>
+
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <Select
-              placeholder={t('workflows:filters.filterByTrigger', 'Filter by trigger type')}
-              data={[
-                { value: 'manual', label: 'Manual' },
-                { value: 'purchase_order_create', label: 'Purchase Order Create' },
-                { value: 'purchase_order_threshold', label: 'Purchase Order Threshold' },
-                { value: 'sales_order_create', label: 'Sales Order Create' },
-                { value: 'sales_order_threshold', label: 'Sales Order Threshold' },
-                { value: 'stock_adjustment_create', label: 'Stock Adjustment Create' },
-                { value: 'transfer_order_create', label: 'Transfer Order Create' },
-                { value: 'invoice_create', label: 'Invoice Create' },
-                { value: 'bill_create', label: 'Bill Create' },
-                { value: 'customer_create', label: 'Customer Create' },
-                { value: 'supplier_create', label: 'Supplier Create' },
-                { value: 'product_create', label: 'Product Create' },
-                { value: 'low_stock_alert', label: 'Low Stock Alert' },
-                { value: 'high_value_transaction', label: 'High Value Transaction' },
-              ]}
-              value={triggerTypeFilter}
-              onChange={setTriggerTypeFilter}
-              clearable
-            />
+            <Card
+              withBorder
+              padding="lg"
+              radius="md"
+              style={{
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? 'var(--mantine-color-dark-6)'
+                    : 'var(--mantine-color-gray-0)',
+                height: '120px',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
+                <div style={{ flex: 1 }}>
+                  <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
+                    {t('workflows:summary.inactiveTemplates', 'Inactive Templates')}
+                  </Text>
+                  <Text size="xl" fw={700} c={getCardTextColor()}>
+                    {filteredTemplates.filter((t) => !t.isActive).length}
+                  </Text>
+                </div>
+                <ThemeIcon size={40} radius="md" variant="light" color="red">
+                  <IconX size={20} />
+                </ThemeIcon>
+              </Group>
+            </Card>
           </Grid.Col>
+
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-            <Select
-              placeholder={t('workflows:filters.filterByStatus', 'Filter by status')}
-              data={[
-                { value: 'active', label: t('workflows:statuses.active', 'Active') },
-                { value: 'inactive', label: t('workflows:statuses.inactive', 'Inactive') },
-              ]}
-              value={statusFilter}
-              onChange={setStatusFilter}
-              clearable
-            />
+            <Card
+              withBorder
+              padding="lg"
+              radius="md"
+              style={{
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? 'var(--mantine-color-dark-6)'
+                    : 'var(--mantine-color-gray-0)',
+                height: '120px',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
+                <div style={{ flex: 1 }}>
+                  <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
+                    {t('workflows:summary.totalUsage', 'Total Usage')}
+                  </Text>
+                  <Text size="xl" fw={700} c={getCardTextColor()}>
+                    {filteredTemplates.reduce((sum, t) => sum + t.usageCount, 0)}
+                  </Text>
+                </div>
+                <ThemeIcon size={40} radius="md" variant="light" color="orange">
+                  <IconChartBar size={20} />
+                </ThemeIcon>
+              </Group>
+            </Card>
           </Grid.Col>
         </Grid>
-      </Paper>
 
-      {/* Summary Cards */}
-      <Grid gutter="lg" mb="xl">
-        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-          <Card
-            withBorder
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
-              height: '120px',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
-              <div style={{ flex: 1 }}>
-                <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
-                  {t('workflows:summary.activeTemplates', 'Active Templates')}
-                </Text>
-                <Text size="xl" fw={700} c={getCardTextColor()}>
-                  {filteredTemplates.filter((t) => t.isActive).length}
-                </Text>
-              </div>
-              <ThemeIcon size={40} radius="md" variant="light" color="green">
-                <IconCheck size={20} />
-              </ThemeIcon>
-            </Group>
-          </Card>
-        </Grid.Col>
+        {/* Templates List */}
+        {filteredTemplates.length > 0 ? (
+          <Stack gap="md">
+            {filteredTemplates.map((template: WorkflowTemplate) => (
+              <Card
+                key={template.id}
+                shadow="sm"
+                padding="xl"
+                radius="lg"
+                withBorder
+                style={{
+                  background: getFilterGradient(),
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+                  },
+                }}
+                onClick={() => navigate(`/workflow-templates/${template.id}`)}
+                onMouseEnter={() => setHoveredRowId(template.id)}
+                onMouseLeave={() => setHoveredRowId(null)}
+              >
+                {/* Header */}
+                <Group justify="space-between" mb="md">
+                  <div style={{ flex: 1 }}>
+                    <Group gap="sm" align="center" mb="xs">
+                      <ThemeIcon
+                        size="lg"
+                        radius="md"
+                        variant="light"
+                        color={getTriggerTypeColor(template.triggerType)}
+                      >
+                        <IconGitBranch size={20} />
+                      </ThemeIcon>
+                      <div>
+                        <Text size="lg" fw={600} c={getCardTextColor()}>
+                          {template.name}
+                        </Text>
+                      </div>
+                    </Group>
+                    <Group gap="xs">
+                      <Badge variant="light" color={template.isActive ? 'green' : 'gray'} size="sm">
+                        {template.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                      <Badge color="blue" variant="outline" size="sm">
+                        {formatTriggerType(template.triggerType)}
+                      </Badge>
+                    </Group>
+                  </div>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <TableActionsMenu itemId={template.id} hoveredRowId={hoveredRowId}>
+                      <Menu.Item
+                        onClick={() => handleCloneTemplate(template.id)}
+                        leftSection={<IconCopy size={16} />}
+                      >
+                        {t('workflows:actions.cloneTemplate', 'Clone Template')}
+                      </Menu.Item>
+                      <Menu.Item
+                        onClick={() => toggleTemplateStatus(template.id, template.isActive)}
+                        leftSection={
+                          template.isActive ? <IconX size={16} /> : <IconCheck size={16} />
+                        }
+                      >
+                        {template.isActive
+                          ? t('workflows:actions.deactivate', 'Deactivate')
+                          : t('workflows:actions.activate', 'Activate')}
+                      </Menu.Item>
+                      <Menu.Item
+                        color="red"
+                        onClick={() => handleDeleteTemplate(template)}
+                        leftSection={<IconTrash size={16} />}
+                      >
+                        {t('workflows:actions.deleteTemplate', 'Delete Template')}
+                      </Menu.Item>
+                    </TableActionsMenu>
+                  </div>
+                </Group>
 
-        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-          <Card
-            withBorder
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
-              height: '120px',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
-              <div style={{ flex: 1 }}>
-                <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
-                  {t('workflows:summary.inactiveTemplates', 'Inactive Templates')}
+                {/* Description */}
+                <Text size="sm" c="dimmed" lineClamp={2} mb="md">
+                  {template.description}
                 </Text>
-                <Text size="xl" fw={700} c={getCardTextColor()}>
-                  {filteredTemplates.filter((t) => !t.isActive).length}
-                </Text>
-              </div>
-              <ThemeIcon size={40} radius="md" variant="light" color="red">
-                <IconX size={20} />
-              </ThemeIcon>
-            </Group>
-          </Card>
-        </Grid.Col>
 
-        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-          <Card
-            withBorder
-            padding="lg"
-            radius="md"
-            style={{
-              backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
-              height: '120px',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Group justify="space-between" align="flex-start" style={{ flex: 1 }}>
-              <div style={{ flex: 1 }}>
-                <Text size="xs" c="dimmed" fw={700} tt="uppercase" mb="xs">
-                  {t('workflows:summary.totalUsage', 'Total Usage')}
-                </Text>
-                <Text size="xl" fw={700} c={getCardTextColor()}>
-                  {filteredTemplates.reduce((sum, t) => sum + t.usageCount, 0)}
-                </Text>
-              </div>
-              <ThemeIcon size={40} radius="md" variant="light" color="orange">
-                <IconChartBar size={20} />
-              </ThemeIcon>
-            </Group>
-          </Card>
-        </Grid.Col>
-      </Grid>
+                {/* Steps Preview */}
+                <Paper
+                  p="md"
+                  withBorder
+                  radius="md"
+                  style={{
+                    backgroundColor:
+                      colorScheme === 'dark'
+                        ? 'var(--mantine-color-dark-6)'
+                        : 'var(--mantine-color-gray-0)',
+                  }}
+                  mb="md"
+                >
+                  <Text size="sm" fw={500} c={getCardTextColor()} mb="sm">
+                    {t('workflows:template.workflowSteps', 'Workflow Steps')} (
+                    {template.steps.length})
+                  </Text>
+                  <Group gap="xs">
+                    {template.steps.slice(0, 3).map((step, index) => (
+                      <Group key={step.id} gap="xs">
+                        <Badge
+                          variant="light"
+                          color={
+                            step.type === 'approval'
+                              ? 'green'
+                              : step.type === 'review'
+                                ? 'blue'
+                                : 'gray'
+                          }
+                          size="sm"
+                        >
+                          {step.name}
+                        </Badge>
+                        {index < Math.min(template.steps.length - 1, 2) && (
+                          <IconChevronRight size={12} color="var(--mantine-color-dimmed)" />
+                        )}
+                      </Group>
+                    ))}
+                    {template.steps.length > 3 && (
+                      <Text size="xs" c="dimmed">
+                        +{template.steps.length - 3}{' '}
+                        {t('workflows:template.moreSteps', 'more steps')}
+                      </Text>
+                    )}
+                  </Group>
+                </Paper>
 
-      {/* Templates List */}
-      {filteredTemplates.length > 0 ? (
-        <Stack gap="md">
-          {filteredTemplates.map((template: WorkflowTemplate) => (
-            <Card
-              key={template.id}
-              shadow="sm"
-              padding="xl"
-              radius="lg"
-              withBorder
-              style={{
-                background: getFilterGradient(),
-                transition: 'all 0.2s ease',
-                cursor: 'pointer',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
-                },
-              }}
-              onClick={() => navigate(`/workflow-templates/${template.id}`)}
-              onMouseEnter={() => setHoveredRowId(template.id)}
-              onMouseLeave={() => setHoveredRowId(null)}
-            >
-              {/* Header */}
-              <Group justify="space-between" mb="md">
-                <div style={{ flex: 1 }}>
-                  <Group gap="sm" align="center" mb="xs">
-                    <ThemeIcon
-                      size="lg"
-                      radius="md"
-                      variant="light"
-                      color={getTriggerTypeColor(template.triggerType)}
-                    >
-                      <IconGitBranch size={20} />
-                    </ThemeIcon>
+                {/* Footer */}
+                <Group justify="space-between" align="center">
+                  <Group gap="lg">
                     <div>
-                      <Text size="lg" fw={600} c={getCardTextColor()}>
-                        {template.name}
+                      <Text size="xs" c="dimmed" fw={500}>
+                        {t('workflows:template.createdBy', 'Created by')}
+                      </Text>
+                      <Text size="sm" fw={500} c={getCardTextColor()}>
+                        {template.createdBy?.profile?.firstName || template.createdBy.email}
+                      </Text>
+                    </div>
+                    <div>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        {t('workflows:template.usageCount', 'Times used')}
+                      </Text>
+                      <Text size="sm" fw={500} c={getCardTextColor()}>
+                        {template.usageCount}
+                      </Text>
+                    </div>
+                    <div>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        {t('workflows:template.lastUpdated', 'Last updated')}
+                      </Text>
+                      <Text size="sm" fw={500} c={getCardTextColor()}>
+                        {formatLocalizedDate(
+                          template.updatedAt || template.createdAt,
+                          i18n.language,
+                          'L'
+                        )}
                       </Text>
                     </div>
                   </Group>
-                  <Group gap="xs">
-                    <Badge variant="light" color={template.isActive ? 'green' : 'gray'} size="sm">
-                      {template.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
-                    <Badge color="blue" variant="outline" size="sm">
-                      {formatTriggerType(template.triggerType)}
-                    </Badge>
-                  </Group>
-                </div>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <TableActionsMenu itemId={template.id} hoveredRowId={hoveredRowId}>
-                    <Menu.Item
-                      onClick={() => handleCloneTemplate(template.id)}
-                      leftSection={<IconCopy size={16} />}
-                    >
-                      {t('workflows:actions.cloneTemplate', 'Clone Template')}
-                    </Menu.Item>
-                    <Menu.Item
-                      onClick={() => toggleTemplateStatus(template.id, template.isActive)}
-                      leftSection={
-                        template.isActive ? <IconX size={16} /> : <IconCheck size={16} />
-                      }
-                    >
-                      {template.isActive
-                        ? t('workflows:actions.deactivate', 'Deactivate')
-                        : t('workflows:actions.activate', 'Activate')}
-                    </Menu.Item>
-                    <Menu.Item
-                      color="red"
-                      onClick={() => handleDeleteTemplate(template)}
-                      leftSection={<IconTrash size={16} />}
-                    >
-                      {t('workflows:actions.deleteTemplate', 'Delete Template')}
-                    </Menu.Item>
-                  </TableActionsMenu>
-                </div>
-              </Group>
-
-              {/* Description */}
-              <Text size="sm" c="dimmed" lineClamp={2} mb="md">
-                {template.description}
-              </Text>
-
-              {/* Steps Preview */}
-              <Paper
-                p="md"
-                withBorder
-                radius="md"
-                style={{
-                  backgroundColor:
-                    colorScheme === 'dark'
-                      ? 'var(--mantine-color-dark-6)'
-                      : 'var(--mantine-color-gray-0)',
-                }}
-                mb="md"
-              >
-                <Text size="sm" fw={500} c={getCardTextColor()} mb="sm">
-                  {t('workflows:template.workflowSteps', 'Workflow Steps')} ({template.steps.length}
-                  )
+                </Group>
+              </Card>
+            ))}
+          </Stack>
+        ) : (
+          /* Empty State */
+          <Paper p="xl" withBorder radius="md" style={{ background: getFilterGradient() }}>
+            <Group justify="center" align="center" style={{ minHeight: 200 }}>
+              <div style={{ textAlign: 'center' }}>
+                <ThemeIcon size={60} radius="md" variant="light" color="blue" mx="auto" mb="md">
+                  <IconGitBranch size={30} />
+                </ThemeIcon>
+                <MantineTitle order={4} c={getTitleColor()} mb="xs">
+                  {t('workflows:messages.noTemplates', 'No Workflow Templates')}
+                </MantineTitle>
+                <Text c="dimmed" size="sm" mb="lg">
+                  {(workflowTemplates || []).length === 0
+                    ? t(
+                        'workflows:messages.noTemplatesDescription',
+                        'Create your first workflow template to streamline approval processes.'
+                      )
+                    : t(
+                        'workflows:messages.noMatchingTemplates',
+                        'No templates match the current filters. Try adjusting your search criteria.'
+                      )}
                 </Text>
-                <Group gap="xs">
-                  {template.steps.slice(0, 3).map((step, index) => (
-                    <Group key={step.id} gap="xs">
-                      <Badge
-                        variant="light"
-                        color={
-                          step.type === 'approval'
-                            ? 'green'
-                            : step.type === 'review'
-                              ? 'blue'
-                              : 'gray'
-                        }
-                        size="sm"
-                      >
-                        {step.name}
-                      </Badge>
-                      {index < Math.min(template.steps.length - 1, 2) && (
-                        <IconChevronRight size={12} color="var(--mantine-color-dimmed)" />
-                      )}
-                    </Group>
-                  ))}
-                  {template.steps.length > 3 && (
-                    <Text size="xs" c="dimmed">
-                      +{template.steps.length - 3} {t('workflows:template.moreSteps', 'more steps')}
-                    </Text>
-                  )}
-                </Group>
-              </Paper>
-
-              {/* Footer */}
-              <Group justify="space-between" align="center">
-                <Group gap="lg">
-                  <div>
-                    <Text size="xs" c="dimmed" fw={500}>
-                      {t('workflows:template.createdBy', 'Created by')}
-                    </Text>
-                    <Text size="sm" fw={500} c={getCardTextColor()}>
-                      {template.createdBy?.profile?.firstName || template.createdBy.email}
-                    </Text>
-                  </div>
-                  <div>
-                    <Text size="xs" c="dimmed" fw={500}>
-                      {t('workflows:template.usageCount', 'Times used')}
-                    </Text>
-                    <Text size="sm" fw={500} c={getCardTextColor()}>
-                      {template.usageCount}
-                    </Text>
-                  </div>
-                  <div>
-                    <Text size="xs" c="dimmed" fw={500}>
-                      {t('workflows:template.lastUpdated', 'Last updated')}
-                    </Text>
-                    <Text size="sm" fw={500} c={getCardTextColor()}>
-                      {formatLocalizedDate(
-                        template.updatedAt || template.createdAt,
-                        i18n.language,
-                        'L'
-                      )}
-                    </Text>
-                  </div>
-                </Group>
-              </Group>
-            </Card>
-          ))}
-        </Stack>
-      ) : (
-        /* Empty State */
-        <Paper p="xl" withBorder radius="md" style={{ background: getFilterGradient() }}>
-          <Group justify="center" align="center" style={{ minHeight: 200 }}>
-            <div style={{ textAlign: 'center' }}>
-              <ThemeIcon size={60} radius="md" variant="light" color="blue" mx="auto" mb="md">
-                <IconGitBranch size={30} />
-              </ThemeIcon>
-              <MantineTitle order={4} c={getTitleColor()} mb="xs">
-                {t('workflows:messages.noTemplates', 'No Workflow Templates')}
-              </MantineTitle>
-              <Text c="dimmed" size="sm" mb="lg">
-                {(workflowTemplates || []).length === 0
-                  ? t(
-                      'workflows:messages.noTemplatesDescription',
-                      'Create your first workflow template to streamline approval processes.'
-                    )
-                  : t(
-                      'workflows:messages.noMatchingTemplates',
-                      'No templates match the current filters. Try adjusting your search criteria.'
-                    )}
-              </Text>
-              {(workflowTemplates || []).length === 0 && (
-                <Button
-                  leftSection={<IconPlus size={16} />}
-                  onClick={() => navigate('/workflow-templates/create')}
-                >
-                  {t('workflows:actions.createFirstTemplate', 'Create First Template')}
-                </Button>
-              )}
-            </div>
-          </Group>
-        </Paper>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <Modal
-        opened={deleteDialogOpened}
-        onClose={cancelDeleteTemplate}
-        title={t('workflows:actions.deleteTemplate', 'Delete Template')}
-        size="sm"
-        centered
-        withCloseButton={false}
-        overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
-        }}
-      >
-        <Text size="sm" mb="lg">
-          {t(
-            'workflows:messages.confirmDelete',
-            'Are you sure you want to delete this workflow template?'
-          )}
-        </Text>
-        {templateToDelete && (
-          <Text size="sm" fw={500} mb="lg" c="dimmed">
-            "{templateToDelete.name}"
-          </Text>
+                {(workflowTemplates || []).length === 0 && (
+                  <Button
+                    leftSection={<IconPlus size={16} />}
+                    onClick={() => navigate('/workflow-templates/create')}
+                  >
+                    {t('workflows:actions.createFirstTemplate', 'Create First Template')}
+                  </Button>
+                )}
+              </div>
+            </Group>
+          </Paper>
         )}
-        <Group justify="flex-end" gap="sm">
-          <Button variant="default" onClick={cancelDeleteTemplate} size="sm">
-            {t('common:cancel', 'Cancel')}
-          </Button>
-          <Button color="red" onClick={confirmDeleteTemplate} loading={loading} size="sm">
-            {t('workflows:actions.delete', 'Delete')}
-          </Button>
-        </Group>
-      </Modal>
-    </Container>
+
+        {/* Delete Confirmation Dialog */}
+        <Modal
+          opened={deleteDialogOpened}
+          onClose={cancelDeleteTemplate}
+          title={t('workflows:actions.deleteTemplate', 'Delete Template')}
+          size="sm"
+          centered
+          withCloseButton={false}
+          overlayProps={{
+            backgroundOpacity: 0.55,
+            blur: 3,
+          }}
+        >
+          <Text size="sm" mb="lg">
+            {t(
+              'workflows:messages.confirmDelete',
+              'Are you sure you want to delete this workflow template?'
+            )}
+          </Text>
+          {templateToDelete && (
+            <Text size="sm" fw={500} mb="lg" c="dimmed">
+              "{templateToDelete.name}"
+            </Text>
+          )}
+          <Group justify="flex-end" gap="sm">
+            <Button variant="default" onClick={cancelDeleteTemplate} size="sm">
+              {t('common:cancel', 'Cancel')}
+            </Button>
+            <Button color="red" onClick={confirmDeleteTemplate} loading={loading} size="sm">
+              {t('workflows:actions.delete', 'Delete')}
+            </Button>
+          </Group>
+        </Modal>
+      </Container>
     </ClientOnly>
   )
 }

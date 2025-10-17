@@ -3,37 +3,36 @@ import {
   Grid,
   Group,
   NumberInput,
+  rem,
   Select,
   Table,
   Text,
-  TextInput,
   Textarea,
+  TextInput,
   Tooltip,
-  rem,
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
 import { IconHistory, IconTrash } from '@tabler/icons-react'
 import { zodResolver } from 'mantine-form-zod-resolver'
-import { useFetcher, useSubmit } from 'react-router'
-
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-// import Barcode from "react-barcode"
+import { useFetcher, useSubmit } from 'react-router'
 
-import { type IProduct } from '~/app/common/validations/productSchema'
-import { type ISite } from '~/app/common/validations/siteSchema'
-import { type IStockAdjustmentHistory } from '~/app/common/validations/stockAdjustmentHistorySchema'
-import { Title } from '~/app/partials/Title'
+// import Barcode from "react-barcode"
 
 import { useDisclosure } from '@mantine/hooks'
 import { ADJUSTMENT_REASONS } from '~/app/common/constants'
+import type { IProduct } from '~/app/common/validations/productSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
+import type { IStockAdjustmentHistory } from '~/app/common/validations/stockAdjustmentHistorySchema'
 import {
-  stockAdjustmentSchema,
   type IStockAdjustment,
+  stockAdjustmentSchema,
 } from '~/app/common/validations/stockAdjustmentsSchema'
 import { Form, Notification } from '~/app/components'
 import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
 import StockAdjustmentHistory from './StockAdjustmentHistory'
 
 interface InventoryFormProps {
@@ -61,7 +60,7 @@ export default function AdjustmentForm({ adjustment, sites, products }: Inventor
     { id: string; message: string }[]
   >([])
 
-  let fetcher = useFetcher()
+  const fetcher = useFetcher()
 
   const form = useForm({
     validate: zodResolver(stockAdjustmentSchema),
@@ -281,7 +280,7 @@ export default function AdjustmentForm({ adjustment, sites, products }: Inventor
             {adjustment.id ? t('editStockAdjustment') : t('addStockAdjustment')}
           </Title>
 
-          <Form onSubmit={form.onSubmit(handleSubmit)}>
+          <Form onSubmit={form.onSubmit(handleSubmit)} showSubmitButton={false}>
             <Grid.Col span={6}>
               <SearchableSelect
                 label={t('site')}

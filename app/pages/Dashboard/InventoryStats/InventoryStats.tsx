@@ -11,13 +11,13 @@ import {
   Tooltip,
 } from '@mantine/core'
 import {
+  IconAlertTriangle,
   IconArrowDownRight,
   IconArrowUpRight,
+  IconCheckbox,
   IconInfoCircle,
-  IconAlertTriangle,
   IconPackage,
   IconTrendingUp,
-  IconCheckbox,
 } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
@@ -113,9 +113,6 @@ export default function InventoryStats({ inventory }: InventoryStats) {
           <Title order={4} fw={600}>
             {t('inventoryOverview')}
           </Title>
-          <Text size="sm" c="dimmed" mt={4}>
-            {t('inventoryOverviewTooltip')}
-          </Text>
         </div>
       </Group>
 
@@ -132,7 +129,7 @@ export default function InventoryStats({ inventory }: InventoryStats) {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor =
-              'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
+              'light-dark(rgba(248, 249, 250, 0.6), rgba(37, 38, 43, 0.6))'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = ''
@@ -187,7 +184,7 @@ export default function InventoryStats({ inventory }: InventoryStats) {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor =
-              'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
+              'light-dark(rgba(248, 249, 250, 0.6), rgba(37, 38, 43, 0.6))'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = ''
@@ -204,23 +201,31 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                 withArrow
                 multiline
                 w={320}
+                bg="rgba(37, 38, 43, 0.95)"
                 label={
                   <div>
-                    <Text size="sm" fw={500} mb={6}>
+                    <Text size="sm" fw={500} mb={6} c="white">
                       {t('inventoryAccuracy')}
                     </Text>
-                    <Text size="xs" c="dimmed" mb={8}>
+                    <Text size="xs" c="gray.3" mb={8}>
                       {t('inventoryAccuracyTooltip')}
                     </Text>
-                    <div style={{ marginTop: 8, padding: '8px 0', borderTop: '1px solid #e9ecef' }}>
-                      <Text size="xs" fw={500} mb={4}>
+                    <div
+                      style={{
+                        marginTop: 8,
+                        padding: '8px 0',
+                        borderTop:
+                          '1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))',
+                      }}
+                    >
+                      <Text size="xs" fw={500} mb={4} c="white">
                         {t('calculationDetails')}
                       </Text>
-                      <Text size="xs" mb={2}>
+                      <Text size="xs" mb={2} c="gray.3">
                         • {t('accurateItems')} {inventory.accurateItems} /{' '}
                         {inventory.totalItemsTracked}
                       </Text>
-                      <Text size="xs">
+                      <Text size="xs" c="gray.3">
                         • {t('inaccurateItems')} {inventory.inaccurateItems} {t('items')}
                       </Text>
                     </div>
@@ -258,7 +263,7 @@ export default function InventoryStats({ inventory }: InventoryStats) {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor =
-              'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
+              'light-dark(rgba(248, 249, 250, 0.6), rgba(37, 38, 43, 0.6))'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = ''
@@ -280,12 +285,13 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                 withArrow
                 multiline
                 w={280}
+                bg="rgba(37, 38, 43, 0.95)"
                 label={
                   <div>
-                    <Text size="sm" fw={500} mb={6}>
+                    <Text size="sm" fw={500} mb={6} c="white">
                       {t('reorderPointAlerts')}
                     </Text>
-                    <Text size="xs" c="dimmed">
+                    <Text size="xs" c="gray.3">
                       {t('reorderPointAlertsTooltip')}
                     </Text>
                   </div>
@@ -331,7 +337,7 @@ export default function InventoryStats({ inventory }: InventoryStats) {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor =
-              'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))'
+              'light-dark(rgba(248, 249, 250, 0.6), rgba(37, 38, 43, 0.6))'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = ''
@@ -353,22 +359,32 @@ export default function InventoryStats({ inventory }: InventoryStats) {
                 withArrow
                 multiline
                 w={300}
+                bg="rgba(37, 38, 43, 0.95)"
                 label={
                   <div>
-                    <Text size="sm" fw={500} mb={6}>
+                    <Text size="sm" fw={500} mb={6} c="white">
                       {t('deadStockValue')}
                     </Text>
-                    <Text size="xs" c="dimmed" mb={8}>
+                    <Text size="xs" c="gray.3" mb={8}>
                       {t('deadStockValueTooltip')}
                     </Text>
-                    <div style={{ marginTop: 8, padding: '8px 0', borderTop: '1px solid #e9ecef' }}>
-                      <Text size="xs" fw={500} mb={4}>
+                    <div
+                      style={{
+                        marginTop: 8,
+                        padding: '8px 0',
+                        borderTop:
+                          '1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))',
+                      }}
+                    >
+                      <Text size="xs" fw={500} mb={4} c="white">
                         {t('details')}
                       </Text>
-                      <Text size="xs" mb={2}>
+                      <Text size="xs" mb={2} c="gray.3">
                         • {inventory.deadStockItems} {t('products')}
                       </Text>
-                      <Text size="xs">• {t('noSalesAdjustmentsLast90Days')}</Text>
+                      <Text size="xs" c="gray.3">
+                        • {t('noSalesAdjustmentsLast90Days')}
+                      </Text>
                     </div>
                   </div>
                 }
