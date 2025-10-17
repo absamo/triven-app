@@ -425,8 +425,8 @@ export default function WorkflowTemplatesPage() {
     <ClientOnly
       fallback={
         <Container size="xl" py="md" w={'100%'}>
-          <CardsGridSkeleton count={3} />
           <FiltersSkeleton columns={3} />
+          <CardsGridSkeleton count={3} />
           <TableSkeleton rows={6} />
         </Container>
       }
