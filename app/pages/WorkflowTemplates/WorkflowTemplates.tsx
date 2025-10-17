@@ -693,7 +693,10 @@ export default function WorkflowTemplatesPage() {
                 withBorder
                 radius="md"
                 style={{
-                  backgroundColor: 'var(--mantine-color-default)',
+                  backgroundColor:
+                    colorScheme === 'dark'
+                      ? 'var(--mantine-color-dark-6)'
+                      : 'var(--mantine-color-gray-0)',
                 }}
                 mb="md"
               >
