@@ -32,6 +32,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useLoaderData, useNavigate, useRevalidator } from 'react-router'
 import { TableActionsMenu } from '~/app/components'
+import ClientOnly from '~/app/components/ClientOnly'
 import WorkflowTemplateModal from '~/app/components/WorkflowTemplateModal/WorkflowTemplateModal'
 import { formatLocalizedDate } from '~/app/lib/dayjs'
 import { Title } from '~/app/partials/Title'
@@ -416,8 +417,9 @@ export default function WorkflowTemplatesPage() {
   }
 
   return (
-    <Container size="xl" py="md" w={'100%'}>
-      <WorkflowTemplateModal
+    <ClientOnly fallback={<Container size="xl" py="md" w={'100%'}><Text>Loading...</Text></Container>}>
+      <Container size="xl" py="md" w={'100%'}>
+        <WorkflowTemplateModal
         opened={modalOpened}
         onClose={closeModal}
         actionType={actionType}
@@ -838,5 +840,6 @@ export default function WorkflowTemplatesPage() {
         </Group>
       </Modal>
     </Container>
+    </ClientOnly>
   )
 }
