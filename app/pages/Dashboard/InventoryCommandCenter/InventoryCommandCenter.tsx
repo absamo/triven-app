@@ -182,7 +182,7 @@ export default function InventoryCommandCenter({
   }
 
   const criticalAlerts = (propCriticalAlerts || fetchedData?.alerts || []).slice(0, 5)
-  const opportunities = (propOpportunities || fetchedData?.opportunities || []).slice(0, 3)
+  const opportunities = (propOpportunities || fetchedData?.opportunities || [])
 
   // Map API metrics to component metrics structure
   const apiMetrics = fetchedData?.metrics
@@ -469,79 +469,79 @@ export default function InventoryCommandCenter({
 
       {/* Bottom Row: Critical Actions & Revenue Opportunities */}
       <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg">
-        {/* Critical Actions with ScrollArea */}
+        {/* Critical Actions - Compact Design */}
         <Card
-          padding="lg"
+          padding="md"
           radius="md"
           withBorder
-          style={{ height: '500px', display: 'flex', flexDirection: 'column' }}
+          style={{ maxHeight: '400px', display: 'flex', flexDirection: 'column' }}
         >
-          <Group justify="space-between" mb="md">
+          <Group justify="space-between" mb="sm">
             <Group gap="xs">
-              <IconAlertTriangle size={20} color="var(--mantine-color-red-6)" />
-              <Text fw={600}>Critical Actions</Text>
+              <IconAlertTriangle size={18} color="var(--mantine-color-red-6)" />
+              <Text size="sm" fw={600}>Critical Actions</Text>
             </Group>
-            <Badge color="red">{criticalAlerts.length}</Badge>
+            <Badge size="sm" color="red">{criticalAlerts.length}</Badge>
           </Group>
 
           <ScrollArea style={{ flex: 1 }} type="auto" offsetScrollbars>
-            <Stack gap="md" pr="md">
+            <Stack gap="xs" pr="sm">
               {criticalAlerts.length === 0 ? (
-                <Text size="sm" c="dimmed" ta="center" py="xl">
-                  <IconCheck size={24} style={{ marginBottom: 8 }} />
+                <Text size="xs" c="dimmed" ta="center" py="md">
+                  <IconCheck size={20} style={{ marginBottom: 4 }} />
                   <br />
                   No critical alerts
                 </Text>
               ) : (
                 criticalAlerts.map((alert, index) => (
-                  <Paper key={alert.id} p="md" withBorder className={classes.alertCard}>
-                    <Group gap="xs" mb="xs" wrap="nowrap">
-                      <Badge size="xs" color={getSeverityColor(alert.severity)}>
-                        {alert.severity}
-                      </Badge>
-                      {alert.aiConfidence && (
-                        <Tooltip label={`AI Confidence: ${(alert.aiConfidence * 100).toFixed(0)}%`}>
-                          <Badge size="xs" variant="light" color="violet">
-                            AI
-                          </Badge>
-                        </Tooltip>
-                      )}
-                    </Group>
-
-                    <Text size="sm" fw={600} mb="xs">
-                      {index + 1}. {alert.title}
-                    </Text>
-
-                    <Text size="xs" c="dimmed" mb="xs" lineClamp={2}>
-                      {alert.description}
-                    </Text>
-
-                    <Stack gap="xs">
+                  <Paper key={alert.id} p="sm" withBorder className={classes.alertCard}>
+                    <Group justify="space-between" align="flex-start" mb={4} wrap="nowrap">
+                      <Group gap={4} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+                        <Badge size="xs" color={getSeverityColor(alert.severity)}>
+                          {alert.severity}
+                        </Badge>
+                        {alert.aiConfidence && (
+                          <Tooltip label={`AI: ${(alert.aiConfidence * 100).toFixed(0)}%`}>
+                            <Badge size="xs" variant="light" color="violet">
+                              AI
+                            </Badge>
+                          </Tooltip>
+                        )}
+                      </Group>
                       {alert.financialImpact !== 0 && (
-                        <Text size="sm" fw={600} c={alert.financialImpact > 0 ? 'green' : 'red'}>
-                          {alert.financialImpact > 0 ? 'Revenue: ' : 'Cost: '}
+                        <Text size="xs" fw={600} c={alert.financialImpact > 0 ? 'green' : 'red'} style={{ whiteSpace: 'nowrap' }}>
                           {formatCurrency(alert.financialImpact)}
                         </Text>
                       )}
+                    </Group>
+
+                    <Text size="xs" fw={500} mb={4} lineClamp={1}>
+                      {index + 1}. {alert.title}
+                    </Text>
+
+                    <Text size="xs" c="dimmed" mb="xs" lineClamp={1}>
+                      {alert.description}
+                    </Text>
+
+                    <Group justify="space-between" align="center" gap="xs">
                       {alert.daysUntilCritical && (
                         <Text size="xs" c="orange">
-                          ⏰ {alert.daysUntilCritical} days until critical
+                          ⏰ {alert.daysUntilCritical}d
                         </Text>
                       )}
-
                       {alert.quickAction && (
                         <Button
                           size="xs"
                           variant="light"
-                          fullWidth
                           onClick={() => handleExecuteAction(alert)}
                           loading={executingAction === alert.id}
-                          rightSection={<IconChevronRight size={14} />}
+                          rightSection={<IconChevronRight size={12} />}
+                          style={{ marginLeft: 'auto' }}
                         >
                           {alert.quickAction.label}
                         </Button>
                       )}
-                    </Stack>
+                    </Group>
                   </Paper>
                 ))
               )}
@@ -549,61 +549,60 @@ export default function InventoryCommandCenter({
           </ScrollArea>
         </Card>
 
-        {/* Revenue Opportunities with ScrollArea */}
+        {/* Revenue Opportunities - Compact Design */}
         <Card
-          padding="lg"
+          padding="md"
           radius="md"
           withBorder
           className={classes.opportunityCard}
-          style={{ height: '500px', display: 'flex', flexDirection: 'column' }}
+          style={{ maxHeight: '400px', display: 'flex', flexDirection: 'column' }}
         >
-          <Group gap="xs" mb="md">
-            <IconTrendingUp size={20} color="var(--mantine-color-green-6)" />
-            <Text fw={600}>Revenue Opportunities</Text>
+          <Group justify="space-between" mb="sm">
+            <Group gap="xs">
+              <IconTrendingUp size={18} color="var(--mantine-color-green-6)" />
+              <Text size="sm" fw={600}>Revenue Opportunities</Text>
+            </Group>
+            <Badge size="sm" color="green">{opportunities.length}</Badge>
           </Group>
 
           <ScrollArea style={{ flex: 1 }} type="auto" offsetScrollbars>
-            <Stack gap="md" pr="md">
+            <Stack gap="xs" pr="sm">
               {opportunities.length === 0 ? (
-                <Text size="sm" c="dimmed" ta="center" py="xl">
-                  <IconExclamationCircle size={24} style={{ marginBottom: 8 }} />
+                <Text size="xs" c="dimmed" ta="center" py="md">
+                  <IconExclamationCircle size={20} style={{ marginBottom: 4 }} />
                   <br />
                   No opportunities detected
                 </Text>
               ) : (
                 opportunities.map((opp) => (
-                  <Paper key={opp.id} p="md" withBorder className={classes.oppCard}>
-                    <Group justify="space-between" mb="xs" align="flex-start">
-                      <Text size="sm" fw={600} style={{ flex: 1 }}>
+                  <Paper key={opp.id} p="sm" withBorder className={classes.oppCard}>
+                    <Group justify="space-between" mb={4} align="flex-start" wrap="nowrap">
+                      <Text size="xs" fw={500} style={{ flex: 1, minWidth: 0 }} lineClamp={1}>
                         {opp.title}
                       </Text>
-                      <Tooltip label={`AI Confidence: ${(opp.confidence * 100).toFixed(0)}%`}>
-                        <Badge size="sm" color="green" variant="light">
-                          +{formatCurrency(opp.estimatedRevenue)}
-                        </Badge>
-                      </Tooltip>
+                      <Badge size="xs" color="green" variant="light" style={{ flexShrink: 0 }}>
+                        +{formatCurrency(opp.estimatedRevenue)}
+                      </Badge>
                     </Group>
 
-                    <Text size="xs" c="dimmed" mb="md" lineClamp={2}>
+                    <Text size="xs" c="dimmed" mb="xs" lineClamp={1}>
                       {opp.reasoning}
                     </Text>
 
-                    <Stack gap="xs">
+                    <Group justify="space-between" align="center">
                       <Text size="xs" c="dimmed">
-                        📦 {opp.products.length} products • {(opp.confidence * 100).toFixed(0)}%
-                        confidence
+                        {(opp.confidence * 100).toFixed(0)}% confidence
                       </Text>
                       <Button
                         size="xs"
                         variant="filled"
                         color="green"
-                        fullWidth
                         onClick={() => handleAcceptOpportunity(opp)}
-                        rightSection={<IconChevronRight size={14} />}
+                        rightSection={<IconChevronRight size={12} />}
                       >
                         {opp.action.label}
                       </Button>
-                    </Stack>
+                    </Group>
                   </Paper>
                 ))
               )}

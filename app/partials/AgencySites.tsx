@@ -1,7 +1,7 @@
 import { Grid, Loader } from '@mantine/core'
 import { useTranslation } from 'react-i18next'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useFetcher } from 'react-router'
 import { type IAgency } from '../common/validations/agencySchema'
 import type { ISite } from '../common/validations/siteSchema'
@@ -39,7 +39,18 @@ export function AgencySites({
 
   let data = fetcher.data as FetcherData
 
-  const groupedData = (data?.sites || sites)
+  // Fetch sites on mount if agency is already selected
+  useEffect(() => {
+    if (agencyId && !siteFetched && fetcher.state === 'idle') {
+      setSiteFetched(true)
+      fetcher.load(`/api/sites/${agencyId}`)
+    }
+  }, [agencyId, siteFetched, fetcher])
+
+  // Use fetched sites if available, otherwise fall back to props sites
+  const availableSites = data?.sites || sites
+  
+  const groupedData = availableSites
     .sort((a: { type: string }, b: { type: string }) => a.type.localeCompare(b.type))
     .reverse()
     .reduce(
