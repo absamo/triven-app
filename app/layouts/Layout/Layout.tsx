@@ -37,8 +37,70 @@ import Header from '../Header/Header'
 import Navbar from '../Navbar'
 import classes from './Layout.module.css'
 
-// Global singleton to prevent duplicate SSE connections
-let globalEventSource: EventSource | null = null
+// Singleton EventSource manager to prevent duplicate connections
+class SubscriptionStreamManager {
+  private static instance: SubscriptionStreamManager | null = null
+  private eventSource: EventSource | null = null
+  private listeners: Set<(data: any) => void> = new Set()
+  private connectionCount = 0
+
+  private constructor() {}
+
+  static getInstance(): SubscriptionStreamManager {
+    if (!SubscriptionStreamManager.instance) {
+      SubscriptionStreamManager.instance = new SubscriptionStreamManager()
+    }
+    return SubscriptionStreamManager.instance
+  }
+
+  connect(): void {
+    this.connectionCount++
+    
+    if (this.eventSource) {
+      // Connection already exists
+      return
+    }
+
+    this.eventSource = new EventSource('/api/subscription-stream')
+
+    this.eventSource.addEventListener('connected', () => {
+      console.log('[SubscriptionStream] Connected')
+    })
+
+    this.eventSource.addEventListener('subscription', (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        this.listeners.forEach((listener) => listener(data))
+      } catch (error) {
+        console.error('[SubscriptionStream] Error parsing subscription update:', error)
+      }
+    })
+
+    this.eventSource.onerror = (error) => {
+      console.error('[SubscriptionStream] EventSource error:', error)
+    }
+  }
+
+  disconnect(): void {
+    this.connectionCount--
+
+    // Only close if no more listeners
+    if (this.connectionCount <= 0 && this.eventSource) {
+      this.eventSource.close()
+      this.eventSource = null
+      this.connectionCount = 0
+      console.log('[SubscriptionStream] Disconnected')
+    }
+  }
+
+  addListener(listener: (data: any) => void): void {
+    this.listeners.add(listener)
+  }
+
+  removeListener(listener: (data: any) => void): void {
+    this.listeners.delete(listener)
+  }
+}
 
 // Component to handle footer visibility based on form context
 function FooterWrapper() {
@@ -80,7 +142,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   })
 
   // Real-time subscription updates via SSE
-  const eventSourceRef = useRef<EventSource | null>(null)
   const revalidator = useRevalidator()
   const pendingUpgradeRef = useRef<boolean>(false)
 
@@ -115,65 +176,44 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   }, [user.planStatus, user.trialPeriodDays])
 
   useEffect(() => {
-    // Prevent duplicate connections - check both ref and global
-    if (eventSourceRef.current || globalEventSource) {
-      return
-    }
+    const manager = SubscriptionStreamManager.getInstance()
+    
+    // Create listener function
+    const handleSubscriptionUpdate = (data: any) => {
+      // Update local state immediately for instant UI update
+      // Note: We trust all subscription updates from the server since SSE is user-specific
+      if (data.type === 'subscription') {
+        setSubscriptionStatus({
+          status: data.status,
+          trialEnd: data.trialEnd,
+        })
 
-    // Connect to subscription SSE stream
-    const eventSource = new EventSource('/api/subscription-stream')
-    eventSourceRef.current = eventSource
-    globalEventSource = eventSource
-
-    eventSource.addEventListener('connected', () => {
-      // Connected to subscription stream
-    })
-
-    eventSource.addEventListener('subscription', (event) => {
-      try {
-        const data = JSON.parse(event.data)
-
-        // Update local state immediately for instant UI update
-        // Note: We trust all subscription updates from the server since SSE is user-specific
-        if (data.type === 'subscription') {
-          setSubscriptionStatus({
-            status: data.status,
-            trialEnd: data.trialEnd,
-          })
-
-          // If we're waiting for upgrade completion and this is the CONFIRMED update with active status
-          if (
-            pendingUpgradeRef.current &&
-            data.confirmed === true &&
-            data.status === 'active' &&
-            data.trialEnd === 0
-          ) {
-            // Clear pending flag - upgrade is complete
-            pendingUpgradeRef.current = false
-          }
-
-          // Revalidate to fetch fresh data from server
-          revalidator.revalidate()
+        // If we're waiting for upgrade completion and this is the CONFIRMED update with active status
+        if (
+          pendingUpgradeRef.current &&
+          data.confirmed === true &&
+          data.status === 'active' &&
+          data.trialEnd === 0
+        ) {
+          // Clear pending flag - upgrade is complete
+          pendingUpgradeRef.current = false
         }
-      } catch (error) {
-        console.error('[Layout] Error parsing subscription update:', error)
-      }
-    })
 
-    eventSource.onerror = (error) => {
-      console.error('[Layout] EventSource error:', error)
+        // Revalidate to fetch fresh data from server
+        revalidator.revalidate()
+      }
     }
+
+    // Connect and add listener
+    manager.connect()
+    manager.addListener(handleSubscriptionUpdate)
 
     // Cleanup on unmount
     return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close()
-        eventSourceRef.current = null
-        globalEventSource = null
-      }
+      manager.removeListener(handleSubscriptionUpdate)
+      manager.disconnect()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Empty dependency array - only create connection once on mount
+  }, [revalidator])
 
   // Get initial navbar state from root loader (cookies)
   const { showMiniNavbar: initialShowMiniNavbar } = useRootLoaderData()

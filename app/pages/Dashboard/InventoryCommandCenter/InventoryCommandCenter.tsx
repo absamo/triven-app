@@ -26,6 +26,7 @@ import {
 } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import { useFetcher } from 'react-router'
+import dayjs from 'dayjs'
 import classes from './InventoryCommandCenter.module.css'
 
 interface HealthScore {
@@ -289,7 +290,7 @@ export default function InventoryCommandCenter({
             Inventory Command Center
           </Title>
           <Text size="xs" c="dimmed">
-            Last updated: {new Date(lastUpdated).toLocaleTimeString()}
+            Last updated: {dayjs(lastUpdated).format('HH:mm:ss')}
           </Text>
         </div>
       </Group>

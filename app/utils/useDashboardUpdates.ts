@@ -1,6 +1,92 @@
 import { useEffect, useState } from 'react'
 import { useFetcher } from 'react-router'
 
+// Singleton EventSource manager for dashboard updates
+class DashboardStreamManager {
+  private static instance: DashboardStreamManager | null = null
+  private eventSource: EventSource | null = null
+  private listeners: Set<(event: DashboardUpdateEvent) => void> = new Set()
+  private connectionListeners: Set<(connected: boolean) => void> = new Set()
+  private connectionCount = 0
+  private isConnected = false
+
+  private constructor() {}
+
+  static getInstance(): DashboardStreamManager {
+    if (!DashboardStreamManager.instance) {
+      DashboardStreamManager.instance = new DashboardStreamManager()
+    }
+    return DashboardStreamManager.instance
+  }
+
+  connect(): void {
+    this.connectionCount++
+    
+    if (this.eventSource) {
+      // Connection already exists, just notify this listener of current state
+      this.connectionListeners.forEach((listener) => listener(this.isConnected))
+      return
+    }
+
+    this.eventSource = new EventSource('/api/dashboard-stream')
+
+    this.eventSource.onopen = () => {
+      this.isConnected = true
+      this.connectionListeners.forEach((listener) => listener(true))
+    }
+
+    this.eventSource.onerror = () => {
+      this.isConnected = false
+      this.connectionListeners.forEach((listener) => listener(false))
+    }
+
+    this.eventSource.addEventListener('connected', () => {
+      console.log('[DashboardStream] Connected')
+    })
+
+    this.eventSource.addEventListener('dashboard-updates', (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        const updateEvent: DashboardUpdateEvent = data.data
+        this.listeners.forEach((listener) => listener(updateEvent))
+      } catch (error) {
+        console.error('[DashboardStream] Failed to parse update:', error)
+      }
+    })
+  }
+
+  disconnect(): void {
+    this.connectionCount--
+
+    // Only close if no more listeners
+    if (this.connectionCount <= 0 && this.eventSource) {
+      this.eventSource.close()
+      this.eventSource = null
+      this.connectionCount = 0
+      this.isConnected = false
+      console.log('[DashboardStream] Disconnected')
+    }
+  }
+
+  addUpdateListener(listener: (event: DashboardUpdateEvent) => void): void {
+    this.listeners.add(listener)
+  }
+
+  removeUpdateListener(listener: (event: DashboardUpdateEvent) => void): void {
+    this.listeners.delete(listener)
+  }
+
+  addConnectionListener(listener: (connected: boolean) => void): void {
+    this.connectionListeners.add(listener)
+    // Immediately notify of current state
+    listener(this.isConnected)
+  }
+
+  removeConnectionListener(listener: (connected: boolean) => void): void {
+    this.connectionListeners.delete(listener)
+  }
+}
+
 interface DashboardUpdateEvent {
   action:
     | 'product_created'
@@ -43,37 +129,27 @@ export function useDashboardUpdates() {
   const fetcher = useFetcher()
 
   useEffect(() => {
-    const eventSource = new EventSource('/api/dashboard-stream')
-
-    eventSource.onopen = () => {
-      setIsConnected(true)
+    const manager = DashboardStreamManager.getInstance()
+    
+    const handleUpdate = (event: DashboardUpdateEvent) => {
+      setLastUpdate(event)
+      // Trigger a refetch of dashboard data - use query params to get fresh data
+      fetcher.load('/dashboard?refresh=true')
     }
 
-    eventSource.onerror = (error) => {
-      setIsConnected(false)
+    const handleConnection = (connected: boolean) => {
+      setIsConnected(connected)
     }
 
-    eventSource.addEventListener('connected', (event) => {
-      // Dashboard SSE connection confirmed
-    })
-
-    eventSource.addEventListener('dashboard-updates', (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        const updateEvent: DashboardUpdateEvent = data.data
-
-        setLastUpdate(updateEvent)
-
-        // Trigger a refetch of dashboard data - use query params to get fresh data
-        fetcher.load('/dashboard?refresh=true')
-      } catch (error) {
-        // Failed to parse dashboard update
-      }
-    })
+    // Connect and add listeners
+    manager.connect()
+    manager.addUpdateListener(handleUpdate)
+    manager.addConnectionListener(handleConnection)
 
     return () => {
-      eventSource.close()
-      setIsConnected(false)
+      manager.removeUpdateListener(handleUpdate)
+      manager.removeConnectionListener(handleConnection)
+      manager.disconnect()
     }
   }, [fetcher])
 
