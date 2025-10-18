@@ -10,40 +10,43 @@ datasource db {
 }
 
 model Company {
-  id                 String             @id @default(cuid())
-  name               String             @unique @db.VarChar(200)
-  sandbox            Boolean            @default(false)
-  active             Boolean            @default(true)
-  phone              String?
-  locationId         String?            @unique
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime?          @updatedAt
-  agencies           Agency[]
-  backorders         Backorder[]
-  bills              Bill[]
-  category           Category[]
-  location           Location?          @relation(fields: [locationId], references: [id])
-  currencies         Currency[]
-  customers          Customer[]
-  invoices           Invoice[]
-  notifications      Notification[]
-  paymentsMade       PaymentMade[]
-  paymentsReceived   PaymentReceived[]
-  products           Product[]
-  purchaseOrders     PurchaseOrder[]
-  purchaseReceives   PurchaseReceive[]
-  roles              Role[]
-  salesOrders        SalesOrder[]
-  site               Site[]
-  stockAdjustments   StockAdjustment[]
-  suppliers          Supplier[]
-  TransferOrder      TransferOrder[]
-  unitOfMeasures     UnitOfMeasure[]
-  members            User[]
-  inventoryAnomalies InventoryAnomaly[]
-  businessInsights   BusinessInsight[]
-  workflowTemplates  WorkflowTemplate[]
-  approvalRequests   ApprovalRequest[]
+  id                    String                 @id @default(cuid())
+  name                  String                 @unique @db.VarChar(200)
+  sandbox               Boolean                @default(false)
+  active                Boolean                @default(true)
+  phone                 String?
+  locationId            String?                @unique
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime?              @updatedAt
+  agencies              Agency[]
+  backorders            Backorder[]
+  bills                 Bill[]
+  category              Category[]
+  location              Location?              @relation(fields: [locationId], references: [id])
+  currencies            Currency[]
+  customers             Customer[]
+  invoices              Invoice[]
+  notifications         Notification[]
+  paymentsMade          PaymentMade[]
+  paymentsReceived      PaymentReceived[]
+  products              Product[]
+  purchaseOrders        PurchaseOrder[]
+  purchaseReceives      PurchaseReceive[]
+  roles                 Role[]
+  salesOrders           SalesOrder[]
+  site                  Site[]
+  stockAdjustments      StockAdjustment[]
+  suppliers             Supplier[]
+  TransferOrder         TransferOrder[]
+  unitOfMeasures        UnitOfMeasure[]
+  members               User[]
+  inventoryAnomalies    InventoryAnomaly[]
+  businessInsights      BusinessInsight[]
+  workflowTemplates     WorkflowTemplate[]
+  approvalRequests      ApprovalRequest[]
+  inventoryHealthScores InventoryHealthScore[]
+  smartAlerts           SmartAlert[]
+  revenueOpportunities  RevenueOpportunity[]
 }
 
 model Currency {
@@ -157,8 +160,8 @@ model Price {
 }
 
 model Subscription {
-  id                 String   @id @unique
-  userId             String   @unique
+  id                 String  @id @unique
+  userId             String  @unique
   planId             String
   priceId            String
   interval           String
@@ -167,29 +170,29 @@ model Subscription {
   currentPeriodEnd   Int
   trialStart         Int
   trialEnd           Int
-  cancelAtPeriodEnd  Boolean  @default(false)
-  
+  cancelAtPeriodEnd  Boolean @default(false)
+
   // Payment method details
-  paymentMethodId    String?  // Stripe payment method ID
-  last4              String?  // Last 4 digits of payment method
-  brand              String?  // Card brand (visa, mastercard, etc.)
-  expMonth           Int?     // Expiration month
-  expYear            Int?     // Expiration year
-  
+  paymentMethodId String? // Stripe payment method ID
+  last4           String? // Last 4 digits of payment method
+  brand           String? // Card brand (visa, mastercard, etc.)
+  expMonth        Int? // Expiration month
+  expYear         Int? // Expiration year
+
   // Cancellation tracking
   cancelledAt        DateTime? // When the subscription was cancelled
-  cancelledBy        String?   // User ID who cancelled the subscription
-  cancellationReason String?   // Reason for cancellation
+  cancelledBy        String? // User ID who cancelled the subscription
+  cancellationReason String? // Reason for cancellation
   scheduledCancelAt  DateTime? // When the subscription is scheduled to be cancelled
-  
+
   // Audit fields
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  plan               Plan     @relation(fields: [planId], references: [id])
-  price              Price    @relation(fields: [priceId], references: [id])
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan  Plan  @relation(fields: [planId], references: [id])
+  price Price @relation(fields: [priceId], references: [id])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Profile {
@@ -1512,4 +1515,126 @@ enum ApprovalDecision {
   delegated
   more_info_required
   conditional_approval
+}
+
+// ============================================
+// Inventory Command Center Models
+// ============================================
+
+model InventoryHealthScore {
+  id                  String   @id @default(cuid())
+  companyId           String
+  agencyId            String?
+  siteId              String?
+  date                DateTime
+  overallScore        Float // 0-100
+  stockLevelAdequacy  Float
+  turnoverRate        Float
+  agingInventory      Float
+  backorderRate       Float
+  supplierReliability Float
+  metadata            Json? // Additional context
+  createdAt           DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, agencyId, siteId, date])
+  @@index([companyId, date])
+  @@index([agencyId, date])
+}
+
+model SmartAlert {
+  id                String        @id @default(cuid())
+  companyId         String
+  agencyId          String?
+  type              AlertType
+  severity          AlertSeverity
+  title             String
+  description       String
+  financialImpact   Float
+  affectedProducts  String[] // Product IDs
+  suggestedAction   String
+  quickAction       Json? // Action definition
+  daysUntilCritical Int?
+  aiConfidence      Float?
+  status            AlertStatus   @default(Active)
+  resolvedAt        DateTime?
+  resolvedBy        String?
+  dismissedReason   String?
+  createdAt         DateTime      @default(now())
+  expiresAt         DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, status, createdAt])
+  @@index([severity, status])
+}
+
+model RevenueOpportunity {
+  id               String            @id @default(cuid())
+  companyId        String
+  agencyId         String?
+  type             OpportunityType
+  title            String
+  estimatedRevenue Float
+  confidence       Float // 0-1
+  products         Json // Array of product details
+  action           Json // Action definition
+  reasoning        String
+  status           OpportunityStatus @default(Active)
+  acceptedAt       DateTime?
+  acceptedBy       String?
+  createdAt        DateTime          @default(now())
+  expiresAt        DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, status, estimatedRevenue])
+  @@index([status, createdAt])
+}
+
+enum AlertType {
+  StockoutPredicted
+  LowStockWarning
+  DeadStockAlert
+  PriceAnomalyDetected
+  SupplierDelayRisk
+  DemandSpikeExpected
+  StockImbalance
+  HighValueBackorder
+  TurnoverRateDrop
+  ExcessInventory
+}
+
+enum AlertSeverity {
+  Critical
+  High
+  Medium
+  Low
+}
+
+enum AlertStatus {
+  Active
+  Acknowledged
+  InProgress
+  Resolved
+  Dismissed
+  Expired
+}
+
+enum OpportunityType {
+  StockoutPrevention
+  PriceOptimization
+  CrossSell
+  SeasonalDemand
+  LocationTransfer
+  BulkPurchaseDiscount
+}
+
+enum OpportunityStatus {
+  Active
+  Accepted
+  Declined
+  Expired
+  Completed
 }

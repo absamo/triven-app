@@ -14,17 +14,17 @@ import { DatePickerInput, type DatesRangeValue } from '@mantine/dates'
 import { IconCalendar, IconFilterOff } from '@tabler/icons-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router'
-import { type IAgency } from '~/app/common/validations/agencySchema'
-import { type ISite } from '~/app/common/validations/siteSchema'
+import { useFetcher, useSearchParams } from 'react-router'
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
 import { AgencySites } from '~/app/partials/AgencySites'
 import { useDashboardUpdates } from '~/app/utils/useDashboardUpdates'
 import classes from './Dashboard.module.css'
 import FinanceStats from './FinanceStats'
+import InventoryCommandCenter from './InventoryCommandCenter'
 import InventoryStats from './InventoryStats'
 import OrderStats from './OrderStats'
 import SalesTrends from './SalesTrends'
-import { G } from '@react-pdf/renderer'
 
 interface DashboardProps {
   firstName: string
@@ -130,6 +130,9 @@ export default function Dashboard({
   // Real-time dashboard updates via SSE
   const { isConnected, lastUpdate, refreshDashboard, isRefreshing, fetcher } = useDashboardUpdates()
 
+  // Separate fetcher for command center data
+  const commandCenterFetcher = useFetcher()
+
   // Function to build query parameters for dashboard API
   const buildDashboardQuery = (agencyId?: string, siteId?: string, dateRange?: DatesRangeValue) => {
     const params = new URLSearchParams()
@@ -200,23 +203,24 @@ export default function Dashboard({
 
   // Function to clear all filters
   const clearAllFilters = () => {
+    // Clear all filters completely (don't reset to userAgencyId)
     setAgency('')
     setSite('')
     setDateRange([null, null])
     setSearchParams(new URLSearchParams(), { replace: true })
+
     // Don't fetch again if already loading
     if (fetcher.state === 'idle') {
+      // Fetch with no filters
       fetcher.load('/dashboard')
     }
   }
 
-  // Check if any filters are active
+  // Check if any filters are active (beyond defaults)
   const hasActiveFilters = () => {
-    return (
-      (agency && agency !== '') ||
-      (site && site !== '') ||
-      (dateRange && dateRange[0] && dateRange[1])
-    )
+    // Agency is only considered active if it's different from the default userAgencyId
+    const hasExplicitAgency = agency !== '' && agency !== userAgencyId
+    return hasExplicitAgency || (site && site !== '') || (dateRange && dateRange[0] && dateRange[1])
   }
 
   // Function to get formatted date range for display
@@ -507,6 +511,7 @@ export default function Dashboard({
 
             {showAgencies && (
               <AgencySites
+                key={`agency-site-${agency}-${site}`}
                 agencyId={agency}
                 siteId={site}
                 agencies={agencies}
@@ -541,6 +546,25 @@ export default function Dashboard({
             </Grid.Col>
           </Grid>
         </Paper>
+
+        {/* Inventory Command Center - Killer Widget */}
+        <InventoryCommandCenter
+          agencyId={agency}
+          siteId={site}
+          dateRange={
+            dateRange[0] && dateRange[1]
+              ? {
+                  startDate: (dateRange[0] instanceof Date ? dateRange[0] : new Date(dateRange[0]))
+                    .toISOString()
+                    .split('T')[0],
+                  endDate: (dateRange[1] instanceof Date ? dateRange[1] : new Date(dateRange[1]))
+                    .toISOString()
+                    .split('T')[0],
+                }
+              : undefined
+          }
+        />
+
         {/* Key Metrics */}
         <Stack gap="lg">
           <InventoryStats inventory={currentInventoryData} />

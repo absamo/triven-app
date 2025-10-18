@@ -69,6 +69,9 @@ export default [
     route('api/workflow-step-execution', 'routes/api/workflow-step-execution.ts'),
     route('api/workflow-trigger', 'routes/api/workflow-trigger.ts'),
 
+    // Inventory Command Center API
+    route('api/inventory/command-center', 'routes/api/inventory/command-center.ts'),
+
     // ImageKit API routes
     route('api/imagekit/upload', 'routes/api.imagekit.upload.tsx'),
     route('api/imagekit/auth', 'routes/api.imagekit.auth.tsx'),

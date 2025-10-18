@@ -1,0 +1,45 @@
+.root {
+  width: 100%;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-gray-0));
+}
+
+.healthCard {
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  border: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+  transition: all 0.2s ease;
+}
+
+.healthCard:hover {
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.alertCard {
+  background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8));
+  border-left: 3px solid var(--mantine-color-red-6);
+  transition: all 0.2s ease;
+}
+
+.alertCard:hover {
+  background: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-7));
+}
+
+.opportunityCard {
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  border: 1px solid light-dark(var(--mantine-color-green-2), var(--mantine-color-green-9));
+}
+
+.oppCard {
+  background: light-dark(var(--mantine-color-green-0), var(--mantine-color-dark-8));
+  border-left: 3px solid var(--mantine-color-green-6);
+  transition: all 0.2s ease;
+}
+
+.oppCard:hover {
+  background: light-dark(var(--mantine-color-green-1), var(--mantine-color-dark-7));
+}
