@@ -1,83 +1,50 @@
-# Triven App Constitution
+# [PROJECT_NAME] Constitution
+<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
 ## Core Principles
 
-### I. Service-Oriented Architecture
-Each major feature (inventory, orders, customers, etc.) must be implemented as a standalone service with clear boundaries. Services must be self-contained, independently testable, and well-documented. Each service should have a single responsibility and clear API contracts.
+### [PRINCIPLE_1_NAME]
+<!-- Example: I. Library-First -->
+[PRINCIPLE_1_DESCRIPTION]
+<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
 
-### II. API-First Development
-All business logic must be exposed through well-defined API endpoints. REST APIs must follow consistent patterns, use proper HTTP status codes, and include comprehensive OpenAPI specifications. Support both JSON and human-readable formats for debugging.
+### [PRINCIPLE_2_NAME]
+<!-- Example: II. CLI Interface -->
+[PRINCIPLE_2_DESCRIPTION]
+<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
 
-### III. Test-First Development (NON-NEGOTIABLE)
-TDD is mandatory: Tests written → User approved → Tests fail → Then implement. Red-Green-Refactor cycle strictly enforced. Integration tests required for all API endpoints and database operations.
+### [PRINCIPLE_3_NAME]
+<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+[PRINCIPLE_3_DESCRIPTION]
+<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
 
-### IV. Real-Time Capabilities
-Inventory updates, order status changes, and critical business events must support real-time updates through WebSocket connections. All real-time features must gracefully degrade when WebSocket connections fail.
+### [PRINCIPLE_4_NAME]
+<!-- Example: IV. Integration Testing -->
+[PRINCIPLE_4_DESCRIPTION]
+<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
 
-### V. Data Integrity & Audit Trail
-All business-critical data changes must be auditable. Inventory movements, order modifications, and customer changes require complete audit trails. Database transactions must ensure ACID properties for financial operations.
+### [PRINCIPLE_5_NAME]
+<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+[PRINCIPLE_5_DESCRIPTION]
+<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
 
-### VI. AI Integration Standards
-AI features (analytics, recommendations, automation) must be implemented as optional enhancements that don't break core functionality. AI models must be versioned, and fallback mechanisms required for when AI services are unavailable.
+## [SECTION_2_NAME]
+<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
 
-### VII. Performance & Scalability
-Database queries must be optimized, with proper indexing for inventory lookups. Pagination required for all list endpoints. Caching strategies must be implemented for frequently accessed data (products, categories, customer info).
+[SECTION_2_CONTENT]
+<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
 
-## Technology Stack Requirements
+## [SECTION_3_NAME]
+<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
 
-### Frontend Standards
-- React Router v7 for navigation and routing
-- Mantine UI for consistent component library
-- TypeScript for type safety
-- Vitest for testing
-- Real-time updates via WebSocket or Server-Sent Events
-
-### Backend Standards
-- Node.js with TypeScript
-- Prisma ORM for database operations
-- Better Auth for authentication
-- Zod for runtime validation
-- Structured logging for observability
-
-### Database & Infrastructure
-- PostgreSQL as primary database
-- Docker for containerization
-- Environment-specific configurations
-- Database migrations via Prisma
-
-### Integration Requirements
-- Stripe for payment processing
-- ImageKit for image management
-- Resend for email notifications
-- Ollama for local AI capabilities
-
-## Development Workflow
-
-### Code Quality Gates
-- TypeScript compilation without errors
-- All tests passing (unit, integration, E2E)
-- Linting and formatting compliance
-- Database migration validation
-- Security vulnerability scanning
-
-### Feature Development Process
-1. Feature specification using Spec Kit templates
-2. Implementation planning with technical design
-3. Test-driven development with contract testing
-4. Integration testing with real database
-5. Performance validation for data-heavy operations
-6. Security review for authentication/authorization
-
-### Review Requirements
-- Code review required for all changes
-- Database schema changes require DBA review
-- API changes require contract validation
-- Performance impact assessment for inventory operations
+[SECTION_3_CONTENT]
+<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
 
 ## Governance
+<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-This constitution supersedes all other development practices. All feature development must comply with these principles. Complexity must be justified with business value. Deviations require explicit documentation and approval.
+[GOVERNANCE_RULES]
+<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
 
-Use `.github/copilot-instructions.md` for runtime development guidance and GitHub Copilot integration.
-
-**Version**: 1.0.0 | **Ratified**: 2025-09-13 | **Last Amended**: 2025-09-13
+**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
