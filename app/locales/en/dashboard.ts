@@ -4,6 +4,7 @@ export default {
   overview: 'Get real-time insights into your business performance',
   analyticsOverview: 'Analytics Overview',
   realtimeInsights: 'Real-time insights and performance metrics',
+  lastUpdated: 'Last updated',
   recentActivity: 'Recent Activity',
   quickActions: 'Quick Actions',
   agency: 'Agency',
@@ -104,4 +105,37 @@ export default {
   lowStock: 'Low Stock',
   critical: 'Critical',
   outOfStock: 'Out of Stock',
+
+  // Inventory Command Center
+  inventoryCommandCenter: 'Inventory Command Center',
+  healthScore: 'Health Score',
+  capitalTiedUp: 'Capital Tied Up',
+  revenueAtRisk: 'Revenue at Risk',
+  turnoverRate: 'Turnover Rate',
+  criticalActions: 'Critical Actions',
+  revenueOpportunities: 'Revenue Opportunities',
+  healthScoreBreakdown: 'Health Score Breakdown',
+  noCriticalAlerts: 'No critical alerts',
+  noOpportunitiesDetected: 'No opportunities detected',
+  confidence: 'confidence',
+  
+  // Health Score Tooltips
+  healthScoreTooltip: '0-100 rating measuring inventory health',
+  capitalTiedUpTooltip: 'Total inventory value sitting on your shelves. Lower is better - means you\'re not over-investing in stock.',
+  revenueAtRiskTooltip: 'Potential lost sales from out-of-stock items. Shows revenue you could earn if you had these products available.',
+  turnoverRateTooltip: 'How many times per year you sell through your inventory. Higher is better - means inventory moves quickly and generates cash.',
+  
+  // Health Score Breakdown
+  stockLevelAdequacy: 'Stock Level',
+  agingInventory: 'Freshness',
+  backorderRate: 'Fulfillment',
+  supplierReliability: 'Supplier Reliability',
+  
+  // Health Score Breakdown Tooltip
+  healthScoreBreakdownTooltip: 'Five factors contributing to your Health Score',
+  stockLevelDescription: 'How well stocked you are vs. demand',
+  turnoverRateDescription: 'How quickly inventory sells',
+  freshnessDescription: 'Age of inventory (newer is better)',
+  fulfillmentDescription: 'Ability to fulfill orders without delays',
+  supplierReliabilityDescription: 'On-time delivery performance',
 }

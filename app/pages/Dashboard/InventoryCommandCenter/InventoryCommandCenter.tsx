@@ -11,6 +11,7 @@ import {
   SimpleGrid,
   Stack,
   Text,
+  ThemeIcon,
   Title,
   Tooltip,
 } from '@mantine/core'
@@ -20,11 +21,16 @@ import {
   IconBolt,
   IconCheck,
   IconChevronRight,
+  IconClock,
+  IconCoins,
   IconExclamationCircle,
   IconInfoCircle,
+  IconMoneybag,
+  IconRefresh,
   IconTrendingUp,
 } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import dayjs from 'dayjs'
 import classes from './InventoryCommandCenter.module.css'
@@ -140,6 +146,7 @@ export default function InventoryCommandCenter({
   onExecuteAction,
   onAcceptOpportunity,
 }: InventoryCommandCenterProps) {
+  const { t } = useTranslation('dashboard')
   const [executingAction, setExecutingAction] = useState<string | null>(null)
   const fetcher = useFetcher()
 
@@ -287,11 +294,8 @@ export default function InventoryCommandCenter({
         <div>
           <Title order={2} className={classes.title}>
             <IconBolt size={24} style={{ marginRight: 8 }} />
-            Inventory Command Center
+            {t('inventoryCommandCenter')}
           </Title>
-          <Text size="xs" c="dimmed">
-            Last updated: {dayjs(lastUpdated).format('HH:mm:ss')}
-          </Text>
         </div>
       </Group>
 
@@ -301,17 +305,17 @@ export default function InventoryCommandCenter({
         <Card className={classes.healthCard} padding="md" radius="md" withBorder>
           <Group justify="space-between" align="flex-start" mb={4}>
             <Text size="xs" c="dimmed">
-              Health Score
+              {t('healthScore')}
             </Text>
             <Tooltip
               label={
                 <div>
-                  <div style={{ marginBottom: 4 }}>0-100 rating measuring inventory health:</div>
-                  <div>• Stock Level (30%)</div>
-                  <div>• Turnover Rate (25%)</div>
-                  <div>• Freshness (20%)</div>
-                  <div>• Fulfillment (15%)</div>
-                  <div>• Supplier Reliability (10%)</div>
+                  <div style={{ marginBottom: 4 }}>{t('healthScoreTooltip')}:</div>
+                  <div>• {t('stockLevelAdequacy')} (30%)</div>
+                  <div>• {t('turnoverRate')} (25%)</div>
+                  <div>• {t('agingInventory')} (20%)</div>
+                  <div>• {t('backorderRate')} (15%)</div>
+                  <div>• {t('supplierReliability')} (10%)</div>
                 </div>
               }
               multiline
@@ -390,28 +394,31 @@ export default function InventoryCommandCenter({
 
         {/* Key Metrics */}
         <MetricCard
-          label="Capital Tied Up"
+          label={t('capitalTiedUp')}
           value={formatCurrency(metrics.capitalTiedUp.value)}
           change={metrics.capitalTiedUp.change}
           sparkline={metrics.capitalTiedUp.sparkline}
           color="blue"
-          tooltip="Total inventory value sitting on your shelves. Lower is better - means you're not over-investing in stock."
+          icon={IconCoins}
+          tooltip={t('capitalTiedUpTooltip')}
         />
         <MetricCard
-          label="Revenue at Risk"
+          label={t('revenueAtRisk')}
           value={formatCurrency(metrics.revenueAtRisk.value)}
           change={metrics.revenueAtRisk.change}
           sparkline={metrics.revenueAtRisk.sparkline}
           color="red"
-          tooltip="Potential lost sales from out-of-stock items. Shows revenue you could earn if you had these products available."
+          icon={IconMoneybag}
+          tooltip={t('revenueAtRiskTooltip')}
         />
         <MetricCard
-          label="Turnover Rate"
+          label={t('turnoverRate')}
           value={`${metrics.turnoverRate.value}x`}
           change={metrics.turnoverRate.change}
           sparkline={metrics.turnoverRate.sparkline}
           color="green"
-          tooltip="How many times per year you sell through your inventory. Higher is better - means inventory moves quickly and generates cash."
+          icon={IconRefresh}
+          tooltip={t('turnoverRateTooltip')}
         />
       </SimpleGrid>
 
@@ -419,17 +426,17 @@ export default function InventoryCommandCenter({
       <Card padding="lg" radius="md" withBorder mb="lg">
         <Group justify="space-between" align="flex-start" mb="md">
           <Text size="sm" fw={600}>
-            Health Score Breakdown
+            {t('healthScoreBreakdown')}
           </Text>
           <Tooltip
             label={
               <div>
-                <div style={{ marginBottom: 6, fontWeight: 600 }}>Five factors contributing to your Health Score:</div>
-                <div>• <strong>Stock Level:</strong> How well stocked you are vs. demand</div>
-                <div>• <strong>Turnover Rate:</strong> How quickly inventory sells</div>
-                <div>• <strong>Freshness:</strong> Age of inventory (newer is better)</div>
-                <div>• <strong>Fulfillment:</strong> Ability to fulfill orders without delays</div>
-                <div>• <strong>Supplier Reliability:</strong> On-time delivery performance</div>
+                <div style={{ marginBottom: 6, fontWeight: 600 }}>{t('healthScoreBreakdownTooltip')}:</div>
+                <div>• <strong>{t('stockLevelAdequacy')}:</strong> {t('stockLevelDescription')}</div>
+                <div>• <strong>{t('turnoverRate')}:</strong> {t('turnoverRateDescription')}</div>
+                <div>• <strong>{t('agingInventory')}:</strong> {t('freshnessDescription')}</div>
+                <div>• <strong>{t('backorderRate')}:</strong> {t('fulfillmentDescription')}</div>
+                <div>• <strong>{t('supplierReliability')}:</strong> {t('supplierReliabilityDescription')}</div>
               </div>
             }
             multiline
@@ -479,7 +486,7 @@ export default function InventoryCommandCenter({
           <Group justify="space-between" mb="sm">
             <Group gap="xs">
               <IconAlertTriangle size={18} color="var(--mantine-color-red-6)" />
-              <Text size="sm" fw={600}>Critical Actions</Text>
+              <Text size="sm" fw={600}>{t('criticalActions')}</Text>
             </Group>
             <Badge size="sm" color="red">{criticalAlerts.length}</Badge>
           </Group>
@@ -490,7 +497,7 @@ export default function InventoryCommandCenter({
                 <Text size="xs" c="dimmed" ta="center" py="md">
                   <IconCheck size={20} style={{ marginBottom: 4 }} />
                   <br />
-                  No critical alerts
+                  {t('noCriticalAlerts')}
                 </Text>
               ) : (
                 criticalAlerts.map((alert, index) => (
@@ -560,7 +567,7 @@ export default function InventoryCommandCenter({
           <Group justify="space-between" mb="sm">
             <Group gap="xs">
               <IconTrendingUp size={18} color="var(--mantine-color-green-6)" />
-              <Text size="sm" fw={600}>Revenue Opportunities</Text>
+              <Text size="sm" fw={600}>{t('revenueOpportunities')}</Text>
             </Group>
             <Badge size="sm" color="green">{opportunities.length}</Badge>
           </Group>
@@ -571,7 +578,7 @@ export default function InventoryCommandCenter({
                 <Text size="xs" c="dimmed" ta="center" py="md">
                   <IconExclamationCircle size={20} style={{ marginBottom: 4 }} />
                   <br />
-                  No opportunities detected
+                  {t('noOpportunitiesDetected')}
                 </Text>
               ) : (
                 opportunities.map((opp) => (
@@ -591,7 +598,7 @@ export default function InventoryCommandCenter({
 
                     <Group justify="space-between" align="center">
                       <Text size="xs" c="dimmed">
-                        {(opp.confidence * 100).toFixed(0)}% confidence
+                        {(opp.confidence * 100).toFixed(0)}% {t('confidence')}
                       </Text>
                       <Button
                         size="xs"
@@ -623,6 +630,7 @@ function MetricCard({
   color,
   subtitle,
   tooltip,
+  icon: Icon,
 }: {
   label: string
   value: string
@@ -631,13 +639,16 @@ function MetricCard({
   color: string
   subtitle?: string
   tooltip?: string
+  icon?: React.ComponentType<{ size?: number; stroke?: number }>
 }) {
   return (
     <Card padding="md" radius="md" withBorder>
-      <Group justify="space-between" align="flex-start" mb={4}>
-        <Text size="xs" c="dimmed">
-          {label}
-        </Text>
+      <Group justify="space-between" align="flex-start" mb="xs">
+        {Icon && (
+          <ThemeIcon size="lg" radius="md" variant="light" color={color}>
+            <Icon size={20} stroke={1.5} />
+          </ThemeIcon>
+        )}
         {tooltip && (
           <Tooltip
             label={tooltip}
@@ -652,10 +663,13 @@ function MetricCard({
               },
             }}
           >
-            <IconInfoCircle size={16} style={{ color: 'var(--mantine-color-dimmed)' }} />
+            <IconInfoCircle size={16} style={{ color: 'var(--mantine-color-dimmed)', cursor: 'pointer' }} />
           </Tooltip>
         )}
       </Group>
+      <Text size="xs" c="dimmed" mb={4}>
+        {label}
+      </Text>
       <Text size="lg" fw={700} mb={4}>
         {value}
       </Text>

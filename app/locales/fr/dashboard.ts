@@ -4,6 +4,7 @@ export default {
   overview: 'Obtenez des informations en temps réel sur les performances de votre entreprise',
   analyticsOverview: 'Tableau de Bord',
   realtimeInsights: 'Informations en temps réel et métriques de performance',
+  lastUpdated: 'Dernière mise à jour',
   recentActivity: 'Activité Récente',
   quickActions: 'Actions Rapides',
   agency: 'Agence',
@@ -105,4 +106,37 @@ export default {
   lowStock: 'Stock faible',
   critical: 'Critique',
   outOfStock: 'Rupture de stock',
+
+  // Inventory Command Center
+  inventoryCommandCenter: 'Centre de Commande Inventaire',
+  healthScore: 'Score de Santé',
+  capitalTiedUp: 'Capital Immobilisé',
+  revenueAtRisk: 'Revenus à Risque',
+  turnoverRate: 'Taux de Rotation',
+  criticalActions: 'Actions Critiques',
+  revenueOpportunities: 'Opportunités de Revenus',
+  healthScoreBreakdown: 'Répartition du Score de Santé',
+  noCriticalAlerts: 'Aucune alerte critique',
+  noOpportunitiesDetected: 'Aucune opportunité détectée',
+  confidence: 'confiance',
+  
+  // Health Score Tooltips
+  healthScoreTooltip: 'Note de 0 à 100 mesurant la santé de l\'inventaire',
+  capitalTiedUpTooltip: 'Valeur totale de l\'inventaire sur vos étagères. Plus c\'est bas, mieux c\'est - cela signifie que vous ne surinvestissez pas dans le stock.',
+  revenueAtRiskTooltip: 'Ventes potentielles perdues dues aux articles en rupture de stock. Montre les revenus que vous pourriez gagner si vous aviez ces produits disponibles.',
+  turnoverRateTooltip: 'Nombre de fois par an que vous vendez votre inventaire. Plus c\'est élevé, mieux c\'est - cela signifie que l\'inventaire se déplace rapidement et génère de la trésorerie.',
+  
+  // Health Score Breakdown
+  stockLevelAdequacy: 'Niveau de Stock',
+  agingInventory: 'Fraîcheur',
+  backorderRate: 'Exécution',
+  supplierReliability: 'Fiabilité Fournisseur',
+  
+  // Health Score Breakdown Tooltip
+  healthScoreBreakdownTooltip: 'Cinq facteurs contribuant à votre Score de Santé',
+  stockLevelDescription: 'Dans quelle mesure vous êtes bien approvisionné par rapport à la demande',
+  turnoverRateDescription: 'À quelle vitesse l\'inventaire se vend',
+  freshnessDescription: 'Âge de l\'inventaire (plus récent est mieux)',
+  fulfillmentDescription: 'Capacité à exécuter les commandes sans délais',
+  supplierReliabilityDescription: 'Performance de livraison à temps',
 } satisfies typeof import('../en/dashboard').default

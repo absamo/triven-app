@@ -14,6 +14,7 @@ import { DatePickerInput, type DatesRangeValue } from '@mantine/dates'
 import { IconCalendar, IconFilterOff } from '@tabler/icons-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import dayjs from 'dayjs'
 import { useFetcher, useSearchParams } from 'react-router'
 import type { IAgency } from '~/app/common/validations/agencySchema'
 import type { ISite } from '~/app/common/validations/siteSchema'
@@ -449,11 +450,16 @@ export default function Dashboard({
               <Title order={1} className={classes.headerTitle}>
                 {t('analyticsOverview')}
               </Title>
-              <Group gap="xs" align="center" mt={4}>
-                <Text size="sm" c="dimmed" className={classes.headerSubtitle}>
-                  {t('realtimeInsights')}
-                </Text>
-                {loading && <Loader size={14} color="blue" />}
+              <Text size="sm" c="dimmed" className={classes.headerSubtitle} mt={4}>
+                {t('realtimeInsights')}
+              </Text>
+              <Group gap="xs" align="center" mt={2}>
+                {loading && <Loader size={12} color="blue" />}
+                {!loading && (
+                  <Text size="xs" c="dimmed">
+                    {t('lastUpdated')}: {dayjs().format('HH:mm:ss')}
+                  </Text>
+                )}
               </Group>
             </div>
           </Group>
