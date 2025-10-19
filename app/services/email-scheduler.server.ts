@@ -64,7 +64,7 @@ export async function sendTrialExpiringEmails() {
           expirationDate: formatDate(subscription.trialEnd, locale),
           planRecommendation: subscription.plan?.name || 'Professional',
           planPrice: '$29', // Default price, should be fetched from plan
-          upgradeUrl: `${process.env.BASE_URL}/billing/upgrade`,
+          upgradeUrl: `${process.env.BASE_URL}/billing`,
           dashboardUrl: `${process.env.BASE_URL}/dashboard`,
         })
         
@@ -87,7 +87,7 @@ export async function sendTrialExpiringEmails() {
           expirationDate: formatDate(subscription.trialEnd, locale),
           planRecommendation: subscription.plan?.name || 'Professional',
           planPrice: '$29', // Default price, should be fetched from plan
-          upgradeUrl: `${process.env.BASE_URL}/billing/upgrade`,
+          upgradeUrl: `${process.env.BASE_URL}/billing`,
           dashboardUrl: `${process.env.BASE_URL}/dashboard`,
         })
         
@@ -136,7 +136,7 @@ export async function handleSubscriptionCancellation(subscriptionId: string, can
       cancellationDate: formatDate(new Date(), locale),
       endDate: formatDate(subscription.currentPeriodEnd, locale),
       reason: cancellationReason || 'At your request',
-      reactivateUrl: `${process.env.BASE_URL}/billing/reactivate`,
+      reactivateUrl: `${process.env.BASE_URL}/billing`,
       exportDataUrl: `${process.env.BASE_URL}/export`,
       feedbackUrl: `${process.env.BASE_URL}/feedback`,
     })

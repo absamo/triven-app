@@ -14,6 +14,7 @@ import ReactivateSubscriptionModal from './ReactivateSubscriptionModal'
 import StripePayment from './StripePayment'
 import SubscriptionStatusModal from './SubscriptionStatusModal'
 import { ThemeToggle } from './ThemeToggle'
+import UpgradePayment from './UpgradePayment'
 import UpgradePaymentModal from './UpgradePaymentModal'
 
 export type { ImageUploadProps, UploadedFile } from './ImageUpload'
@@ -44,5 +45,6 @@ export {
   StripePayment,
   SubscriptionStatusModal,
   ThemeToggle,
+  UpgradePayment,
   UpgradePaymentModal,
 }

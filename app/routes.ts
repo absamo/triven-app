@@ -20,6 +20,7 @@ export default [
   // Protected routes (inside main layout)
   layout('layouts/main.tsx', [
     route('dashboard', 'routes/dashboard.tsx'),
+    route('billing', 'routes/billing.tsx'),
 
     //api
     // Better-auth wildcard route to handle all auth endpoints
@@ -30,6 +31,7 @@ export default [
     route('api/payment-intent', 'routes/api/api.payment-intent.ts'),
     route('api/payment-method-update', 'routes/api.payment-method-update.ts'),
     route('api/subscription-create', 'routes/api.subscription-create.ts'),
+    route('api/subscription-upgrade', 'routes/api/api.subscription-upgrade.ts'),
     route('api/subscription-cancel', 'routes/api.subscription-cancel.ts'),
     route('api/subscription-status', 'routes/api.subscription-status.ts'),
     route('api/subscription-stream', 'routes/api.subscription-stream.ts'),

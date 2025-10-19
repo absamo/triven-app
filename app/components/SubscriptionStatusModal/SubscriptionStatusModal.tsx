@@ -237,8 +237,9 @@ export default function SubscriptionStatusModal({
   const handleReactivationSuccess = () => {
     setShowReactivateModal(false)
 
-    // Refresh the page data
-    revalidator.revalidate()
+    // Force page reload to ensure cancelAtPeriodEnd is updated
+    // The webhook needs time to process and update the database
+    window.location.reload()
   }
 
   // Handle payment method update success

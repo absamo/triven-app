@@ -8,6 +8,7 @@ import {
   Paper,
   Progress,
   Stack,
+  Table,
   Tabs,
   Text,
   ThemeIcon,
@@ -19,6 +20,7 @@ import {
   IconCreditCard,
   IconCrown,
   IconDots,
+  IconDownload,
   IconEdit,
   IconInfoCircle,
   IconPremiumRights,
@@ -29,7 +31,7 @@ import {
 import dayjs from 'dayjs'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRevalidator } from 'react-router'
+import { useRevalidator, useNavigate } from 'react-router'
 import {
   canUpgrade,
   getNextPlan,
@@ -87,6 +89,17 @@ interface SettingsProps {
     cancellationReason?: string | null
     scheduledCancelAt?: string | null
   }
+  invoices?: Array<{
+    id: string
+    number: string | null
+    status: string
+    amount_paid: number
+    amount_due: number
+    currency: string
+    created: number
+    hosted_invoice_url: string | null
+    invoice_pdf: string | null
+  }>
   permissions: string[]
   config: {
     stripePublicKey: string
@@ -96,12 +109,14 @@ interface SettingsProps {
 export default function Settings({
   currencies = [],
   billing,
+  invoices = [],
   config, // eslint-disable-line @typescript-eslint/no-unused-vars
 }: SettingsProps) {
   const { t } = useTranslation(['common', 'payment'])
   const theme = useMantineTheme()
   const { colorScheme } = useMantineColorScheme()
   const revalidator = useRevalidator()
+  const navigate = useNavigate()
   const { checkStripeHealth, isChecking } = useStripeHealth()
 
   // Translation wrapper to match expected signature
@@ -117,13 +132,20 @@ export default function Settings({
 
   const currencySymbol = CURRENCY_SYMBOLS[billing?.currency?.toUpperCase()]
 
-  // Handle upgrade button click - check Stripe health before opening modal
-  const handleUpgrade = async () => {
-    const isHealthy = await checkStripeHealth()
-    if (isHealthy) {
-      setShowUpgradeModal(true)
+  // Handle upgrade button click - redirect to billing page with upgrade action
+  const handleUpgrade = () => {
+    let targetPlan = 'professional' // default
+    
+    if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
+      // For trial/incomplete, upgrade to their current plan
+      targetPlan = billing?.currentPlan || 'professional'
+    } else {
+      // For active subscriptions, get the next plan
+      const nextPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus || '')
+      targetPlan = nextPlan || 'professional'
     }
-    // If unhealthy, the hook will show an error notification
+    
+    navigate(`/billing?action=upgrade&plan=${targetPlan}`)
   }
 
   // Handle modal close
@@ -422,6 +444,89 @@ export default function Settings({
                   </Badge>
                 </Group>
               </Paper>
+            </Card>
+          )}
+
+          {/* Invoice History */}
+          {invoices && invoices.length > 0 && (
+            <Card padding="lg" radius="md" withBorder>
+              <Group justify="space-between" mb="md">
+                <Group>
+                  <ThemeIcon size="lg" radius="md" variant="light" color="indigo">
+                    <IconCreditCard size={20} />
+                  </ThemeIcon>
+                  <div>
+                    <Text size="sm" fw={600}>
+                      {t('payment:invoiceHistory', 'Invoice History')}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {t('payment:viewPastInvoices', 'View and download past invoices')}
+                    </Text>
+                  </div>
+                </Group>
+              </Group>
+              
+              <Table>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>{t('payment:invoice', 'Invoice')}</Table.Th>
+                    <Table.Th>{t('payment:date', 'Date')}</Table.Th>
+                    <Table.Th>{t('payment:amount', 'Amount')}</Table.Th>
+                    <Table.Th>{t('payment:status', 'Status')}</Table.Th>
+                    <Table.Th></Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {invoices.map((invoice) => (
+                    <Table.Tr key={invoice.id}>
+                      <Table.Td>
+                        <Text size="sm" fw={500}>
+                          {invoice.number || invoice.id.slice(-8)}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <Text size="sm">
+                          {dayjs.unix(invoice.created).format('MMM D, YYYY')}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <Group gap={4} align="baseline">
+                          <Text size="sm" fw={500}>
+                            ${((invoice.amount_paid || invoice.amount_due) / 100).toFixed(2)}
+                          </Text>
+                          <Text size="xs" c="dimmed">
+                            {invoice.currency.toUpperCase()}
+                          </Text>
+                        </Group>
+                      </Table.Td>
+                      <Table.Td>
+                        <Badge
+                          size="sm"
+                          color={invoice.status === 'paid' ? 'teal' : 'red'}
+                          variant="outline"
+                          tt="uppercase"
+                        >
+                          {invoice.status}
+                        </Badge>
+                      </Table.Td>
+                      <Table.Td>
+                        {(invoice.hosted_invoice_url || invoice.invoice_pdf) && (
+                          <ActionIcon
+                            component="a"
+                            href={invoice.invoice_pdf || invoice.hosted_invoice_url || ''}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            size="sm"
+                            variant="subtle"
+                          >
+                            <IconDownload size={16} />
+                          </ActionIcon>
+                        )}
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
             </Card>
           )}
 

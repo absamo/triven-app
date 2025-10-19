@@ -55,28 +55,17 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
 
     if (!isDemoSubscription) {
       // Only call Stripe APIs for real subscriptions
-      invoices = await (await getAllInvoices(subscription?.id)).map((invoice: any) => {
+      invoices = (await getAllInvoices(subscription?.id)).map((invoice: any) => {
         return {
           id: invoice.id,
-          amountPaid: invoice.amount_paid,
-          amountDue: invoice.amount_due,
-          currency: invoice.currency,
-          effectiveAt: invoice.effective_at,
+          number: invoice.number,
           status: invoice.status,
-          periodStart: invoice.period_start,
-          periodEnd: invoice.period_end,
-          attempted: invoice.attempted,
-          billingReason: invoice.billing_reason,
-          customerName: invoice.customer_name,
-          customerEmail: invoice.customer_email,
-          customerAddress: {
-            city: invoice.customer_address?.city,
-            country: invoice.customer_address?.country,
-            line1: invoice.customer_address?.line1,
-            postalCode: invoice.customer_address?.postal_code,
-            state: invoice.customer_address?.state,
-          },
-          customerPhone: invoice.customer_phone,
+          amount_paid: invoice.amount_paid,
+          amount_due: invoice.amount_due,
+          currency: invoice.currency,
+          created: invoice.created,
+          hosted_invoice_url: invoice.hosted_invoice_url,
+          invoice_pdf: invoice.invoice_pdf,
         }
       })
 
@@ -261,7 +250,7 @@ export const action: ActionFunction = async ({ request }: ActionFunctionArgs) =>
 }
 
 export default function SettingsRoute({ loaderData, actionData }: Route.ComponentProps) {
-  const { subscription, permissions, defaultCurrencies, upcomingInvoice, config } =
+  const { subscription, invoices, permissions, defaultCurrencies, upcomingInvoice, config } =
     loaderData as unknown as {
       subscription: {
         subscriptionId: string
@@ -276,6 +265,17 @@ export default function SettingsRoute({ loaderData, actionData }: Route.Componen
         currency: string
         status: string
       }
+      invoices: Array<{
+        id: string
+        number: string | null
+        status: string
+        amount_paid: number
+        amount_due: number
+        currency: string
+        created: number
+        hosted_invoice_url: string | null
+        invoice_pdf: string | null
+      }>
       upcomingInvoice: {
         amountDue: number
         currency: string
@@ -313,6 +313,7 @@ export default function SettingsRoute({ loaderData, actionData }: Route.Componen
         currency: subscription?.currency,
         paymentMethod: subscription?.paymentMethod,
       }}
+      invoices={invoices}
       permissions={permissions}
       config={config}
     />
