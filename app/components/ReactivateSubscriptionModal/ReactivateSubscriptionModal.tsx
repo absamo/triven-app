@@ -28,7 +28,6 @@ import {
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
-import { useStripeHealth } from '~/app/lib/hooks/useStripeHealth'
 import { CURRENCIES, INTERVALS, PLANS, PRICING_PLANS } from '~/app/modules/stripe/plans'
 import classes from './ReactivateSubscriptionModal.module.css'
 
@@ -58,7 +57,6 @@ export default function ReactivateSubscriptionModal({
   const [selectedPlan, setSelectedPlan] = useState<string>(cancelledPlan || PLANS.STANDARD)
   const [selectedInterval, setSelectedInterval] = useState<string>(INTERVALS.MONTHLY)
   const [isProcessing, setIsProcessing] = useState(false)
-  const { checkStripeHealth, isChecking: isCheckingStripeHealth } = useStripeHealth()
 
   const paymentFetcher = useFetcher<PaymentData>()
 

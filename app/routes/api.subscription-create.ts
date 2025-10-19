@@ -921,7 +921,7 @@ export async function action({ request }: ActionFunctionArgs) {
           planName: plan.name,
           planPrice: formatCurrency(amount, dbPrice.currency, locale),
           billingCycle: interval === 'year' ? (locale === 'fr' ? 'annuel' : 'yearly') : (locale === 'fr' ? 'mensuel' : 'monthly'),
-          nextBillingDate: formatDate(subscription.current_period_end, locale),
+          nextBillingDate: formatDate(subscription.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, locale),
           dashboardUrl: `${process.env.BASE_URL}/dashboard`,
           billingUrl: `${process.env.BASE_URL}/billing`,
         })

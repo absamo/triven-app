@@ -41,7 +41,6 @@ import {
 } from '~/app/common/helpers/payment'
 import type { ICurrency } from '~/app/common/validations/currencySchema'
 import { CancellationModal, PaymentMethodEditModal, UpgradePaymentModal } from '~/app/components'
-import { useStripeHealth } from '~/app/lib/hooks/useStripeHealth'
 import { CURRENCY_SYMBOLS } from '~/app/modules/stripe/plans'
 import PageTitle from '~/app/partials/Title/Title'
 import CurrencySettings from './CurrencySettings'
@@ -117,7 +116,6 @@ export default function Settings({
   const { colorScheme } = useMantineColorScheme()
   const revalidator = useRevalidator()
   const navigate = useNavigate()
-  const { checkStripeHealth, isChecking } = useStripeHealth()
 
   // Translation wrapper to match expected signature
   const translate = (key: string, fallback?: string) => t(key, fallback || '')
@@ -155,12 +153,9 @@ export default function Settings({
     pendingUpgradeRef.current = false
   }
 
-  // Handle payment method edit - check Stripe health first
-  const handleEditPaymentMethod = async () => {
-    const isHealthy = await checkStripeHealth()
-    if (isHealthy) {
-      setShowPaymentEditModal(true)
-    }
+  // Handle payment method edit
+  const handleEditPaymentMethod = () => {
+    setShowPaymentEditModal(true)
   }
 
   // Handle upgrade success - close modal immediately
@@ -219,7 +214,6 @@ export default function Settings({
                       <Menu.Item
                         leftSection={<IconArrowUp size={16} />}
                         onClick={handleUpgrade}
-                        disabled={isChecking}
                       >
                         {(() => {
                           if (
@@ -412,7 +406,6 @@ export default function Settings({
                     <Menu.Item
                       leftSection={<IconEdit size={16} />}
                       onClick={handleEditPaymentMethod}
-                      disabled={isChecking}
                     >
                       {t('payment:editPaymentMethod', 'Edit Payment Method')}
                     </Menu.Item>

@@ -30,7 +30,6 @@ import { SubscriptionStatusModal, UpgradePaymentModal } from '~/app/components'
 import ScrollToTop from '~/app/components/ScrollToTop'
 import { FormProvider, useFormContext } from '~/app/contexts/FormContext'
 import { useSessionBasedOnlineStatus } from '~/app/lib/hooks/useSessionBasedOnlineStatus'
-import { useStripeHealth } from '~/app/lib/hooks/useStripeHealth'
 import { useRootLoaderData } from '~/app/utils/useDetectedLanguage'
 import Footer from '../Footer/Footer'
 import Header from '../Header/Header'
@@ -118,7 +117,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   const { isFormActive } = useFormContext()
   const theme = useMantineTheme()
   const { t } = useTranslation(['navigation'])
-  const { checkStripeHealth, isChecking } = useStripeHealth()
 
   // Upgrade modal state
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)

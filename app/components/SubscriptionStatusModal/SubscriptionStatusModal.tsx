@@ -15,7 +15,6 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useRevalidator } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
-import { useStripeHealth } from '~/app/lib/hooks/useStripeHealth'
 import { CURRENCIES, INTERVALS, PLANS } from '~/app/modules/stripe/plans'
 import PaymentMethodEditModal from '../PaymentMethodEditModal'
 import ReactivateSubscriptionModal from '../ReactivateSubscriptionModal'
@@ -71,7 +70,6 @@ export default function SubscriptionStatusModal({
   const [showReactivateModal, setShowReactivateModal] = useState(false)
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false)
   const [isButtonLoading, setIsButtonLoading] = useState(false)
-  const { checkStripeHealth, isChecking: isCheckingStripeHealth } = useStripeHealth()
 
   // Helper function to get modal content based on mode
   const getModalContent = () => {

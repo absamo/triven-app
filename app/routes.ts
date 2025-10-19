@@ -27,7 +27,6 @@ export default [
     route('api/auth/*', 'routes/api/auth/$.tsx'),
     route('api/demo-request', 'routes/api/demo-request.tsx'),
     route('api/config', 'routes/api/api.config.ts'),
-    route('api/stripe-health', 'routes/api.stripe-health.ts'),
     route('api/payment-intent', 'routes/api/api.payment-intent.ts'),
     route('api/payment-method-update', 'routes/api.payment-method-update.ts'),
     route('api/subscription-create', 'routes/api.subscription-create.ts'),

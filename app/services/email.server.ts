@@ -294,7 +294,12 @@ export async function getUserLocale(userId: string): Promise<'en' | 'fr'> {
 }
 
 // Helper function to format dates based on locale
-export function formatDate(date: Date | number, locale: 'en' | 'fr'): string {
+export function formatDate(date: Date | number | undefined, locale: 'en' | 'fr'): string {
+  if (!date) {
+    // Fallback to current date if undefined
+    date = Math.floor(Date.now() / 1000)
+  }
+  
   const dateObj = typeof date === 'number' ? new Date(date * 1000) : date
   
   if (locale === 'fr') {
