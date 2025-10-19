@@ -10,6 +10,15 @@ import { prisma } from '~/app/db.server'
 import { getPaymentMethodDetails } from '~/app/modules/stripe/queries.server'
 import { stripe } from '~/app/modules/stripe/stripe.server'
 import { broadcastSubscriptionUpdate } from './api.subscription-stream'
+import {
+  sendSubscriptionConfirmationEmail,
+  sendPaymentFailedEmail,
+  sendPaymentSuccessEmail,
+  sendPaymentMethodUpdateEmail,
+  getUserLocale,
+  formatDate,
+  formatCurrency,
+} from '~/app/services/email.server'
 
 export const ROUTE_PATH = '/api/webhook' as const
 
@@ -146,6 +155,40 @@ export async function action({ request }: ActionFunctionArgs) {
                   expYear: paymentMethodDetails?.expYear,
                 },
               })
+
+              // Send payment method update email
+              try {
+                const subscription = await stripe.subscriptions.retrieve(metadata.subscriptionId)
+                const user = await prisma.user.findUnique({
+                  where: { stripeCustomerId: subscription.customer as string },
+                })
+                
+                const userSubscription = await prisma.subscription.findUnique({
+                  where: { userId: user?.id },
+                  include: { plan: true },
+                })
+
+                if (user && paymentMethodDetails && userSubscription && user.name && userSubscription.plan?.name) {
+                  const locale = await getUserLocale(user.id)
+                  
+                  await sendPaymentMethodUpdateEmail({
+                    to: user.email,
+                    locale,
+                    name: user.name,
+                    planName: userSubscription.plan.name,
+                    newPaymentMethod: paymentMethodDetails.brand.charAt(0).toUpperCase() + paymentMethodDetails.brand.slice(1),
+                    lastFour: paymentMethodDetails.last4,
+                    updateDate: formatDate(new Date(), locale),
+                    nextBillingDate: formatDate((subscription as any).current_period_end, locale),
+                    amount: formatCurrency(((subscription as any).items.data[0].price.unit_amount || 0), (subscription as any).items.data[0].price.currency, locale),
+                    billingUrl: `${process.env.BASE_URL}/billing`,
+                    supportUrl: `${process.env.BASE_URL}/support`,
+                  })
+                }
+              } catch (emailError) {
+                console.error('❌ Failed to send payment method update email:', emailError)
+                // Don't fail the webhook if email fails
+              }
             } catch (error) {
               console.error('❌ Failed to process payment method update:', error)
             }
@@ -294,6 +337,31 @@ export async function action({ request }: ActionFunctionArgs) {
           },
         })
 
+        // Send payment success email if this is an actual payment (not trial or $0 invoice)
+        if (isActualPayment && invoice.amount_paid > 0) {
+          try {
+            const locale = await getUserLocale(user.id)
+            const plan = await prisma.plan.findUnique({ where: { id: dbPlanId } })
+            
+            if (user.name && plan?.name) {
+              await sendPaymentSuccessEmail({
+                to: user.email,
+                locale,
+                name: user.name,
+                planName: plan.name,
+              amount: formatCurrency(invoice.amount_paid, invoice.currency, locale),
+              paymentDate: formatDate(new Date(), locale),
+              invoiceNumber: (invoice as any).number || invoice.id,
+              invoiceUrl: invoice.hosted_invoice_url || undefined,
+              billingUrl: `${process.env.BASE_URL}/billing`,
+            })
+            }
+          } catch (emailError) {
+            console.error('❌ Failed to send payment success email:', emailError)
+            // Don't fail the webhook if email fails
+          }
+        }
+
         return new Response(null, { status: 200 })
       }
 
@@ -333,6 +401,32 @@ export async function action({ request }: ActionFunctionArgs) {
             status: stripeSubscription.status, // This will be 'incomplete' or 'past_due'
           },
         })
+
+        // Send payment failed email
+        try {
+          const locale = await getUserLocale(user.id)
+          const subscription = await prisma.subscription.findUnique({
+            where: { id: subscriptionId },
+            include: { plan: true },
+          })
+          
+          if (subscription && user.name && subscription.plan?.name) {
+            await sendPaymentFailedEmail({
+              to: user.email,
+              locale,
+              name: user.name,
+              planName: subscription.plan.name,
+              amount: formatCurrency(invoice.amount_due, invoice.currency, locale),
+              failureReason: invoice.last_finalization_error?.message || 'Payment declined',
+              nextAttemptDate: formatDate(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), locale), // 3 days from now
+              updatePaymentUrl: `${process.env.BASE_URL}/billing`,
+              supportUrl: `${process.env.BASE_URL}/support`,
+            })
+          }
+        } catch (emailError) {
+          console.error('❌ Failed to send payment failed email:', emailError)
+          // Don't fail the webhook if email fails
+        }
 
         // Note: Stripe handles customer notifications automatically if enabled in Dashboard
         // You can add additional business logic here like:
@@ -627,6 +721,18 @@ export async function action({ request }: ActionFunctionArgs) {
               // Keep all other data intact for historical purposes
             },
           })
+
+          // Send subscription cancelled email
+          try {
+            const { handleSubscriptionCancellation } = await import('~/app/services/email-scheduler.server')
+            await handleSubscriptionCancellation(
+              dbSubscription.id,
+              subscription.cancellation_details?.reason || 'Subscription cancelled'
+            )
+          } catch (emailError) {
+            console.error('❌ Failed to send subscription cancellation email:', emailError)
+            // Don't fail the webhook if email fails
+          }
         }
         return new Response(null, { status: 200 })
       }

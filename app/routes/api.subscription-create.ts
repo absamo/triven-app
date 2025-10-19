@@ -6,6 +6,13 @@ import { CURRENCIES, INTERVALS, PLANS, PRICING_PLANS } from '~/app/modules/strip
 import { getPaymentMethodDetails } from '~/app/modules/stripe/queries.server'
 import { stripe } from '~/app/modules/stripe/stripe.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import {
+  sendTrialWelcomeEmail,
+  sendSubscriptionConfirmationEmail,
+  getUserLocale,
+  formatDate,
+  formatCurrency,
+} from '~/app/services/email.server'
 
 const subscriptionSchema = z.object({
   planId: z.enum([PLANS.STANDARD, PLANS.PROFESSIONAL, PLANS.PREMIUM]),
@@ -886,6 +893,43 @@ export async function action({ request }: ActionFunctionArgs) {
     } catch (dbError) {
       console.error('❌ Database upsert failed:', dbError)
       throw dbError
+    }
+
+    // Send appropriate email based on subscription type
+    try {
+      const locale = await getUserLocale(user.id)
+      const userName = dbUser.email.split('@')[0] // Fallback to email prefix if no name
+      
+      // For trial subscriptions (new or trial conversion), send trial welcome email
+      if (dbStatus === 'trialing' && !isTrialConversion) {
+        await sendTrialWelcomeEmail({
+          to: dbUser.email,
+          locale,
+          name: userName,
+          trialEndDate: formatDate(subscription.trial_end || Date.now() / 1000 + 14 * 24 * 60 * 60, locale),
+          dashboardUrl: `${process.env.BASE_URL}/dashboard`,
+        })
+        console.log('✅ Trial welcome email sent')
+      }
+      
+      // For active subscriptions (paid), send subscription confirmation
+      if (dbStatus === 'active' && !isUpgrade) {
+        await sendSubscriptionConfirmationEmail({
+          to: dbUser.email,
+          locale,
+          name: userName,
+          planName: plan.name,
+          planPrice: formatCurrency(amount, dbPrice.currency, locale),
+          billingCycle: interval === 'year' ? (locale === 'fr' ? 'annuel' : 'yearly') : (locale === 'fr' ? 'mensuel' : 'monthly'),
+          nextBillingDate: formatDate(subscription.current_period_end, locale),
+          dashboardUrl: `${process.env.BASE_URL}/dashboard`,
+          billingUrl: `${process.env.BASE_URL}/billing`,
+        })
+        console.log('✅ Subscription confirmation email sent')
+      }
+    } catch (emailError) {
+      console.error('❌ Failed to send subscription email:', emailError)
+      // Don't fail the subscription creation if email fails
     }
 
     console.log('📤 Preparing response...')

@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import { prisma } from '~/app/db.server'
 
 export interface HealthScoreBreakdown {
@@ -28,8 +29,8 @@ export async function calculateHealthScore(params: {
 }): Promise<HealthScore> {
   const { companyId, agencyId, siteId, dateRange } = params
 
-  // Build where clause for filtering
-  const where: any = { companyId }
+    // Build where clause for products
+  const where: Prisma.ProductWhereInput = { companyId }
   if (agencyId) where.agencyId = agencyId
   if (siteId) where.siteId = siteId
 
@@ -127,7 +128,7 @@ export async function calculateHealthScore(params: {
 /**
  * Calculate breakdown of health score components
  */
-async function calculateBreakdown(where: any): Promise<HealthScoreBreakdown> {
+async function calculateBreakdown(where: Prisma.ProductWhereInput): Promise<HealthScoreBreakdown> {
   // Stock Level Adequacy (30%)
   const stockLevelAdequacy = await calculateStockLevelAdequacy(where)
 
@@ -156,7 +157,7 @@ async function calculateBreakdown(where: any): Promise<HealthScoreBreakdown> {
  * Calculate stock level adequacy score (0-100)
  * Based on percentage of products at healthy stock levels
  */
-async function calculateStockLevelAdequacy(where: any): Promise<number> {
+async function calculateStockLevelAdequacy(where: Prisma.ProductWhereInput): Promise<number> {
   const products = await prisma.product.findMany({
     where: {
       ...where,
@@ -191,7 +192,7 @@ async function calculateStockLevelAdequacy(where: any): Promise<number> {
  * Calculate turnover rate score (0-100)
  * Based on inventory turnover compared to industry benchmark (6-8 times per year is good)
  */
-async function calculateTurnoverRate(where: any): Promise<number> {
+async function calculateTurnoverRate(where: Prisma.ProductWhereInput): Promise<number> {
   // Use 90 days for more accurate annual turnover calculation
   const ninetyDaysAgo = new Date()
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
@@ -199,9 +200,9 @@ async function calculateTurnoverRate(where: any): Promise<number> {
   // Get total sales value for last 90 days
   const salesOrders = await prisma.salesOrder.findMany({
     where: {
-      companyId: where.companyId,
-      agencyId: where.agencyId,
-      siteId: where.siteId,
+      companyId: typeof where.companyId === 'string' ? where.companyId : undefined,
+      agencyId: typeof where.agencyId === 'string' ? where.agencyId : undefined,
+      siteId: typeof where.siteId === 'string' ? where.siteId : undefined,
       orderDate: { gte: ninetyDaysAgo },
       status: { notIn: ['Cancelled'] },
     },
@@ -215,7 +216,7 @@ async function calculateTurnoverRate(where: any): Promise<number> {
   })
 
   const totalSalesValue = salesOrders.reduce((sum, order) => {
-    return sum + order.salesOrderItems.reduce((itemSum, item) => itemSum + item.amount, 0)
+    return sum + order.salesOrderItems.reduce((itemSum: number, item: { amount: number | null }) => itemSum + (item.amount || 0), 0)
   }, 0)
 
   // Get average inventory value
@@ -264,7 +265,7 @@ async function calculateTurnoverRate(where: any): Promise<number> {
  * Calculate aging inventory score (0-100)
  * Based on percentage of inventory older than 90 days
  */
-async function calculateAgingInventory(where: any): Promise<number> {
+async function calculateAgingInventory(where: Prisma.ProductWhereInput): Promise<number> {
   const ninetyDaysAgo = new Date()
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
@@ -303,16 +304,16 @@ async function calculateAgingInventory(where: any): Promise<number> {
  * Calculate backorder rate score (0-100)
  * Based on ratio of backorders to total orders
  */
-async function calculateBackorderRate(where: any): Promise<number> {
+async function calculateBackorderRate(where: Prisma.ProductWhereInput): Promise<number> {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
   // Count total sales orders
   const totalOrders = await prisma.salesOrder.count({
     where: {
-      companyId: where.companyId,
-      agencyId: where.agencyId,
-      siteId: where.siteId,
+      companyId: typeof where.companyId === 'string' ? where.companyId : undefined,
+      agencyId: typeof where.agencyId === 'string' ? where.agencyId : undefined,
+      siteId: typeof where.siteId === 'string' ? where.siteId : undefined,
       orderDate: { gte: thirtyDaysAgo },
     },
   })
@@ -320,9 +321,9 @@ async function calculateBackorderRate(where: any): Promise<number> {
   // Count backorders
   const backorders = await prisma.backorder.count({
     where: {
-      companyId: where.companyId,
-      agencyId: where.agencyId,
-      siteId: where.siteId,
+      companyId: typeof where.companyId === 'string' ? where.companyId : undefined,
+      agencyId: typeof where.agencyId === 'string' ? where.agencyId : undefined,
+      siteId: typeof where.siteId === 'string' ? where.siteId : undefined,
       originalOrderDate: { gte: thirtyDaysAgo },
       status: { in: ['Pending', 'Partial'] },
     },
@@ -340,16 +341,16 @@ async function calculateBackorderRate(where: any): Promise<number> {
  * Calculate supplier reliability score (0-100)
  * Based on on-time delivery percentage
  */
-async function calculateSupplierReliability(where: any): Promise<number> {
+async function calculateSupplierReliability(where: Prisma.ProductWhereInput): Promise<number> {
   const ninetyDaysAgo = new Date()
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
   // Get all completed purchase orders in last 90 days
   const purchaseOrders = await prisma.purchaseOrder.findMany({
     where: {
-      companyId: where.companyId,
-      agencyId: where.agencyId,
-      siteId: where.siteId,
+      companyId: typeof where.companyId === 'string' ? where.companyId : undefined,
+      agencyId: typeof where.agencyId === 'string' ? where.agencyId : undefined,
+      siteId: typeof where.siteId === 'string' ? where.siteId : undefined,
       orderDate: { gte: ninetyDaysAgo },
       status: { in: ['Received'] },
     },

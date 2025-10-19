@@ -255,7 +255,7 @@ async function findLowStockOpportunities({
         {
           AND: [
             { reorderPoint: { not: null } },
-            { availableQuantity: { lte: prisma.product.fields.reorderPoint } },
+            { availableQuantity: { lte: 10 } }, // Low stock threshold
           ],
         },
       ],
