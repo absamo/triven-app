@@ -1,6 +1,6 @@
 .titleContainer {
   position: sticky;
-  top: 0;
+  top: 70px;
   z-index: 100;
   background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
   border-bottom: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
