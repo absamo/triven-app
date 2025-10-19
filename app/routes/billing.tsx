@@ -236,7 +236,7 @@ export default function BillingPage() {
           <div>
             <BackButton to="/settings">Back to Settings</BackButton>
             <Title order={1} mt="md" mb="sm">
-              {action === 'upgrade' ? 'Upgrade Plan' : 'Billing & Subscription'}
+              {action === 'upgrade' ? `Upgrade to ${getPlanLabel(targetPlan)}` : 'Billing & Subscription'}
             </Title>
             <Text c="dimmed">
               {action === 'upgrade' 
