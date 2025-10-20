@@ -25,8 +25,8 @@ export default function Form({
   const isSubmitting = navigation.state === 'submitting'
 
   useEffect(() => {
-    // Activate form when component mounts
-    if (onSubmit) {
+    // Activate form when component mounts and submit button should be shown
+    if (onSubmit && showSubmitButton) {
       setIsFormActive(true)
     }
 
@@ -34,7 +34,7 @@ export default function Form({
     return () => {
       setIsFormActive(false)
     }
-  }, [onSubmit, setIsFormActive])
+  }, [onSubmit, showSubmitButton, setIsFormActive])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     // Don't prevent default if we want React Router to handle submission

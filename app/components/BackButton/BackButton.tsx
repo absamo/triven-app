@@ -1,4 +1,4 @@
-import { Anchor, rem } from '@mantine/core'
+import { rem } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { Link } from 'react-router'
 
@@ -25,9 +25,12 @@ export default function BackButton({
     color,
     fontWeight: 500,
     textDecoration: 'none',
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
     gap: rem(4),
+    transition: 'none',
+    transform: 'none',
+    fontSize: size === 'xs' ? rem(12) : size === 'sm' ? rem(14) : size === 'md' ? rem(16) : size === 'lg' ? rem(18) : rem(20),
     ...style,
   }
 
@@ -45,17 +48,17 @@ export default function BackButton({
 
   if (onClick) {
     return (
-      <Anchor onClick={onClick} size={size} style={{ ...combinedStyle, cursor: 'pointer' }}>
+      <button onClick={onClick} style={{ ...combinedStyle, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
         <IconArrowLeft size={16} />
         {children}
-      </Anchor>
+      </button>
     )
   }
 
   return (
-    <Anchor component={Link} to={to || '/'} size={size} style={combinedStyle}>
+    <Link to={to || '/'} style={combinedStyle}>
       <IconArrowLeft size={16} />
       {children}
-    </Anchor>
+    </Link>
   )
 }

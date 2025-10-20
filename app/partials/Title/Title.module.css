@@ -34,11 +34,7 @@
 }
 
 .backButton {
-  transition: transform 0.2s ease;
-}
-
-.backButton:hover {
-  transform: translateX(-2px);
+  /* No hover transform */
 }
 
 /* Responsive Design */

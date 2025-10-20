@@ -1,6 +1,7 @@
-import { Grid, Title as MantineTitle, Paper, Text, TextInput } from '@mantine/core'
+import { Accordion, Box, Flex, Grid, Paper, Switch, Text, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { zodResolver } from 'mantine-form-zod-resolver'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubmit } from 'react-router'
 
@@ -16,6 +17,9 @@ interface roleFormProps {
 
 export default function RoleForm({ role, errors }: roleFormProps) {
   const { t } = useTranslation(['roles', 'common'])
+
+  const isReadOnly = role.editable === false
+  const [accordionValue, setAccordionValue] = useState<string[]>([])
 
   const form = useForm({
     validate: zodResolver(roleSchema),
@@ -39,189 +43,317 @@ export default function RoleForm({ role, errors }: roleFormProps) {
     form.setFieldValue('permissions', permissions)
   }
 
+  const toggleAll = () => {
+    if (accordionValue.length === 6) {
+      setAccordionValue([])
+    } else {
+      setAccordionValue(['inventory', 'workflows', 'purchases', 'sales', 'reports', 'settings'])
+    }
+  }
+
+  const isExpanded = accordionValue.length === 6
+
   return (
     <Grid>
       <Grid.Col>
         <Title backTo={'/roles'}>
-          {role.id ? t('roles:editRole', 'Edit a role') : t('roles:addRole', 'Add a role')}
+          {role.id
+            ? isReadOnly
+              ? t('roles:viewRole', 'View a role')
+              : t('roles:editRole', 'Edit a role')
+            : t('roles:addRole', 'Add a role')}
         </Title>
-        <Form onSubmit={form.onSubmit(handleSubmit)} showSubmitButton={false}>
-          <Grid.Col span={6}>
+        <Form onSubmit={form.onSubmit(handleSubmit)} showSubmitButton={!isReadOnly}>
+          <Grid.Col span={{ base: 12, md: 6 }}>
             <TextInput
               withAsterisk
               label={t('common:name', 'Name')}
               name="name"
               {...form.getInputProps('name')}
               error={form.getInputProps('name').error || errors?.name}
+              readOnly={isReadOnly}
+              disabled={isReadOnly}
             />
           </Grid.Col>
-          <Grid.Col span={6}>
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <TextInput
+              label={t('roles:type', 'Type')}
+              value={role.editable ? t('roles:customRole', 'Custom role') : 'Built-in'}
+              readOnly
+              disabled
+            />
+          </Grid.Col>
+          <Grid.Col span={12}>
             <TextInput
               label={t('common:description', 'Description')}
               name="description"
               {...form.getInputProps('description')}
+              readOnly={isReadOnly}
+              disabled={isReadOnly}
             />
           </Grid.Col>
           <Grid.Col span={12}>
-            <Paper mt={30}>
-              <MantineTitle order={5} mt={20}>
-                {t('roles:inventories')}
-              </MantineTitle>
-              <Text c="dimmed" size="sm" mb={15}>
-                {t('roles:selectInventoryPermissions')}
-              </Text>
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.products')}
-                name="products"
+            <Flex justify="flex-end" mb="md" mt="md">
+              <Switch
+                label={t('roles:expandAll', 'Expand All')}
+                labelPosition="left"
+                checked={isExpanded}
+                onChange={toggleAll}
               />
+            </Flex>
+            <Accordion variant="separated" multiple value={accordionValue} onChange={setAccordionValue}>
+              <Accordion.Item value="inventory">
+                <Accordion.Control>
+                  <Box>
+                    <Text fw={500}>{t('roles:inventories')}</Text>
+                    <Text size="xs" c="dimmed">
+                      {t('roles:inventoryDescription', 'Manage products, stock adjustments, and categories')}
+                    </Text>
+                  </Box>
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.products')}
+                    name="products"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.stockAdjustments')}
+                    name="stockAdjustments"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.categories')}
+                    name="categories"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.transferOrders')}
+                    name="transferOrders"
+                    disabled={isReadOnly}
+                    isLast={true}
+                  />
+                </Accordion.Panel>
+              </Accordion.Item>
 
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.stockAdjustments')}
-                name="stockAdjustments"
-              />
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.categories')}
-                name="categories"
-              />
-            </Paper>
-            <Paper mt={30}>
-              <MantineTitle order={5}>{t('roles:purchases')}</MantineTitle>
-              <Text c="dimmed" size="sm">
-                {t('roles:selectPurchasePermissions')}
-              </Text>
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.suppliers')}
-                name="suppliers"
-              />
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.purchaseOrders')}
-                name="purchaseOrders"
-              />
+              <Accordion.Item value="workflows">
+                <Accordion.Control>
+                  <Box>
+                    <Text fw={500}>Workflows</Text>
+                    <Text size="xs" c="dimmed">
+                      {t('roles:workflowsDescription', 'Manage approval workflows and view workflow history')}
+                    </Text>
+                  </Box>
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label="Approvals"
+                    name="approvals"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label="Templates"
+                    name="workflows"
+                    disabled={isReadOnly}
+                    isLast={true}
+                  />
+                </Accordion.Panel>
+              </Accordion.Item>
 
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.purchaseReceives')}
-                name="purchaseReceives"
-              />
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.bills')}
-                name="bills"
-              />
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.paymentsMade')}
-                name="paymentsMade"
-              />
-            </Paper>
+              <Accordion.Item value="purchases">
+                <Accordion.Control>
+                  <Box>
+                    <Text fw={500}>{t('roles:purchases')}</Text>
+                    <Text size="xs" c="dimmed">
+                      {t('roles:purchasesDescription', 'Control supplier relationships, orders, receiving, and payments')}
+                    </Text>
+                  </Box>
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.suppliers')}
+                    name="suppliers"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.purchaseOrders')}
+                    name="purchaseOrders"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.purchaseReceives')}
+                    name="purchaseReceives"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.bills')}
+                    name="bills"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.paymentsMade')}
+                    name="paymentsMade"
+                    disabled={isReadOnly}
+                    isLast={true}
+                  />
+                </Accordion.Panel>
+              </Accordion.Item>
 
-            <Paper mt={30}>
-              <MantineTitle order={5} mt={20}>
-                {t('roles:sales')}
-              </MantineTitle>
-              <Text c="dimmed" size="sm" mb={15}>
-                {t('roles:selectSalesPermissions')}
-              </Text>
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.customers')}
-                name="customers"
-              />
+              <Accordion.Item value="sales">
+                <Accordion.Control>
+                  <Box>
+                    <Text fw={500}>{t('roles:sales')}</Text>
+                    <Text size="xs" c="dimmed">
+                      {t('roles:salesDescription', 'Manage customer orders, invoicing, and payment collection')}
+                    </Text>
+                  </Box>
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.customers')}
+                    name="customers"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.salesOrders')}
+                    name="salesOrders"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.backorders')}
+                    name="backorders"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.invoices')}
+                    name="invoices"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.paymentsReceived')}
+                    name="paymentsReceived"
+                    disabled={isReadOnly}
+                    isLast={true}
+                  />
+                </Accordion.Panel>
+              </Accordion.Item>
 
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.salesOrders')}
-                name="salesOrders"
-              />
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.backorders')}
-                name="backorders"
-              />
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.invoices')}
-                name="invoices"
-              />
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.paymentsReceived')}
-                name="paymentsReceived"
-              />
-            </Paper>
+              <Accordion.Item value="reports">
+                <Accordion.Control>
+                  <Box>
+                    <Text fw={500}>{t('roles:reports')}</Text>
+                    <Text size="xs" c="dimmed">
+                      {t('roles:reportsDescription', 'Access analytics and business intelligence reports')}
+                    </Text>
+                  </Box>
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.analytics')}
+                    name="analytics"
+                    disabled={isReadOnly}
+                    isLast={true}
+                  />
+                </Accordion.Panel>
+              </Accordion.Item>
 
-            <Paper mt={30}>
-              <MantineTitle order={5} mt={20}>
-                {t('roles:reports')}
-              </MantineTitle>
-              <Text c="dimmed" size="sm" mb={15}>
-                {t('roles:selectReportPermissions')}
-              </Text>
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.analytics')}
-                name="analytics"
-              />
-            </Paper>
-
-            <Paper mt={30} mb={100}>
-              <MantineTitle order={5} mt={20}>
-                {t('roles:settings')}
-              </MantineTitle>
-              <Text c="dimmed" size="sm" mb={15}>
-                {t('roles:selectSettingsPermissions')}
-              </Text>
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.roles')}
-                name="roles"
-              />
-
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.team')}
-                name="team"
-              />
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.agencies')}
-                name="agencies"
-              />
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.sites')}
-                name="sites"
-              />
-              <RolesPermission
-                permissions={form.values.permissions || []}
-                onChange={handlePermissionsChange}
-                label={t('roles:modules.subscriptions')}
-                name="subscriptions"
-              />
-            </Paper>
+              <Accordion.Item value="settings">
+                <Accordion.Control>
+                  <Box>
+                    <Text fw={500}>{t('roles:settings')}</Text>
+                    <Text size="xs" c="dimmed">
+                      {t('roles:settingsDescription', 'Configure plans, settings, roles, team members, agencies, and sites')}
+                    </Text>
+                  </Box>
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.plans')}
+                    name="plans"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.settings')}
+                    name="settings"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.roles')}
+                    name="roles"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.team')}
+                    name="team"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.agencies')}
+                    name="agencies"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.sites')}
+                    name="sites"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.subscriptions')}
+                    name="subscriptions"
+                    disabled={isReadOnly}
+                    isLast={true}
+                  />
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
           </Grid.Col>
         </Form>
       </Grid.Col>

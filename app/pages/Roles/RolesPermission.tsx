@@ -6,6 +6,8 @@ interface RolesPermissionProps {
   name: string
   onChange: (permissions: string[]) => void
   label?: string
+  disabled?: boolean
+  isLast?: boolean
 }
 
 export default function RolesPermission({
@@ -13,17 +15,28 @@ export default function RolesPermission({
   onChange,
   name,
   label,
+  disabled = false,
+  isLast = false,
 }: RolesPermissionProps) {
   const { t } = useTranslation(['roles', 'common'])
 
   return (
-    <Switch.Group value={permissions} label={label} mt={20}>
+    <Switch.Group 
+      value={permissions} 
+      label={label} 
+      mt={20} 
+      pb={20} 
+      style={{ 
+        borderBottom: isLast ? 'none' : '1px solid var(--mantine-color-default-border)' 
+      }}
+    >
       <Flex mt="xs" justify={'space-between'}>
         <Switch
           value={`full:${name}`}
           label={t('roles:permissions.fullAccess')}
           labelPosition="left"
           size="xs"
+          disabled={disabled}
           onClick={(event) => {
             if (event.currentTarget.checked) {
               onChange([
@@ -54,6 +67,7 @@ export default function RolesPermission({
           label={t('roles:permissions.view')}
           labelPosition="left"
           size="xs"
+          disabled={disabled}
           onClick={(event) => {
             if (event.currentTarget.checked) {
               onChange([...permissions, `read:${name}`])
@@ -77,6 +91,7 @@ export default function RolesPermission({
           label={t('roles:permissions.create')}
           labelPosition="left"
           size="xs"
+          disabled={disabled}
           onClick={(event) => {
             if (event.currentTarget.checked) {
               onChange([
@@ -100,6 +115,7 @@ export default function RolesPermission({
           label={t('roles:permissions.update')}
           labelPosition="left"
           size="xs"
+          disabled={disabled}
           onClick={(event) => {
             if (event.currentTarget.checked) {
               onChange([
@@ -125,6 +141,7 @@ export default function RolesPermission({
           label={t('roles:permissions.delete')}
           labelPosition="left"
           size="xs"
+          disabled={disabled}
           onClick={(event) => {
             if (event.currentTarget.checked) {
               onChange([
