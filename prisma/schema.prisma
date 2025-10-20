@@ -115,6 +115,7 @@ model User {
   createdFeatures FeatureRequest[]  @relation("FeatureCreatedBy")
   featureVotes    FeatureVote[]     @relation("FeatureVotes")
   featureAuditLog FeatureAuditLog[] @relation("FeatureAuditLogs")
+  featureComments FeatureComment[]  @relation("FeatureComments")
 
   @@map("user")
 }
@@ -1666,6 +1667,7 @@ model FeatureRequest {
   createdBy User              @relation("FeatureCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   votes     FeatureVote[]
   auditLogs FeatureAuditLog[]
+  comments  FeatureComment[]
 
   @@index([status, voteCount(sort: Desc), createdAt])
   @@index([createdById])
@@ -1702,4 +1704,20 @@ model FeatureAuditLog {
   @@index([featureId, timestamp])
   @@index([userId])
   @@map("feature_audit_logs")
+}
+
+model FeatureComment {
+  id        String   @id @default(cuid())
+  featureId String
+  userId    String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  feature FeatureRequest @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  user    User           @relation("FeatureComments", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([featureId, createdAt])
+  @@index([userId])
+  @@map("feature_comments")
 }

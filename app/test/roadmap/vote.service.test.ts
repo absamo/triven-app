@@ -316,11 +316,7 @@ describe('VoteService', () => {
         title: 'Third Feature',
       })
 
-      const votingStatus = await getUserVotingStatus(userId, [
-        featureId,
-        feature2.id,
-        feature3.id,
-      ])
+      const votingStatus = await getUserVotingStatus(userId, [featureId, feature2.id, feature3.id])
 
       expect(votingStatus.get(featureId)).toBe(false)
       expect(votingStatus.get(feature2.id)).toBe(false)

@@ -9,6 +9,7 @@ interface KanbanColumnProps {
   color: string
   features: FeatureWithVotes[]
   isAdmin?: boolean
+  currentUserId: string
 }
 
 export function KanbanColumn({
@@ -17,6 +18,7 @@ export function KanbanColumn({
   color,
   features,
   isAdmin = false,
+  currentUserId,
 }: KanbanColumnProps) {
   return (
     <Paper className={classes.kanbanColumn} shadow="xs" radius="lg" withBorder>
@@ -41,7 +43,12 @@ export function KanbanColumn({
         ) : (
           <Stack gap="xs">
             {features.map((feature) => (
-              <FeatureCard key={feature.id} feature={feature} isAdmin={isAdmin} />
+              <FeatureCard
+                key={feature.id}
+                feature={feature}
+                isAdmin={isAdmin}
+                currentUserId={currentUserId}
+              />
             ))}
           </Stack>
         )}

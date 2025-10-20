@@ -1,11 +1,13 @@
-import { Box, Title } from '@mantine/core'
+import { Box } from '@mantine/core'
 import type { FeatureStatus, FeatureWithVotes } from '~/app/lib/roadmap/types'
+import Title from '~/app/partials/Title/Title'
 import { KanbanColumn } from './KanbanColumn'
 import classes from './Roadmap.module.css'
 
 interface KanbanBoardProps {
   features: FeatureWithVotes[]
   isAdmin?: boolean
+  currentUserId: string
 }
 
 type ColumnConfig = {
@@ -21,7 +23,7 @@ const COLUMNS: ColumnConfig[] = [
   { status: 'SHIPPED', title: '🚀 Shipped', color: 'green' },
 ]
 
-export function KanbanBoard({ features, isAdmin = false }: KanbanBoardProps) {
+export function KanbanBoard({ features, isAdmin = false, currentUserId }: KanbanBoardProps) {
   // Group features by status
   const featuresByStatus = features.reduce(
     (acc, feature) => {
@@ -45,9 +47,16 @@ export function KanbanBoard({ features, isAdmin = false }: KanbanBoardProps) {
         minHeight: 0,
       }}
     >
-      <Title order={1} mb="md" style={{ flexShrink: 0 }}>
-        Product Roadmap
-      </Title>
+      <Box mb="md" style={{ flexShrink: 0 }}>
+        <Title
+          order={1}
+          to="/roadmap/request-new-feature"
+          canCreate={isAdmin}
+          createLabel="Request Feature"
+        >
+          Product Roadmap
+        </Title>
+      </Box>
 
       <div className={classes.kanbanBoard} style={{ flex: 1, minHeight: 0 }}>
         {COLUMNS.map((column) => (
@@ -58,6 +67,7 @@ export function KanbanBoard({ features, isAdmin = false }: KanbanBoardProps) {
             color={column.color}
             features={featuresByStatus[column.status] || []}
             isAdmin={isAdmin}
+            currentUserId={currentUserId}
           />
         ))}
       </div>

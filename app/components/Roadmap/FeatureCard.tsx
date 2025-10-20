@@ -1,46 +1,153 @@
-import { ActionIcon, Badge, Card, Group, Stack, Text, Tooltip } from '@mantine/core'
-import { IconArrowUp, IconEdit, IconTrash } from '@tabler/icons-react'
-import type { FeatureWithVotes } from '~/app/lib/roadmap/types'
+import {
+  ActionIcon,
+  Badge,
+  Button,
+  Card,
+  Group,
+  Modal,
+  Stack,
+  Text,
+  Tooltip,
+  useMantineColorScheme,
+} from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
+import { IconArrowUp, IconMessageCircle, IconTrash } from '@tabler/icons-react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
+import type { FeatureComment, FeatureWithVotes } from '~/app/lib/roadmap/types'
+import { CommentsModal } from './CommentsModal'
 import classes from './Roadmap.module.css'
 
 interface FeatureCardProps {
   feature: FeatureWithVotes
   isAdmin?: boolean
+  currentUserId: string
 }
 
-export function FeatureCard({ feature, isAdmin = false }: FeatureCardProps) {
+export function FeatureCard({ feature, isAdmin = false, currentUserId }: FeatureCardProps) {
+  const navigate = useNavigate()
+  const { colorScheme } = useMantineColorScheme()
+  const [opened, { open, close }] = useDisclosure(false)
+  const [deleteOpened, { open: openDelete, close: closeDelete }] = useDisclosure(false)
+  const [comments, setComments] = useState<FeatureComment[]>([])
+  const [isLoadingComments, setIsLoadingComments] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const truncateDescription = (text: string, maxLength = 150) => {
     if (text.length <= maxLength) return text
     return `${text.slice(0, maxLength)}...`
   }
 
+  // User can delete their own feature if it's in TODO status and has no votes
+  const canDelete =
+    feature.createdById === currentUserId && feature.status === 'TODO' && feature.voteCount === 0
+
+  // User can edit their own feature or admin can edit any
+  const canEdit = isAdmin || feature.createdById === currentUserId
+
+  const handleCardClick = () => {
+    if (canEdit) {
+      navigate(`/roadmap/edit/${feature.id}`)
+    }
+  }
+
+  const handleCommentClick = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!isLoadingComments) {
+      setIsLoadingComments(true)
+      try {
+        const response = await fetch(`/api/roadmap/features/${feature.id}/comments`)
+        if (response.ok) {
+          const data = await response.json()
+          setComments(data.comments || [])
+          open()
+        }
+      } catch (error) {
+        console.error('Failed to load comments:', error)
+      } finally {
+        setIsLoadingComments(false)
+      }
+    }
+  }
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    openDelete()
+  }
+
+  const confirmDelete = async () => {
+    setIsDeleting(true)
+    try {
+      const formData = new FormData()
+      formData.append('intent', 'delete')
+      const response = await fetch(`/roadmap/edit/${feature.id}`, {
+        method: 'POST',
+        body: formData,
+      })
+      if (response.ok) {
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('Failed to delete feature:', error)
+      setIsDeleting(false)
+      closeDelete()
+    }
+  }
+
   return (
-    <Card shadow="none" padding="sm" radius="md" className={classes.featureCard} withBorder>
-      <Stack gap="xs">
-        <Group justify="space-between" wrap="nowrap" gap="xs">
-          <Text fw={500} size="sm" lineClamp={2} style={{ flex: 1 }}>
-            {feature.title}
-          </Text>
-          {isAdmin && (
-            <Group gap={2} wrap="nowrap">
-              <ActionIcon size="xs" variant="subtle" color="gray" aria-label="Edit feature">
-                <IconEdit size={14} />
-              </ActionIcon>
-              <ActionIcon size="xs" variant="subtle" color="gray" aria-label="Delete feature">
+    <>
+      <Card
+        shadow="none"
+        padding="sm"
+        radius="md"
+        className={classes.featureCard}
+        withBorder
+        onClick={handleCardClick}
+        style={{
+          cursor: canEdit ? 'pointer' : 'default',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Stack gap="xs" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Group justify="space-between" align="flex-start">
+            <Text fw={500} size="sm" lineClamp={2} style={{ flex: 1 }}>
+              {feature.title}
+            </Text>
+
+            {canDelete && (
+              <ActionIcon
+                size="xs"
+                variant="subtle"
+                color="red"
+                aria-label="Delete feature"
+                onClick={handleDeleteClick}
+              >
                 <IconTrash size={14} />
               </ActionIcon>
-            </Group>
+            )}
+          </Group>
+
+          {feature.description && (
+            <Text
+              size="xs"
+              c="dimmed"
+              lineClamp={2}
+              className={classes.cardDescription}
+              style={{ flex: 1 }}
+            >
+              {truncateDescription(feature.description, 120)}
+            </Text>
           )}
-        </Group>
+        </Stack>
 
-        {feature.description && (
-          <Text size="xs" c="dimmed" lineClamp={2} className={classes.cardDescription}>
-            {truncateDescription(feature.description, 120)}
-          </Text>
-        )}
-
-        <Group justify="space-between" align="center" mt={4}>
-          <Tooltip label="Upvote this feature" openDelay={300}>
+        <Group gap="xs" pt="xs" onClick={(e) => e.stopPropagation()}>
+          <Tooltip
+            label="Upvote this feature"
+            openDelay={300}
+            color={colorScheme === 'dark' ? 'gray.8' : 'gray.9'}
+            withArrow
+          >
             <Badge
               variant={feature.userHasVoted ? 'filled' : 'light'}
               color={feature.userHasVoted ? 'blue' : 'gray'}
@@ -52,11 +159,56 @@ export function FeatureCard({ feature, isAdmin = false }: FeatureCardProps) {
             </Badge>
           </Tooltip>
 
-          <Text size="xs" c="dimmed" className={classes.authorText}>
-            {feature.createdBy.name || feature.createdBy.email.split('@')[0]}
-          </Text>
+          <Badge
+            variant="light"
+            color="gray"
+            size="md"
+            leftSection={<IconMessageCircle size={12} />}
+            onClick={handleCommentClick}
+            style={{ cursor: 'pointer' }}
+          >
+            {feature.commentCount || 0}
+          </Badge>
+
+          <Tooltip
+            label={`Created on ${new Date(feature.createdAt).toLocaleDateString('en-GB', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })}`}
+            openDelay={300}
+            color={colorScheme === 'dark' ? 'gray.8' : 'gray.9'}
+            withArrow
+          >
+            <Text size="xs" c="dimmed" className={classes.authorText} ml="auto">
+              {feature.createdBy.name || feature.createdBy.email.split('@')[0]}
+            </Text>
+          </Tooltip>
         </Group>
-      </Stack>
-    </Card>
+      </Card>
+
+      <CommentsModal
+        opened={opened}
+        onClose={close}
+        comments={comments}
+        featureTitle={feature.title}
+      />
+
+      <Modal opened={deleteOpened} onClose={closeDelete} title="Delete Feature Request" centered>
+        <Stack gap="md">
+          <Text size="sm">
+            Are you sure you want to delete "{feature.title}"? This action cannot be undone.
+          </Text>
+          <Group justify="flex-end" gap="xs">
+            <Button variant="default" onClick={closeDelete} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button color="red" onClick={confirmDelete} loading={isDeleting}>
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+    </>
   )
 }

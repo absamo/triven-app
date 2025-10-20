@@ -102,30 +102,21 @@ export function ErrorBoundary() {
  * Roadmap page component with loading and error states
  */
 export default function RoadmapPage() {
-  const { features } = useLoaderData<typeof loader>()
+  const { user, features } = useLoaderData<typeof loader>()
 
   return (
-    <>
-      {/* Apply overflow hidden to body to prevent page scrolling */}
-      <style>{`
-        body {
-          overflow: hidden !important;
-        }
-      `}</style>
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          margin: '-1rem', // Compensate for Container's padding
-          minHeight: 0,
-        }}
-      >
-        <Suspense fallback={<RoadmapLoadingState />}>
-          <KanbanBoard features={features} isAdmin={true} />
-        </Suspense>
-      </div>
-    </>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: 'calc(100vh - 140px)', // Subtract header/footer height
+        overflow: 'hidden',
+        margin: '-1rem', // Compensate for Container's padding
+      }}
+    >
+      <Suspense fallback={<RoadmapLoadingState />}>
+        <KanbanBoard features={features} isAdmin={true} currentUserId={user.id} />
+      </Suspense>
+    </div>
   )
 }

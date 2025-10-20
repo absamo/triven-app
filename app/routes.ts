@@ -199,5 +199,8 @@ export default [
 
     // Roadmap
     route('roadmap', 'routes/roadmap.tsx'),
+    route('roadmap/request-new-feature', 'routes/roadmap/roadmap.request-new-feature.tsx'),
+    route('roadmap/edit/:id', 'routes/roadmap/roadmap.edit.$id.tsx'),
+    route('api/roadmap/features/:id/comments', 'routes/api/api.roadmap.features.$id.comments.ts'),
   ]),
 ] satisfies RouteConfig

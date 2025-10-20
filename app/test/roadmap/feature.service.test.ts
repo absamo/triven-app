@@ -334,11 +334,7 @@ describe('FeatureService', () => {
 
     it('should throw error when feature does not exist', async () => {
       try {
-        await updateFeature(
-          'non-existent-id',
-          { title: 'New Title' },
-          adminUserId
-        )
+        await updateFeature('non-existent-id', { title: 'New Title' }, adminUserId)
         expect(true).toBe(false) // Should not reach here
       } catch (error) {
         expect(error).toBeDefined()

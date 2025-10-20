@@ -48,6 +48,11 @@ export async function getFeatures(options: {
           },
         },
       },
+      _count: {
+        select: {
+          comments: true,
+        },
+      },
       ...(options.userId && {
         votes: {
           where: {
@@ -73,6 +78,7 @@ export async function getFeatures(options: {
     description: feature.description,
     status: feature.status,
     voteCount: feature.voteCount,
+    commentCount: feature._count?.comments || 0,
     createdById: feature.createdById,
     createdAt: feature.createdAt,
     updatedAt: feature.updatedAt,
@@ -392,4 +398,100 @@ export async function deleteFeature(featureId: string, userId: string): Promise<
   await prisma.featureRequest.delete({
     where: { id: featureId },
   })
+}
+
+/**
+ * Get comments for a feature
+ */
+export async function getFeatureComments(featureId: string) {
+  const comments = await prisma.featureComment.findMany({
+    where: { featureId },
+    orderBy: { createdAt: 'asc' },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          profile: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  return comments.map((comment) => ({
+    id: comment.id,
+    featureId: comment.featureId,
+    userId: comment.userId,
+    content: comment.content,
+    createdAt: comment.createdAt,
+    updatedAt: comment.updatedAt,
+    user: {
+      id: comment.user.id,
+      email: comment.user.email,
+      name: comment.user.profile
+        ? `${comment.user.profile.firstName} ${comment.user.profile.lastName}`.trim()
+        : null,
+    },
+  }))
+}
+
+/**
+ * Create a comment on a feature
+ */
+export async function createFeatureComment(featureId: string, userId: string, content: string) {
+  const comment = await prisma.featureComment.create({
+    data: {
+      featureId,
+      userId,
+      content,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          profile: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  // Log comment creation in audit log
+  await prisma.featureAuditLog.create({
+    data: {
+      featureId,
+      userId,
+      action: 'COMMENT_ADDED',
+      newValue: {
+        commentId: comment.id,
+        content: comment.content,
+      },
+    },
+  })
+
+  return {
+    id: comment.id,
+    featureId: comment.featureId,
+    userId: comment.userId,
+    content: comment.content,
+    createdAt: comment.createdAt,
+    updatedAt: comment.updatedAt,
+    user: {
+      id: comment.user.id,
+      email: comment.user.email,
+      name: comment.user.profile
+        ? `${comment.user.profile.firstName} ${comment.user.profile.lastName}`.trim()
+        : null,
+    },
+  }
 }
