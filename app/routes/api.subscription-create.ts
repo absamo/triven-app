@@ -392,6 +392,31 @@ export async function action({ request }: ActionFunctionArgs) {
           })
 
           console.log(`✅ Subscription updated with existing payment method`)
+
+          // Immediately update database with new subscription details
+          // Don't wait for webhook to prevent stale data
+          const upgradePaymentMethodDetails = await getPaymentMethodDetails(subscription.id)
+          await prisma.subscription.update({
+            where: { userId: user.id },
+            data: {
+              id: subscription.id,
+              planId,
+              priceId: priceId,
+              interval,
+              status: subscription.status,
+              currentPeriodStart: (subscription as any).current_period_start || Math.floor(Date.now() / 1000),
+              currentPeriodEnd: (subscription as any).current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000),
+              cancelAtPeriodEnd: false,
+              trialStart: (subscription as any).trial_start || 0,
+              trialEnd: (subscription as any).trial_end || 0,
+              paymentMethodId: upgradePaymentMethodDetails?.paymentMethodId,
+              last4: upgradePaymentMethodDetails?.last4,
+              brand: upgradePaymentMethodDetails?.brand,
+              expMonth: upgradePaymentMethodDetails?.expMonth,
+              expYear: upgradePaymentMethodDetails?.expYear,
+            },
+          })
+          console.log(`✅ Database updated immediately after upgrade with existing payment method`)
         } else if (!defaultPaymentMethod) {
           throw new Error(
             'No payment method found on subscription. Please add a payment method first.'
@@ -482,6 +507,31 @@ export async function action({ request }: ActionFunctionArgs) {
           }
 
           console.log(`✅ Upgrade prepared with new payment method`)
+
+          // Immediately update database with new subscription details
+          // Don't wait for webhook to prevent stale data
+          const upgradePaymentMethodDetails = await getPaymentMethodDetails(subscription.id)
+          await prisma.subscription.update({
+            where: { userId: user.id },
+            data: {
+              id: subscription.id,
+              planId,
+              priceId: priceId,
+              interval,
+              status: subscription.status,
+              currentPeriodStart: (subscription as any).current_period_start || Math.floor(Date.now() / 1000),
+              currentPeriodEnd: (subscription as any).current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000),
+              cancelAtPeriodEnd: false,
+              trialStart: (subscription as any).trial_start || 0,
+              trialEnd: (subscription as any).trial_end || 0,
+              paymentMethodId: upgradePaymentMethodDetails?.paymentMethodId,
+              last4: upgradePaymentMethodDetails?.last4,
+              brand: upgradePaymentMethodDetails?.brand,
+              expMonth: upgradePaymentMethodDetails?.expMonth,
+              expYear: upgradePaymentMethodDetails?.expYear,
+            },
+          })
+          console.log(`✅ Database updated immediately after upgrade`)
         }
       } else {
         // Subscription exists but in incomplete/canceled state, reactivate it

@@ -62,12 +62,6 @@ export default function ReactivateSubscriptionModal({
 
   // Handle plan selection and reactivation
   const handleReactivate = async () => {
-    // Check Stripe health before proceeding
-    const isHealthy = await checkStripeHealth()
-    if (!isHealthy) {
-      return
-    }
-
     setIsProcessing(true)
 
     paymentFetcher.submit(
@@ -456,14 +450,14 @@ export default function ReactivateSubscriptionModal({
 
           <Button
             onClick={handleReactivate}
-            loading={isLoading || isCheckingStripeHealth}
+            loading={isLoading}
             size="md"
             radius="md"
             gradient={{ from: 'blue', to: 'indigo' }}
             variant="gradient"
             style={{ minWidth: '200px' }}
           >
-            {isLoading || isCheckingStripeHealth ? (
+            {isLoading ? (
               <Group gap="sm">
                 <Loader size="sm" color="white" />
                 <Text>{t('payment:reactivating', 'Reactivating...')}</Text>

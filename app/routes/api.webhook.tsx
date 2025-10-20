@@ -706,33 +706,51 @@ export async function action({ request }: ActionFunctionArgs) {
           return new Response(null, { status: 200 })
         }
 
+        // Find subscription by user ID (not by subscription ID, as it may have changed)
         const dbSubscription = await prisma.subscription.findUnique({
-          where: { id },
+          where: { userId: user.id },
         })
 
         if (dbSubscription) {
+          console.log(`🗑️ Canceling subscription for user ${user.id}, subscription ${id}`)
+          
           // Update status to canceled instead of deleting the record
           // This preserves subscription history and billing information
           await prisma.subscription.update({
-            where: { id: dbSubscription.id },
+            where: { userId: user.id },
             data: {
+              id, // Update to the cancelled subscription ID
               status: 'canceled',
               cancelAtPeriodEnd: false, // Subscription is now fully cancelled
+              cancelledAt: new Date(),
               // Keep all other data intact for historical purposes
             },
+          })
+
+          console.log(`✅ Subscription marked as canceled for user ${user.id}`)
+
+          // Broadcast cancellation to connected clients
+          broadcastSubscriptionUpdate({
+            userId: user.id,
+            status: 'canceled',
+            planId: dbSubscription.planId,
+            trialEnd: 0,
+            confirmed: true,
           })
 
           // Send subscription cancelled email
           try {
             const { handleSubscriptionCancellation } = await import('~/app/services/email-scheduler.server')
             await handleSubscriptionCancellation(
-              dbSubscription.id,
+              id,
               subscription.cancellation_details?.reason || 'Subscription cancelled'
             )
           } catch (emailError) {
             console.error('❌ Failed to send subscription cancellation email:', emailError)
             // Don't fail the webhook if email fails
           }
+        } else {
+          console.log(`⚠️ No subscription found in database for user ${user.id}`)
         }
         return new Response(null, { status: 200 })
       }

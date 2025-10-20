@@ -204,13 +204,6 @@ export default function SubscriptionStatusModal({
       return
     }
 
-    // For other statuses that require API calls, check Stripe health before proceeding
-    const isHealthy = await checkStripeHealth()
-    if (!isHealthy) {
-      setIsButtonLoading(false)
-      return
-    }
-
     // Fetch config first
     if (!configFetcher.data) {
       configFetcher.load('/api/config')

@@ -3,7 +3,8 @@ import { IconArrowLeft } from '@tabler/icons-react'
 import { Link } from 'react-router'
 
 interface BackButtonProps {
-  to: string
+  to?: string
+  onClick?: () => void
   children: React.ReactNode
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   color?: string
@@ -13,6 +14,7 @@ interface BackButtonProps {
 
 export default function BackButton({
   to,
+  onClick,
   children,
   size = 'sm',
   color = '#000000',
@@ -41,8 +43,17 @@ export default function BackButton({
 
   const combinedStyle = { ...baseStyle, ...positionStyle }
 
+  if (onClick) {
+    return (
+      <Anchor onClick={onClick} size={size} style={{ ...combinedStyle, cursor: 'pointer' }}>
+        <IconArrowLeft size={16} />
+        {children}
+      </Anchor>
+    )
+  }
+
   return (
-    <Anchor component={Link} to={to} size={size} style={combinedStyle}>
+    <Anchor component={Link} to={to || '/'} size={size} style={combinedStyle}>
       <IconArrowLeft size={16} />
       {children}
     </Anchor>

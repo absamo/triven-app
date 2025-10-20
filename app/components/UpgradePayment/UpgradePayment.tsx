@@ -346,6 +346,7 @@ export default function UpgradePayment({
                         planName={getTranslatedPlanLabel(planId, t)}
                         planId={planId}
                         interval={interval}
+                        isTrialConversion={billing?.planStatus === 'trialing'}
                         onSubmitReady={handleStripeSubmitReady}
                         onSuccess={handlePaymentSuccess}
                         onError={(error) => {
@@ -375,6 +376,7 @@ export default function UpgradePayment({
                 planName={getTranslatedPlanLabel(planId, t)}
                 planId={planId}
                 interval={interval}
+                isTrialConversion={billing?.planStatus === 'trialing'}
                 onSubmitReady={handleStripeSubmitReady}
                 onSuccess={handlePaymentSuccess}
                 onError={(error) => {

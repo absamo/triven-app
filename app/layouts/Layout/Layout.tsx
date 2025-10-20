@@ -20,7 +20,7 @@ import clsx from 'clsx'
 import dayjs from 'dayjs'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet, useNavigation, useRevalidator } from 'react-router'
+import { Outlet, useLocation, useNavigate, useNavigation, useRevalidator } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
 import { canUpgrade, shouldShowUpgrade } from '~/app/common/helpers/payment'
 import type { INotification } from '~/app/common/validations/notificationSchema'
@@ -311,12 +311,13 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     ? HEADER_BASE_HEIGHT + TRIAL_BANNER_HEIGHT
     : HEADER_BASE_HEIGHT
 
-  const handleUpgradeClick = async () => {
-    const isHealthy = await checkStripeHealth()
-    if (isHealthy) {
-      setShowUpgradeModal(true)
-    }
-    // If unhealthy, the hook will show an error notification
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const handleUpgradeClick = () => {
+    // Pass current location as returnTo parameter
+    const returnPath = location.pathname + location.search
+    navigate(`/billing?returnTo=${encodeURIComponent(returnPath)}`)
   }
 
   // Handle upgrade success - set flag for SSE tracking
@@ -400,7 +401,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
                     size="xs"
                     leftSection={<IconCrown size={14} />}
                     onClick={handleUpgradeClick}
-                    loading={isChecking}
                   >
                     {t('navigation:upgradeNow')}
                   </Button>
