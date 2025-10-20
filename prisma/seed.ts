@@ -404,9 +404,13 @@ async function createCompanyStructure() {
     },
   })
 
-  // Create company
-  const company = await prisma.company.create({
-    data: {
+  // Create or find existing company
+  const company = await prisma.company.upsert({
+    where: {
+      name: 'FlowTech Solutions'
+    },
+    update: {},
+    create: {
       name: 'FlowTech Solutions',
       locationId: companyLocation.id,
       sandbox: false,
@@ -3346,6 +3350,98 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
   }
 }
 
+async function createFeatureRoadmap(users: any[]) {
+  console.log('Creating feature roadmap...')
+
+  const adminUser = users.find((u) => u.email === 'admin@flowtech.com')
+  const featureStatuses = ['TODO', 'PLANNED', 'IN_PROGRESS', 'SHIPPED']
+
+  const featureIdeas = [
+    {
+      title: 'Multi-currency Support for International Sales',
+      description:
+        'Enable support for multiple currencies in sales orders, invoices, and reporting. Allow automatic currency conversion and maintain exchange rate history.',
+      status: 'TODO',
+    },
+    {
+      title: 'Advanced Analytics Dashboard',
+      description:
+        'Create comprehensive analytics dashboard with real-time insights into inventory health, sales trends, and financial metrics. Include customizable widgets and export capabilities.',
+      status: 'TODO',
+    },
+    {
+      title: 'Mobile App for Warehouse Management',
+      description:
+        'Develop native mobile applications for iOS and Android to enable warehouse staff to manage inventory, process orders, and perform stock counts on the go.',
+      status: 'PLANNED',
+    },
+    {
+      title: 'Automated Reordering System',
+      description:
+        'Implement intelligent automated reordering based on sales velocity, lead times, and seasonal trends. Include configurable rules and approval workflows.',
+      status: 'PLANNED',
+    },
+    {
+      title: 'Integration with Popular E-commerce Platforms',
+      description:
+        'Build integrations with Shopify, WooCommerce, and Magento to automatically sync inventory levels, process orders, and update product information.',
+      status: 'IN_PROGRESS',
+    },
+    {
+      title: 'Barcode Scanner Integration',
+      description:
+        'Add support for barcode scanning throughout the application for faster product lookup, receiving, and stock counting. Support various barcode formats.',
+      status: 'SHIPPED',
+    },
+    {
+      title: 'Advanced Reporting Engine',
+      description:
+        'Create a flexible reporting engine with customizable templates, scheduled reports, and automated distribution. Include visual report builder.',
+      status: 'SHIPPED',
+    },
+  ]
+
+  const features = []
+
+  for (const [index, idea] of featureIdeas.entries()) {
+    const feature = await prisma.featureRequest.create({
+      data: {
+        title: idea.title,
+        description: idea.description,
+        status: idea.status as any,
+        voteCount: faker.number.int({ min: 0, max: 50 }),
+        createdById: adminUser.id,
+      },
+    })
+
+    features.push(feature)
+
+    // Add some votes from random users
+    const numVotes = faker.number.int({ min: 0, max: 5 })
+    const voters = faker.helpers.arrayElements(users, numVotes)
+
+    for (const voter of voters) {
+      await prisma.featureVote.create({
+        data: {
+          featureId: feature.id,
+          userId: voter.id,
+        },
+      })
+    }
+
+    // Update the vote count
+    await prisma.featureRequest.update({
+      where: { id: feature.id },
+      data: {
+        voteCount: numVotes,
+      },
+    })
+  }
+
+  console.log(`✅ Created ${features.length} feature requests with votes`)
+  return features
+}
+
 async function seed() {
   console.log('🌱 Starting comprehensive seed process...')
 
@@ -3428,6 +3524,9 @@ async function seed() {
       transferOrders
     )
 
+    // 21. Create feature roadmap items
+    const features = await createFeatureRoadmap(users)
+
     console.log('✅ Seed completed successfully!')
     console.log('\n📊 Summary:')
     console.log(`   Company: ${company.name}`)
@@ -3450,6 +3549,7 @@ async function seed() {
     console.log(`   Notifications: ${notifications.length}`)
     console.log(`   Workflow Templates: ${workflowTemplates.length}`)
     console.log(`   Approval Requests: ${approvalRequests.length}`)
+    console.log(`   Feature Requests: ${features.length}`)
 
     console.log('\n🔑 Demo Login Credentials:')
     console.log('   Admin: admin@flowtech.com / password123')

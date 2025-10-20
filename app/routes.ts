@@ -70,6 +70,10 @@ export default [
     route('api/workflow-step-execution', 'routes/api/workflow-step-execution.ts'),
     route('api/workflow-trigger', 'routes/api/workflow-trigger.ts'),
 
+    // Roadmap API
+    route('api/roadmap/features', 'routes/api/api.roadmap.features.ts'),
+    route('api/roadmap/features/:id', 'routes/api/api.roadmap.features.$id.ts'),
+
     // Inventory Command Center API
     route('api/inventory/command-center', 'routes/api/inventory/command-center.ts'),
 
@@ -192,5 +196,8 @@ export default [
 
     // Simple chat
     route('simple-chat', 'routes/simple-chat.tsx'),
+
+    // Roadmap
+    route('roadmap', 'routes/roadmap.tsx'),
   ]),
 ] satisfies RouteConfig

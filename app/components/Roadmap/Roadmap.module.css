@@ -1,0 +1,90 @@
+.kanbanBoard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 1fr;
+  gap: 1rem;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 1200px) {
+  .kanbanBoard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .kanbanBoard {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Column Styles */
+.kanbanColumn {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--mantine-color-default);
+  border-color: var(--mantine-color-default-border);
+}
+
+.columnHeader {
+  padding: 1rem 1rem 0.75rem 1rem;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  background: var(--mantine-color-body);
+  border-radius: var(--mantine-radius-lg) var(--mantine-radius-lg) 0 0;
+}
+
+.columnBody {
+  flex: 1;
+  padding: 0.75rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 2rem 1rem;
+}
+
+/* Card Styles */
+.featureCard {
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: var(--mantine-color-body);
+  border-color: var(--mantine-color-default-border);
+}
+
+.featureCard:hover {
+  border-color: var(--mantine-color-blue-outline);
+  background: var(--mantine-color-default-hover);
+}
+
+.cardDescription {
+  line-height: 1.4;
+}
+
+.voteBadge {
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.voteBadge:hover {
+  transform: scale(1.05);
+}
+
+.voteBadge:active {
+  transform: scale(0.95);
+}
+
+.authorText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}

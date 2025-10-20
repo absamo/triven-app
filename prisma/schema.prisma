@@ -111,6 +111,11 @@ model User {
   assignedApprovals        ApprovalRequest[]       @relation("ApprovalRequestAssignedTo")
   approvalComments         ApprovalComment[]       @relation("ApprovalCommentAuthor")
 
+  // Feature Voting & Roadmap Relations
+  createdFeatures FeatureRequest[]  @relation("FeatureCreatedBy")
+  featureVotes    FeatureVote[]     @relation("FeatureVotes")
+  featureAuditLog FeatureAuditLog[] @relation("FeatureAuditLogs")
+
   @@map("user")
 }
 
@@ -1637,4 +1642,64 @@ enum OpportunityStatus {
   Declined
   Expired
   Completed
+}
+
+// Feature Voting & Product Roadmap Models
+
+enum FeatureStatus {
+  TODO
+  PLANNED
+  IN_PROGRESS
+  SHIPPED
+}
+
+model FeatureRequest {
+  id          String        @id @default(cuid())
+  title       String        @db.VarChar(200)
+  description String        @db.Text
+  status      FeatureStatus @default(TODO)
+  voteCount   Int           @default(0)
+  createdById String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  createdBy User              @relation("FeatureCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  votes     FeatureVote[]
+  auditLogs FeatureAuditLog[]
+
+  @@index([status, voteCount(sort: Desc), createdAt])
+  @@index([createdById])
+  @@map("feature_requests")
+}
+
+model FeatureVote {
+  id        String   @id @default(cuid())
+  featureId String
+  userId    String
+  votedAt   DateTime @default(now())
+
+  feature FeatureRequest @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  user    User           @relation("FeatureVotes", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([featureId, userId])
+  @@index([userId])
+  @@index([featureId])
+  @@map("feature_votes")
+}
+
+model FeatureAuditLog {
+  id        String   @id @default(cuid())
+  featureId String
+  userId    String
+  action    String   @db.VarChar(100)
+  oldValue  Json?
+  newValue  Json?
+  timestamp DateTime @default(now())
+
+  feature FeatureRequest @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  user    User           @relation("FeatureAuditLogs", fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([featureId, timestamp])
+  @@index([userId])
+  @@map("feature_audit_logs")
 }

@@ -1,0 +1,487 @@
+openapi: 3.1.0
+info:
+  title: Roadmap Feature Voting API
+  description: |
+    API for managing feature requests and voting on the product roadmap.
+    Supports admin-only feature management and user voting functionality.
+  version: 1.0.0
+  contact:
+    name: Triven App API Support
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://app.triven.com/api
+    description: Production server
+
+tags:
+  - name: Features
+    description: Feature request management operations
+  - name: Votes
+    description: Voting operations on feature requests
+
+security:
+  - BetterAuth: []
+
+paths:
+  /roadmap/features:
+    get:
+      summary: List all feature requests
+      description: Returns all features grouped by status for kanban board display
+      tags:
+        - Features
+      parameters:
+        - name: status
+          in: query
+          description: Filter features by status
+          required: false
+          schema:
+            $ref: '#/components/schemas/FeatureStatus'
+        - name: limit
+          in: query
+          description: Maximum number of features to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+        - name: cursor
+          in: query
+          description: Cursor for pagination (feature ID)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response with features
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  features:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FeatureWithVotes'
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  hasMore:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      summary: Create a new feature request
+      description: Admin-only endpoint to create a new feature
+      tags:
+        - Features
+      security:
+        - BetterAuth: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeatureRequest'
+      responses:
+        '201':
+          description: Feature created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /roadmap/features/{featureId}:
+    parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Unique identifier of the feature
+        schema:
+          type: string
+
+    get:
+      summary: Get a single feature request
+      description: Returns detailed information about a specific feature
+      tags:
+        - Features
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureDetailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    patch:
+      summary: Update a feature request
+      description: Admin-only endpoint to update feature details or status
+      tags:
+        - Features
+      security:
+        - BetterAuth: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFeatureRequest'
+      responses:
+        '200':
+          description: Feature updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: Delete a feature request
+      description: Admin-only endpoint to permanently remove a feature
+      tags:
+        - Features
+      security:
+        - BetterAuth: [admin]
+      responses:
+        '204':
+          description: Feature deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /roadmap/features/{featureId}/vote:
+    parameters:
+      - name: featureId
+        in: path
+        required: true
+        description: Unique identifier of the feature to vote on
+        schema:
+          type: string
+
+    post:
+      summary: Cast a vote on a feature
+      description: |
+        Allows authenticated users to vote on a feature.
+        One vote per user per feature. Returns 409 if already voted.
+      tags:
+        - Votes
+      responses:
+        '201':
+          description: Vote cast successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  voteCount:
+                    type: integer
+                    example: 42
+                  votedAt:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid request (e.g., feature in wrong status)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Cannot vote on features in IN_PROGRESS or SHIPPED status"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: User has already voted on this feature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "You have already voted on this feature"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: Remove a vote from a feature
+      description: Allows users to remove their previously cast vote
+      tags:
+        - Votes
+      responses:
+        '200':
+          description: Vote removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  voteCount:
+                    type: integer
+                    example: 41
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Vote not found or feature not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    FeatureStatus:
+      type: string
+      enum:
+        - TODO
+        - PLANNED
+        - IN_PROGRESS
+        - SHIPPED
+      description: Current status of the feature in the roadmap
+
+    Feature:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "clxyz123456789"
+        title:
+          type: string
+          maxLength: 200
+          example: "Dark mode support"
+        description:
+          type: string
+          example: "Add dark theme option to the application for better UX"
+        status:
+          $ref: '#/components/schemas/FeatureStatus'
+        voteCount:
+          type: integer
+          minimum: 0
+          example: 42
+        createdById:
+          type: string
+          example: "clusr123456789"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-20T14:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-10-21T09:15:00Z"
+      required:
+        - id
+        - title
+        - description
+        - status
+        - voteCount
+        - createdById
+        - createdAt
+        - updatedAt
+
+    FeatureWithVotes:
+      allOf:
+        - $ref: '#/components/schemas/Feature'
+        - type: object
+          properties:
+            createdBy:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "John Admin"
+            hasVoted:
+              type: boolean
+              description: Whether the current user has voted on this feature
+              example: true
+
+    FeatureDetailed:
+      allOf:
+        - $ref: '#/components/schemas/FeatureWithVotes'
+        - type: object
+          properties:
+            auditLogs:
+              type: array
+              items:
+                $ref: '#/components/schemas/AuditLog'
+
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+        action:
+          type: string
+          enum:
+            - CREATED
+            - STATUS_CHANGED
+            - UPDATED
+            - DELETED
+        userId:
+          type: string
+        userName:
+          type: string
+        oldValue:
+          type: object
+          nullable: true
+        newValue:
+          type: object
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+
+    CreateFeatureRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "Export reports to PDF"
+        description:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          example: "Allow exporting inventory reports in PDF format for offline viewing"
+        status:
+          $ref: '#/components/schemas/FeatureStatus'
+          default: TODO
+      required:
+        - title
+        - description
+
+    UpdateFeatureRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 10000
+        status:
+          $ref: '#/components/schemas/FeatureStatus'
+      minProperties: 1
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+        code:
+          type: string
+          description: Machine-readable error code
+        details:
+          type: object
+          description: Additional error details
+      required:
+        - error
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Authentication required"
+            code: "UNAUTHORIZED"
+
+    Forbidden:
+      description: Insufficient permissions (admin access required)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Admin access required"
+            code: "FORBIDDEN"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Feature not found"
+            code: "NOT_FOUND"
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Error'
+              - type: object
+                properties:
+                  details:
+                    type: object
+                    description: Field-level validation errors
+          example:
+            error: "Validation failed"
+            code: "VALIDATION_ERROR"
+            details:
+              title: "Title must be between 1 and 200 characters"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Internal server error"
+            code: "SERVER_ERROR"
+
+  securitySchemes:
+    BetterAuth:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+      description: Better Auth session cookie authentication

@@ -10,9 +10,8 @@ import {
   Popover,
   Text,
   Tooltip,
+  useMantineColorScheme,
 } from '@mantine/core'
-
-import { useMantineColorScheme } from '@mantine/core'
 import {
   IconBell,
   IconCheck,
@@ -27,14 +26,16 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
-import { type INotification } from '~/app/common/validations/notificationSchema'
+import type { INotification } from '~/app/common/validations/notificationSchema'
 import type { IProfile } from '~/app/common/validations/profileSchema'
 import type { IRole } from '~/app/common/validations/roleSchema'
 import { Logo } from '~/app/components'
+import RoadmapIcon from '~/app/components/Roadmap/RoadmapIcon'
 import FrIcon from '~/app/components/SvgIcons/FrIcon'
 import UsIcon from '~/app/components/SvgIcons/UsIcon'
 import Notification from '../Notification'
 import classes from './Header.module.css'
+
 interface HeaderProps {
   showNotification: (opened: boolean) => void
   user: {
@@ -143,7 +144,7 @@ export default function Header({ showNotification, user, notifications }: Header
 
         {/* Right side content */}
         <Flex align="center" gap="md" h="100%">
-          {/* AI Assistant and Notification Bell */}
+          {/* AI Assistant, Roadmap, and Notification Bell */}
           <Flex align="center" justify="center" gap="md">
             <Tooltip label="AI Assistant" position="bottom">
               <ActionIcon
@@ -157,6 +158,13 @@ export default function Header({ showNotification, user, notifications }: Header
                 <IconSparkles size={20} />
               </ActionIcon>
             </Tooltip>
+
+            <RoadmapIcon
+              isAdmin={
+                user.role.name.toLowerCase() === 'admin' ||
+                user.role.permissions?.includes('*') === true
+              }
+            />
 
             <Tooltip label="Notifications" position="bottom">
               <Popover
