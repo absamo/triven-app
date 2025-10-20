@@ -64,7 +64,7 @@ export default function RoleForm({ role, errors }: roleFormProps) {
             : t('roles:addRole', 'Add a role')}
         </Title>
         <Form onSubmit={form.onSubmit(handleSubmit)} showSubmitButton={!isReadOnly}>
-          <Grid.Col span={{ base: 12, md: 6 }}>
+          <Grid.Col span={12}>
             <TextInput
               withAsterisk
               label={t('common:name', 'Name')}
@@ -73,14 +73,6 @@ export default function RoleForm({ role, errors }: roleFormProps) {
               error={form.getInputProps('name').error || errors?.name}
               readOnly={isReadOnly}
               disabled={isReadOnly}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <TextInput
-              label={t('roles:type', 'Type')}
-              value={role.editable ? t('roles:customRole', 'Custom role') : 'Built-in'}
-              readOnly
-              disabled
             />
           </Grid.Col>
           <Grid.Col span={12}>
@@ -147,7 +139,7 @@ export default function RoleForm({ role, errors }: roleFormProps) {
               <Accordion.Item value="workflows">
                 <Accordion.Control>
                   <Box>
-                    <Text fw={500}>Workflows</Text>
+                    <Text fw={500}>{t('roles:workflows')}</Text>
                     <Text size="xs" c="dimmed">
                       {t('roles:workflowsDescription', 'Manage approval workflows and view workflow history')}
                     </Text>
@@ -157,14 +149,14 @@ export default function RoleForm({ role, errors }: roleFormProps) {
                   <RolesPermission
                     permissions={form.values.permissions || []}
                     onChange={handlePermissionsChange}
-                    label="Approvals"
+                    label={t('roles:modules.approvals')}
                     name="approvals"
                     disabled={isReadOnly}
                   />
                   <RolesPermission
                     permissions={form.values.permissions || []}
                     onChange={handlePermissionsChange}
-                    label="Templates"
+                    label={t('roles:modules.workflows')}
                     name="workflows"
                     disabled={isReadOnly}
                     isLast={true}

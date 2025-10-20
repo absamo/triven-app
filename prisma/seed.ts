@@ -567,6 +567,7 @@ async function createRoles(companyId: string) {
         name: 'Admin',
         description: 'Full system access',
         companyId: companyId,
+        editable: false, // Built-in role
         permissions: [
           'read:products',
           'create:products',
@@ -648,6 +649,10 @@ async function createRoles(companyId: string) {
           'create:analytics',
           'update:analytics',
           'delete:analytics',
+          'read:plans',
+          'create:plans',
+          'update:plans',
+          'delete:plans',
           'read:workflows',
           'create:workflows',
           'update:workflows',
@@ -663,6 +668,7 @@ async function createRoles(companyId: string) {
         description:
           'Oversees all inventory operations, stock level monitoring and optimization, supplier relationship management, purchase order approval and management',
         companyId: companyId,
+        editable: false, // Built-in role
         permissions: [
           // Product and Inventory Management
           'read:products',
@@ -755,6 +761,7 @@ async function createRoles(companyId: string) {
         name: 'Warehouse Staff',
         description: 'Warehouse operations access',
         companyId: companyId,
+        editable: false, // Built-in role
         permissions: [
           'read:products',
           'update:products',
@@ -782,6 +789,7 @@ async function createRoles(companyId: string) {
         name: 'Sales Staff',
         description: 'Sales operations access',
         companyId: companyId,
+        editable: false, // Built-in role
         permissions: [
           'read:products',
           'read:customers',
@@ -805,6 +813,7 @@ async function createRoles(companyId: string) {
         name: 'Accountant',
         description: 'Financial operations and reporting',
         companyId: companyId,
+        editable: false, // Built-in role
         permissions: [
           'read:products',
           'read:invoices',
@@ -827,6 +836,7 @@ async function createRoles(companyId: string) {
         name: 'Customer Service',
         description: 'Customer support and order assistance',
         companyId: companyId,
+        editable: false, // Built-in role
         permissions: [
           'read:products',
           'read:customers',
@@ -846,6 +856,7 @@ async function createRoles(companyId: string) {
         name: 'Quality Control',
         description: 'Product quality and compliance management',
         companyId: companyId,
+        editable: false, // Built-in role
         permissions: [
           'read:products',
           'update:products',
@@ -862,6 +873,7 @@ async function createRoles(companyId: string) {
         name: 'Store Manager',
         description: 'Individual store operations management',
         companyId: companyId,
+        editable: false, // Built-in role
         permissions: [
           'read:products',
           'update:products',

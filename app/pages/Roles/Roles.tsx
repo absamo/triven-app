@@ -1,6 +1,6 @@
-import { Table, Text } from '@mantine/core'
+import { Flex, Table, Text, Tooltip } from '@mantine/core'
 import { showNotification } from '@mantine/notifications'
-import { IconExclamationCircle } from '@tabler/icons-react'
+import { IconAlertCircle, IconExclamationCircle } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
@@ -26,36 +26,60 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
     }
   }
 
-  const rows = roles.map((role) => (
-    <Table.Tr
-      key={role.id}
-      onClick={() => handleRoleClick(role)}
-      style={{
-        cursor: 'pointer',
-        opacity: !role.editable ? 0.8 : 1,
-      }}
-    >
-      <Table.Td style={{ whiteSpace: 'nowrap' }}>
-        <Text size="sm">{role.name}</Text>
-      </Table.Td>
-      <Table.Td>
-        <Text size="sm" c="dimmed">
-          {role.description || t('roles:noDescription', 'No description provided')}
-        </Text>
-      </Table.Td>
-      <Table.Td style={{ whiteSpace: 'nowrap' }}>
-        <Text size="sm">
-          {!role.editable
-            ? t('roles:builtInRole', 'Built-in role')
-            : t('roles:customRole', 'Custom role')}
-        </Text>
-      </Table.Td>
-    </Table.Tr>
-  ))
+  const rows = roles.map((role) => {
+    const hasNoPermissions = !role.permissions || role.permissions.length === 0
+
+    return (
+      <Table.Tr
+        key={role.id}
+        onClick={() => handleRoleClick(role)}
+        style={{
+          cursor: 'pointer',
+          opacity: !role.editable ? 0.8 : 1,
+        }}
+      >
+        <Table.Td style={{ whiteSpace: 'nowrap' }}>
+          <Text size="sm">{role.name}</Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm" c="dimmed" lineClamp={1}>
+            {role.description || t('roles:noDescription', 'No description provided')}
+          </Text>
+        </Table.Td>
+        <Table.Td style={{ whiteSpace: 'nowrap' }}>
+          <Text size="sm">
+            {!role.editable
+              ? t('roles:builtInRole', 'Built-in role')
+              : t('roles:customRole', 'Custom role')}
+          </Text>
+        </Table.Td>
+        <Table.Td style={{ textAlign: 'center', width: '60px' }}>
+          {hasNoPermissions && (
+            <Tooltip 
+              label={t('roles:noPermissionsWarning', 'This role has no permissions assigned')} 
+              withArrow
+              position="left"
+              color="dark"
+            >
+              <div onClick={(e) => e.stopPropagation()} style={{ display: 'inline-block' }}>
+                <IconAlertCircle 
+                  size={20} 
+                  style={{ 
+                    color: 'var(--mantine-color-yellow-6)', 
+                    display: 'block'
+                  }} 
+                />
+              </div>
+            </Tooltip>
+          )}
+        </Table.Td>
+      </Table.Tr>
+    )
+  })
 
   return (
     <>
-      <Title to={'/roles/create'} canCreate={canCreate}>
+      <Title to={'/roles/create'} canCreate={canCreate} description={t('roles:pageDescription')}>
         {t('roles:title')}
       </Title>
 
@@ -65,6 +89,7 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
             <Table.Th>{t('roles:name', 'Name')}</Table.Th>
             <Table.Th>{t('roles:description', 'Description')}</Table.Th>
             <Table.Th>{t('roles:type', 'Type')}</Table.Th>
+            <Table.Th style={{ textAlign: 'center', width: '60px' }}></Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>
