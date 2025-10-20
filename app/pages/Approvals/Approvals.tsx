@@ -100,9 +100,10 @@ interface ApprovalRequest {
 export default function ApprovalsPage() {
   const { colorScheme } = useMantineColorScheme()
   const { t, i18n } = useTranslation(['approvals', 'common'])
-  const { approvalRequests, currentUser } = useLoaderData<{
+  const { approvalRequests, currentUser, permissions = [] } = useLoaderData<{
     approvalRequests: ApprovalRequest[]
     currentUser: CurrentUser
+    permissions: string[]
   }>()
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [entityTypeFilter, setEntityTypeFilter] = useState<string | null>(null)

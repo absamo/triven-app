@@ -107,12 +107,18 @@ export default function WorkflowTemplatesPage() {
   const { colorScheme } = useMantineColorScheme()
   const { t, i18n } = useTranslation(['workflows', 'common'])
   const navigate = useNavigate()
-  const { workflowTemplates, currentUser, users, roles } = useLoaderData<{
+  const { workflowTemplates, currentUser, users, roles, permissions = [] } = useLoaderData<{
     workflowTemplates: WorkflowTemplate[]
     currentUser: CurrentUser
     users: UserOption[]
     roles: RoleOption[]
+    permissions: string[]
   }>()
+
+  // Permission checks
+  const canCreate = permissions.includes('create:workflows')
+  const canUpdate = permissions.includes('update:workflows')
+  const canDelete = permissions.includes('delete:workflows')
 
   const [searchQuery, setSearchQuery] = useState('')
   const [triggerTypeFilter, setTriggerTypeFilter] = useState<string | null>(null)
@@ -463,13 +469,15 @@ export default function WorkflowTemplatesPage() {
           >
             {t('workflows:title', 'Workflow Templates')}
           </Title>
-          <Button
-            leftSection={<IconPlus size={16} />}
-            onClick={() => navigate('/workflow-templates/create')}
-            loading={loading}
-          >
-            {t('workflows:actions.createTemplate', 'Create Template')}
-          </Button>
+          {canCreate && (
+            <Button
+              leftSection={<IconPlus size={16} />}
+              onClick={() => navigate('/workflow-templates/create')}
+              loading={loading}
+            >
+              {t('workflows:actions.createTemplate', 'Create Template')}
+            </Button>
+          )}
         </Group>
 
         {/* Filters */}
@@ -653,13 +661,13 @@ export default function WorkflowTemplatesPage() {
                 style={{
                   background: getFilterGradient(),
                   transition: 'all 0.2s ease',
-                  cursor: 'pointer',
+                  cursor: canUpdate ? 'pointer' : 'default',
                   '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+                    transform: canUpdate ? 'translateY(-2px)' : 'none',
+                    boxShadow: canUpdate ? '0 8px 25px rgba(0, 0, 0, 0.1)' : undefined,
                   },
                 }}
-                onClick={() => navigate(`/workflow-templates/${template.id}`)}
+                onClick={() => canUpdate && navigate(`/workflow-templates/${template.id}`)}
                 onMouseEnter={() => setHoveredRowId(template.id)}
                 onMouseLeave={() => setHoveredRowId(null)}
               >
@@ -691,31 +699,39 @@ export default function WorkflowTemplatesPage() {
                     </Group>
                   </div>
                   <div onClick={(e) => e.stopPropagation()}>
-                    <TableActionsMenu itemId={template.id} hoveredRowId={hoveredRowId}>
-                      <Menu.Item
-                        onClick={() => handleCloneTemplate(template.id)}
-                        leftSection={<IconCopy size={16} />}
-                      >
-                        {t('workflows:actions.cloneTemplate', 'Clone Template')}
-                      </Menu.Item>
-                      <Menu.Item
-                        onClick={() => toggleTemplateStatus(template.id, template.isActive)}
-                        leftSection={
-                          template.isActive ? <IconX size={16} /> : <IconCheck size={16} />
-                        }
-                      >
-                        {template.isActive
-                          ? t('workflows:actions.deactivate', 'Deactivate')
-                          : t('workflows:actions.activate', 'Activate')}
-                      </Menu.Item>
-                      <Menu.Item
-                        color="red"
-                        onClick={() => handleDeleteTemplate(template)}
-                        leftSection={<IconTrash size={16} />}
-                      >
-                        {t('workflows:actions.deleteTemplate', 'Delete Template')}
-                      </Menu.Item>
-                    </TableActionsMenu>
+                    {(canUpdate || canDelete) && (
+                      <TableActionsMenu itemId={template.id} hoveredRowId={hoveredRowId}>
+                        {canCreate && (
+                          <Menu.Item
+                            onClick={() => handleCloneTemplate(template.id)}
+                            leftSection={<IconCopy size={16} />}
+                          >
+                            {t('workflows:actions.cloneTemplate', 'Clone Template')}
+                          </Menu.Item>
+                        )}
+                        {canUpdate && (
+                          <Menu.Item
+                            onClick={() => toggleTemplateStatus(template.id, template.isActive)}
+                            leftSection={
+                              template.isActive ? <IconX size={16} /> : <IconCheck size={16} />
+                            }
+                          >
+                            {template.isActive
+                              ? t('workflows:actions.deactivate', 'Deactivate')
+                              : t('workflows:actions.activate', 'Activate')}
+                          </Menu.Item>
+                        )}
+                        {canDelete && (
+                          <Menu.Item
+                            color="red"
+                            onClick={() => handleDeleteTemplate(template)}
+                            leftSection={<IconTrash size={16} />}
+                          >
+                            {t('workflows:actions.deleteTemplate', 'Delete Template')}
+                          </Menu.Item>
+                        )}
+                      </TableActionsMenu>
+                    )}
                   </div>
                 </Group>
 

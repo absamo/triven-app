@@ -1,13 +1,10 @@
 import { type ActionFunctionArgs } from 'react-router'
 import { auth } from '~/app/lib/auth'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import { triggerWorkflow } from '~/app/services/workflow.server'
 
 export async function action({ request }: ActionFunctionArgs) {
-  const session = await auth.api.getSession({ headers: request.headers })
-
-  if (!session?.user?.companyId) {
-    throw new Response('Unauthorized', { status: 401 })
-  }
+  const user = await requireBetterAuthUser(request, ['create:workflows'])
 
   const formData = await request.formData()
   const action = formData.get('action') as string
@@ -30,8 +27,8 @@ export async function action({ request }: ActionFunctionArgs) {
           entityType,
           entityId,
           entityData,
-          triggeredBy: session.user.id,
-          companyId: session.user.companyId,
+          triggeredBy: user.id,
+          companyId: user.companyId,
           metadata,
         })
 

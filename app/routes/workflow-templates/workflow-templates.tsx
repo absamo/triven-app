@@ -1,25 +1,15 @@
 import { type LoaderFunctionArgs } from 'react-router'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth'
 import WorkflowTemplatesPage from '~/app/pages/WorkflowTemplates/WorkflowTemplates'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  })
-
-  if (!session) {
-    throw new Response('Unauthorized', { status: 401 })
-  }
-
-  if (!session.user.companyId) {
-    throw new Response('No company found', { status: 400 })
-  }
+  const user = await requireBetterAuthUser(request, ['read:workflows'])
 
   // Load workflow templates for the user's company
   const workflowTemplates = await prisma.workflowTemplate.findMany({
     where: {
-      companyId: session.user.companyId,
+      companyId: user.companyId,
     },
     include: {
       createdBy: {
@@ -46,7 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // Get current user's role information
   const userWithRole = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: user.id },
     include: {
       role: true,
     },
@@ -56,7 +46,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const [users, roles] = await Promise.all([
     prisma.user.findMany({
       where: {
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
       include: {
         profile: true,
@@ -65,7 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }),
     prisma.role.findMany({
       where: {
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
       orderBy: {
         name: 'asc',
@@ -121,7 +111,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     JSON.stringify({
       workflowTemplates: transformedTemplates,
       currentUser: {
-        ...session.user,
+        ...user,
         role: userWithRole?.role || null,
       },
       users: users.map((user) => ({
@@ -138,6 +128,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
         name: role.name,
         description: role.description,
       })),
+      permissions: user?.role?.permissions?.filter(
+        (permission) =>
+          permission === 'create:workflows' ||
+          permission === 'update:workflows' ||
+          permission === 'delete:workflows'
+      ) || [],
     }),
     {
       headers: {

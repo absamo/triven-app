@@ -2,7 +2,7 @@ import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
 import { z } from 'zod'
 import { workflowTemplateSchema } from '~/app/common/validations/workflowTemplateSchema'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 // Helper function to convert entityType to default triggerType
 function getTriggerTypeFromEntity(entityType: string): string {
@@ -23,16 +23,12 @@ function getTriggerTypeFromEntity(entityType: string): string {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await auth.api.getSession({ headers: request.headers })
-
-  if (!session?.user?.companyId) {
-    throw new Response('Unauthorized', { status: 401 })
-  }
+  const user = await requireBetterAuthUser(request, ['read:workflows'])
 
   try {
     const templates = await prisma.workflowTemplate.findMany({
       where: {
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
       include: {
         createdBy: {
@@ -74,14 +70,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const session = await auth.api.getSession({ headers: request.headers })
-
-  if (!session?.user?.companyId) {
-    throw new Response('Unauthorized', { status: 401 })
-  }
-
   const formData = await request.formData()
   const intent = formData.get('intent') as string
+
+  // Check permissions based on intent
+  const permissionMap: Record<string, string> = {
+    create: 'create:workflows',
+    update: 'update:workflows',
+    delete: 'delete:workflows',
+    'toggle-status': 'update:workflows',
+    duplicate: 'create:workflows',
+  }
+
+  const requiredPermission = permissionMap[intent]
+  if (!requiredPermission) {
+    throw new Response('Invalid intent', { status: 400 })
+  }
+
+  const user = await requireBetterAuthUser(request, [requiredPermission])
 
   try {
     switch (intent) {
@@ -103,8 +109,8 @@ export async function action({ request }: ActionFunctionArgs) {
               priority: validatedData.priority,
             },
             isActive: validatedData.isActive,
-            companyId: session.user.companyId,
-            createdById: session.user.id,
+            companyId: user.companyId,
+            createdById: user.id,
             steps: {
               create: validatedData.steps.map((step, index) => ({
                 stepNumber: index + 1,
@@ -187,7 +193,7 @@ export async function action({ request }: ActionFunctionArgs) {
         await prisma.workflowTemplate.delete({
           where: {
             id: templateId,
-            companyId: session.user.companyId,
+            companyId: user.companyId,
           },
         })
 
@@ -203,7 +209,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const template = await prisma.workflowTemplate.update({
           where: {
             id: templateId,
-            companyId: session.user.companyId,
+            companyId: user.companyId,
           },
           data: {
             isActive: !isActive,
@@ -221,7 +227,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const originalTemplate = await prisma.workflowTemplate.findUnique({
           where: {
             id: templateId,
-            companyId: session.user.companyId,
+            companyId: user.companyId,
           },
           include: {
             steps: {
@@ -243,8 +249,8 @@ export async function action({ request }: ActionFunctionArgs) {
             triggerType: originalTemplate.triggerType,
             triggerConditions: originalTemplate.triggerConditions as any,
             isActive: false, // New templates start as inactive
-            companyId: session.user.companyId,
-            createdById: session.user.id,
+            companyId: user.companyId,
+            createdById: user.id,
             steps: {
               create: originalTemplate.steps.map((step: any) => ({
                 stepNumber: step.stepNumber,

@@ -53,7 +53,7 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
               : t('roles:customRole', 'Custom role')}
           </Text>
         </Table.Td>
-        <Table.Td style={{ textAlign: 'center', width: '60px' }}>
+        <Table.Td style={{ textAlign: 'center', width: '60px', verticalAlign: 'middle' }}>
           {hasNoPermissions && (
             <Tooltip 
               label={t('roles:noPermissionsWarning', 'This role has no permissions assigned')} 
@@ -61,7 +61,7 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
               position="left"
               color="dark"
             >
-              <div onClick={(e) => e.stopPropagation()} style={{ display: 'inline-block' }}>
+              <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <IconAlertCircle 
                   size={20} 
                   style={{ 

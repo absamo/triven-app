@@ -84,7 +84,7 @@ interface BillingData {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await requireBetterAuthUser(request)
+  const user = await requireBetterAuthUser(request, ['read:plans'])
 
   // Get user's subscription
   const subscription = await prisma.subscription.findUnique({
