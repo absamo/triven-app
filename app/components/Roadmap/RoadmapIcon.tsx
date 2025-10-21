@@ -17,7 +17,7 @@ export default function RoadmapIcon({ isAdmin }: RoadmapIconProps) {
   }
 
   return (
-    <Tooltip label="Product Roadmap" position="bottom">
+    <Tooltip label="Product Roadmap" position="bottom" withArrow>
       <ActionIcon
         component={NavLink}
         to="/roadmap"
@@ -25,8 +25,12 @@ export default function RoadmapIcon({ isAdmin }: RoadmapIconProps) {
         size="lg"
         radius="xl"
         aria-label="Product Roadmap"
+        style={{
+          transition: 'all 0.2s ease',
+          color: 'light-dark(var(--mantine-color-dark-9), var(--mantine-color-gray-3))',
+        }}
       >
-        <IconRoadSign size={20} stroke={1.5} />
+        <IconRoadSign size={22} stroke={1.5} />
       </ActionIcon>
     </Tooltip>
   )

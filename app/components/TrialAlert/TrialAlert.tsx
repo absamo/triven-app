@@ -1,5 +1,5 @@
-import { Button, Flex, Group, Text } from '@mantine/core'
-import { IconAlertTriangle, IconClock, IconCrown } from '@tabler/icons-react'
+import { Button, Flex, Text } from '@mantine/core'
+import { IconCrown } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import type { TrialUrgencyLevel } from '~/app/utils/subscription'
 import classes from './TrialAlert.module.css'
@@ -29,10 +29,6 @@ export default function TrialAlert({
   // Determine color based on urgency
   const color = urgencyLevel === 'low' ? 'blue' : urgencyLevel === 'medium' ? 'orange' : 'red'
 
-  // Determine icon
-  const Icon =
-    urgencyLevel === 'high' ? IconAlertTriangle : urgencyLevel === 'medium' ? IconClock : IconCrown
-
   // Message with interpolation
   const message =
     daysRemaining === 1
@@ -49,37 +45,31 @@ export default function TrialAlert({
       justify="center"
       gap="lg"
       p="sm"
-      mb="xl"
       data-urgency={urgencyLevel}
       data-position={position}
       style={{
-        border: `1px solid light-dark(var(--mantine-color-${color}-4), var(--mantine-color-${color}-6))`,
-        borderLeft: 0,
-        borderRight: 0,
+        borderBottom: `1px solid light-dark(var(--mantine-color-${color}-4), var(--mantine-color-${color}-6))`,
         borderRadius: 0,
+        width: '100%',
+        position: 'sticky',
+        marginTop: '-24px',
+        top: 70,
+        marginBottom: '30px',   
+        zIndex: 100,
+        backgroundColor: 'light-dark(var(--mantine-color-white), var(--mantine-color-dark-7))',
       }}
     >
-      <Group gap="xs">
-        {Icon && (
-          <Icon
-            size={18}
-            style={{
-              color: `light-dark(var(--mantine-color-${color}-7), var(--mantine-color-${color}-3))`,
-            }}
-          />
-        )}
-        <Text
-          size="sm"
-          fw={700}
-          tt="uppercase"
-          style={{
-            letterSpacing: '0.5px',
-            color: `light-dark(var(--mantine-color-${color}-9), var(--mantine-color-${color}-2))`,
-          }}
-        >
-          {message}
-        </Text>
-      </Group>
+      <Text
+        size="sm"
+        fw={700}
+        tt="uppercase"
+        style={{
+          letterSpacing: '0.5px',
+          color: `light-dark(var(--mantine-color-${color}-9), var(--mantine-color-${color}-2))`,
+        }}
+      >
+        {message}
+      </Text>
       {showUpgradeButton && (
         <Button
           variant="filled"
@@ -87,13 +77,19 @@ export default function TrialAlert({
           size="compact-xs"
           radius="sm"
           leftSection={<IconCrown size={14} />}
-          style={{
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.3px',
-            fontSize: '0.7rem',
-            padding: '4px 10px',
-            height: 'auto',
+          styles={{
+            root: {
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.3px',
+              fontSize: '0.7rem',
+              padding: '4px 10px',
+              height: 'auto',
+              cursor: 'pointer',
+            },
+            inner: {
+              pointerEvents: 'none',
+            },
           }}
           onClick={onUpgradeClick}
         >
