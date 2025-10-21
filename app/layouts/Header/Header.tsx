@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Avatar,
   Badge,
+  Button,
   Divider,
   Flex,
   Group,
@@ -17,6 +18,7 @@ import {
   IconCheck,
   IconChevronDown,
   IconChevronUp,
+  IconCrown,
   IconLogout,
   IconMoon,
   IconSparkles,
@@ -25,7 +27,7 @@ import {
 } from '@tabler/icons-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import type { INotification } from '~/app/common/validations/notificationSchema'
 import type { IProfile } from '~/app/common/validations/profileSchema'
 import type { IRole } from '~/app/common/validations/roleSchema'
@@ -48,6 +50,9 @@ interface HeaderProps {
     trialPeriodDays: number
   }
   notifications: INotification[]
+  hasActiveTrialBanner?: boolean
+  showUpgradeCta?: boolean
+  onUpgradeClick?: () => void
 }
 
 const languages = [
@@ -55,9 +60,15 @@ const languages = [
   { code: 'fr', name: 'Français', flag: FrIcon },
 ]
 
-export default function Header({ showNotification, user, notifications }: HeaderProps) {
+export default function Header({
+  showNotification,
+  user,
+  notifications,
+  hasActiveTrialBanner,
+  showUpgradeCta,
+  onUpgradeClick,
+}: HeaderProps) {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
-  const navigate = useNavigate()
   const { t, i18n } = useTranslation(['navigation', 'auth', 'common'])
   const [realTimeNotifications, setRealTimeNotifications] = useState<INotification[]>(notifications)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -85,7 +96,7 @@ export default function Header({ showNotification, user, notifications }: Header
     const eventSource = new EventSource('/api/notifications-stream')
     eventSourceRef.current = eventSource
 
-    eventSource.addEventListener('connected', (event) => {
+    eventSource.addEventListener('connected', () => {
       // Connection established
     })
 
@@ -124,6 +135,7 @@ export default function Header({ showNotification, user, notifications }: Header
   }, [])
 
   const trialing = user.planStatus === 'trialing'
+  const trialPeriodDays = user.trialPeriodDays
 
   return (
     <div className={classes.header}>
@@ -141,6 +153,30 @@ export default function Header({ showNotification, user, notifications }: Header
             </Badge>
           )}
         </Flex>
+
+        {/* Trial Alert in the middle */}
+        {hasActiveTrialBanner && (
+          <Flex align="center" justify="center" style={{ flex: 1 }}>
+            <Group gap="sm">
+              <Text size="sm" fw={500} c="orange">
+                {trialPeriodDays === 1
+                  ? t('navigation:trialExpiresIn1Day')
+                  : t('navigation:trialExpiresInDays', { days: trialPeriodDays })}
+              </Text>
+              {showUpgradeCta && (
+                <Button
+                  variant="filled"
+                  color="orange"
+                  size="xs"
+                  leftSection={<IconCrown size={14} />}
+                  onClick={onUpgradeClick}
+                >
+                  {t('navigation:upgradeNow')}
+                </Button>
+              )}
+            </Group>
+          </Flex>
+        )}
 
         {/* Right side content */}
         <Flex align="center" gap="md" h="100%">

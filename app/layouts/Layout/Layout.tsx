@@ -1,21 +1,17 @@
 import {
   ActionIcon,
-  Alert,
   AppShell,
   Burger,
-  Button,
   Center,
   Container,
   Flex,
-  Group,
   LoadingOverlay,
   Overlay,
   ScrollArea,
-  Text,
   useMantineTheme,
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconChevronLeft, IconChevronRight, IconCrown } from '@tabler/icons-react'
+import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
 import clsx from 'clsx'
 import dayjs from 'dayjs'
 import { useEffect, useRef, useState } from 'react'
@@ -54,7 +50,7 @@ class SubscriptionStreamManager {
 
   connect(): void {
     this.connectionCount++
-    
+
     if (this.eventSource) {
       // Connection already exists
       return
@@ -116,7 +112,7 @@ function FooterWrapper() {
 function LayoutContent({ user, notifications }: LayoutPageProps) {
   const { isFormActive } = useFormContext()
   const theme = useMantineTheme()
-  const { t } = useTranslation(['navigation'])
+  useTranslation(['navigation'])
 
   // Upgrade modal state
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
@@ -175,7 +171,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
   useEffect(() => {
     const manager = SubscriptionStreamManager.getInstance()
-    
+
     // Create listener function
     const handleSubscriptionUpdate = (data: any) => {
       // Update local state immediately for instant UI update
@@ -305,11 +301,11 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     shouldShowUpgrade(subscriptionStatus.status) &&
     canUpgrade(user.currentPlan, subscriptionStatus.status)
 
-  const HEADER_BASE_HEIGHT = 70
-  const TRIAL_BANNER_HEIGHT = 60
-  const headerHeight = hasActiveTrialBanner
-    ? HEADER_BASE_HEIGHT + TRIAL_BANNER_HEIGHT
-    : HEADER_BASE_HEIGHT
+  // const HEADER_BASE_HEIGHT = 70
+  // const TRIAL_BANNER_HEIGHT = 60
+  // const headerHeight = hasActiveTrialBanner
+  //   ? HEADER_BASE_HEIGHT + TRIAL_BANNER_HEIGHT
+  //   : HEADER_BASE_HEIGHT
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -343,7 +339,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
         transitionDuration={300}
         transitionTimingFunction="ease"
         padding="lg"
-        header={{ height: headerHeight }}
+        header={{ height: 70 }}
         footer={isFormActive ? { height: 70 } : undefined}
         navbar={{
           width: showMiniNavbar ? 85 : 280,
@@ -364,13 +360,12 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
       >
         <AppShell.Header className={classes.header}>
           <Flex align="center" justify="space-between" className={classes.headerBar}>
-            <Flex align="center" gap="md">
+            <Flex align="center" gap="md" style={{ position: 'absolute', left: 20 }}>
               <Burger
                 opened={!opened}
                 onClick={toggle}
                 hiddenFrom="sm"
                 size="sm"
-                pl={20}
                 color={theme.colors.blue[6]}
               />
             </Flex>
@@ -384,30 +379,11 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
                 },
               }}
               notifications={notifications}
+              hasActiveTrialBanner={hasActiveTrialBanner}
+              showUpgradeCta={showUpgradeCta}
+              onUpgradeClick={handleUpgradeClick}
             />
           </Flex>
-          {hasActiveTrialBanner && (
-            <Alert className={classes.trialAlert} variant="light" color="orange">
-              <Group justify="center" w="100%">
-                <Text size="sm" fw={500}>
-                  {trialPeriodDays === 1
-                    ? t('navigation:trialExpiresIn1Day')
-                    : t('navigation:trialExpiresInDays', { days: trialPeriodDays })}
-                </Text>
-                {showUpgradeCta && (
-                  <Button
-                    variant="filled"
-                    color="orange"
-                    size="xs"
-                    leftSection={<IconCrown size={14} />}
-                    onClick={handleUpgradeClick}
-                  >
-                    {t('navigation:upgradeNow')}
-                  </Button>
-                )}
-              </Group>
-            </Alert>
-          )}
         </AppShell.Header>
         <AppShell.Navbar
           className={clsx(classes.navbar, {
