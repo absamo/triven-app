@@ -17,12 +17,12 @@ export default function BackButton({
   onClick,
   children,
   size = 'sm',
-  color = '#000000',
+  color,
   position = 'inline',
   style = {},
 }: BackButtonProps) {
   const baseStyle: React.CSSProperties = {
-    color,
+    color: color || 'light-dark(var(--mantine-color-dark-9), var(--mantine-color-gray-0))',
     fontWeight: 500,
     textDecoration: 'none',
     display: 'inline-flex',
@@ -30,7 +30,16 @@ export default function BackButton({
     gap: rem(4),
     transition: 'none',
     transform: 'none',
-    fontSize: size === 'xs' ? rem(12) : size === 'sm' ? rem(14) : size === 'md' ? rem(16) : size === 'lg' ? rem(18) : rem(20),
+    fontSize:
+      size === 'xs'
+        ? rem(12)
+        : size === 'sm'
+          ? rem(14)
+          : size === 'md'
+            ? rem(16)
+            : size === 'lg'
+              ? rem(18)
+              : rem(20),
     ...style,
   }
 
@@ -48,7 +57,16 @@ export default function BackButton({
 
   if (onClick) {
     return (
-      <button onClick={onClick} style={{ ...combinedStyle, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+      <button
+        onClick={onClick}
+        style={{
+          ...combinedStyle,
+          cursor: 'pointer',
+          background: 'none',
+          border: 'none',
+          padding: 0,
+        }}
+      >
         <IconArrowLeft size={16} />
         {children}
       </button>

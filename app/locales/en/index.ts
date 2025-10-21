@@ -24,6 +24,7 @@ import sites from './sites'
 import suppliers from './suppliers'
 import teams from './teams'
 import translation from './translation'
+import trial from './trial'
 import workflowHistory from './workflow-history'
 import workflowTemplates from './workflow-templates'
 import workflows from './workflows'
@@ -42,6 +43,7 @@ export default {
   assistant,
   pricing,
   demo,
+  trial,
   backorders,
   salesOrders,
   invoices,

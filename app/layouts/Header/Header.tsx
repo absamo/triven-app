@@ -50,9 +50,6 @@ interface HeaderProps {
     trialPeriodDays: number
   }
   notifications: INotification[]
-  hasActiveTrialBanner?: boolean
-  showUpgradeCta?: boolean
-  onUpgradeClick?: () => void
 }
 
 const languages = [
@@ -60,14 +57,7 @@ const languages = [
   { code: 'fr', name: 'Français', flag: FrIcon },
 ]
 
-export default function Header({
-  showNotification,
-  user,
-  notifications,
-  hasActiveTrialBanner,
-  showUpgradeCta,
-  onUpgradeClick,
-}: HeaderProps) {
+export default function Header({ showNotification, user, notifications }: HeaderProps) {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
   const { t, i18n } = useTranslation(['navigation', 'auth', 'common'])
   const [realTimeNotifications, setRealTimeNotifications] = useState<INotification[]>(notifications)
@@ -135,7 +125,6 @@ export default function Header({
   }, [])
 
   const trialing = user.planStatus === 'trialing'
-  const trialPeriodDays = user.trialPeriodDays
 
   return (
     <div className={classes.header}>
@@ -153,30 +142,6 @@ export default function Header({
             </Badge>
           )}
         </Flex>
-
-        {/* Trial Alert in the middle */}
-        {hasActiveTrialBanner && (
-          <Flex align="center" justify="center" style={{ flex: 1 }}>
-            <Group gap="sm">
-              <Text size="sm" fw={500} c="orange">
-                {trialPeriodDays === 1
-                  ? t('navigation:trialExpiresIn1Day')
-                  : t('navigation:trialExpiresInDays', { days: trialPeriodDays })}
-              </Text>
-              {showUpgradeCta && (
-                <Button
-                  variant="filled"
-                  color="orange"
-                  size="xs"
-                  leftSection={<IconCrown size={14} />}
-                  onClick={onUpgradeClick}
-                >
-                  {t('navigation:upgradeNow')}
-                </Button>
-              )}
-            </Group>
-          </Flex>
-        )}
 
         {/* Right side content */}
         <Flex align="center" gap="md" h="100%">

@@ -18,14 +18,16 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation, useNavigate, useNavigation, useRevalidator } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
-import { canUpgrade, shouldShowUpgrade } from '~/app/common/helpers/payment'
+import { canUpgrade } from '~/app/common/helpers/payment'
 import type { INotification } from '~/app/common/validations/notificationSchema'
 import type { IProfile } from '~/app/common/validations/profileSchema'
 import type { IRole } from '~/app/common/validations/roleSchema'
 import { SubscriptionStatusModal, UpgradePaymentModal } from '~/app/components'
 import ScrollToTop from '~/app/components/ScrollToTop'
+import TrialAlert from '~/app/components/TrialAlert'
 import { FormProvider, useFormContext } from '~/app/contexts/FormContext'
 import { useSessionBasedOnlineStatus } from '~/app/lib/hooks/useSessionBasedOnlineStatus'
+import { calculateTrialStatus, getTrialAlertConfig } from '~/app/utils/subscription'
 import { useRootLoaderData } from '~/app/utils/useDetectedLanguage'
 import Footer from '../Footer/Footer'
 import Header from '../Header/Header'
@@ -289,17 +291,16 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     }
   }, [unpaidSubscription])
 
-  // Calculate trial days from trialEnd timestamp
-  const trialPeriodDays =
-    trialing && subscriptionStatus.trialEnd > 0
-      ? Math.max(0, dayjs(subscriptionStatus.trialEnd * 1000).diff(dayjs(), 'days'))
-      : 0
+  // Calculate trial status using new utilities
+  const trialStatus = calculateTrialStatus({
+    status: subscriptionStatus.status,
+    trialEnd: subscriptionStatus.trialEnd,
+  })
 
-  const hasActiveTrialBanner = trialing && trialPeriodDays > 0
-
-  const showUpgradeCta =
-    shouldShowUpgrade(subscriptionStatus.status) &&
+  const trialAlertConfig = getTrialAlertConfig(
+    trialStatus,
     canUpgrade(user.currentPlan, subscriptionStatus.status)
+  )
 
   // const HEADER_BASE_HEIGHT = 70
   // const TRIAL_BANNER_HEIGHT = 60
@@ -379,12 +380,10 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
                 },
               }}
               notifications={notifications}
-              hasActiveTrialBanner={hasActiveTrialBanner}
-              showUpgradeCta={showUpgradeCta}
-              onUpgradeClick={handleUpgradeClick}
             />
           </Flex>
         </AppShell.Header>
+
         <AppShell.Navbar
           className={clsx(classes.navbar, {
             [classes.mini]: showMiniNavbar,
@@ -416,6 +415,17 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
           </ActionIcon>
         </AppShell.Navbar>
         <AppShell.Main className={classes.main}>
+          {/* Trial Alert at top of main section */}
+          {trialAlertConfig.visible && !location.pathname.startsWith('/billing') && (
+            <TrialAlert
+              daysRemaining={trialStatus.daysRemaining}
+              urgencyLevel={trialStatus.urgencyLevel}
+              onUpgradeClick={handleUpgradeClick}
+              showUpgradeButton={trialAlertConfig.showUpgradeButton}
+              position="banner"
+            />
+          )}
+
           {loadingTime > 1000 && currentState === 'loading' ? (
             <Center>
               <LoadingOverlay
