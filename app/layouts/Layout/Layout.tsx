@@ -414,7 +414,14 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
             )}
           </ActionIcon>
         </AppShell.Navbar>
-        <AppShell.Main className={classes.main}>
+        <AppShell.Main
+          className={classes.main}
+          data-trial-banner={
+            trialAlertConfig.visible && !location.pathname.startsWith('/billing')
+              ? 'visible'
+              : 'hidden'
+          }
+        >
           {/* Trial Alert at top of main section */}
           {trialAlertConfig.visible && !location.pathname.startsWith('/billing') && (
             <TrialAlert

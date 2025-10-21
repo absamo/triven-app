@@ -1,14 +1,4 @@
-import {
-  ActionIcon,
-  Grid,
-  Group,
-  Paper,
-  SimpleGrid,
-  Stack,
-  Text,
-  Title,
-  Tooltip,
-} from '@mantine/core'
+import { ActionIcon, Grid, Paper, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core'
 import { DatePickerInput, type DatesRangeValue } from '@mantine/dates'
 import { IconCalendar, IconFilterOff } from '@tabler/icons-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -17,6 +7,7 @@ import { useFetcher, useSearchParams } from 'react-router'
 import type { IAgency } from '~/app/common/validations/agencySchema'
 import type { ISite } from '~/app/common/validations/siteSchema'
 import { AgencySites } from '~/app/partials/AgencySites'
+import { Title } from '~/app/partials/Title'
 import { useDashboardUpdates } from '~/app/utils/useDashboardUpdates'
 import classes from './Dashboard.module.css'
 import FinanceStats from './FinanceStats'
@@ -440,21 +431,10 @@ export default function Dashboard({
 
   return (
     <div className={classes.root}>
-      {/* Header with Controls */}
-      <div className={classes.headerSection}>
-        <Stack gap="xs" mb="xl">
-          <Group justify="space-between" align="flex-start">
-            <div>
-              <Title order={1} className={classes.headerTitle}>
-                {t('analyticsOverview')}
-              </Title>
-              <Text size="sm" c="dimmed" className={classes.headerSubtitle} mt={4}>
-                {t('realtimeInsights')}
-              </Text>
-            </div>
-          </Group>
-        </Stack>
-      </div>
+      {/* Header with Title Component */}
+      <Title description={t('realtimeInsights')} sticky>
+        {t('analyticsOverview')}
+      </Title>
 
       <Stack gap="xl">
         {/* Filters Section */}
