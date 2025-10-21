@@ -1,16 +1,19 @@
-import { useEffect, useState } from 'react'
 // import { useFetcher } from "@remix-run/react"
 // import { useDebouncedValue } from "@mantine/hooks"
 import { Select } from '@mantine/core'
+import { useEffect, useState } from 'react'
 
 export function SearchableSelect({ ...props }) {
   //   const fetcher = useFetcher()
 
-  useEffect(() => {
-    setSearchValue(props.searchValue)
-  }, [props.searchValue])
+  const [searchValue, setSearchValue] = useState<string | undefined>(props.searchValue)
 
-  const [searchValue, setSearchValue] = useState<string>()
+  useEffect(() => {
+    // Only control searchValue if explicitly provided via props
+    if (props.searchValue !== undefined) {
+      setSearchValue(props.searchValue)
+    }
+  }, [props.searchValue])
 
   // const [debounced] = useDebouncedValue(searchValue, 200)
 
@@ -27,16 +30,22 @@ export function SearchableSelect({ ...props }) {
 
   return (
     <Select
-      {...props}
       allowDeselect={false}
       searchable
       onSearchChange={handleSearch}
-      searchValue={searchValue}
+      {...(props.searchValue !== undefined && { searchValue })}
       nothingFoundMessage={props.nothingFoundMessage || 'No options'}
       comboboxProps={{ shadow: 'md' }}
+      {...props}
       styles={{
+        ...props.styles,
         dropdown: {
+          ...props.styles?.dropdown,
           zIndex: 9999,
+        },
+        input: {
+          ...props.styles?.input,
+          color: 'light-dark(var(--mantine-color-dark-9), var(--mantine-color-gray-0))',
         },
       }}
       description={props.description}

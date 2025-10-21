@@ -58,6 +58,8 @@
 
 /* Date picker specific styling */
 .datePickerInput {
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+  color: light-dark(var(--mantine-color-dark-9), var(--mantine-color-gray-0));
   font-size: 14px;
 }
 

@@ -31,7 +31,29 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+### Mandatory Principles Checklist
+
+- [ ] **Service-Oriented Architecture**: Feature implemented as standalone service functions (no classes)
+- [ ] **Dark/Light Mode Support**: All UI components use Mantine with theme-aware styling
+- [ ] **Test-First Development**: Tests written and approved before implementation
+- [ ] **Real-Time Capabilities**: WebSockets used for features requiring live updates
+- [ ] **Data Integrity**: Audit trails implemented for business-critical operations
+- [ ] **API-First Development**: REST endpoints with Zod validation and proper status codes
+- [ ] **Accessibility & Responsive**: WCAG 2.1 AA compliance, responsive breakpoints, keyboard navigation
+- [ ] **CSS Modules & Styling**: Components use CSS Modules (.module.css) with classnames, no inline styles
+- [ ] **Component File Structure**: All components follow 4-file structure (index.ts, Component.tsx, .module.css, .test.tsx)
+- [ ] **TypeScript Type Safety**: Strict types, no `any`, Zod schemas at boundaries
+- [ ] **Database Operations**: Prisma ORM with migrations, proper indexing, audit logging
+- [ ] **Security**: Authentication checks, input validation, permission verification
+- [ ] **AI Integration**: Optional, fault-tolerant, with graceful degradation
+
+### Violations Requiring Justification
+
+*Complete table below ONLY if any constitutional requirements cannot be met:*
+
+| Principle Violated | Why Required | Simpler Alternative Rejected Because |
+|-------------------|--------------|-------------------------------------|
+| [e.g., Component Structure] | [specific constraint] | [why 4-file pattern not feasible] |
 
 ## Project Structure
 

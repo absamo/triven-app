@@ -1,5 +1,4 @@
 import {
-  type TitleOrder,
   ActionIcon,
   Anchor,
   Button,
@@ -8,13 +7,14 @@ import {
   Group,
   Title as MantineTitle,
   Paper,
+  rem,
   Stack,
   Text,
-  rem,
+  type TitleOrder,
 } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
-import { type To, Link } from 'react-router'
+import { Link, type To } from 'react-router'
 
 import classes from '~/app/partials/Title/Title.module.css'
 
@@ -28,6 +28,7 @@ interface TitleProps {
   createLabel?: string
   filter?: string
   additionalButtons?: React.ReactNode
+  additionalContent?: React.ReactNode
   sticky?: boolean
 }
 
@@ -41,6 +42,7 @@ export default function Title({
   createLabel,
   filter,
   additionalButtons,
+  additionalContent,
   sticky = true,
 }: TitleProps) {
   const { t } = useTranslation(['common'])
@@ -87,6 +89,7 @@ export default function Title({
           )}
         </Group>
       </Flex>
+      {additionalContent && <div style={{ marginTop: '1rem' }}>{additionalContent}</div>}
     </Paper>
   )
 }

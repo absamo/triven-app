@@ -100,6 +100,34 @@
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
+### UI/Styling Requirements *(include if feature has UI components)*
+
+<!--
+  ACTION REQUIRED: Specify UI styling approach for components.
+  All components must follow Constitutional Principles VIII & IX.
+-->
+
+- **Component Structure**: All components MUST follow 4-file structure (index.ts, Component.tsx, .module.css, .test.tsx)
+- **Component Styling**: All components MUST use CSS Modules (`.module.css` files)
+- **Theme Integration**: Leverage Mantine components and CSS variables (`var(--mantine-color-*)`)
+- **Dark/Light Mode**: All UI MUST support both themes automatically (Principle II)
+- **Responsive Design**: Define breakpoints - Mobile (375px+), Tablet (768px+), Desktop (1200px+)
+- **Accessibility**: WCAG 2.1 AA compliance with proper ARIA labels and keyboard navigation
+- **Testing**: Component unit tests (React Testing Library), page integration tests for full user journeys
+
+*Example component structure:*
+```
+FeatureDashboard/
+├── index.ts                      # Export: export { FeatureDashboard } from './FeatureDashboard';
+├── FeatureDashboard.tsx          # Component implementation with Mantine components
+├── FeatureDashboard.module.css   # Theme-aware styles with CSS variables
+└── FeatureDashboard.test.tsx     # Unit tests with React Testing Library
+```
+
+*Example styling note:*
+- Conditional styling via `classnames` utility: `classnames(classes.card, { [classes.active]: isActive })`
+- NO inline styles except for runtime-calculated values (e.g., dynamic positioning)
+
 ## Success Criteria *(mandatory)*
 
 <!--

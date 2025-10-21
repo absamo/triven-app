@@ -432,97 +432,106 @@ export default function Dashboard({
   return (
     <div className={classes.root}>
       {/* Header with Title Component */}
-      <Title description={t('realtimeInsights')} sticky>
+      <Title
+        description={t('realtimeInsights')}
+        sticky
+        additionalContent={
+          <Paper
+            withBorder
+            p="md"
+            radius="md"
+            shadow="xs"
+            style={{ position: 'relative', zIndex: 100 }}
+          >
+            <Grid justify="space-between" align="center" grow>
+              <Grid.Col span={2}>
+                <Text size="sm" fw={500} c="dimmed">
+                  Filter Dashboard
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={3}>
+                <DatePickerInput
+                  type="range"
+                  placeholder={
+                    dateRange && dateRange[0] && dateRange[1]
+                      ? `${getFormattedDateRange()?.start} - ${getFormattedDateRange()?.end}`
+                      : t('selectDateRange')
+                  }
+                  value={dateRange}
+                  onChange={(newDateRange) => {
+                    setDateRange(newDateRange)
+                    updateUrlWithFilters(agency || undefined, site || undefined, newDateRange)
+                    // If the range is cleared (both values are null), use the clear function
+                    if (!newDateRange || (!newDateRange[0] && !newDateRange[1])) {
+                      clearDateFilter()
+                    } else if (fetcher.state === 'idle') {
+                      const queryString = buildDashboardQuery(
+                        agency || undefined,
+                        site || undefined,
+                        newDateRange
+                      )
+                      fetcher.load(`/dashboard${queryString}`)
+                    }
+                  }}
+                  leftSection={<IconCalendar size={20} />}
+                  radius="md"
+                  valueFormat="MMM D, YYYY"
+                  getDayProps={(date) => ({
+                    style: {
+                      fontSize: '14px',
+                    },
+                  })}
+                  classNames={{
+                    input: classes.datePickerInput,
+                  }}
+                  presets={getPresetDates()}
+                  clearable
+                />
+              </Grid.Col>
+
+              {showAgencies && (
+                <AgencySites
+                  key={`agency-site-${agency}-${site}`}
+                  agencyId={agency}
+                  siteId={site}
+                  agencies={agencies}
+                  sites={sites}
+                  onChange={({ agencyId, siteId }: { agencyId: string; siteId: string }) => {
+                    setAgency(agencyId)
+                    setSite(siteId)
+                    updateUrlWithFilters(agencyId, siteId, dateRange)
+                    if (fetcher.state === 'idle') {
+                      const queryString = buildDashboardQuery(agencyId, siteId, dateRange)
+                      fetcher.load(`/dashboard${queryString}`)
+                    }
+                  }}
+                  error={{ agencyId: '', siteId: '' }}
+                  extraProps={{ colSpan: 3, hideLabels: true }}
+                />
+              )}
+              <Grid.Col span={'auto'} style={{ marginLeft: 'auto' }}>
+                {hasActiveFilters() && (
+                  <Tooltip label={t('clearAllFilters')} position="bottom">
+                    <ActionIcon
+                      variant="light"
+                      color="gray"
+                      size="md"
+                      onClick={clearAllFilters}
+                      disabled={loading}
+                    >
+                      <IconFilterOff size={16} />
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+              </Grid.Col>
+            </Grid>
+          </Paper>
+        }
+      >
         {t('analyticsOverview')}
       </Title>
 
       <Stack gap="xl">
-        {/* Filters Section */}
-        <Paper withBorder p="md" radius="md" shadow="xs">
-          <Grid justify="space-between" align="center" grow>
-            <Grid.Col span={2}>
-              <Text size="sm" fw={500} c="dimmed">
-                Filter Dashboard
-              </Text>
-            </Grid.Col>
-            <Grid.Col span={3}>
-              <DatePickerInput
-                type="range"
-                placeholder={
-                  dateRange && dateRange[0] && dateRange[1]
-                    ? `${getFormattedDateRange()?.start} - ${getFormattedDateRange()?.end}`
-                    : t('selectDateRange')
-                }
-                value={dateRange}
-                onChange={(newDateRange) => {
-                  setDateRange(newDateRange)
-                  updateUrlWithFilters(agency || undefined, site || undefined, newDateRange)
-                  // If the range is cleared (both values are null), use the clear function
-                  if (!newDateRange || (!newDateRange[0] && !newDateRange[1])) {
-                    clearDateFilter()
-                  } else if (fetcher.state === 'idle') {
-                    const queryString = buildDashboardQuery(
-                      agency || undefined,
-                      site || undefined,
-                      newDateRange
-                    )
-                    fetcher.load(`/dashboard${queryString}`)
-                  }
-                }}
-                leftSection={<IconCalendar size={20} />}
-                radius="md"
-                valueFormat="MMM D, YYYY"
-                getDayProps={(date) => ({
-                  style: {
-                    fontSize: '14px',
-                  },
-                })}
-                classNames={{
-                  input: `${classes.inputField} ${classes.datePickerInput}`,
-                }}
-                presets={getPresetDates()}
-                clearable
-              />
-            </Grid.Col>
-
-            {showAgencies && (
-              <AgencySites
-                key={`agency-site-${agency}-${site}`}
-                agencyId={agency}
-                siteId={site}
-                agencies={agencies}
-                sites={sites}
-                onChange={({ agencyId, siteId }: { agencyId: string; siteId: string }) => {
-                  setAgency(agencyId)
-                  setSite(siteId)
-                  updateUrlWithFilters(agencyId, siteId, dateRange)
-                  if (fetcher.state === 'idle') {
-                    const queryString = buildDashboardQuery(agencyId, siteId, dateRange)
-                    fetcher.load(`/dashboard${queryString}`)
-                  }
-                }}
-                error={{ agencyId: '', siteId: '' }}
-                extraProps={{ colSpan: 3, hideLabels: true }}
-              />
-            )}
-            <Grid.Col span={'auto'} style={{ marginLeft: 'auto' }}>
-              {hasActiveFilters() && (
-                <Tooltip label={t('clearAllFilters')} position="bottom">
-                  <ActionIcon
-                    variant="light"
-                    color="gray"
-                    size="md"
-                    onClick={clearAllFilters}
-                    disabled={loading}
-                  >
-                    <IconFilterOff size={16} />
-                  </ActionIcon>
-                </Tooltip>
-              )}
-            </Grid.Col>
-          </Grid>
-        </Paper>
-
         {/* Inventory Command Center - Killer Widget */}
         <InventoryCommandCenter
           agencyId={agency}

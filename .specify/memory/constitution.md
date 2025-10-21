@@ -1,3 +1,49 @@
+<!--
+=========================================================================================
+SYNC IMPACT REPORT - Constitution Update
+=========================================================================================
+
+Version Change: 1.0.0 → 1.2.0
+
+Amendment Type: MINOR (Two new principles added)
+
+Changes Made:
+- Added Principle VIII: CSS Modules & Styling Standards (NEW)
+  * Mandates CSS Modules with classnames over inline styling
+  * Requires co-located .module.css files for components
+  * Prohibits inline styles except for dynamic runtime values
+  * Integrates with existing Principle II (Dark/Light Mode Support)
+
+- Added Principle IX: Component File Structure (NEW)
+  * Mandates standard 4-file structure for all components
+  * Requires index.ts, Component.tsx, Component.module.css, Component.test.tsx
+  * Defines integration testing requirements for pages
+  * Ensures consistent organization and discoverability
+
+Modified Principles: None
+Added Sections: Principle VIII, Principle IX
+Removed Sections: None
+
+Template Updates Required:
+✅ plan-template.md - Updated Constitution Check with styling & structure principles
+✅ spec-template.md - Added UI/Styling and Component Structure requirements
+✅ tasks-template.md - Added component creation and testing task examples
+✅ constitution_update_checklist.md - Already exists and is current
+
+Follow-up TODOs: None - All placeholders filled
+
+Rationale for MINOR version bump (1.2.0):
+- Two new principles added affecting component development workflow
+- Expands governance with file organization and testing standards
+- Does not invalidate existing code structure
+- Backward compatible - legacy components not required to change immediately
+- Sets foundation for future component scaffolding automation
+
+Amendment Date: 2025-10-21
+Ratified By: Development team via constitutional update process
+=========================================================================================
+-->
+
 # Triven App Constitution
 
 ## Core Principles
@@ -55,6 +101,33 @@ User interfaces must be **accessible and mobile-friendly**:
 - Keyboard navigation support
 - Responsive breakpoints: Mobile (375px+), Tablet (768px+), Desktop (1200px+)
 - Focus states and proper contrast ratios
+
+### VIII. CSS Modules & Styling Standards (NON-NEGOTIABLE)
+All component styling must use **CSS Modules with classnames** instead of inline styles:
+- **CSS Modules required** - Create co-located `.module.css` files for all components
+- Use `className` with imported `classes` object: `className={classes.componentName}`
+- Use `classnames` utility for conditional styling: `classnames(classes.base, { [classes.active]: isActive })`
+- **No inline `style` props** except for truly dynamic runtime values (e.g., calculated positions, user-configurable colors)
+- Integrate with Mantine's theme system via CSS variables: `var(--mantine-color-*)`
+- Co-locate styles: `ComponentName.tsx` + `ComponentName.module.css` in same directory
+- Reference: `app/components/Form.tsx` + `app/components/Form.module.css`
+- **Rationale**: Ensures theme consistency, enables better CSS optimization, improves maintainability, and works seamlessly with dark/light mode (Principle II)
+
+### IX. Component File Structure (NON-NEGOTIABLE)
+All components must follow a **standard 4-file structure** for consistency and maintainability:
+- **Required files for every component directory**:
+  ```
+  ComponentName/
+  ├── index.ts              # Public API - exports component
+  ├── ComponentName.tsx     # Component implementation
+  ├── ComponentName.module.css  # Component styles (CSS Modules)
+  └── ComponentName.test.tsx    # Component unit tests
+  ```
+- **index.ts**: Export only what's needed publicly: `export { ComponentName } from './ComponentName';`
+- **Component tests**: Use React Testing Library for unit tests (render, user interactions, assertions)
+- **Page tests**: Pages require **integration tests** using React Testing Library (full user journeys, loader data, form submissions)
+- **Test location**: Co-located with component (preferred) or mirrored in `app/test/` directory
+- **Rationale**: Consistent structure improves discoverability, enables tree-shaking, simplifies imports, and ensures all components are tested
 
 ## Technical Standards
 
@@ -163,4 +236,4 @@ This constitution supersedes all other development practices and must be followe
 - Automated checks where possible (linting, type checking)
 - Regular constitution reviews (quarterly)
 
-**Version**: 1.0.0 | **Ratified**: 2025-10-20 | **Last Amended**: 2025-10-20
+**Version**: 1.2.0 | **Ratified**: 2025-10-20 | **Last Amended**: 2025-10-21
