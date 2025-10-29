@@ -1,5 +1,5 @@
-import { type ActionFunctionArgs } from 'react-router'
-import { auth } from '~/app/lib/auth'
+import type { ActionFunctionArgs } from 'react-router'
+import { auth } from '~/app/lib/auth.server'
 import { completeWorkflowStep } from '~/app/services/workflow.server'
 
 export async function action({ request }: ActionFunctionArgs) {

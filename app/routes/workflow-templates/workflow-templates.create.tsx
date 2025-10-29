@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from 'react-router'
 import { redirect } from 'react-router'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 import WorkflowTemplateFormPage from '~/app/pages/WorkflowTemplateForm/WorkflowTemplateForm'
 
 export async function loader({ request }: LoaderFunctionArgs) {

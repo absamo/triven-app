@@ -1,5 +1,5 @@
-import { type ActionFunctionArgs } from 'react-router'
-import { auth } from '~/app/lib/auth'
+import type { ActionFunctionArgs } from 'react-router'
+import { auth } from '~/app/lib/auth.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import { triggerWorkflow } from '~/app/services/workflow.server'
 

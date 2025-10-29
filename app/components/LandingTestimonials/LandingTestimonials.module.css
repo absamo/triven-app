@@ -1,0 +1,170 @@
+/* Landing Testimonials Styles */
+/* User Story 3: Social Proof and Trust Building */
+/* Responsive grid with hover effects */
+
+.section {
+  padding: 80px 0;
+  background: var(--mantine-color-dark-7);
+}
+
+[data-mantine-color-scheme="light"] .section {
+  background: var(--mantine-color-white);
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--mantine-color-white);
+  margin-bottom: 2rem;
+}
+
+[data-mantine-color-scheme="light"] .title {
+  color: var(--mantine-color-dark-9);
+}
+
+.grid {
+  margin-top: 2rem;
+}
+
+/* Testimonial Card */
+.testimonialCard {
+  background: var(--mantine-color-dark-6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-mantine-color-scheme="light"] .testimonialCard {
+  background: var(--mantine-color-gray-0);
+  border: 1px solid var(--mantine-color-gray-3);
+}
+
+.testimonialCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+[data-mantine-color-scheme="light"] .testimonialCard:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Fade in up animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Testimonial text */
+.testimonialText {
+  color: var(--mantine-color-gray-3);
+  line-height: 1.6;
+  font-style: italic;
+  flex: 1;
+}
+
+[data-mantine-color-scheme="light"] .testimonialText {
+  color: var(--mantine-color-gray-7);
+}
+
+/* Customer info section */
+.customerInfo {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-mantine-color-scheme="light"] .customerInfo {
+  border-top-color: var(--mantine-color-gray-3);
+}
+
+.customerHeader {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.avatar {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #20fe6b 0%, #1ae65f 100%);
+  color: var(--mantine-color-dark-9);
+}
+
+[data-mantine-color-scheme="light"] .avatar {
+  background: linear-gradient(
+    135deg,
+    var(--mantine-color-green-6) 0%,
+    var(--mantine-color-green-7) 100%
+  );
+  color: var(--mantine-color-white);
+}
+
+.customerName {
+  color: var(--mantine-color-white);
+}
+
+[data-mantine-color-scheme="light"] .customerName {
+  color: var(--mantine-color-dark-9);
+}
+
+.customerRole,
+.customerCompany {
+  line-height: 1.4;
+}
+
+/* Tablet breakpoint (768px) */
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 0;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .testimonialCard {
+    min-height: 260px;
+  }
+}
+
+/* Mobile breakpoint (375px and below) */
+@media (max-width: 375px) {
+  .section {
+    padding: 40px 0;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .testimonialText {
+    font-size: 0.9rem;
+  }
+
+  .testimonialCard {
+    min-height: 240px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .testimonialCard {
+    animation: none;
+    opacity: 1;
+  }
+
+  .testimonialCard:hover {
+    transform: none;
+  }
+}

@@ -1721,3 +1721,79 @@ model FeatureComment {
   @@index([userId])
   @@map("feature_comments")
 }
+
+// Landing Page Models
+
+model DemoRequest {
+  id                 String    @id @default(cuid())
+  name               String    @db.VarChar(100)
+  email              String    @db.VarChar(255)
+  company            String    @db.VarChar(100)
+  teamSize           String
+  preferredDemoTime  DateTime?
+  message            String?   @db.VarChar(1000)
+  status             String    @default("new")
+  notificationSent   Boolean   @default(false)
+  ipAddress          String?   @db.VarChar(45)
+  userAgent          String?   @db.VarChar(255)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@index([ipAddress, createdAt])
+  @@map("demo_requests")
+}
+
+model Testimonial {
+  id               String    @id @default(cuid())
+  customerName     String    @db.VarChar(100)
+  role             String    @db.VarChar(100)
+  company          String    @db.VarChar(100)
+  photoUrl         String?   @db.VarChar(500)
+  testimonialText  String    @db.VarChar(500)
+  starRating       Int       @default(5)
+  isPlaceholder    Boolean   @default(false)
+  displayOrder     Int       @default(0)
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([displayOrder])
+  @@index([isActive])
+  @@index([isActive, displayOrder])
+  @@map("testimonials")
+}
+
+model SuccessMetric {
+  id            String    @id @default(cuid())
+  label         String    @db.VarChar(100)
+  value         String    @db.VarChar(50)
+  icon          String    @db.VarChar(50)
+  displayOrder  Int       @default(0)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([displayOrder])
+  @@index([isActive])
+  @@index([isActive, displayOrder])
+  @@map("success_metrics")
+}
+
+model LandingPageConfig {
+  id                    String    @id @default(cuid())
+  metaTitle             String    @db.VarChar(60)
+  metaDescription       String    @db.VarChar(160)
+  metaKeywords          String?   @db.VarChar(255)
+  defaultTheme          String    @default("dark")
+  showCompanyLogos      Boolean   @default(false)
+  enableDemoRequests    Boolean   @default(true)
+  enableTrialSignup     Boolean   @default(true)
+  demoRequestRateLimit  Int       @default(5)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("landing_page_config")
+}

@@ -1,0 +1,117 @@
+/* Landing CTA Styles */
+/* User Story 2: Frictionless Trial Signup */
+/* Bright green primary button (#20FE6B), outlined secondary button */
+
+.heroGroup {
+  margin: 2rem 0;
+}
+
+.sectionGroup {
+  margin: 1.5rem 0;
+}
+
+/* Primary Button - Bright Green */
+.primaryButton {
+  min-width: 200px;
+  min-height: 48px; /* Touch-friendly minimum */
+  background: #20fe6b;
+  color: var(--mantine-color-dark-9);
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.primaryButton:hover {
+  background: #1ae65f;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(32, 254, 107, 0.3);
+}
+
+.primaryButton:active {
+  transform: translateY(0);
+}
+
+[data-mantine-color-scheme="light"] .primaryButton {
+  color: var(--mantine-color-white);
+  background: var(--mantine-color-green-6);
+}
+
+[data-mantine-color-scheme="light"] .primaryButton:hover {
+  background: var(--mantine-color-green-7);
+  box-shadow: 0 8px 16px rgba(51, 154, 240, 0.2);
+}
+
+/* Secondary Button - Outlined */
+.secondaryButton {
+  min-width: 200px;
+  min-height: 48px; /* Touch-friendly minimum */
+  color: var(--mantine-color-white);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.secondaryButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.secondaryButton:active {
+  transform: translateY(0);
+}
+
+[data-mantine-color-scheme="light"] .secondaryButton {
+  color: var(--mantine-color-dark-7);
+  border-color: var(--mantine-color-dark-4);
+}
+
+[data-mantine-color-scheme="light"] .secondaryButton:hover {
+  background: var(--mantine-color-gray-1);
+  border-color: var(--mantine-color-dark-7);
+}
+
+/* Mobile breakpoint (768px and below) */
+@media (max-width: 768px) {
+  .heroGroup,
+  .sectionGroup {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+/* Small mobile (375px and below) */
+@media (max-width: 375px) {
+  .primaryButton,
+  .secondaryButton {
+    min-width: 100%;
+    font-size: 0.9rem;
+  }
+}
+
+/* Focus states for accessibility */
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible {
+  outline: 3px solid var(--mantine-color-blue-5);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .primaryButton,
+  .secondaryButton {
+    transition: none;
+  }
+
+  .primaryButton:hover,
+  .secondaryButton:hover {
+    transform: none;
+  }
+}

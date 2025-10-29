@@ -1,0 +1,1 @@
+export { LandingSocialProof } from './LandingSocialProof'

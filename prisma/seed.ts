@@ -17,7 +17,7 @@ import {
   WORKFLOW_TRIGGER_TYPES,
 } from '~/app/common/constants'
 import { createEan13 } from '~/app/common/helpers/inventories'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 import { PRICING_PLANS } from '~/app/modules/stripe/plans'
 
 // Initialize Stripe
@@ -407,7 +407,7 @@ async function createCompanyStructure() {
   // Create or find existing company
   const company = await prisma.company.upsert({
     where: {
-      name: 'FlowTech Solutions'
+      name: 'FlowTech Solutions',
     },
     update: {},
     create: {
@@ -3442,6 +3442,99 @@ async function createFeatureRoadmap(users: any[]) {
   return features
 }
 
+// Create landing page data
+async function createLandingPageData() {
+  console.log('🏠 Creating landing page data...')
+
+  // Landing Page Config (singleton)
+  await prisma.landingPageConfig.upsert({
+    where: { id: 'landing-config-singleton' },
+    update: {},
+    create: {
+      id: 'landing-config-singleton',
+      metaTitle: 'Triven - AI-Powered Inventory Management Platform',
+      metaDescription:
+        "Transform inventory chaos into intelligent business growth with Triven's AI-powered platform. 14-day free trial, no credit card required.",
+      metaKeywords:
+        'inventory management, AI inventory, stock tracking, warehouse management, business growth',
+      defaultTheme: 'dark',
+      showCompanyLogos: false, // Hide until real customer logos available
+      enableDemoRequests: true,
+      enableTrialSignup: true,
+      demoRequestRateLimit: 5,
+    },
+  })
+
+  // Success Metrics
+  const successMetrics = [
+    { label: 'Products Managed', value: '15,000+', icon: 'box', displayOrder: 1 },
+    { label: 'Auto-Categorization Accuracy', value: '98%', icon: 'chart', displayOrder: 2 },
+    { label: 'Hours Saved Monthly', value: '2,400+', icon: 'clock', displayOrder: 3 },
+    { label: 'Business Growth Average', value: '34%', icon: 'trending-up', displayOrder: 4 },
+  ]
+
+  for (const metric of successMetrics) {
+    await prisma.successMetric.upsert({
+      where: { id: `metric-${metric.displayOrder}` },
+      update: {},
+      create: {
+        id: `metric-${metric.displayOrder}`,
+        ...metric,
+        isActive: true,
+      },
+    })
+  }
+
+  // Placeholder Testimonials (until real customer testimonials available)
+  const placeholderTestimonials = [
+    {
+      customerName: 'Sarah Johnson',
+      role: 'Operations Manager',
+      company: 'Early Adopter',
+      testimonialText:
+        'Triven transformed our inventory management. We reduced stock-outs by 40% and saved 15 hours per week on manual tracking.',
+      starRating: 5,
+      isPlaceholder: true,
+      displayOrder: 1,
+    },
+    {
+      customerName: 'Michael Chen',
+      role: 'Warehouse Director',
+      company: 'Early Adopter',
+      testimonialText:
+        'The AI-powered categorization is incredible. What used to take days now happens automatically with 98% accuracy.',
+      starRating: 5,
+      isPlaceholder: true,
+      displayOrder: 2,
+    },
+    {
+      customerName: 'Emily Rodriguez',
+      role: 'Business Owner',
+      company: 'Early Adopter',
+      testimonialText:
+        'Real-time visibility across all our locations has been a game-changer. We make better decisions faster.',
+      starRating: 5,
+      isPlaceholder: true,
+      displayOrder: 3,
+    },
+  ]
+
+  for (const testimonial of placeholderTestimonials) {
+    await prisma.testimonial.upsert({
+      where: { id: `testimonial-${testimonial.displayOrder}` },
+      update: {},
+      create: {
+        id: `testimonial-${testimonial.displayOrder}`,
+        ...testimonial,
+        photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.customerName)}&background=20FE6B&color=040308&size=200`,
+        isActive: true,
+      },
+    })
+  }
+
+  console.log('✅ Landing page data created successfully')
+}
+
 async function seed() {
   console.log('🌱 Starting comprehensive seed process...')
 
@@ -3526,6 +3619,9 @@ async function seed() {
 
     // 21. Create feature roadmap items
     const features = await createFeatureRoadmap(users)
+
+    // 22. Create landing page data
+    await createLandingPageData()
 
     console.log('✅ Seed completed successfully!')
     console.log('\n📊 Summary:')

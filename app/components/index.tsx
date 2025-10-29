@@ -17,10 +17,21 @@ import { ThemeToggle } from './ThemeToggle'
 import UpgradePayment from './UpgradePayment'
 import UpgradePaymentModal from './UpgradePaymentModal'
 
+export { DemoRequestModal } from './DemoRequestModal'
 export type { ImageUploadProps, UploadedFile } from './ImageUpload'
-
 // ImageKit components
 export { ImageUpload } from './ImageUpload'
+export { LandingCTA } from './LandingCTA'
+export { LandingDashboardPreview } from './LandingDashboardPreview'
+// Landing page components (User Story 4)
+export { LandingFeatures } from './LandingFeatures'
+// Landing page components (User Story 1 & 2)
+export { LandingHero } from './LandingHero'
+export { LandingPricing } from './LandingPricing'
+// Landing page components (User Story 3)
+export { LandingSocialProof } from './LandingSocialProof'
+export { LandingTestimonials } from './LandingTestimonials'
+
 export type { OptimizedImageProps } from './OptimizedImage'
 export { Avatar, CardImage, HeroImage, OptimizedImage, Thumbnail } from './OptimizedImage'
 // Skeleton components

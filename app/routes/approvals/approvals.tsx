@@ -1,9 +1,9 @@
-import { type LoaderFunctionArgs } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 import ApprovalsPage from '~/app/pages/Approvals'
-import { getApprovalRequests } from '~/app/services/workflow.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getApprovalRequests } from '~/app/services/workflow.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireBetterAuthUser(request, ['read:approvals'])
@@ -29,12 +29,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         ...user,
         role: userWithRole?.role || null,
       },
-      permissions: user?.role?.permissions?.filter(
-        (permission) =>
-          permission === 'create:approvals' ||
-          permission === 'update:approvals' ||
-          permission === 'delete:approvals'
-      ) || [],
+      permissions:
+        user?.role?.permissions?.filter(
+          (permission) =>
+            permission === 'create:approvals' ||
+            permission === 'update:approvals' ||
+            permission === 'delete:approvals'
+        ) || [],
     }),
     {
       headers: {

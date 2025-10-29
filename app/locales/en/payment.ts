@@ -1,8 +1,10 @@
 export default {
   // Payment modal
   payment: 'Payment',
+  upgradePlan: 'Upgrade',
   upgradeTo: 'Upgrade to {{planName}}',
   upgradeToTitle: 'Upgrade to {{planName}}',
+  upgradeDescription: 'Upgrade your subscription to unlock premium features',
   subscribeTo: 'Subscribe to {{planName}}',
   setupPayment: 'Setting up payment...',
   loadingPaymentForm: 'Loading payment form...',
@@ -47,6 +49,17 @@ export default {
   billed: 'billed',
   perMonth: 'per month',
   perYear: 'per year',
+  month: 'month',
+  year: 'year',
+  trial: 'Trial',
+  currentPlan: 'Current',
+  upgradingTo: 'Upgrading to',
+  dueToday: 'Due today',
+  proratedUpgrade: 'Prorated Upgrade',
+  proratedUpgradeDescription: 'Pay difference for remaining billing period',
+  proratedUpgradeTrialDescription: 'Pay difference for remaining period',
+  startSubscription: 'Start Subscription',
+  paymentDetails: 'Payment Details',
 
   // Subscription cancellation
   cancelSubscription: 'Cancel Subscription',

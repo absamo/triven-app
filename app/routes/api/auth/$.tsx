@@ -1,5 +1,5 @@
 import { redirect } from 'react-router'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 
 // Helper function to handle auth errors consistently
 function handleAuthError(error: unknown, url: URL): Response {

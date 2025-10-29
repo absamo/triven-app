@@ -1,8 +1,10 @@
 export default {
   // Payment modal
   payment: 'Paiement',
+  upgradePlan: 'Mise à niveau',
   upgradeTo: 'Passer à {{planName}}',
   upgradeToTitle: 'Passer au plan {{planName}}',
+  upgradeDescription: 'Mettez à niveau votre abonnement pour débloquer des fonctionnalités premium',
   subscribeTo: "S'abonner au plan {{planName}}",
   setupPayment: 'Configuration du paiement...',
   loadingPaymentForm: 'Chargement du formulaire de paiement...',
@@ -80,6 +82,17 @@ export default {
   billed: 'facturé',
   perMonth: 'par mois',
   perYear: 'par an',
+  month: 'mois',
+  year: 'an',
+  trial: 'Essai',
+  currentPlan: 'Actuel',
+  upgradingTo: 'Mise à niveau vers',
+  dueToday: "Dû aujourd'hui",
+  proratedUpgrade: 'Mise à niveau proportionnelle',
+  proratedUpgradeDescription: 'Payez la différence pour la période de facturation restante',
+  proratedUpgradeTrialDescription: 'Payez la différence pour la période restante',
+  startSubscription: "Démarrer l'abonnement",
+  paymentDetails: 'Détails de paiement',
 
   // Subscription cancellation
   cancelSubscription: "Annuler l'abonnement",

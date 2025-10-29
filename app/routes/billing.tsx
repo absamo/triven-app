@@ -1,39 +1,39 @@
-import type { LoaderFunctionArgs } from 'react-router'
-import { data, useLoaderData, useSearchParams, useNavigate } from 'react-router'
-import { 
-  Badge, 
-  Button, 
-  Card, 
-  Container, 
-  Divider, 
-  Group, 
-  Paper, 
-  Stack, 
-  Text, 
-  Title,
-  Alert,
-  Table,
+import {
   ActionIcon,
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Center,
+  Container,
+  Divider,
+  Group,
+  Paper,
+  Stack,
+  Table,
+  Text,
   ThemeIcon,
-  Center
+  Title,
 } from '@mantine/core'
-import { 
-  IconCreditCard, 
-  IconDownload, 
-  IconCrown,
-  IconBrandVisa,
-  IconBrandMastercard,
+import {
   IconAlertTriangle,
-  IconArrowLeft
+  IconArrowLeft,
+  IconBrandMastercard,
+  IconBrandVisa,
+  IconCreditCard,
+  IconCrown,
+  IconDownload,
 } from '@tabler/icons-react'
 import dayjs from 'dayjs'
-
-import { prisma } from '~/app/db.server'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import { getAllInvoices, getUpcomingInvoice } from '~/app/modules/stripe/queries.server'
+import { useTranslation } from 'react-i18next'
+import type { LoaderFunctionArgs } from 'react-router'
+import { data, useLoaderData, useNavigate, useSearchParams } from 'react-router'
 import { formatCurrency } from '~/app/common/helpers/money'
 import BackButton from '~/app/components/BackButton'
 import UpgradePayment from '~/app/components/UpgradePayment'
+import { prisma } from '~/app/db.server'
+import { getAllInvoices, getUpcomingInvoice } from '~/app/modules/stripe/queries.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 export const ROUTE_PATH = '/billing' as const
 
@@ -121,29 +121,33 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   const billingData: BillingData = {
-    subscription: subscription ? {
-      id: subscription.id,
-      planId: subscription.planId,
-      status: subscription.status,
-      interval: subscription.interval,
-      currentPeriodStart: subscription.currentPeriodStart,
-      currentPeriodEnd: subscription.currentPeriodEnd,
-      trialStart: subscription.trialStart,
-      trialEnd: subscription.trialEnd,
-      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-      amount: subscription.price?.amount || 0,
-      currency: subscription.price?.currency || 'USD',
-      paymentMethod: subscription.last4 ? {
-        last4: subscription.last4,
-        brand: subscription.brand || 'card',
-        expMonth: subscription.expMonth || 0,
-        expYear: subscription.expYear || 0,
-      } : null,
-      cancelledAt: subscription.cancelledAt?.toISOString() || null,
-      cancelledBy: subscription.cancelledBy,
-      cancellationReason: subscription.cancellationReason,
-      scheduledCancelAt: subscription.scheduledCancelAt?.toISOString() || null,
-    } : null,
+    subscription: subscription
+      ? {
+          id: subscription.id,
+          planId: subscription.planId,
+          status: subscription.status,
+          interval: subscription.interval,
+          currentPeriodStart: subscription.currentPeriodStart,
+          currentPeriodEnd: subscription.currentPeriodEnd,
+          trialStart: subscription.trialStart,
+          trialEnd: subscription.trialEnd,
+          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          amount: subscription.price?.amount || 0,
+          currency: subscription.price?.currency || 'USD',
+          paymentMethod: subscription.last4
+            ? {
+                last4: subscription.last4,
+                brand: subscription.brand || 'card',
+                expMonth: subscription.expMonth || 0,
+                expYear: subscription.expYear || 0,
+              }
+            : null,
+          cancelledAt: subscription.cancelledAt?.toISOString() || null,
+          cancelledBy: subscription.cancelledBy,
+          cancellationReason: subscription.cancellationReason,
+          scheduledCancelAt: subscription.scheduledCancelAt?.toISOString() || null,
+        }
+      : null,
     invoices,
     upcomingInvoice,
     config: {
@@ -155,19 +159,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function BillingPage() {
+  const { t } = useTranslation(['payment', 'pricing', 'common'])
   const loaderData = useLoaderData<BillingData>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  
+
   const { subscription, config } = loaderData
   // If user is trialing, use their current plan as the target plan (to complete the trial)
-  const targetPlan = searchParams.get('plan') || (subscription?.status === 'trialing' ? subscription.planId : undefined)
+  const targetPlan =
+    searchParams.get('plan') ||
+    (subscription?.status === 'trialing' ? subscription.planId : undefined)
   const returnTo = searchParams.get('returnTo')
 
   if (!subscription || !targetPlan) {
     return (
       <Container size="lg" py="xl">
-        <BackButton onClick={() => navigate(-1)}>Back</BackButton>
+        <BackButton onClick={() => navigate(-1)}>{t('common:back')}</BackButton>
         <Center mt="xl">
           <Stack align="center" gap="lg">
             <ThemeIcon size={60} radius="xl" variant="light" color="gray">
@@ -175,18 +182,13 @@ export default function BillingPage() {
             </ThemeIcon>
             <div style={{ textAlign: 'center' }}>
               <Title order={2} mb="sm">
-                No Active Subscription
+                {t('payment:noActiveSubscription')}
               </Title>
               <Text c="dimmed" mb="xl">
-                Start a subscription to access premium features
+                {t('payment:noSubscriptionMessage')}
               </Text>
-              <Button 
-                component="a" 
-                href="/pricing" 
-                size="lg"
-                leftSection={<IconCrown size={20} />}
-              >
-                View Plans
+              <Button component="a" href="/pricing" size="lg" leftSection={<IconCrown size={20} />}>
+                {t('payment:viewPlans')}
               </Button>
             </div>
           </Stack>
@@ -196,12 +198,7 @@ export default function BillingPage() {
   }
 
   const getPlanLabel = (planId: string) => {
-    const planMap: Record<string, string> = {
-      standard: 'Standard',
-      professional: 'Professional',
-      premium: 'Premium',
-    }
-    return planMap[planId] || planId
+    return t(`pricing:${planId}`, planId)
   }
 
   return (
@@ -210,13 +207,13 @@ export default function BillingPage() {
         {/* Header with Back Button */}
         <Group justify="space-between" align="flex-start">
           <div>
-            <BackButton onClick={() => navigate(-1)}>Back</BackButton>
+            <BackButton onClick={() => navigate(-1)}>{t('common:back')}</BackButton>
             <Title order={1} mt="md" mb="sm">
-              {subscription.status === 'trialing' ? 'Upgrade' : `Upgrade to ${getPlanLabel(targetPlan)}`}
+              {subscription.status === 'trialing'
+                ? t('payment:upgradePlan')
+                : t('payment:upgradeTo', { planName: getPlanLabel(targetPlan) })}
             </Title>
-            <Text c="dimmed">
-              Upgrade your subscription to unlock premium features
-            </Text>
+            <Text c="dimmed">{t('payment:upgradeDescription')}</Text>
           </div>
         </Group>
 

@@ -1,0 +1,145 @@
+/* Pricing Section */
+.section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #d1fae5 0%, #ffffff 50%, #d1fae5 100%);
+}
+
+[data-mantine-color-scheme="dark"] .section {
+  background: linear-gradient(135deg, #000000 0%, #020f0c 50%, #000000 100%);
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .section {
+    padding: 40px 0;
+  }
+}
+
+/* Title */
+.title {
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: var(--mantine-color-dimmed);
+  text-align: center;
+  animation: fadeInUp 0.6s ease-out 0.1s backwards;
+}
+
+/* Billing Toggle */
+.toggle {
+  animation: fadeInUp 0.6s ease-out 0.2s backwards;
+}
+
+.savingsBadge {
+  animation: fadeInUp 0.6s ease-out 0.3s backwards;
+}
+
+/* Pricing Cards */
+.card {
+  position: relative;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+  animation: fadeInUp 0.6s ease-out 0.4s backwards;
+  background: var(--mantine-color-default);
+}
+
+.card:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.card:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Popular Card Highlight */
+.popular {
+  border-color: var(--mantine-color-green-6);
+  box-shadow: 0 10px 30px rgba(32, 254, 107, 0.1);
+}
+
+.popular:hover {
+  box-shadow: 0 20px 40px rgba(32, 254, 107, 0.2);
+}
+
+/* Tier Name */
+.tierName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Price */
+.price {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--mantine-color-green-6);
+}
+
+/* CTA Button */
+.cta {
+  min-height: 48px;
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: auto;
+}
+
+/* Enterprise Card */
+.enterpriseCard {
+  border: 2px solid var(--mantine-color-blue-6);
+  animation: fadeInUp 0.6s ease-out 0.7s backwards;
+  background: var(--mantine-color-default);
+}
+
+.enterpriseCta {
+  min-height: 48px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .title,
+  .subtitle,
+  .toggle,
+  .savingsBadge,
+  .enterpriseCard {
+    animation: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}

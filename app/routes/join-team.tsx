@@ -1,7 +1,7 @@
-import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
+import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from 'react-router'
 import { INVITATION_STATUSES, USER_STATUSES } from '~/app/common/constants'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 import JoinTeam from '~/app/pages/JoinTeam'
 import { getUserInvitationByToken } from '~/app/services/better-auth.server'
 

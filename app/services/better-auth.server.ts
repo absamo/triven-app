@@ -1,7 +1,7 @@
 import { redirect } from 'react-router'
 import type { Permission } from '~/app/common/helpers/user'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 import type { INVITATION_STATUSES } from '../common/constants'
 
 export interface BetterAuthUser {

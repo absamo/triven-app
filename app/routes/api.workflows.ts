@@ -1,10 +1,10 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
+import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import {
   APPROVAL_ASSIGNEE_TYPES,
   WORKFLOW_STEP_TYPES,
   WORKFLOW_TRIGGER_TYPES,
 } from '~/app/common/constants'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 import {
   createWorkflowTemplate,
   getWorkflowInstances,

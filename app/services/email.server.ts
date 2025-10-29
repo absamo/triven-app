@@ -1,14 +1,16 @@
 import { Resend } from 'resend'
-import { 
+import {
   FreeTrialWelcome,
-  SubscriptionConfirmation,
-  PlanUpgrade,
-  PaymentMethodUpdate,
   PaymentFailed,
+  PaymentMethodUpdate,
   PaymentSuccess,
-  TrialExpiring,
+  PlanUpgrade,
   SubscriptionCancelled,
+  SubscriptionConfirmation,
+  TrialExpiring,
 } from '~/app/emails'
+import { DemoRequestNotification } from '~/app/emails/demo-request-notification'
+import type { DemoRequest } from '~/app/lib/landing/types'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -100,19 +102,22 @@ interface SubscriptionCancelledProps extends EmailBaseProps {
 
 export async function sendTrialWelcomeEmail(props: TrialWelcomeProps) {
   const { to, locale = 'en', ...emailProps } = props
-  
+
   try {
     await resend.emails.send({
       from: process.env.FROM_EMAIL || 'Triven <onboarding@triven.app>',
       to,
-      subject: locale === 'fr' ? 'Bienvenue à votre essai gratuit Triven !' : 'Welcome to your Triven free trial!',
+      subject:
+        locale === 'fr'
+          ? 'Bienvenue à votre essai gratuit Triven !'
+          : 'Welcome to your Triven free trial!',
       react: FreeTrialWelcome({
         ...emailProps,
         locale,
         dashboardUrl: emailProps.dashboardUrl || `${process.env.BASE_URL}/dashboard`,
       }),
     })
-    
+
     console.log(`✅ Trial welcome email sent to ${to}`)
   } catch (error) {
     console.error('❌ Failed to send trial welcome email:', error)
@@ -122,12 +127,15 @@ export async function sendTrialWelcomeEmail(props: TrialWelcomeProps) {
 
 export async function sendSubscriptionConfirmationEmail(props: SubscriptionConfirmationProps) {
   const { to, locale = 'en', ...emailProps } = props
-  
+
   try {
     await resend.emails.send({
       from: process.env.FROM_EMAIL || 'Triven <billing@triven.app>',
       to,
-      subject: locale === 'fr' ? 'Abonnement confirmé - Bienvenue chez Triven !' : 'Subscription confirmed - Welcome to Triven!',
+      subject:
+        locale === 'fr'
+          ? 'Abonnement confirmé - Bienvenue chez Triven !'
+          : 'Subscription confirmed - Welcome to Triven!',
       react: SubscriptionConfirmation({
         ...emailProps,
         locale,
@@ -135,7 +143,7 @@ export async function sendSubscriptionConfirmationEmail(props: SubscriptionConfi
         billingUrl: emailProps.billingUrl || `${process.env.BASE_URL}/billing`,
       }),
     })
-    
+
     console.log(`✅ Subscription confirmation email sent to ${to}`)
   } catch (error) {
     console.error('❌ Failed to send subscription confirmation email:', error)
@@ -145,12 +153,15 @@ export async function sendSubscriptionConfirmationEmail(props: SubscriptionConfi
 
 export async function sendPlanUpgradeEmail(props: PlanUpgradeProps) {
   const { to, locale = 'en', ...emailProps } = props
-  
+
   try {
     await resend.emails.send({
       from: process.env.FROM_EMAIL || 'Triven <billing@triven.app>',
       to,
-      subject: locale === 'fr' ? `Plan mis à niveau vers ${emailProps.newPlan} !` : `Plan upgraded to ${emailProps.newPlan}!`,
+      subject:
+        locale === 'fr'
+          ? `Plan mis à niveau vers ${emailProps.newPlan} !`
+          : `Plan upgraded to ${emailProps.newPlan}!`,
       react: PlanUpgrade({
         ...emailProps,
         locale,
@@ -158,7 +169,7 @@ export async function sendPlanUpgradeEmail(props: PlanUpgradeProps) {
         billingUrl: emailProps.billingUrl || `${process.env.BASE_URL}/billing`,
       }),
     })
-    
+
     console.log(`✅ Plan upgrade email sent to ${to}`)
   } catch (error) {
     console.error('❌ Failed to send plan upgrade email:', error)
@@ -168,7 +179,7 @@ export async function sendPlanUpgradeEmail(props: PlanUpgradeProps) {
 
 export async function sendPaymentMethodUpdateEmail(props: PaymentMethodUpdateProps) {
   const { to, locale = 'en', ...emailProps } = props
-  
+
   try {
     await resend.emails.send({
       from: process.env.FROM_EMAIL || 'Triven <billing@triven.app>',
@@ -181,7 +192,7 @@ export async function sendPaymentMethodUpdateEmail(props: PaymentMethodUpdatePro
         supportUrl: emailProps.supportUrl || `${process.env.BASE_URL}/support`,
       }),
     })
-    
+
     console.log(`✅ Payment method update email sent to ${to}`)
   } catch (error) {
     console.error('❌ Failed to send payment method update email:', error)
@@ -191,12 +202,13 @@ export async function sendPaymentMethodUpdateEmail(props: PaymentMethodUpdatePro
 
 export async function sendPaymentFailedEmail(props: PaymentFailedProps) {
   const { to, locale = 'en', ...emailProps } = props
-  
+
   try {
     await resend.emails.send({
       from: process.env.FROM_EMAIL || 'Triven <billing@triven.app>',
       to,
-      subject: locale === 'fr' ? 'Action requise : Échec du paiement' : 'Action required: Payment failed',
+      subject:
+        locale === 'fr' ? 'Action requise : Échec du paiement' : 'Action required: Payment failed',
       react: PaymentFailed({
         ...emailProps,
         locale,
@@ -204,7 +216,7 @@ export async function sendPaymentFailedEmail(props: PaymentFailedProps) {
         supportUrl: emailProps.supportUrl || `${process.env.BASE_URL}/support`,
       }),
     })
-    
+
     console.log(`✅ Payment failed email sent to ${to}`)
   } catch (error) {
     console.error('❌ Failed to send payment failed email:', error)
@@ -214,7 +226,7 @@ export async function sendPaymentFailedEmail(props: PaymentFailedProps) {
 
 export async function sendPaymentSuccessEmail(props: PaymentSuccessProps) {
   const { to, locale = 'en', ...emailProps } = props
-  
+
   try {
     await resend.emails.send({
       from: process.env.FROM_EMAIL || 'Triven <billing@triven.app>',
@@ -226,7 +238,7 @@ export async function sendPaymentSuccessEmail(props: PaymentSuccessProps) {
         billingUrl: emailProps.billingUrl || `${process.env.BASE_URL}/billing`,
       }),
     })
-    
+
     console.log(`✅ Payment success email sent to ${to}`)
   } catch (error) {
     console.error('❌ Failed to send payment success email:', error)
@@ -236,12 +248,15 @@ export async function sendPaymentSuccessEmail(props: PaymentSuccessProps) {
 
 export async function sendTrialExpiringEmail(props: TrialExpiringProps) {
   const { to, locale = 'en', ...emailProps } = props
-  
+
   try {
     await resend.emails.send({
       from: process.env.FROM_EMAIL || 'Triven <onboarding@triven.app>',
       to,
-      subject: locale === 'fr' ? `Votre essai expire dans ${emailProps.daysLeft} jours !` : `Your trial expires in ${emailProps.daysLeft} days!`,
+      subject:
+        locale === 'fr'
+          ? `Votre essai expire dans ${emailProps.daysLeft} jours !`
+          : `Your trial expires in ${emailProps.daysLeft} days!`,
       react: TrialExpiring({
         ...emailProps,
         locale,
@@ -249,7 +264,7 @@ export async function sendTrialExpiringEmail(props: TrialExpiringProps) {
         dashboardUrl: emailProps.dashboardUrl || `${process.env.BASE_URL}/dashboard`,
       }),
     })
-    
+
     console.log(`✅ Trial expiring email sent to ${to}`)
   } catch (error) {
     console.error('❌ Failed to send trial expiring email:', error)
@@ -259,12 +274,15 @@ export async function sendTrialExpiringEmail(props: TrialExpiringProps) {
 
 export async function sendSubscriptionCancelledEmail(props: SubscriptionCancelledProps) {
   const { to, locale = 'en', ...emailProps } = props
-  
+
   try {
     await resend.emails.send({
       from: process.env.FROM_EMAIL || 'Triven <billing@triven.app>',
       to,
-      subject: locale === 'fr' ? 'Abonnement annulé - Nous vous remercions' : 'Subscription cancelled - Thank you',
+      subject:
+        locale === 'fr'
+          ? 'Abonnement annulé - Nous vous remercions'
+          : 'Subscription cancelled - Thank you',
       react: SubscriptionCancelled({
         ...emailProps,
         locale,
@@ -273,7 +291,7 @@ export async function sendSubscriptionCancelledEmail(props: SubscriptionCancelle
         feedbackUrl: emailProps.feedbackUrl || `${process.env.BASE_URL}/feedback`,
       }),
     })
-    
+
     console.log(`✅ Subscription cancelled email sent to ${to}`)
   } catch (error) {
     console.error('❌ Failed to send subscription cancelled email:', error)
@@ -299,9 +317,9 @@ export function formatDate(date: Date | number | undefined, locale: 'en' | 'fr')
     // Fallback to current date if undefined
     date = Math.floor(Date.now() / 1000)
   }
-  
+
   const dateObj = typeof date === 'number' ? new Date(date * 1000) : date
-  
+
   if (locale === 'fr') {
     return dateObj.toLocaleDateString('fr-FR', {
       year: 'numeric',
@@ -309,7 +327,7 @@ export function formatDate(date: Date | number | undefined, locale: 'en' | 'fr')
       day: 'numeric',
     })
   }
-  
+
   return dateObj.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -323,6 +341,28 @@ export function formatCurrency(amount: number, currency: string, locale: 'en' | 
     style: 'currency',
     currency: currency.toUpperCase(),
   })
-  
+
   return formatter.format(amount / 100) // Stripe amounts are in cents
+}
+
+/**
+ * Send demo request notification to sales team
+ * Constitutional Principle VI: API-First Development
+ */
+export async function sendDemoRequestNotification(demoRequest: DemoRequest): Promise<void> {
+  try {
+    const salesEmail = process.env.SALES_EMAIL || 'sales@triven.app'
+
+    await resend.emails.send({
+      from: process.env.FROM_EMAIL || 'Triven <notifications@triven.app>',
+      to: salesEmail,
+      subject: `New Demo Request from ${demoRequest.name} at ${demoRequest.company}`,
+      react: DemoRequestNotification({ demoRequest }),
+    })
+
+    console.log(`✅ Demo request notification sent for request ID ${demoRequest.id}`)
+  } catch (error) {
+    console.error('❌ Failed to send demo request notification:', error)
+    throw error
+  }
 }

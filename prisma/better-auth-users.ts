@@ -1,5 +1,5 @@
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 
 // Helper function to create users with better-auth
 export async function createBetterAuthUsers(

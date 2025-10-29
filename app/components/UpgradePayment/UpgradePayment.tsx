@@ -14,12 +14,12 @@ import {
 import { notifications } from '@mantine/notifications'
 import {
   IconArrowRight,
+  IconBrandMastercard,
+  IconBrandVisa,
   IconCreditCard,
   IconLock,
   IconPlus,
   IconShieldCheck,
-  IconBrandVisa,
-  IconBrandMastercard,
 } from '@tabler/icons-react'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -102,10 +102,13 @@ export default function UpgradePayment({
   }
 
   // Handle Stripe form submission
-  const handleStripeSubmitReady = useCallback((submitFunction: () => Promise<void>, isReady: boolean) => {
-    setStripeSubmit(() => submitFunction)
-    setIsStripeReady(isReady)
-  }, [])
+  const handleStripeSubmitReady = useCallback(
+    (submitFunction: () => Promise<void>, isReady: boolean) => {
+      setStripeSubmit(() => submitFunction)
+      setIsStripeReady(isReady)
+    },
+    []
+  )
 
   // Handle payment processing
   const handlePayClick = async () => {
@@ -184,18 +187,13 @@ export default function UpgradePayment({
       {billing && (
         <>
           {/* Plan Comparison - Compact Layout */}
-          <Paper
-            p="sm"
-            radius="md"
-            withBorder
-            bg="var(--mantine-color-default)"
-          >
+          <Paper p="sm" radius="md" withBorder bg="var(--mantine-color-default)">
             {/* Single Row Comparison */}
             <Group justify="space-between" align="center" wrap="nowrap">
               {/* Current Plan */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <Text size="xs" c="dimmed" mb={2}>
-                  Current
+                  {t('payment:currentPlan', 'Current')}
                 </Text>
                 <Group gap="xs" align="center">
                   <Text size="sm" fw={500} truncate>
@@ -203,13 +201,13 @@ export default function UpgradePayment({
                   </Text>
                   {billing.planStatus === 'trialing' && (
                     <Badge size="xs" variant="light" color="orange">
-                      Trial
+                      {t('payment:trial', 'Trial')}
                     </Badge>
                   )}
                 </Group>
                 <Text size="xs" c="dimmed">
                   {billing.planStatus === 'trialing'
-                    ? 'Free'
+                    ? t('payment:free', 'Free')
                     : formatCurrency(
                         getCurrentPlanPrice(
                           billing.currentPlan,
@@ -221,10 +219,10 @@ export default function UpgradePayment({
                       )}{' '}
                   /{' '}
                   {billing.planStatus === 'trialing'
-                    ? 'trial'
+                    ? t('payment:trial', 'trial')
                     : billing.interval === 'month'
-                      ? 'month'
-                      : 'year'}
+                      ? t('payment:month', 'month')
+                      : t('payment:year', 'year')}
                 </Text>
               </div>
 
@@ -236,14 +234,14 @@ export default function UpgradePayment({
               {/* New Plan */}
               <div style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
                 <Text size="xs" c="dimmed" mb={2}>
-                  Upgrading to
+                  {t('payment:upgradingTo', 'Upgrading to')}
                 </Text>
                 <Text size="sm" fw={600} truncate c="blue">
                   {getTranslatedPlanLabel(planId, t)}
                 </Text>
                 <Text size="xs" c="dimmed">
                   {formatCurrency(targetPrice, currency.toUpperCase())} /{' '}
-                  {interval === 'month' ? 'month' : 'year'}
+                  {interval === 'month' ? t('payment:month', 'month') : t('payment:year', 'year')}
                 </Text>
               </div>
             </Group>
@@ -251,34 +249,29 @@ export default function UpgradePayment({
 
           {/* Prorated Upgrade */}
           {(billing.planStatus === 'active' || billing.planStatus === 'trialing') && (
-            <Card
-              padding="md"
-              radius="md"
-              withBorder
-              bg="var(--mantine-color-default-hover)"
-            >
+            <Card padding="md" radius="md" withBorder bg="var(--mantine-color-default-hover)">
               <Group justify="space-between" align="flex-start">
                 <div>
                   <Text size="sm" fw={500} mb={4}>
                     {billing.planStatus === 'trialing'
-                      ? t('startSubscription', 'Start Subscription')
-                      : t('proratedUpgrade', 'Prorated Upgrade')}
+                      ? t('payment:startSubscription', 'Start Subscription')
+                      : t('payment:proratedUpgrade', 'Prorated Upgrade')}
                   </Text>
                   <Text size="xs" c="dimmed">
                     {billing.planStatus === 'trialing'
                       ? t(
-                          'proratedUpgradeTrialDescription',
+                          'payment:proratedUpgradeTrialDescription',
                           'Pay difference for remaining period'
                         )
                       : t(
-                          'proratedUpgradeDescription',
+                          'payment:proratedUpgradeDescription',
                           'Pay difference for remaining billing period'
                         )}
                   </Text>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <Text size="xs" c="dimmed">
-                    Due today
+                    {t('payment:dueToday', 'Due today')}
                   </Text>
                   <Text size="lg" fw={600} c="blue">
                     {formatCurrency(proratedAmount, currency.toUpperCase())}
@@ -297,9 +290,9 @@ export default function UpgradePayment({
           {billing?.paymentMethod && (
             <Card padding="lg" radius="md" withBorder>
               <Text size="lg" fw={600} mb="md">
-                Payment Method
+                {t('payment:paymentMethod', 'Payment Method')}
               </Text>
-              
+
               <Radio.Group
                 value={paymentMethodChoice}
                 onChange={(value: string) => setPaymentMethodChoice(value as 'existing' | 'new')}
@@ -311,33 +304,41 @@ export default function UpgradePayment({
                     <Group gap="sm" align="center" style={{ flex: 1 }}>
                       <ThemeIcon size="md" radius="md" variant="light" color="gray">
                         {billing.paymentMethod.brand === 'visa' && <IconBrandVisa size={16} />}
-                        {billing.paymentMethod.brand === 'mastercard' && <IconBrandMastercard size={16} />}
-                        {!['visa', 'mastercard'].includes(billing.paymentMethod.brand) && <IconCreditCard size={16} />}
+                        {billing.paymentMethod.brand === 'mastercard' && (
+                          <IconBrandMastercard size={16} />
+                        )}
+                        {!['visa', 'mastercard'].includes(billing.paymentMethod.brand) && (
+                          <IconCreditCard size={16} />
+                        )}
                       </ThemeIcon>
                       <div>
                         <Text size="sm" fw={500}>
-                          {billing.paymentMethod.brand?.charAt(0).toUpperCase() + billing.paymentMethod.brand?.slice(1)} •••• {billing.paymentMethod.last4}
+                          {billing.paymentMethod.brand?.charAt(0).toUpperCase() +
+                            billing.paymentMethod.brand?.slice(1)}{' '}
+                          •••• {billing.paymentMethod.last4}
                         </Text>
                         <Text size="xs" c="dimmed">
-                          Expires {String(billing.paymentMethod.expMonth).padStart(2, '0')}/{billing.paymentMethod.expYear}
+                          {t('payment:expires', 'Expires')}{' '}
+                          {String(billing.paymentMethod.expMonth).padStart(2, '0')}/
+                          {billing.paymentMethod.expYear}
                         </Text>
                       </div>
                     </Group>
                   </div>
-                  
+
                   {/* New Payment Method Option */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <Radio value="new" />
                     <Text size="sm" fw={500} style={{ flex: 1 }}>
-                      Use a different payment method
+                      {t('payment:useNewCard', 'Use a different payment method')}
                     </Text>
                   </div>
-                  
+
                   {/* Stripe Payment Component - show inline when new payment method is selected */}
                   {paymentMethodChoice === 'new' && (
                     <Stack gap="md" mt="xs" pl="xl">
                       <Text size="sm" fw={500} c="dimmed">
-                        Payment Details
+                        {t('payment:paymentDetails', 'Payment Details')}
                       </Text>
                       <StripePayment
                         publishableKey={effectiveConfig.stripePublicKey}
@@ -397,7 +398,7 @@ export default function UpgradePayment({
             size="lg"
             fullWidth
             disabled={
-              isProcessingPayment || 
+              isProcessingPayment ||
               (paymentMethodChoice === 'new' && !isStripeReady) ||
               (!billing?.paymentMethod && !isStripeReady)
             }

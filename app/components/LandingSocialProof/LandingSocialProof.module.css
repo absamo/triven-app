@@ -1,0 +1,176 @@
+/* Landing Social Proof Styles */
+/* User Story 3: Social Proof and Trust Building */
+/* Grid layout with icon styling and animations */
+
+.section {
+  padding: 80px 0;
+  background: var(--mantine-color-dark-8);
+}
+
+[data-mantine-color-scheme="light"] .section {
+  background: var(--mantine-color-gray-0);
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--mantine-color-white);
+  margin-bottom: 2rem;
+}
+
+[data-mantine-color-scheme="light"] .title {
+  color: var(--mantine-color-dark-9);
+}
+
+.grid {
+  margin-top: 2rem;
+}
+
+/* Metric Card */
+.metricCard {
+  background: var(--mantine-color-dark-7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-mantine-color-scheme="light"] .metricCard {
+  background: var(--mantine-color-white);
+  border: 1px solid var(--mantine-color-gray-3);
+}
+
+.metricCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+[data-mantine-color-scheme="light"] .metricCard:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Fade in up animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Icon wrapper */
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #20fe6b 0%, #1ae65f 100%);
+  color: var(--mantine-color-dark-9);
+}
+
+[data-mantine-color-scheme="light"] .iconWrapper {
+  background: linear-gradient(
+    135deg,
+    var(--mantine-color-green-6) 0%,
+    var(--mantine-color-green-7) 100%
+  );
+  color: var(--mantine-color-white);
+}
+
+.metricContent {
+  width: 100%;
+}
+
+/* Metric value */
+.metricValue {
+  font-size: 2.5rem;
+  line-height: 1.2;
+  color: var(--mantine-color-white);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-mantine-color-scheme="light"] .metricValue {
+  color: var(--mantine-color-dark-9);
+}
+
+/* Metric label */
+.metricLabel {
+  font-weight: 500;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+/* Tablet breakpoint (768px) */
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 0;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .metricValue {
+    font-size: 2rem;
+  }
+
+  .metricCard {
+    min-height: 180px;
+  }
+
+  .iconWrapper {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* Mobile breakpoint (375px and below) */
+@media (max-width: 375px) {
+  .section {
+    padding: 40px 0;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .metricValue {
+    font-size: 1.75rem;
+  }
+
+  .metricLabel {
+    font-size: 0.85rem;
+  }
+
+  .metricCard {
+    min-height: 160px;
+  }
+
+  .iconWrapper {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .metricCard {
+    animation: none;
+    opacity: 1;
+  }
+
+  .metricCard:hover {
+    transform: none;
+  }
+}

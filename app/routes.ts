@@ -2,7 +2,7 @@ import { index, layout, type RouteConfig, route } from '@react-router/dev/routes
 
 export default [
   // Public routes (outside main layout)
-  index('routes/home.tsx'),
+  index('routes/landing.tsx'),
   route('login', 'routes/auth/login.tsx'),
   route('logout', 'routes/auth/logout.tsx'),
   route('signup', 'routes/auth/signup.tsx'),

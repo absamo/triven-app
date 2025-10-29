@@ -1,6 +1,6 @@
 import type { ActionFunction } from 'react-router'
 import { redirect } from 'react-router'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 
 export const action: ActionFunction = async ({ request }) => {
   try {

@@ -1,5 +1,5 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
-import { auth } from '~/app/lib/auth'
+import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
+import { auth } from '~/app/lib/auth.server'
 import {
   addApprovalComment,
   approveRequest,

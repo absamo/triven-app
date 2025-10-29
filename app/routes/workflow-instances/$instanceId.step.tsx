@@ -1,6 +1,6 @@
-import { type LoaderFunctionArgs } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 import WorkflowStepExecutionPage from '~/app/pages/WorkflowStepExecution/WorkflowStepExecution'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {

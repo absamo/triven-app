@@ -1,6 +1,6 @@
 import type { LoaderFunction } from 'react-router'
 import { redirect } from 'react-router'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 import Signup from '~/app/pages/Signup/Signup'
 
 export const loader: LoaderFunction = async ({ request }) => {

@@ -1,0 +1,61 @@
+/* Demo Request Modal Styles */
+/* User Story 2: Frictionless Trial Signup */
+/* Modal overlay, keyboard navigation, mobile-friendly inputs */
+
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--mantine-color-dark-9);
+}
+
+[data-mantine-color-scheme="dark"] .modalTitle {
+  color: var(--mantine-color-white);
+}
+
+/* Form inputs - touch-friendly */
+.input {
+  min-height: 42px;
+  font-size: 1rem;
+}
+
+/* Submit button styling */
+.submitButton {
+  background: var(--mantine-color-green-6);
+  color: var(--mantine-color-white);
+  min-height: 42px;
+}
+
+.submitButton:hover {
+  background: var(--mantine-color-green-7);
+}
+
+[data-mantine-color-scheme="dark"] .submitButton {
+  background: #20fe6b;
+  color: var(--mantine-color-dark-9);
+}
+
+[data-mantine-color-scheme="dark"] .submitButton:hover {
+  background: #1ae65f;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Focus states for keyboard navigation */
+.input:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-5);
+  outline-offset: 2px;
+}
+
+/* Accessibility - ensure sufficient contrast */
+[data-mantine-color-scheme="light"] .input {
+  border-color: var(--mantine-color-gray-4);
+}
+
+[data-mantine-color-scheme="light"] .input:focus {
+  border-color: var(--mantine-color-blue-6);
+}

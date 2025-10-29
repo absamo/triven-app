@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from 'react-router'
 import { INVITATION_STATUSES, USER_STATUSES } from '~/app/common/constants'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth'
+import { auth } from '~/app/lib/auth.server'
 import VerifyEmail from '~/app/pages/VerifyEmail'
 import { getUserInvitationByToken } from '~/app/services/better-auth.server'
 
@@ -49,7 +49,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // Check user's verification status BEFORE calling the verification API
     // This way we can determine if this is the first time they're verifying
 
-    let isFirstVerification = !userBeforeVerification?.emailVerified
+    const isFirstVerification = !userBeforeVerification?.emailVerified
 
     // Use Better Auth API directly to verify the OTP as raw response to get full control
     const response = await auth.api.verifyEmailOTP({
@@ -98,7 +98,7 @@ export async function action({ request }: ActionFunctionArgs) {
           const firstName = nameParts[0] || ''
           const lastName = nameParts.slice(1).join(' ') || ''
 
-          let userData: any = {
+          const userData: any = {
             id: result.user.id, // Use same ID as Better Auth user
             email: result.user.email,
             image: result.user.image,

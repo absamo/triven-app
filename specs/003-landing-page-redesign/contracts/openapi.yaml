@@ -1,0 +1,415 @@
+openapi: 3.1.0
+info:
+  title: Triven Landing Page API
+  description: API endpoints for landing page interactions including demo requests, testimonials, and success metrics
+  version: 1.0.0
+  contact:
+    name: Triven Engineering Team
+    email: engineering@triven.app
+
+servers:
+  - url: https://app.triven.io/api
+    description: Production server
+  - url: http://localhost:5173/api
+    description: Development server
+
+tags:
+  - name: Demo Requests
+    description: Demo request submission and management
+  - name: Landing Page Content
+    description: Landing page content retrieval (testimonials, metrics, config)
+
+paths:
+  /demo-request:
+    post:
+      operationId: createDemoRequest
+      summary: Submit a demo request
+      description: |
+        Creates a new demo request from a landing page visitor. Validates input, 
+        enforces rate limiting (5 requests per IP per hour), stores request in database, 
+        and sends email notification to sales team via Resend.
+      tags:
+        - Demo Requests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DemoRequestInput'
+            examples:
+              basic:
+                summary: Basic demo request
+                value:
+                  name: John Doe
+                  email: john.doe@example.com
+                  company: Example Corp
+                  teamSize: "11-50"
+              full:
+                summary: Demo request with optional fields
+                value:
+                  name: Jane Smith
+                  email: jane.smith@acme.com
+                  company: Acme Industries
+                  teamSize: "51-200"
+                  preferredDemoTime: "2025-10-25T14:00:00Z"
+                  message: "Interested in enterprise features and volume pricing"
+      responses:
+        '201':
+          description: Demo request created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoRequestResponse'
+              example:
+                data:
+                  id: "clx1234567890abcdef"
+                  status: "new"
+                  message: "Demo request received. We'll contact you within 24 hours."
+                error: null
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidEmail:
+                  summary: Invalid email format
+                  value:
+                    data: null
+                    error: "Validation failed"
+                    errors:
+                      - field: "email"
+                        message: "Invalid email format"
+                futureDate:
+                  summary: Invalid preferred demo time
+                  value:
+                    data: null
+                    error: "Validation failed"
+                    errors:
+                      - field: "preferredDemoTime"
+                        message: "Preferred demo time must be in the future"
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                data: null
+                error: "Rate limit exceeded. Maximum 5 demo requests per hour."
+                errors: []
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                data: null
+                error: "Failed to process demo request. Please try again."
+                errors: []
+
+  /landing/testimonials:
+    get:
+      operationId: getTestimonials
+      summary: Fetch active testimonials
+      description: |
+        Returns active testimonials sorted by display order. Used to populate the 
+        testimonials section on the landing page. Includes placeholder testimonials 
+        with "Early Adopter" attribution if real customer testimonials are unavailable.
+      tags:
+        - Landing Page Content
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of testimonials to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+      responses:
+        '200':
+          description: Testimonials retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TestimonialDisplay'
+                  error:
+                    type: null
+              example:
+                data:
+                  - customerName: "Sarah Johnson"
+                    role: "Operations Manager"
+                    company: "Early Adopter"
+                    photoUrl: "https://ui-avatars.com/api/?name=Sarah+Johnson"
+                    testimonialText: "Triven transformed our inventory management. We reduced stock-outs by 40%."
+                    starRating: 5
+                  - customerName: "Michael Chen"
+                    role: "Warehouse Director"
+                    company: "Early Adopter"
+                    photoUrl: "https://ui-avatars.com/api/?name=Michael+Chen"
+                    testimonialText: "The AI-powered categorization is incredible. 98% accuracy automatically."
+                    starRating: 5
+                error: null
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /landing/success-metrics:
+    get:
+      operationId: getSuccessMetrics
+      summary: Fetch active success metrics
+      description: |
+        Returns active success metrics sorted by display order. Used to populate the 
+        social proof statistics section on the landing page (e.g., "15,000+ Products Managed").
+      tags:
+        - Landing Page Content
+      responses:
+        '200':
+          description: Success metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SuccessMetricDisplay'
+                  error:
+                    type: null
+              example:
+                data:
+                  - label: "Products Managed"
+                    value: "15,000+"
+                    icon: "box"
+                  - label: "Auto-Categorization Accuracy"
+                    value: "98%"
+                    icon: "chart"
+                  - label: "Hours Saved Monthly"
+                    value: "2,400+"
+                    icon: "clock"
+                error: null
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /landing/config:
+    get:
+      operationId: getLandingPageConfig
+      summary: Fetch landing page configuration
+      description: |
+        Returns landing page configuration including meta tags, theme settings, and 
+        feature flags (e.g., showCompanyLogos, enableDemoRequests). Used for dynamic 
+        landing page behavior.
+      tags:
+        - Landing Page Content
+      responses:
+        '200':
+          description: Landing page config retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LandingPageConfigDisplay'
+                  error:
+                    type: null
+              example:
+                data:
+                  defaultTheme: "dark"
+                  showCompanyLogos: false
+                  enableDemoRequests: true
+                  enableTrialSignup: true
+                error: null
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    DemoRequestInput:
+      type: object
+      required:
+        - name
+        - email
+        - company
+        - teamSize
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Visitor full name
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Contact email address
+          example: "john.doe@example.com"
+        company:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Company name
+          example: "Example Corp"
+        teamSize:
+          type: string
+          enum: ["1-10", "11-50", "51-200", "200+"]
+          description: Team size category
+          example: "11-50"
+        preferredDemoTime:
+          type: string
+          format: date-time
+          description: Preferred demo date and time (ISO 8601 format, must be in future)
+          example: "2025-10-25T14:00:00Z"
+        message:
+          type: string
+          maxLength: 1000
+          description: Optional message or notes from visitor
+          example: "Interested in enterprise features and volume pricing"
+
+    DemoRequestResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique demo request identifier
+              example: "clx1234567890abcdef"
+            status:
+              type: string
+              enum: ["new", "contacted", "scheduled", "completed"]
+              description: Current request status
+              example: "new"
+            message:
+              type: string
+              description: Success message for visitor
+              example: "Demo request received. We'll contact you within 24 hours."
+        error:
+          type: null
+
+    TestimonialDisplay:
+      type: object
+      properties:
+        customerName:
+          type: string
+          description: Customer full name
+          example: "Sarah Johnson"
+        role:
+          type: string
+          description: Customer job title
+          example: "Operations Manager"
+        company:
+          type: string
+          description: Company name or "Early Adopter" for placeholders
+          example: "Acme Industries"
+        photoUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: ImageKit URL for customer photo
+          example: "https://ik.imagekit.io/triven/testimonials/sarah-johnson.jpg"
+        testimonialText:
+          type: string
+          description: Testimonial content
+          example: "Triven transformed our inventory management. We reduced stock-outs by 40%."
+        starRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Star rating (1-5)
+          example: 5
+
+    SuccessMetricDisplay:
+      type: object
+      properties:
+        label:
+          type: string
+          description: Metric label
+          example: "Products Managed"
+        value:
+          type: string
+          description: Metric value (formatted)
+          example: "15,000+"
+        icon:
+          type: string
+          description: Icon identifier
+          example: "box"
+
+    LandingPageConfigDisplay:
+      type: object
+      properties:
+        defaultTheme:
+          type: string
+          enum: ["dark", "light"]
+          description: Default landing page theme
+          example: "dark"
+        showCompanyLogos:
+          type: boolean
+          description: Whether to display company logos section
+          example: false
+        enableDemoRequests:
+          type: boolean
+          description: Whether demo request modal is enabled
+          example: true
+        enableTrialSignup:
+          type: boolean
+          description: Whether trial signup CTAs are enabled
+          example: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        data:
+          type: null
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Validation failed"
+        errors:
+          type: array
+          description: Array of field-specific validation errors
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Field name that failed validation
+                example: "email"
+              message:
+                type: string
+                description: Validation error message
+                example: "Invalid email format"
+
+  securitySchemes:
+    RateLimiting:
+      type: apiKey
+      in: header
+      name: X-RateLimit-Limit
+      description: |
+        Rate limiting is enforced on demo request endpoint:
+        - 5 requests per IP address per hour
+        - Returns 429 status code when limit exceeded
+        - Rate limit resets after 1 hour from first request
