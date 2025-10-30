@@ -1,9 +1,9 @@
 export default {
   // Hero Section
   hero: {
-    title: 'Transform inventory chaos into intelligent business growth',
+    title: 'Smarter Inventory. Stronger Growth.',
     subtitle:
-      'AI-powered inventory management with real-time insights, predictive forecasting, and automated workflows. Optimize stock levels, streamline operations, and make data-driven decisions that accelerate your business growth.',
+      'Triven is an AI-powered inventory management with real-time insights, predictive forecasting, and automated workflows. Optimize stock levels, streamline operations, and make data-driven decisions that accelerate your business growth.',
     tryFree: 'Try Triven for Free',
     requestDemo: 'Request Demo',
   },

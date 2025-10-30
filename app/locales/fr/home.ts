@@ -1,9 +1,9 @@
 export default {
   // Hero Section
   hero: {
-    title: 'Donnez un sens complet à votre inventaire complet',
+    title: 'Inventaire Plus Intelligent. Croissance Plus Forte.',
     subtitle:
-      "Générez instantanément des insights d'inventaire vérifiables. Connaissez votre stock réel et les modèles de demande les plus récents dès maintenant. Plongez dans des détails entièrement connectés et traçables pour comprendre ce qui anime vraiment votre entreprise - aujourd'hui et dans le temps.",
+      "Triven est une gestion d'inventaire alimentée par l'IA avec des insights en temps réel, des prévisions prédictives et des workflows automatisés. Optimisez les niveaux de stock, rationalisez les opérations et prenez des décisions basées sur les données qui accélèrent la croissance de votre entreprise.",
     tryFree: 'Essayez Triven gratuitement',
     requestDemo: 'Demander une démo',
   },

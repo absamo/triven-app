@@ -24,7 +24,6 @@
 .primaryButton:hover {
   background: #1ae65f;
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(32, 254, 107, 0.3);
 }
 
 .primaryButton:active {
@@ -38,7 +37,6 @@
 
 [data-mantine-color-scheme="light"] .primaryButton:hover {
   background: var(--mantine-color-green-7);
-  box-shadow: 0 8px 16px rgba(51, 154, 240, 0.2);
 }
 
 /* Secondary Button - Outlined */

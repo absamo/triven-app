@@ -11,13 +11,13 @@ import {
   Menu,
   Overlay,
   Paper,
+  rem,
   SimpleGrid,
   Stack,
   Switch,
   Text,
   ThemeIcon,
   Title,
-  rem,
   useMantineColorScheme,
   useMantineTheme,
 } from '@mantine/core'
@@ -45,11 +45,13 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { MetaFunction } from 'react-router'
 import { Link } from 'react-router'
+import ClientOnly from '~/app/components/ClientOnly'
 import ScrollToTop from '~/app/components/ScrollToTop'
 import FrIcon from '~/app/components/SvgIcons/FrIcon'
 import UsIcon from '~/app/components/SvgIcons/UsIcon'
 import { CURRENCIES, INTERVALS, PLANS } from '~/app/modules/stripe/plans'
 import PublicLayout from '~/app/pages/PublicLayout'
+import { changeLanguageWithPersistence } from '~/app/utils/i18n.client'
 import classes from './Home.module.css'
 
 export const meta: MetaFunction = () => {
@@ -94,12 +96,7 @@ export default function HomePage() {
   const { t, i18n } = useTranslation(['pricing', 'common', 'home', 'navigation'])
   const [isYearly, setIsYearly] = useState(false)
   const [isClient, setIsClient] = useState(false)
-  const [currentLanguage, setCurrentLanguage] = useState(i18n.language)
 
-  // Sync currentLanguage state with i18n.language changes
-  useEffect(() => {
-    setCurrentLanguage(i18n.language)
-  }, [i18n.language])
   const theme = useMantineTheme()
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
 
@@ -235,7 +232,10 @@ export default function HomePage() {
               <Stack gap={30} align="center" ta="center">
                 {/* Main Headline - Puzzle Style */}
                 <Stack gap={20} align="center">
-                  <Title className={classes.heroTitle}>{t('home:hero.title')}</Title>
+                  <Title className={classes.heroTitle}>
+                    <span className={classes.cursor}>|</span>
+                    {t('home:hero.title')}
+                  </Title>
 
                   <Text className={classes.heroSubtitle}>{t('home:hero.subtitle')}</Text>
                 </Stack>
@@ -1125,162 +1125,230 @@ export default function HomePage() {
               }}
             >
               {/* Language Selector */}
-              <Menu shadow="md" width={120} position="top-end">
-                <Menu.Target>
+              <ClientOnly
+                fallback={
+                  <Menu shadow="md" width={120} position="top-end">
+                    <Menu.Target>
+                      <ActionIcon
+                        variant="subtle"
+                        size="lg"
+                        aria-label={t('home:footer.selectLanguage')}
+                        style={{
+                          background: 'rgba(0, 0, 0, 0.1)',
+                          cursor: 'pointer',
+                          padding: '4px',
+                        }}
+                      >
+                        <UsIcon size={20} />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(0, 0, 0, 0.1)',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <Menu.Item
+                        style={{
+                          color: 'black',
+                          background: 'transparent',
+                        }}
+                        leftSection={<UsIcon size={18} />}
+                      >
+                        English
+                      </Menu.Item>
+                      <Menu.Item
+                        style={{
+                          color: 'black',
+                          background: 'transparent',
+                        }}
+                        leftSection={<FrIcon size={18} />}
+                      >
+                        Français
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                }
+              >
+                <Menu shadow="md" width={120} position="top-end">
+                  <Menu.Target>
+                    <ActionIcon
+                      variant="subtle"
+                      size="lg"
+                      aria-label={t('home:footer.selectLanguage')}
+                      style={{
+                        background: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                        cursor: 'pointer',
+                        padding: '4px',
+                      }}
+                    >
+                      {i18n.language === 'en' ? <UsIcon size={20} /> : <FrIcon size={20} />}
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown
+                    style={{
+                      background: isDark ? 'rgba(15, 15, 15, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+                      borderRadius: '8px',
+                    }}
+                  >
+                    <Menu.Item
+                      onClick={() => changeLanguageWithPersistence(i18n, 'en')}
+                      style={{
+                        color: isDark ? 'white' : 'black',
+                        background:
+                          i18n.language === 'en'
+                            ? isDark
+                              ? 'rgba(32, 254, 107, 0.1)'
+                              : 'rgba(32, 254, 107, 0.05)'
+                            : 'transparent',
+                      }}
+                      leftSection={<UsIcon size={18} />}
+                      rightSection={
+                        i18n.language === 'en' ? (
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <title>Selected</title>
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        ) : null
+                      }
+                    >
+                      English
+                    </Menu.Item>
+                    <Menu.Item
+                      onClick={() => changeLanguageWithPersistence(i18n, 'fr')}
+                      style={{
+                        color: isDark ? 'white' : 'black',
+                        background:
+                          i18n.language === 'fr'
+                            ? isDark
+                              ? 'rgba(32, 254, 107, 0.1)'
+                              : 'rgba(32, 254, 107, 0.05)'
+                            : 'transparent',
+                      }}
+                      leftSection={<FrIcon size={18} />}
+                      rightSection={
+                        i18n.language === 'fr' ? (
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <title>Selected</title>
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        ) : null
+                      }
+                    >
+                      Français
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              </ClientOnly>
+
+              {/* Theme Selector */}
+              <ClientOnly
+                fallback={
                   <ActionIcon
                     variant="subtle"
                     size="lg"
-                    aria-label={t('home:footer.selectLanguage')}
+                    aria-label={t('home:footer.toggleTheme')}
                     style={{
-                      background: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                      background: 'rgba(0, 0, 0, 0.1)',
+                      color: 'rgba(0, 0, 0, 0.7)',
                       cursor: 'pointer',
-                      padding: '4px',
                     }}
                   >
-                    {i18n.language === 'en' ? <UsIcon size={20} /> : <FrIcon size={20} />}
+                    <IconMoon
+                      style={{
+                        width: rem(20),
+                        height: rem(20),
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        cursor: 'pointer',
+                      }}
+                    />
                   </ActionIcon>
-                </Menu.Target>
-                <Menu.Dropdown
+                }
+              >
+                <ActionIcon
+                  variant="subtle"
+                  size="lg"
+                  onClick={toggleColorScheme}
+                  aria-label={t('home:footer.toggleTheme')}
                   style={{
-                    background: isDark ? 'rgba(15, 15, 15, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(10px)',
-                    border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-                    borderRadius: '8px',
+                    background: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                    color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+                    cursor: 'pointer',
                   }}
                 >
-                  <Menu.Item
-                    onClick={() => {
-                      i18n.changeLanguage('en')
-                      setCurrentLanguage('en')
-                    }}
-                    style={{
-                      color: isDark ? 'white' : 'black',
-                      background:
-                        i18n.language === 'en'
-                          ? isDark
-                            ? 'rgba(32, 254, 107, 0.1)'
-                            : 'rgba(32, 254, 107, 0.05)'
-                          : 'transparent',
-                    }}
-                    leftSection={<UsIcon size={18} />}
-                    rightSection={
-                      i18n.language === 'en' ? (
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M20 6L9 17l-5-5" />
-                        </svg>
-                      ) : null
-                    }
-                  >
-                    English
-                  </Menu.Item>
-                  <Menu.Item
-                    onClick={() => {
-                      i18n.changeLanguage('fr')
-                      setCurrentLanguage('fr')
-                    }}
-                    style={{
-                      color: isDark ? 'white' : 'black',
-                      background:
-                        i18n.language === 'fr'
-                          ? isDark
-                            ? 'rgba(32, 254, 107, 0.1)'
-                            : 'rgba(32, 254, 107, 0.05)'
-                          : 'transparent',
-                    }}
-                    leftSection={<FrIcon size={18} />}
-                    rightSection={
-                      i18n.language === 'fr' ? (
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M20 6L9 17l-5-5" />
-                        </svg>
-                      ) : null
-                    }
-                  >
-                    Français
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
-
-              {/* Theme Selector */}
-              <ActionIcon
-                variant="subtle"
-                size="lg"
-                onClick={toggleColorScheme}
-                aria-label={t('home:footer.toggleTheme')}
-                style={{
-                  background: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                  color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-                  cursor: 'pointer',
-                }}
-              >
-                {isDark ? (
-                  <IconSun
-                    style={{
-                      width: rem(20),
-                      height: rem(20),
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      cursor: 'pointer',
-                    }}
-                    onMouseEnter={(e) => {
-                      const target = e.currentTarget as SVGElement
-                      target.style.transform = 'scale(1.2) rotate(15deg)'
-                      target.style.color = '#20FE6B'
-                      target.style.filter = isDark
-                        ? 'drop-shadow(0 0 8px rgba(32, 254, 107, 0.6))'
-                        : 'drop-shadow(0 0 6px rgba(28, 157, 74, 0.4))'
-                    }}
-                    onMouseLeave={(e) => {
-                      const target = e.currentTarget as SVGElement
-                      target.style.transform = 'scale(1) rotate(0deg)'
-                      target.style.color = isDark
-                        ? 'rgba(255, 255, 255, 0.8)'
-                        : 'rgba(0, 0, 0, 0.7)'
-                      target.style.filter = 'none'
-                    }}
-                  />
-                ) : (
-                  <IconMoon
-                    style={{
-                      width: rem(20),
-                      height: rem(20),
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      cursor: 'pointer',
-                    }}
-                    onMouseEnter={(e) => {
-                      const target = e.currentTarget as SVGElement
-                      target.style.transform = 'scale(1.2) rotate(-15deg)'
-                      target.style.color = '#1C9D4A'
-                      target.style.filter = 'drop-shadow(0 0 6px rgba(28, 157, 74, 0.4))'
-                    }}
-                    onMouseLeave={(e) => {
-                      const target = e.currentTarget as SVGElement
-                      target.style.transform = 'scale(1) rotate(0deg)'
-                      target.style.color = isDark
-                        ? 'rgba(255, 255, 255, 0.8)'
-                        : 'rgba(0, 0, 0, 0.7)'
-                      target.style.filter = 'none'
-                    }}
-                  />
-                )}
-              </ActionIcon>
+                  {isDark ? (
+                    <IconSun
+                      style={{
+                        width: rem(20),
+                        height: rem(20),
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        const target = e.currentTarget as SVGElement
+                        target.style.transform = 'scale(1.2) rotate(15deg)'
+                        target.style.color = '#20FE6B'
+                        target.style.filter = isDark
+                          ? 'drop-shadow(0 0 8px rgba(32, 254, 107, 0.6))'
+                          : 'drop-shadow(0 0 6px rgba(28, 157, 74, 0.4))'
+                      }}
+                      onMouseLeave={(e) => {
+                        const target = e.currentTarget as SVGElement
+                        target.style.transform = 'scale(1) rotate(0deg)'
+                        target.style.color = isDark
+                          ? 'rgba(255, 255, 255, 0.8)'
+                          : 'rgba(0, 0, 0, 0.7)'
+                        target.style.filter = 'none'
+                      }}
+                    />
+                  ) : (
+                    <IconMoon
+                      style={{
+                        width: rem(20),
+                        height: rem(20),
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        const target = e.currentTarget as SVGElement
+                        target.style.transform = 'scale(1.2) rotate(-15deg)'
+                        target.style.color = '#1C9D4A'
+                        target.style.filter = 'drop-shadow(0 0 6px rgba(28, 157, 74, 0.4))'
+                      }}
+                      onMouseLeave={(e) => {
+                        const target = e.currentTarget as SVGElement
+                        target.style.transform = 'scale(1) rotate(0deg)'
+                        target.style.color = isDark
+                          ? 'rgba(255, 255, 255, 0.8)'
+                          : 'rgba(0, 0, 0, 0.7)'
+                        target.style.filter = 'none'
+                      }}
+                    />
+                  )}
+                </ActionIcon>
+              </ClientOnly>
             </Group>
           </Container>
         </Box>

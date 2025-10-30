@@ -7,7 +7,7 @@ export const localeCookie = createCookie('lng', {
   path: '/',
   sameSite: 'lax',
   secure: process.env.NODE_ENV === 'production',
-  httpOnly: true,
+  httpOnly: false, // Allow client-side JavaScript to access the cookie
 })
 
 export const [i18nextMiddleware, getLocale, getInstance] = unstable_createI18nextMiddleware({

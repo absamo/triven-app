@@ -1,15 +1,19 @@
 import {
+  ActionIcon,
   Box,
   Burger,
   Button,
+  Divider,
   Drawer,
   Group,
   HoverCard,
+  Menu,
   rem,
   SimpleGrid,
   Text,
   ThemeIcon,
   UnstyledButton,
+  useMantineColorScheme,
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
@@ -18,12 +22,18 @@ import {
   IconChevronDown,
   IconCurrencyDollar,
   IconFileInvoice,
+  IconMoon,
   IconPackage,
   IconShoppingCart,
+  IconSun,
 } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Logo } from '~/app/components'
+import ClientOnly from '~/app/components/ClientOnly'
+import FrIcon from '~/app/components/SvgIcons/FrIcon'
+import UsIcon from '~/app/components/SvgIcons/UsIcon'
+import { changeLanguageWithPersistence } from '~/app/utils/i18n.client'
 import classes from './Header.module.css'
 
 const featureIcons = [
@@ -36,8 +46,11 @@ const featureIcons = [
 ]
 
 export default function HeaderMegaMenu() {
-  const { t } = useTranslation(['home', 'navigation'])
+  const { t, i18n } = useTranslation(['home', 'navigation'])
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme()
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false)
+
+  const isDark = colorScheme === 'dark'
 
   // Smooth scroll to pricing section
   const scrollToPricing = (e: React.MouseEvent) => {
@@ -112,7 +125,141 @@ export default function HeaderMegaMenu() {
             </Group>
 
             {/* CTA Buttons */}
-            <Group visibleFrom="md" gap="sm" align="center">
+            <Group visibleFrom="md" gap="lg" align="center">
+              {/* Theme Selector */}
+              <ClientOnly
+                fallback={
+                  <ActionIcon
+                    variant="subtle"
+                    size="md"
+                    aria-label={t('home:footer.toggleTheme')}
+                    style={{
+                      background: 'rgba(0, 0, 0, 0.1)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <IconMoon style={{ width: rem(16), height: rem(16) }} />
+                  </ActionIcon>
+                }
+              >
+                <ActionIcon
+                  variant="subtle"
+                  size="md"
+                  onClick={toggleColorScheme}
+                  aria-label={t('home:footer.toggleTheme')}
+                  style={{
+                    background: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {isDark ? (
+                    <IconSun style={{ width: rem(16), height: rem(16) }} />
+                  ) : (
+                    <IconMoon style={{ width: rem(16), height: rem(16) }} />
+                  )}
+                </ActionIcon>
+              </ClientOnly>
+
+              {/* Language Selector */}
+              <ClientOnly
+                fallback={
+                  <Menu shadow="md" width={150} position="bottom-end">
+                    <Menu.Target>
+                      <Button
+                        variant="subtle"
+                        size="sm"
+                        aria-label={t('home:footer.selectLanguage')}
+                        leftSection={<UsIcon size={16} />}
+                        style={{
+                          background: 'rgba(0, 0, 0, 0.1)',
+                          cursor: 'pointer',
+                          border: 'none',
+                          color: 'inherit',
+                        }}
+                      >
+                        EN
+                      </Button>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item leftSection={<UsIcon size={16} />}>English</Menu.Item>
+                      <Menu.Item leftSection={<FrIcon size={16} />}>Français</Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                }
+              >
+                <Menu shadow="md" width={150} position="bottom-end">
+                  <Menu.Target>
+                    <Button
+                      variant="subtle"
+                      size="sm"
+                      aria-label={t('home:footer.selectLanguage')}
+                      leftSection={
+                        i18n.language === 'en' ? <UsIcon size={16} /> : <FrIcon size={16} />
+                      }
+                      style={{
+                        background: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                        cursor: 'pointer',
+                        border: 'none',
+                        color: 'inherit',
+                      }}
+                    >
+                      {i18n.language === 'en' ? 'EN' : 'FR'}
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      onClick={() => changeLanguageWithPersistence(i18n, 'en')}
+                      leftSection={<UsIcon size={16} />}
+                      rightSection={
+                        i18n.language === 'en' ? (
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <title>Selected</title>
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        ) : null
+                      }
+                    >
+                      English
+                    </Menu.Item>
+                    <Menu.Item
+                      onClick={() => changeLanguageWithPersistence(i18n, 'fr')}
+                      leftSection={<FrIcon size={16} />}
+                      rightSection={
+                        i18n.language === 'fr' ? (
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <title>Selected</title>
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        ) : null
+                      }
+                    >
+                      Français
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              </ClientOnly>
+
+              {/* Vertical Separator */}
+              <Divider orientation="vertical" size="xs" />
+
               <Button
                 component={Link}
                 to="/login"
@@ -121,9 +268,6 @@ export default function HeaderMegaMenu() {
                 size="md"
               >
                 {t('home:nav.login')}
-              </Button>
-              <Button component={Link} to="/signup" className={classes.signupButton} size="md">
-                {t('home:nav.getStarted')}
               </Button>
             </Group>
             <Burger
@@ -165,16 +309,93 @@ export default function HeaderMegaMenu() {
         </div>
 
         <div className={classes.mobileActions}>
-          <Button
-            component={Link}
-            to="/signup"
-            size="lg"
-            fullWidth
-            className={classes.mobileSignupBtn}
-            mb="sm"
-          >
-            {t('home:nav.getStarted')}
-          </Button>
+          {/* Mobile Language and Theme Selectors */}
+          <Group justify="center" mb="md" gap="lg">
+            {/* Theme Selector */}
+            <ClientOnly
+              fallback={
+                <ActionIcon variant="subtle" size="lg" aria-label={t('home:footer.toggleTheme')}>
+                  <IconMoon style={{ width: rem(20), height: rem(20) }} />
+                </ActionIcon>
+              }
+            >
+              <ActionIcon
+                variant="subtle"
+                size="lg"
+                onClick={toggleColorScheme}
+                aria-label={t('home:footer.toggleTheme')}
+              >
+                {isDark ? (
+                  <IconSun style={{ width: rem(20), height: rem(20) }} />
+                ) : (
+                  <IconMoon style={{ width: rem(20), height: rem(20) }} />
+                )}
+              </ActionIcon>
+            </ClientOnly>
+
+            {/* Language Selector */}
+            <ClientOnly
+              fallback={
+                <Menu shadow="md" width={150} position="bottom">
+                  <Menu.Target>
+                    <Button
+                      variant="subtle"
+                      size="md"
+                      aria-label={t('home:footer.selectLanguage')}
+                      leftSection={<UsIcon size={18} />}
+                      style={{
+                        border: 'none',
+                        color: 'inherit',
+                      }}
+                    >
+                      EN
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item leftSection={<UsIcon size={16} />}>English</Menu.Item>
+                    <Menu.Item leftSection={<FrIcon size={16} />}>Français</Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              }
+            >
+              <Menu shadow="md" width={150} position="bottom">
+                <Menu.Target>
+                  <Button
+                    variant="subtle"
+                    size="md"
+                    aria-label={t('home:footer.selectLanguage')}
+                    leftSection={
+                      i18n.language === 'en' ? <UsIcon size={18} /> : <FrIcon size={18} />
+                    }
+                    style={{
+                      border: 'none',
+                      color: 'inherit',
+                    }}
+                  >
+                    {i18n.language === 'en' ? 'EN' : 'FR'}
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    onClick={() => changeLanguageWithPersistence(i18n, 'en')}
+                    leftSection={<UsIcon size={16} />}
+                  >
+                    English
+                  </Menu.Item>
+                  <Menu.Item
+                    onClick={() => changeLanguageWithPersistence(i18n, 'fr')}
+                    leftSection={<FrIcon size={16} />}
+                  >
+                    Français
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            </ClientOnly>
+          </Group>
+
+          {/* Mobile Divider */}
+          <Divider mb="md" size="xs" />
+
           <Button
             component={Link}
             to="/login"

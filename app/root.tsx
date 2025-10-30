@@ -1,6 +1,6 @@
 import '@mantine/carousel/styles.css'
 import '@mantine/charts/styles.css'
-import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core'
+import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core'
 import '@mantine/core/styles.css'
 import '@mantine/dates/styles.css'
 import '@mantine/dropzone/styles.css'
@@ -12,25 +12,23 @@ import { useTranslation } from 'react-i18next'
 import {
   // isRouteErrorResponse,
   data,
+  type ErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   useRouteError,
-  type ErrorResponse,
 } from 'react-router'
-import { useChangeLanguage } from 'remix-i18next/react'
-import { getLocale, i18nextMiddleware, localeCookie } from './middleware/i18next'
-
 import { theme } from '~/app/lib/theme'
 import ErrorPage from '~/app/pages/Error/Error'
 import type { Route } from './+types/root'
+import { getLocale, i18nextMiddleware, localeCookie } from './middleware/i18next'
 
 export const unstable_middleware = [i18nextMiddleware]
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-  let locale = getLocale(context)
+  const locale = getLocale(context)
   const cookieHeader = request.headers.get('cookie') || ''
 
   // Parse cookies for navbar state and color scheme
@@ -55,10 +53,8 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT || '',
   }
 
-  return data(
-    { locale, showMiniNavbar, colorScheme, imagekitConfig },
-    { headers: { 'Set-Cookie': await localeCookie.serialize(locale) } }
-  )
+  // Don't set the cookie in the response - let the client handle it
+  return data({ locale, showMiniNavbar, colorScheme, imagekitConfig })
 }
 
 export async function action({ context, request }: Route.ActionArgs) {
@@ -99,9 +95,10 @@ export const links: Route.LinksFunction = () => [
 ]
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  let { i18n } = useTranslation()
+  const { i18n } = useTranslation()
 
-  useChangeLanguage(loaderData.locale)
+  // Don't use useChangeLanguage - let client-side i18next manage language state
+  // useChangeLanguage(loaderData.locale)
 
   return (
     <html lang={i18n.language} dir={i18n.dir(i18n.language)} {...mantineHtmlProps}>
@@ -159,7 +156,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
 // }
 
 export function ErrorBoundary() {
-  let error: ErrorResponse = useRouteError() as ErrorResponse
+  const error: ErrorResponse = useRouteError() as ErrorResponse
 
   return (
     <html {...mantineHtmlProps}>

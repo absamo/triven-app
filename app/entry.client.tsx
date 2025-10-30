@@ -1,10 +1,10 @@
-import Fetch from 'i18next-fetch-backend'
 import i18next from 'i18next'
-import { startTransition, StrictMode } from 'react'
+import I18nextBrowserLanguageDetector from 'i18next-browser-languagedetector'
+import Fetch from 'i18next-fetch-backend'
+import { StrictMode, startTransition } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { I18nextProvider, initReactI18next } from 'react-i18next'
 import { HydratedRouter } from 'react-router/dom'
-import I18nextBrowserLanguageDetector from 'i18next-browser-languagedetector'
 
 async function main() {
   await i18next
@@ -13,7 +13,13 @@ async function main() {
     .use(I18nextBrowserLanguageDetector)
     .init({
       fallbackLng: 'en',
-      detection: { order: ['htmlTag'], caches: [] },
+      detection: {
+        order: ['cookie', 'htmlTag'],
+        caches: ['cookie'],
+        cookieMinutes: 525600, // 1 year
+        lookupCookie: 'lng',
+        cookieOptions: { path: '/', sameSite: 'lax' },
+      },
       backend: { loadPath: '/api/locales/{{lng}}/{{ns}}' },
     })
 
