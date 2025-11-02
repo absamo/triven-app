@@ -197,6 +197,9 @@ export default [
     // Simple chat
     route('simple-chat', 'routes/simple-chat.tsx'),
 
+    // Mastra AI chat
+    route('mastra-chat', 'routes/mastra-chat.tsx'),
+
     // Roadmap
     route('roadmap', 'routes/roadmap.tsx'),
     route('roadmap/request-new-feature', 'routes/roadmap/roadmap.request-new-feature.tsx'),

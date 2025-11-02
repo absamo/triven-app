@@ -19,6 +19,9 @@ cookies*.txt-*
 # VS Code settings
 .vscode/
 
+# Mastra
+.mastra/
+
 # Docker volumes
 ollama_data/
 
