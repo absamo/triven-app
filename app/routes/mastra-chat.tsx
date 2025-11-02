@@ -1,12 +1,30 @@
-import { Box, Button, Group, Paper, ScrollArea, Stack, Text, TextInput, Title } from '@mantine/core'
-import { IconRobot, IconSend, IconSparkles, IconUser } from '@tabler/icons-react'
+import {
+  ActionIcon,
+  Avatar,
+  Box,
+  Button,
+  Center,
+  Container,
+  Group,
+  Paper,
+  ScrollArea,
+  SimpleGrid,
+  Skeleton,
+  Stack,
+  Text,
+  Textarea,
+  UnstyledButton,
+} from '@mantine/core'
+import { IconRobot, IconSend, IconSparkles } from '@tabler/icons-react'
 import type { CoreMessage } from 'ai'
+import dayjs from 'dayjs'
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import type { ActionFunctionArgs, MetaFunction } from 'react-router'
 import { useFetcher } from 'react-router'
 import remarkGfm from 'remark-gfm'
 import { getInventoryAgent } from '~/app/lib'
+import classes from './mastra-chat.module.css'
 
 export const meta: MetaFunction = () => {
   return [
@@ -20,6 +38,47 @@ type Message = {
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  isStreaming?: boolean
+}
+
+const MarkdownComponents: any = {
+  table: ({ children, ...props }: any) => (
+    <Box mb="lg" style={{ overflowX: 'auto', border: '1px solid var(--mantine-color-dark-4)', borderRadius: '0.5rem' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'var(--mantine-color-dark-6)' }} {...props}>
+        {children}
+      </table>
+    </Box>
+  ),
+  thead: ({ children, ...props }: any) => (
+    <thead style={{ backgroundColor: 'var(--mantine-color-dark-5)' }} {...props}>
+      {children}
+    </thead>
+  ),
+  th: ({ children, ...props }: any) => (
+    <th style={{ fontWeight: 600, color: 'var(--mantine-color-gray-1)', padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid var(--mantine-color-dark-4)' }} {...props}>
+      {children}
+    </th>
+  ),
+  td: ({ children, ...props }: any) => (
+    <td style={{ color: 'var(--mantine-color-gray-2)', padding: '0.75rem', borderBottom: '1px solid var(--mantine-color-dark-4)' }} {...props}>
+      {children}
+    </td>
+  ),
+  code: ({ children, className, ...props }: any) => {
+    const isInline = !className
+    if (isInline) {
+      return (
+        <Text span style={{ backgroundColor: 'var(--mantine-color-dark-5)', color: 'var(--mantine-color-gray-1)', fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.85em', padding: '0.125rem 0.25rem', borderRadius: '0.25rem' }} {...props}>
+          {children}
+        </Text>
+      )
+    }
+    return (
+      <Box p="md" mb="sm" style={{ backgroundColor: 'var(--mantine-color-dark-6)', border: '1px solid var(--mantine-color-dark-4)', borderRadius: '0.5rem', fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.875rem' }}>
+        <Text style={{ whiteSpace: 'pre-wrap', color: 'var(--mantine-color-gray-1)' }}>{children}</Text>
+      </Box>
+    )
+  },
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -107,12 +166,25 @@ export async function action({ request }: ActionFunctionArgs) {
             } else if (part.type === 'tool-getLowStockProducts' && part.output.products) {
               const products = part.output.products
               fullResponse += '\n\n### Low Stock Products\n\n'
-              fullResponse += '| Name | SKU | Stock | Status |\n'
-              fullResponse += '|------|-----|-------|--------|\n'
+              fullResponse += '| Name | SKU | Category | Stock | Status |\n'
+              fullResponse += '|------|-----|----------|-------|--------|\n'
               
               for (const product of products) {
-                fullResponse += `| ${product.name} | ${product.sku} | ${product.stock} | ${product.status} |\n`
+                fullResponse += `| ${product.name} | ${product.sku} | ${product.category} | ${product.stock} | ${product.status} |\n`
               }
+              
+              fullResponse += `\n**Found:** ${part.output.count} low stock items (threshold: ${part.output.threshold})`
+            } else if (part.type === 'tool-getOutOfStockProducts' && part.output.products) {
+              const products = part.output.products
+              fullResponse += '\n\n### Out of Stock Products\n\n'
+              fullResponse += '| Name | SKU | Category | Price | Status |\n'
+              fullResponse += '|------|-----|----------|-------|--------|\n'
+              
+              for (const product of products) {
+                fullResponse += `| ${product.name} | ${product.sku} | ${product.category} | ${product.price} | ${product.status} |\n`
+              }
+              
+              fullResponse += `\n**Total:** ${part.output.count} products out of stock`
             } else if (part.type === 'tool-searchProducts' && part.output.products) {
               const products = part.output.products
               fullResponse += '\n\n### Search Results\n\n'
@@ -215,197 +287,194 @@ export default function MastraChat() {
     setInputValue('')
   }
 
-  return (
-    <Box
-      style={{
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'var(--mantine-color-dark-7)',
-      }}
-    >
-      {/* Header */}
-      <Paper
-        shadow="md"
-        p="md"
-        style={{
-          borderRadius: 0,
-          background: 'var(--mantine-color-dark-6)',
-          borderBottom: '1px solid var(--mantine-color-dark-4)',
-        }}
-      >
-        <Group justify="space-between" align="center">
-          <Group gap="sm">
-            <IconSparkles size={32} style={{ color: 'var(--mantine-color-violet-4)' }} />
-            <div>
-              <Title order={3} style={{ margin: 0, color: 'var(--mantine-color-violet-4)' }}>
-                Mastra AI Assistant
-              </Title>
-              <Text size="sm" c="dimmed">
-                Powered by Minimax M2 Cloud via Ollama
-              </Text>
-            </div>
-          </Group>
-          {messages.length > 0 && (
-            <Button variant="light" color="red" onClick={handleClear} size="sm">
-              Clear Chat
-            </Button>
-          )}
-        </Group>
-      </Paper>
+  const formatTimestamp = (date: Date) => {
+    const messageDate = dayjs(date)
+    const now = dayjs()
 
-      {/* Messages Area */}
-      <ScrollArea flex={1} viewportRef={viewport} style={{ padding: '1rem' }} scrollbarSize={8}>
-        {messages.length === 0 ? (
-          <Stack align="center" justify="center" gap="xl" style={{ minHeight: '400px' }}>
-            <IconRobot size={80} style={{ color: 'var(--mantine-color-violet-4)' }} opacity={0.6} />
-            <Stack align="center" gap="xs">
-              <Text size="xl" fw={600} style={{ color: 'var(--mantine-color-gray-2)' }}>
-                Welcome to Mastra AI Chat! 🚀
-              </Text>
-              <Text size="md" style={{ color: 'var(--mantine-color-gray-4)' }} ta="center" maw={600}>
-                I'm your intelligent inventory assistant powered by Mastra framework. Ask me about
-                your products, inventory levels, or get insights about your stock!
-              </Text>
-            </Stack>
-            <Stack gap="xs" style={{ marginTop: '1rem' }}>
-              <Text size="sm" style={{ color: 'var(--mantine-color-gray-5)' }} fw={500}>
-                Try asking:
-              </Text>
-              <Group gap="xs">
-                <Button
-                  variant="light"
-                  color="violet"
-                  size="xs"
-                  onClick={() => setInputValue('Show me all products')}
-                >
-                  📦 Show me all products
-                </Button>
-                <Button
-                  variant="light"
-                  color="violet"
-                  size="xs"
-                  onClick={() => setInputValue('What are my inventory statistics?')}
-                >
-                  📊 Inventory statistics
-                </Button>
-                <Button
-                  variant="light"
-                  color="violet"
-                  size="xs"
-                  onClick={() => setInputValue('Which products are low on stock?')}
-                >
-                  ⚠️ Low stock items
-                </Button>
-              </Group>
-            </Stack>
-          </Stack>
-        ) : (
-          <Stack gap="md" maw={900} mx="auto">
-            {messages.map((message) => (
-              <Paper
-                key={message.id}
-                p="md"
-                shadow="sm"
-                style={{
-                  alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
-                  maxWidth: '80%',
-                  background: message.role === 'user' ? 'var(--mantine-color-violet-6)' : 'var(--mantine-color-dark-5)',
-                  color: message.role === 'user' ? 'white' : 'var(--mantine-color-gray-2)',
-                  border: message.role === 'assistant' ? '1px solid var(--mantine-color-dark-4)' : 'none',
-                }}
-              >
-                <Group gap="xs" mb="xs">
-                  {message.role === 'user' ? (
-                    <IconUser size={20} />
-                  ) : (
-                    <IconRobot size={20} style={{ color: 'var(--mantine-color-violet-4)' }} />
-                  )}
-                  <Text size="sm" fw={600}>
-                    {message.role === 'user' ? 'You' : 'Mastra AI'}
-                  </Text>
-                  <Text size="xs" opacity={0.7}>
-                    {message.timestamp.toLocaleTimeString()}
-                  </Text>
-                </Group>
-                <div style={{ lineHeight: 1.6 }}>
-                  {message.role === 'assistant' ? (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-                  ) : (
-                    <Text>{message.content}</Text>
-                  )}
-                </div>
-              </Paper>
-            ))}
-            {isLoading && (
-              <Paper
-                p="md"
-                shadow="sm"
-                style={{
-                  alignSelf: 'flex-start',
-                  maxWidth: '80%',
-                  background: 'var(--mantine-color-dark-5)',
-                  border: '1px solid var(--mantine-color-dark-4)',
-                }}
-              >
-                <Group gap="xs">
-                  <IconRobot size={20} style={{ color: 'var(--mantine-color-violet-4)' }} />
-                  <Text size="sm" fw={600}>
-                    Mastra AI
-                  </Text>
-                </Group>
-                <Text size="sm" c="dimmed" mt="xs">
-                  Thinking... 🤔
+    if (messageDate.isSame(now, 'day')) {
+      return messageDate.format('h:mm A')
+    } else if (messageDate.isSame(now.subtract(1, 'day'), 'day')) {
+      return 'Yesterday'
+    } else {
+      if (messageDate.isSame(now, 'year')) {
+        return messageDate.format('MMM D')
+      } else {
+        return messageDate.format('MMM D, YYYY')
+      }
+    }
+  }
+
+  const shouldShowTimestamp = (currentMessage: Message, previousMessage?: Message) => {
+    if (!previousMessage) return true
+
+    const currentTime = dayjs(currentMessage.timestamp)
+    const previousTime = dayjs(previousMessage.timestamp)
+
+    return currentTime.diff(previousTime, 'minute') > 5
+  }
+
+  const currentHour = dayjs().hour()
+
+  const exampleQuestions = [
+    { title: 'Show me all products', icon: '📦' },
+    { title: 'What are my inventory statistics?', icon: '📊' },
+    { title: 'Which products are low on stock?', icon: '⚠️' },
+    { title: 'Search for electronics', icon: '🔍' },
+    { title: 'Show out of stock items', icon: '❌' },
+    { title: 'What products need reordering?', icon: '🔄' },
+  ]
+
+  return (
+    <Box className={classes.chatContainer}>
+      {messages.length === 0 ? (
+        <Container size="md" h="100%" p={0}>
+          <Center h="100%">
+            <Stack align="center" gap="xl">
+              <Box ta="center">
+                <IconSparkles
+                  size={64}
+                  style={{ color: 'var(--mantine-color-violet-4)', marginBottom: '1rem' }}
+                />
+                <Text size="xl" fw={600} mb="xs">
+                  {currentHour < 12
+                    ? 'Good Morning'
+                    : currentHour < 18
+                      ? 'Good Afternoon'
+                      : 'Good Evening'}
                 </Text>
-              </Paper>
+                <Text size="md" c="dimmed" ta="center" lh={1.5}>
+                  I'm your intelligent inventory assistant powered by Mastra framework. Ask me about
+                  your products, inventory levels, or get insights about your stock!
+                </Text>
+              </Box>
+
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
+                {exampleQuestions.map((question, index) => (
+                  <UnstyledButton
+                    key={index}
+                    className={classes.exampleCard}
+                    onClick={() => setInputValue(question.title)}
+                  >
+                    <Group gap="sm" align="center">
+                      <Text size="lg">{question.icon}</Text>
+                      <Text size="sm" c="dimmed" fw={500}>
+                        {question.title}
+                      </Text>
+                    </Group>
+                  </UnstyledButton>
+                ))}
+              </SimpleGrid>
+            </Stack>
+          </Center>
+        </Container>
+      ) : (
+        <ScrollArea ref={viewport} className={classes.messagesScrollArea}>
+          <Stack gap="lg">
+            {messages.map((message, index) => {
+              const previousMessage = index > 0 ? messages[index - 1] : undefined
+              const showTimestamp = shouldShowTimestamp(message, previousMessage)
+
+              return (
+                <Box key={message.id}>
+                  {showTimestamp && (
+                    <Text size="xs" c="dimmed" ta="center" mb="md">
+                      {formatTimestamp(message.timestamp)}
+                    </Text>
+                  )}
+
+                  <Group align="flex-start" gap="md">
+                    <Avatar
+                      size="md"
+                      radius="xl"
+                      color={message.role === 'user' ? 'blue' : 'violet'}
+                    >
+                      {message.role === 'user' ? 'U' : <IconSparkles size={16} />}
+                    </Avatar>
+
+                    <Box flex={1} maw="100%">
+                      {message.role === 'assistant' ? (
+                        <Box>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={MarkdownComponents}
+                          >
+                            {message.content || (message.isStreaming ? '' : 'No response generated')}
+                          </ReactMarkdown>
+                          {message.isStreaming && !message.content && (
+                            <Stack gap="xs">
+                              <Skeleton height={8} radius="xl" />
+                              <Skeleton height={8} width="70%" radius="xl" />
+                              <Skeleton height={8} width="40%" radius="xl" />
+                            </Stack>
+                          )}
+                        </Box>
+                      ) : (
+                        <Text size="sm">{message.content}</Text>
+                      )}
+                    </Box>
+                  </Group>
+                </Box>
+              )
+            })}
+
+            {isLoading && (
+              <Group align="flex-start" gap="md">
+                <Avatar size="md" radius="xl" color="violet">
+                  <IconSparkles size={16} />
+                </Avatar>
+                <Box flex={1}>
+                  <Stack gap="xs">
+                    <Skeleton height={8} radius="xl" />
+                    <Skeleton height={8} width="70%" radius="xl" />
+                    <Skeleton height={8} width="40%" radius="xl" />
+                  </Stack>
+                </Box>
+              </Group>
             )}
           </Stack>
-        )}
-      </ScrollArea>
+        </ScrollArea>
+      )}
 
-      {/* Input Area */}
-      <Paper
-        p="md"
-        shadow="md"
-        style={{
-          borderRadius: 0,
-          background: 'var(--mantine-color-dark-6)',
-          borderTop: '1px solid var(--mantine-color-dark-4)',
-        }}
-      >
+      <Paper radius="md" withBorder p="md">
         <form onSubmit={handleSubmit}>
-          <Group gap="xs" align="flex-end" maw={900} mx="auto">
-            <TextInput
-              flex={1}
-              size="lg"
-              placeholder="Ask me anything about your inventory..."
+          <Group gap="sm" align="flex-end">
+            <Textarea
+              placeholder={isLoading ? 'Please wait...' : 'Ask me anything about your inventory...'}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInputValue(e.target.value)}
               disabled={isLoading}
-              styles={{
-                input: {
-                  borderRadius: '24px',
-                  paddingLeft: '1.5rem',
-                },
+              autosize
+              minRows={1}
+              maxRows={6}
+              variant="unstyled"
+              size="sm"
+              className={classes.messageInput}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
+                  e.preventDefault()
+                  handleSubmit(e)
+                }
               }}
+              style={{ flex: 1 }}
             />
-            <Button
+            <ActionIcon
               type="submit"
-              size="lg"
-              loading={isLoading}
-              disabled={!inputValue.trim()}
-              leftSection={<IconSend size={20} />}
-              color="violet"
+              disabled={!inputValue.trim() || isLoading}
               variant="filled"
-              style={{
-                borderRadius: '24px',
-              }}
+              color="violet"
+              size="lg"
+              radius="xl"
+              loading={isLoading}
+              className={classes.sendButton}
             >
-              Send
-            </Button>
+              {!isLoading && <IconSend size={18} />}
+            </ActionIcon>
           </Group>
         </form>
       </Paper>
+      <Text size="xs" c="dimmed" ta="center" mt="xs">
+        Press Enter to send, Shift + Enter for new line
+      </Text>
     </Box>
   )
 }

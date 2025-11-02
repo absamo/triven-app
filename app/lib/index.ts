@@ -139,7 +139,7 @@ const inventoryTools = {
   },
 
   getLowStockProducts: {
-    description: 'Get products that are running low on stock (quantity <= 10)',
+    description: 'Get products that are running low on stock (quantity <= 10 but > 0)',
     parameters: z.object({
       threshold: z.number().optional().default(10).describe('Stock level threshold'),
     }),
@@ -162,13 +162,46 @@ const inventoryTools = {
             sku: p.sku,
             category: p.category?.name || 'No category',
             stock: p.availableQuantity,
-            status: p.availableQuantity === 0 ? 'out-of-stock' : 'low-stock',
+            status: 'low-stock',
           })),
           count: products.length,
         }
       } catch (error) {
         console.error('Error fetching low stock products:', error)
         return { error: 'Failed to fetch low stock products', products: [] }
+      }
+    },
+  },
+
+  getOutOfStockProducts: {
+    description: 'Get products that are completely out of stock (quantity = 0)',
+    parameters: z.object({}),
+    execute: async () => {
+      try {
+        const products = await prisma.product.findMany({
+          where: {
+            availableQuantity: 0,
+          },
+          include: { category: true },
+          orderBy: { name: 'asc' },
+          take: 100,
+        })
+
+        return {
+          products: products.map((p) => ({
+            id: p.id,
+            name: p.name,
+            sku: p.sku,
+            category: p.category?.name || 'No category',
+            stock: 0,
+            price: `$${Number(p.sellingPrice).toFixed(2)}`,
+            status: 'out-of-stock',
+          })),
+          count: products.length,
+        }
+      } catch (error) {
+        console.error('Error fetching out of stock products:', error)
+        return { error: 'Failed to fetch out of stock products', products: [] }
       }
     },
   },
