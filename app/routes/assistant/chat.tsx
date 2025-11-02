@@ -909,6 +909,21 @@ ${
 
 ${actualResult.found > 0 ? '\n*These items may need restocking soon.*' : ''}`
 
+    case 'search_products':
+      return `🔍 **Search Results for "${actualResult.query}"**
+
+**Found ${actualResult.found || 0} products** matching your search
+
+${
+  actualResult.products && actualResult.products.length > 0
+    ? `| Product Name | SKU | Category | Stock | Price |
+|--------------|-----|----------|-------|-------|
+${actualResult.products.map((product: any) => `| ${product.name} | ${product.sku} | ${product.category} | ${product.stock} | ${product.price} |`).join('\n')}`
+    : 'No products found matching your search criteria.'
+}
+
+${actualResult.found > 0 ? `\n*Showing ${actualResult.found} product${actualResult.found > 1 ? 's' : ''}${actualResult.timeDescription ? ` (${actualResult.timeDescription})` : ''}*` : ''}`
+
     default:
       // Generic formatting for unknown tools
       if (typeof actualResult === 'object') {

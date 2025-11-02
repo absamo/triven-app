@@ -83,8 +83,10 @@ const inventoryTools = {
             category: p.category?.name || 'No category',
             stock: p.availableQuantity,
             price: `$${Number(p.sellingPrice).toFixed(2)}`,
+            status: p.status,
           })),
           found: products.length,
+          total: products.length,
         }
       } catch (error) {
         console.error('Error searching products:', error)

@@ -42,6 +42,31 @@ type Message = {
 }
 
 const MarkdownComponents: any = {
+  p: ({ children, ...props }: any) => (
+    <Text size="sm" mb="xs" {...props}>
+      {children}
+    </Text>
+  ),
+  h1: ({ children, ...props }: any) => (
+    <Text size="lg" fw={700} mb="md" {...props}>
+      {children}
+    </Text>
+  ),
+  h2: ({ children, ...props }: any) => (
+    <Text size="md" fw={700} mb="sm" {...props}>
+      {children}
+    </Text>
+  ),
+  h3: ({ children, ...props }: any) => (
+    <Text size="sm" fw={700} mb="sm" {...props}>
+      {children}
+    </Text>
+  ),
+  li: ({ children, ...props }: any) => (
+    <li style={{ fontSize: '0.875rem', marginBottom: '0.25rem' }} {...props}>
+      {children}
+    </li>
+  ),
   table: ({ children, ...props }: any) => (
     <Box mb="lg" style={{ overflowX: 'auto', border: '1px solid var(--mantine-color-dark-4)', borderRadius: '0.5rem' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'var(--mantine-color-dark-6)' }} {...props}>
@@ -55,12 +80,12 @@ const MarkdownComponents: any = {
     </thead>
   ),
   th: ({ children, ...props }: any) => (
-    <th style={{ fontWeight: 600, color: 'var(--mantine-color-gray-1)', padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid var(--mantine-color-dark-4)' }} {...props}>
+    <th style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--mantine-color-gray-1)', padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid var(--mantine-color-dark-4)' }} {...props}>
       {children}
     </th>
   ),
   td: ({ children, ...props }: any) => (
-    <td style={{ color: 'var(--mantine-color-gray-2)', padding: '0.75rem', borderBottom: '1px solid var(--mantine-color-dark-4)' }} {...props}>
+    <td style={{ fontSize: '0.875rem', color: 'var(--mantine-color-gray-2)', padding: '0.75rem', borderBottom: '1px solid var(--mantine-color-dark-4)' }} {...props}>
       {children}
     </td>
   ),
@@ -187,15 +212,21 @@ export async function action({ request }: ActionFunctionArgs) {
               fullResponse += `\n**Total:** ${part.output.count} products out of stock`
             } else if (part.type === 'tool-searchProducts' && part.output.products) {
               const products = part.output.products
-              fullResponse += '\n\n### Search Results\n\n'
-              fullResponse += '| Name | SKU | Category | Stock | Price | Status |\n'
-              fullResponse += '|------|-----|----------|-------|-------|--------|\n'
+              const count = part.output.found || part.output.total || products.length
+              fullResponse += `\n\n### Search Results for "${part.output.query || 'products'}"\n\n`
               
-              for (const product of products) {
-                fullResponse += `| ${product.name} | ${product.sku} | ${product.category} | ${product.stock} | ${product.price} | ${product.status} |\n`
+              if (products.length > 0) {
+                fullResponse += '| Name | SKU | Category | Stock | Price | Status |\n'
+                fullResponse += '|------|-----|----------|-------|-------|--------|\n'
+                
+                for (const product of products) {
+                  fullResponse += `| ${product.name} | ${product.sku} | ${product.category} | ${product.stock} | ${product.price} | ${product.status || 'N/A'} |\n`
+                }
+                
+                fullResponse += `\n**Found:** ${count} product${count !== 1 ? 's' : ''}`
+              } else {
+                fullResponse += 'No products found matching your search criteria.'
               }
-              
-              fullResponse += `\n**Found:** ${part.output.total} products`
             }
           }
         }
@@ -258,7 +289,7 @@ export default function MastraChat() {
     if (viewport.current) {
       viewport.current.scrollTo({ top: viewport.current.scrollHeight, behavior: 'smooth' })
     }
-  }, [messages.length])
+  }, [messages.length, isLoading])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -333,7 +364,7 @@ export default function MastraChat() {
               <Box ta="center">
                 <IconSparkles
                   size={64}
-                  style={{ color: 'var(--mantine-color-violet-4)', marginBottom: '1rem' }}
+                  style={{ color: 'var(--mantine-color-teal-4)', marginBottom: '1rem' }}
                 />
                 <Text size="xl" fw={600} mb="xs">
                   {currentHour < 12
@@ -386,7 +417,7 @@ export default function MastraChat() {
                     <Avatar
                       size="md"
                       radius="xl"
-                      color={message.role === 'user' ? 'blue' : 'violet'}
+                      color={message.role === 'user' ? 'blue' : 'teal'}
                     >
                       {message.role === 'user' ? 'U' : <IconSparkles size={16} />}
                     </Avatar>
@@ -419,7 +450,7 @@ export default function MastraChat() {
 
             {isLoading && (
               <Group align="flex-start" gap="md">
-                <Avatar size="md" radius="xl" color="violet">
+                <Avatar size="md" radius="xl" color="teal">
                   <IconSparkles size={16} />
                 </Avatar>
                 <Box flex={1}>
@@ -435,7 +466,7 @@ export default function MastraChat() {
         </ScrollArea>
       )}
 
-      <Paper radius="md" withBorder p="md">
+      <Paper radius="md" withBorder p="md" className={classes.inputContainer}>
         <form onSubmit={handleSubmit}>
           <Group gap="sm" align="flex-end">
             <Textarea
@@ -456,12 +487,13 @@ export default function MastraChat() {
                 }
               }}
               style={{ flex: 1 }}
+              autoFocus
             />
             <ActionIcon
               type="submit"
               disabled={!inputValue.trim() || isLoading}
               variant="filled"
-              color="violet"
+              color="teal"
               size="lg"
               radius="xl"
               loading={isLoading}
