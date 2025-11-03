@@ -283,6 +283,8 @@ async function handleStreamingRequest(message: string, historyJson: string) {
   }
 }
 function formatToolOutput(toolName: string, output: any, t: (key: string, fallback?: string) => string): string {
+  console.log('🔧 formatToolOutput called:', { toolName, output: JSON.stringify(output, null, 2) })
+  
   let formattedOutput = ''
   
   // Normalize tool name (remove 'tool-' prefix if present)
@@ -301,10 +303,13 @@ function formatToolOutput(toolName: string, output: any, t: (key: string, fallba
     formattedOutput += `\n**${t('inventory:totalItems', 'Total')}:** ${output.total} ${t('inventory:products', 'products')}`
   } else if (normalizedToolName === 'tool-getInventoryStats' && output) {
     formattedOutput += `\n\n### ${t('inventory:inventoryReport', 'Inventory Statistics')}\n\n`
-    formattedOutput += `- **${t('inventory:totalItems', 'Total Products')}:** ${output.totalProducts}\n`
-    formattedOutput += `- **${t('inventory:totalValue', 'Total Stock')}:** ${output.totalStock} ${t('inventory:unit', 'units')}\n`
-    formattedOutput += `- **${t('inventory:lowStock', 'Low Stock Items')}:** ${output.lowStockCount}\n`
-    formattedOutput += `- **${t('inventory:outOfStock', 'Out of Stock Items')}:** ${output.outOfStockCount}\n`
+    formattedOutput += `- **${t('inventory:totalItems', 'Total Products')}:** ${output.totalProducts || 0}\n`
+    formattedOutput += `- **${t('inventory:inStock', 'In Stock')}:** ${output.inStock || 0} ${t('inventory:unit', 'units')}\n`
+    formattedOutput += `- **${t('inventory:totalValue', 'Estimated Value')}:** ${output.estimatedValue || '$0.00'}\n`
+    formattedOutput += `- **${t('inventory:lowStock', 'Low Stock Items')}:** ${output.lowStock || 0}\n`
+    formattedOutput += `- **${t('inventory:outOfStock', 'Out of Stock Items')}:** ${output.outOfStock || 0}\n`
+    formattedOutput += `- **${t('inventory:categories', 'Total Categories')}:** ${output.totalCategories || 0}\n`
+    formattedOutput += `- **${t('inventory:healthStatus', 'Health Status')}:** ${output.healthStatus || 'N/A'}\n`
   } else if (normalizedToolName === 'tool-getLowStockProducts' && output.products) {
     const products = output.products
     formattedOutput += `\n\n### ${t('inventory:lowStock', 'Low Stock')} ${t('inventory:products', 'Products')}\n\n`
@@ -366,9 +371,12 @@ function retranslateToolOutput(content: string, t: (key: string, fallback?: stri
     .replace(/\*\*Total:\*\*/g, `**${t('inventory:totalItems', 'Total')}:**`)
     .replace(/\*\*Found:\*\*/g, `**${t('inventory:found', 'Found')}:**`)
     .replace(/\*\*Total Products:\*\*/g, `**${t('inventory:totalItems', 'Total Products')}:**`)
-    .replace(/\*\*Total Stock:\*\*/g, `**${t('inventory:totalValue', 'Total Stock')}:**`)
+    .replace(/\*\*In Stock:\*\*/g, `**${t('inventory:inStock', 'In Stock')}:**`)
+    .replace(/\*\*Estimated Value:\*\*/g, `**${t('inventory:totalValue', 'Estimated Value')}:**`)
     .replace(/\*\*Low Stock Items:\*\*/g, `**${t('inventory:lowStock', 'Low Stock Items')}:**`)
     .replace(/\*\*Out of Stock Items:\*\*/g, `**${t('inventory:outOfStock', 'Out of Stock Items')}:**`)
+    .replace(/\*\*Total Categories:\*\*/g, `**${t('inventory:categories', 'Total Categories')}:**`)
+    .replace(/\*\*Health Status:\*\*/g, `**${t('inventory:healthStatus', 'Health Status')}:**`)
     .replace(/ units/g, ` ${t('inventory:unit', 'units')}`)
     .replace(/ products$/g, ` ${t('inventory:products', 'products')}`)
     .replace(/ product$/g, ` ${t('inventory:product', 'product')}`)

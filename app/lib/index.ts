@@ -1,6 +1,5 @@
 import { Mastra } from '@mastra/core'
 import { Agent } from '@mastra/core/agent'
-import { LanguageDetector } from '@mastra/core/processors'
 import { createOllama } from 'ai-sdk-ollama'
 import { z } from 'zod'
 import { prisma } from '~/app/db.server'
@@ -95,7 +94,7 @@ const inventoryTools = {
   },
 
   getInventoryStats: {
-    description: 'Get overall inventory statistics and insights',
+    description: 'Get overall inventory statistics and insights. Returns: totalProducts (count), inStock (count), lowStock (count), outOfStock (count), totalCategories (count), estimatedValue (currency string like $1234.56), healthStatus (healthy/warning/critical)',
     parameters: z.object({}),
     execute: async () => {
       try {
@@ -118,7 +117,7 @@ const inventoryTools = {
           0
         )
 
-        return {
+        const result = {
           totalProducts,
           lowStock,
           outOfStock,
@@ -132,6 +131,9 @@ const inventoryTools = {
                 ? 'warning'
                 : 'healthy',
         }
+
+        console.log('📊 getInventoryStats result:', JSON.stringify(result, null, 2))
+        return result
       } catch (error) {
         console.error('Error fetching inventory stats:', error)
         return { error: 'Failed to fetch inventory statistics' }
@@ -213,6 +215,8 @@ const inventoryAgent = new Agent({
   name: 'inventory-assistant',
   instructions: `You are a friendly and helpful AI assistant for Triven, an inventory management platform.
 
+CRITICAL RULE: After calling ANY tool, you MUST remain SILENT. Do not summarize, describe, or format the tool results yourself. The system will automatically format and display them beautifully.
+
 PERSONALITY:
 - Professional yet conversational and approachable
 - Enthusiastic about helping with inventory tasks
@@ -228,44 +232,30 @@ LANGUAGE HANDLING:
 
 CAPABILITIES:
 You have access to tools to:
-- Search and retrieve product information
-- Check inventory levels and stock status
-- Provide inventory statistics and insights
-- Identify low-stock or out-of-stock items
-- Answer questions about products and categories
+- getProducts: List products with pagination (call this when user asks to see products)
+- searchProducts: Search by name, SKU, or category (call this when user searches)
+- getInventoryStats: Get overall inventory metrics (call this for stats/overview)
+- getLowStockProducts: Find items needing restock (call this for low stock or reorder recommendations)
+- getOutOfStockProducts: Find out of stock items (call this for out of stock or reorder recommendations)
+
+IMPORTANT: When user asks about "products to reorder", "réapprovisionner", "low stock", or "what needs restocking", you MUST call both getLowStockProducts AND getOutOfStockProducts tools immediately.
 
 GUIDELINES:
-1. Always use the appropriate tool when asked about inventory data
-2. Present information in a clear, structured format
-3. Be proactive in suggesting relevant actions (e.g., "Would you like to see low stock items?")
-4. When showing product lists, keep it concise unless user asks for details
-5. If asked for "all products", use a high limit like 1000
-6. Match your response language to the user's language (French/English)
-7. When users greet you, be friendly and offer to help with inventory tasks
-8. If you don't have access to certain data, be honest and suggest alternatives
+1. ALWAYS call tools immediately when asked about inventory data - don't ask for clarification first
+2. When user asks about "products to reorder" or "réapprovisionner", immediately call getLowStockProducts and getOutOfStockProducts tools
+3. When user asks about "inventory stats" or "statistics", immediately call getInventoryStats tool
+4. When user asks about "products" or "show me products", immediately call getProducts tool
+5. You may provide a brief 1-sentence intro BEFORE calling tools (e.g., "Let me check that")
+6. After calling tools: STOP. Output nothing. The results will be formatted automatically.
+7. Match your response language to the user's language (French/English)
 
-RESPONSE FORMAT:
-- Use markdown for better readability
-- Use tables for product listings when appropriate
-- Include relevant emojis for visual appeal
-- Highlight important numbers and statistics
-- Provide actionable insights when possible
+RESPONSE FORMAT WHEN CALLING TOOLS:
+✅ CORRECT: "Let me check your inventory." [calls tool] [STOPS - no more text]
+❌ WRONG: "Let me check your inventory." [calls tool] "Here are the results: Total: 40, Stock: undefined"
 
-Remember: You're here to make inventory management easier and more efficient!`,
+Remember: Tool results are auto-formatted. Your job is to call the right tools, then stay quiet!`,
   model: ollama(process.env.OLLAMA_MODEL || 'minimax-m2:cloud'),
   tools: inventoryTools,
-  inputProcessors: [
-    new LanguageDetector({
-      model: ollama(process.env.OLLAMA_MODEL || 'minimax-m2:cloud'),
-      targetLanguages: ['French', 'fr', 'English', 'en'],
-      strategy: 'translate', // Detect language and translate to target
-      threshold: 0.8,
-      preserveOriginal: true,
-      includeDetectionDetails: true,
-      instructions: 'Detect the user language (French or English) and preserve it for consistent responses',
-      translationQuality: "quality"
-    })
-  ]
 })
 
 // Initialize Mastra instance
