@@ -29,6 +29,7 @@ import { Link } from 'react-router'
 import type { INotification } from '~/app/common/validations/notificationSchema'
 import type { IProfile } from '~/app/common/validations/profileSchema'
 import type { IRole } from '~/app/common/validations/roleSchema'
+import ClientOnly from '~/app/components/ClientOnly'
 import { Logo } from '~/app/components'
 import RoadmapIcon from '~/app/components/Roadmap/RoadmapIcon'
 import FrIcon from '~/app/components/SvgIcons/FrIcon'
@@ -135,7 +136,9 @@ export default function Header({ showNotification, user, notifications }: Header
         {user.currentPlan && (
           <Badge variant="outline" c="cyan" mt={-10}>
             <Text size="xs" tt="capitalize" fw={'bold'}>
-              {`${user.currentPlan}${trialing ? ` ${t('navigation:trial')}` : ''}`}
+              <ClientOnly fallback={user.currentPlan}>
+                {`${user.currentPlan}${trialing ? ` ${t('navigation:trial')}` : ''}`}
+              </ClientOnly>
             </Text>
           </Badge>
         )}

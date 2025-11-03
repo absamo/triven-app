@@ -20,6 +20,8 @@ export default {
   optimizationRecommendations: 'Give optimization recommendations',
   naturalQuestions: 'What are the best selling items?',
   stockLevels: 'Show low stock items',
+  inventoryStatistics: 'What are my inventory statistics?',
+  outOfStockItems: 'Show out of stock items',
 
   // Input area
   pleaseWait: 'Please wait...',

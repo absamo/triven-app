@@ -43,6 +43,7 @@ export default [
     route('api/dashboard-stream', 'routes/api/dashboard-stream.ts'),
     route('api/notifications', 'routes/api/notifications.ts'),
     route('api/notifications-stream', 'routes/api/notifications-stream.ts'),
+    route('api/mastra-stream', 'routes/api/mastra-stream.ts'),
     route('api/suppliers/:id', 'routes/api/suppliers.ts'),
     route('api/suppliers-search', 'routes/api/suppliersSearch.ts'),
     route('api/sites/:id', 'routes/api/sites.ts'),

@@ -1,5 +1,6 @@
 import { Mastra } from '@mastra/core'
 import { Agent } from '@mastra/core/agent'
+import { LanguageDetector } from '@mastra/core/processors'
 import { createOllama } from 'ai-sdk-ollama'
 import { z } from 'zod'
 import { prisma } from '~/app/db.server'
@@ -16,12 +17,11 @@ const ollama = createOllama({
 const inventoryTools = {
   getProducts: {
     description:
-      'Get a list of products from the inventory database. Use a high limit (like 1000) when user asks for "all products". Supports both English and French.',
+      'Get a list of products from the inventory database. Use a high limit (like 1000) when user asks for "all products". Automatically detects user language and responds accordingly.',
     parameters: z.object({
       limit: z.number().optional().default(10).describe('Maximum number of products to return'),
-      language: z.enum(['en', 'fr']).optional().default('en').describe('Response language'),
     }),
-    execute: async ({ limit = 10, language = 'en' }) => {
+    execute: async ({ limit = 10 }) => {
       try {
         const [totalCount, products] = await Promise.all([
           prisma.product.count(),
@@ -37,14 +37,13 @@ const inventoryTools = {
             id: p.id,
             name: p.name,
             sku: p.sku,
-            category: p.category?.name || (language === 'fr' ? 'Aucune catégorie' : 'No category'),
+            category: p.category?.name || 'No category',
             stock: p.availableQuantity,
             price: `$${Number(p.sellingPrice).toFixed(2)}`,
             status: p.status,
           })),
           total: products.length,
           totalInDatabase: totalCount,
-          language,
         }
       } catch (error) {
         console.error('Error fetching products:', error)
@@ -209,7 +208,7 @@ const inventoryTools = {
   },
 }
 
-// Create Inventory Assistant Agent
+// Create Inventory Assistant Agent with Language Detection
 const inventoryAgent = new Agent({
   name: 'inventory-assistant',
   instructions: `You are a friendly and helpful AI assistant for Triven, an inventory management platform.
@@ -218,7 +217,14 @@ PERSONALITY:
 - Professional yet conversational and approachable
 - Enthusiastic about helping with inventory tasks
 - Use emojis appropriately to make interactions engaging
-- Respond in the same language as the user (English or French)
+- ALWAYS respond in the same language as the user (English or French)
+
+LANGUAGE HANDLING:
+- Detect the user's language from their input
+- If user writes in French, respond completely in French
+- If user writes in English, respond completely in English
+- Maintain the same language throughout the conversation
+- For mixed language queries, use the primary language detected
 
 CAPABILITIES:
 You have access to tools to:
@@ -234,7 +240,7 @@ GUIDELINES:
 3. Be proactive in suggesting relevant actions (e.g., "Would you like to see low stock items?")
 4. When showing product lists, keep it concise unless user asks for details
 5. If asked for "all products", use a high limit like 1000
-6. For French queries, respond in French
+6. Match your response language to the user's language (French/English)
 7. When users greet you, be friendly and offer to help with inventory tasks
 8. If you don't have access to certain data, be honest and suggest alternatives
 
@@ -248,6 +254,18 @@ RESPONSE FORMAT:
 Remember: You're here to make inventory management easier and more efficient!`,
   model: ollama(process.env.OLLAMA_MODEL || 'minimax-m2:cloud'),
   tools: inventoryTools,
+  inputProcessors: [
+    new LanguageDetector({
+      model: ollama(process.env.OLLAMA_MODEL || 'minimax-m2:cloud'),
+      targetLanguages: ['French', 'fr', 'English', 'en'],
+      strategy: 'translate', // Detect language and translate to target
+      threshold: 0.8,
+      preserveOriginal: true,
+      includeDetectionDetails: true,
+      instructions: 'Detect the user language (French or English) and preserve it for consistent responses',
+      translationQuality: "quality"
+    })
+  ]
 })
 
 // Initialize Mastra instance

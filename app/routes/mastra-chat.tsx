@@ -18,11 +18,13 @@ import {
 import { IconRobot, IconSend, IconSparkles } from '@tabler/icons-react'
 import type { CoreMessage } from 'ai'
 import dayjs from 'dayjs'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import ClientOnly from '~/app/components/ClientOnly'
 import ReactMarkdown from 'react-markdown'
-import type { ActionFunctionArgs, MetaFunction } from 'react-router'
-import { useFetcher } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from 'react-router'
 import remarkGfm from 'remark-gfm'
+import { eventStream } from 'remix-utils/sse/server'
 import { getInventoryAgent } from '~/app/lib'
 import classes from './mastra-chat.module.css'
 
@@ -68,24 +70,44 @@ const MarkdownComponents: any = {
     </li>
   ),
   table: ({ children, ...props }: any) => (
-    <Box mb="lg" style={{ overflowX: 'auto', border: '1px solid var(--mantine-color-dark-4)', borderRadius: '0.5rem' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'var(--mantine-color-dark-6)' }} {...props}>
+    <Box mb="lg" style={{ 
+      overflowX: 'auto', 
+      border: '1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))', 
+      borderRadius: '0.5rem' 
+    }}>
+      <table style={{ 
+        width: '100%', 
+        borderCollapse: 'collapse', 
+        backgroundColor: 'light-dark(var(--mantine-color-white), var(--mantine-color-dark-6))' 
+      }} {...props}>
         {children}
       </table>
     </Box>
   ),
   thead: ({ children, ...props }: any) => (
-    <thead style={{ backgroundColor: 'var(--mantine-color-dark-5)' }} {...props}>
+    <thead style={{ backgroundColor: 'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5))' }} {...props}>
       {children}
     </thead>
   ),
   th: ({ children, ...props }: any) => (
-    <th style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--mantine-color-gray-1)', padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid var(--mantine-color-dark-4)' }} {...props}>
+    <th style={{ 
+      fontWeight: 600, 
+      fontSize: '0.875rem', 
+      color: 'light-dark(var(--mantine-color-dark-7), var(--mantine-color-gray-1))', 
+      padding: '0.75rem', 
+      textAlign: 'left', 
+      borderBottom: '1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))' 
+    }} {...props}>
       {children}
     </th>
   ),
   td: ({ children, ...props }: any) => (
-    <td style={{ fontSize: '0.875rem', color: 'var(--mantine-color-gray-2)', padding: '0.75rem', borderBottom: '1px solid var(--mantine-color-dark-4)' }} {...props}>
+    <td style={{ 
+      fontSize: '0.875rem', 
+      color: 'light-dark(var(--mantine-color-dark-6), var(--mantine-color-gray-2))', 
+      padding: '0.75rem', 
+      borderBottom: '1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))' 
+    }} {...props}>
       {children}
     </td>
   ),
@@ -93,205 +115,330 @@ const MarkdownComponents: any = {
     const isInline = !className
     if (isInline) {
       return (
-        <Text span style={{ backgroundColor: 'var(--mantine-color-dark-5)', color: 'var(--mantine-color-gray-1)', fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.85em', padding: '0.125rem 0.25rem', borderRadius: '0.25rem' }} {...props}>
+        <Text span style={{ 
+        backgroundColor: 'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5))', 
+        color: 'light-dark(var(--mantine-color-dark-7), var(--mantine-color-gray-1))', 
+        fontFamily: 'Monaco, Consolas, monospace', 
+        fontSize: '0.85em', 
+        padding: '0.125rem 0.25rem', 
+        borderRadius: '0.25rem' 
+      }} {...props}>
           {children}
         </Text>
       )
     }
     return (
-      <Box p="md" mb="sm" style={{ backgroundColor: 'var(--mantine-color-dark-6)', border: '1px solid var(--mantine-color-dark-4)', borderRadius: '0.5rem', fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.875rem' }}>
-        <Text style={{ whiteSpace: 'pre-wrap', color: 'var(--mantine-color-gray-1)' }}>{children}</Text>
+      <Box p="md" mb="sm" style={{ 
+        backgroundColor: 'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))', 
+        border: '1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))', 
+        borderRadius: '0.5rem', 
+        fontFamily: 'Monaco, Consolas, monospace', 
+        fontSize: '0.875rem' 
+      }}>
+        <Text style={{ whiteSpace: 'pre-wrap', color: 'light-dark(var(--mantine-color-dark-7), var(--mantine-color-gray-1))' }}>{children}</Text>
       </Box>
     )
   },
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData()
-  const message = formData.get('message') as string
-  const conversationHistory = formData.get('history') as string
-
-  console.log('📨 Received message:', message)
-
-  if (!message?.trim()) {
-    return { error: 'Message is required' }
+// Loader for SSE streaming (GET requests)
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url)
+  const message = url.searchParams.get('message')
+  const historyJson = url.searchParams.get('history')
+  
+  // If no message parameter, this is a regular page load - return null to render the component
+  if (!message) {
+    return null
   }
 
+  if (!message.trim()) {
+    return new Response(
+      JSON.stringify({ error: 'Message is required' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
+
+  // Important: Return the stream response immediately, don't await anything here
+  return handleStreamingRequest(message, historyJson || '[]')
+}
+
+// Separate function to handle the streaming
+async function handleStreamingRequest(message: string, historyJson: string) {
   try {
-    console.log('🤖 Getting agent...')
     const agent = getInventoryAgent()
 
-    console.log('🔍 Agent check:', agent ? 'Agent found' : 'Agent is null')
-
     if (!agent) {
-      console.error('❌ Agent not initialized')
-      return {
-        error: 'Agent not initialized',
-        details: 'The inventory agent could not be loaded',
-      }
+      return new Response(
+        JSON.stringify({ error: 'Agent not initialized' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      )
     }
 
     // Parse conversation history
-    const history: Message[] = conversationHistory ? JSON.parse(conversationHistory) : []
-    console.log('📜 History length:', history.length)
+    const conversationHistory: Array<{role: string, content: string}> = historyJson ? JSON.parse(historyJson) : []
 
-    // Build messages array in Mastra format (CoreMessage from AI SDK)
+    // Build messages array in Mastra format
     const messages: CoreMessage[] = [
-      ...history.map((msg) => ({
-        role: msg.role,
+      ...conversationHistory.map((msg) => ({
+        role: msg.role as 'user' | 'assistant',
         content: msg.content,
       })),
-      { role: 'user', content: message },
+      { role: 'user' as const, content: message },
     ]
 
-    console.log('💬 Sending', messages.length, 'messages to agent')
+    /**
+     * Mastra Streaming Implementation
+     * 
+     * Uses agent.stream() with onChunk callback to handle real-time streaming:
+     * - 'text-delta' chunks: Contain streaming text content from the LLM
+     * - 'tool-result' chunks: Contain results from tool executions
+     * 
+     * The format is set to 'mastra' (native Mastra format) for consistent chunk types.
+     * Each chunk is processed and forwarded to the client via Server-Sent Events (SSE).
+     */
+    
+    // Create a manual SSE stream using ReadableStream
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          // Send connected event
+          controller.enqueue(encoder.encode('event: connected\n'))
+          controller.enqueue(encoder.encode('data: {"status":"connected"}\n\n'))
+          
+          let fullText = ''
+          let toolOutputs: string[] = []
+          
+          // Stream with onChunk callback
+          const streamResult = await agent.stream(messages, {
+            maxSteps: 5,
+            format: 'mastra',
+            onChunk: async (chunk) => {
+              // Handle text delta chunks (streaming text)
+              if (chunk.type === 'text-delta') {
+                const textContent = chunk.payload.text
+                
+                if (textContent) {
+                  fullText += textContent
+                  
+                  // Send chunk to client
+                  controller.enqueue(encoder.encode('event: message\n'))
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: textContent })}\n\n`))
+                }
+              }
+              
+              // Handle tool results
+              if (chunk.type === 'tool-result') {
+                // Note: t function not available here in server context
+                // Tool outputs will be translated on the client side
+                const toolOutput = formatToolOutput(chunk.payload.toolName, chunk.payload.result, (key: string, fallback?: string) => fallback || key)
+                if (toolOutput) {
+                  toolOutputs.push(toolOutput)
+                }
+              }
+            },
+            onError: ({ error }) => {
+              controller.enqueue(encoder.encode('event: error\n'))
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: error instanceof Error ? error.message : 'Streaming failed' })}\n\n`))
+            },
+          })
 
-    // Generate response using Mastra agent
-    const result = await agent.generate(messages, {
-      maxSteps: 5, // Allow multiple tool calls if needed
+          // Wait for the stream to complete
+          await streamResult.response
+          
+          // Send any accumulated tool outputs
+          for (const toolOutput of toolOutputs) {
+            controller.enqueue(encoder.encode('event: message\n'))
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: toolOutput })}\n\n`))
+          }
+
+          // Send completion signal
+          controller.enqueue(encoder.encode('event: done\n'))
+          controller.enqueue(encoder.encode('data: {"done":true}\n\n'))
+          
+          controller.close()
+        } catch (error) {
+          controller.enqueue(encoder.encode('event: error\n'))
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: error instanceof Error ? error.message : 'Streaming failed' })}\n\n`))
+          controller.close()
+        }
+      },
     })
 
-    console.log('✅ Agent response received:', result.text?.substring(0, 100))
-    console.log('🔧 Tool calls made:', result.steps?.length || 0)
-    
-    // Build complete response with tool outputs
-    let fullResponse = result.text || ''
-    
-    // Extract tool results from response.uiMessages (runtime property not in TypeScript types)
-    const responseWithUI = result.response as typeof result.response & { uiMessages?: any[] }
-    
-    if (responseWithUI?.uiMessages && responseWithUI.uiMessages.length > 0) {
-      console.log('✅ Found uiMessages, count:', responseWithUI.uiMessages.length)
-      const lastMessage = responseWithUI.uiMessages[responseWithUI.uiMessages.length - 1]
-      
-      if (lastMessage.parts) {
-        for (const part of lastMessage.parts) {
-          // Check for tool output parts
-          if (part.type?.startsWith('tool-') && part.state === 'output-available' && part.output) {
-            console.log('� Found tool output:', part.type)
-            
-            // Format the tool output based on the tool type
-            if (part.type === 'tool-getProducts' && part.output.products) {
-              const products = part.output.products
-              fullResponse += '\n\n### Products Inventory\n\n'
-              fullResponse += '| Name | SKU | Category | Stock | Price | Status |\n'
-              fullResponse += '|------|-----|----------|-------|-------|--------|\n'
-              
-              for (const product of products) {
-                fullResponse += `| ${product.name} | ${product.sku} | ${product.category} | ${product.stock} | ${product.price} | ${product.status} |\n`
-              }
-              
-              fullResponse += `\n**Total:** ${part.output.total} products`
-            } else if (part.type === 'tool-getInventoryStats' && part.output) {
-              fullResponse += '\n\n### Inventory Statistics\n\n'
-              fullResponse += `- **Total Products:** ${part.output.totalProducts}\n`
-              fullResponse += `- **Total Stock:** ${part.output.totalStock} units\n`
-              fullResponse += `- **Low Stock Items:** ${part.output.lowStockCount}\n`
-              fullResponse += `- **Out of Stock Items:** ${part.output.outOfStockCount}\n`
-            } else if (part.type === 'tool-getLowStockProducts' && part.output.products) {
-              const products = part.output.products
-              fullResponse += '\n\n### Low Stock Products\n\n'
-              fullResponse += '| Name | SKU | Category | Stock | Status |\n'
-              fullResponse += '|------|-----|----------|-------|--------|\n'
-              
-              for (const product of products) {
-                fullResponse += `| ${product.name} | ${product.sku} | ${product.category} | ${product.stock} | ${product.status} |\n`
-              }
-              
-              fullResponse += `\n**Found:** ${part.output.count} low stock items (threshold: ${part.output.threshold})`
-            } else if (part.type === 'tool-getOutOfStockProducts' && part.output.products) {
-              const products = part.output.products
-              fullResponse += '\n\n### Out of Stock Products\n\n'
-              fullResponse += '| Name | SKU | Category | Price | Status |\n'
-              fullResponse += '|------|-----|----------|-------|--------|\n'
-              
-              for (const product of products) {
-                fullResponse += `| ${product.name} | ${product.sku} | ${product.category} | ${product.price} | ${product.status} |\n`
-              }
-              
-              fullResponse += `\n**Total:** ${part.output.count} products out of stock`
-            } else if (part.type === 'tool-searchProducts' && part.output.products) {
-              const products = part.output.products
-              const count = part.output.found || part.output.total || products.length
-              fullResponse += `\n\n### Search Results for "${part.output.query || 'products'}"\n\n`
-              
-              if (products.length > 0) {
-                fullResponse += '| Name | SKU | Category | Stock | Price | Status |\n'
-                fullResponse += '|------|-----|----------|-------|-------|--------|\n'
-                
-                for (const product of products) {
-                  fullResponse += `| ${product.name} | ${product.sku} | ${product.category} | ${product.stock} | ${product.price} | ${product.status || 'N/A'} |\n`
-                }
-                
-                fullResponse += `\n**Found:** ${count} product${count !== 1 ? 's' : ''}`
-              } else {
-                fullResponse += 'No products found matching your search criteria.'
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return {
-      success: true,
-      response: fullResponse,
-      toolCalls: result.steps?.length || 0,
-    }
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    })
   } catch (error) {
-    console.error('❌ Mastra chat error:', error)
-    return {
-      error: error instanceof Error ? error.message : 'Failed to process message',
-      details:
-        error instanceof Error
-          ? error.stack
-          : 'Make sure Ollama cloud connection is configured correctly',
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Failed to process message' 
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
+}
+function formatToolOutput(toolName: string, output: any, t: (key: string, fallback?: string) => string): string {
+  let formattedOutput = ''
+  
+  // Normalize tool name (remove 'tool-' prefix if present)
+  const normalizedToolName = toolName.startsWith('tool-') ? toolName : `tool-${toolName}`
+  
+  if (normalizedToolName === 'tool-getProducts' && output.products) {
+    const products = output.products
+    formattedOutput += `\n\n### ${t('inventory:products', 'Products')} ${t('inventory:inventory', 'Inventory')}\n\n`
+    formattedOutput += `| ${t('inventory:nameHeader', 'Name')} | SKU | ${t('inventory:category', 'Category')} | ${t('inventory:stockQuantity', 'Stock')} | ${t('inventory:sellingPrice', 'Price')} | ${t('inventory:status', 'Status')} |\n`
+    formattedOutput += '|------|-----|----------|-------|-------|--------|\n'
+    
+    for (const product of products) {
+      formattedOutput += `| ${product.name} | ${product.sku} | ${product.category} | ${product.stock} | ${product.price} | ${product.status} |\n`
+    }
+    
+    formattedOutput += `\n**${t('inventory:totalItems', 'Total')}:** ${output.total} ${t('inventory:products', 'products')}`
+  } else if (normalizedToolName === 'tool-getInventoryStats' && output) {
+    formattedOutput += `\n\n### ${t('inventory:inventoryReport', 'Inventory Statistics')}\n\n`
+    formattedOutput += `- **${t('inventory:totalItems', 'Total Products')}:** ${output.totalProducts}\n`
+    formattedOutput += `- **${t('inventory:totalValue', 'Total Stock')}:** ${output.totalStock} ${t('inventory:unit', 'units')}\n`
+    formattedOutput += `- **${t('inventory:lowStock', 'Low Stock Items')}:** ${output.lowStockCount}\n`
+    formattedOutput += `- **${t('inventory:outOfStock', 'Out of Stock Items')}:** ${output.outOfStockCount}\n`
+  } else if (normalizedToolName === 'tool-getLowStockProducts' && output.products) {
+    const products = output.products
+    formattedOutput += `\n\n### ${t('inventory:lowStock', 'Low Stock')} ${t('inventory:products', 'Products')}\n\n`
+    formattedOutput += `| ${t('inventory:nameHeader', 'Name')} | SKU | ${t('inventory:category', 'Category')} | ${t('inventory:stockQuantity', 'Stock')} | ${t('inventory:status', 'Status')} |\n`
+    formattedOutput += '|------|-----|----------|-------|--------|\n'
+    
+    for (const product of products) {
+      formattedOutput += `| ${product.name} | ${product.sku} | ${product.category} | ${product.stock} | ${product.status} |\n`
+    }
+    
+    formattedOutput += `\n**${t('inventory:found', 'Found')}:** ${output.count} ${t('inventory:lowStock', 'low stock')} ${t('inventory:products', 'items')} (${t('inventory:reorderLevel', 'threshold')}: ${output.threshold})`
+  } else if (normalizedToolName === 'tool-getOutOfStockProducts' && output.products) {
+    const products = output.products
+    formattedOutput += `\n\n### ${t('inventory:outOfStock', 'Out of Stock')} ${t('inventory:products', 'Products')}\n\n`
+    formattedOutput += `| ${t('inventory:nameHeader', 'Name')} | SKU | ${t('inventory:category', 'Category')} | ${t('inventory:sellingPrice', 'Price')} | ${t('inventory:status', 'Status')} |\n`
+    formattedOutput += '|------|-----|----------|-------|--------|\n'
+    
+    for (const product of products) {
+      formattedOutput += `| ${product.name} | ${product.sku} | ${product.category} | ${product.price} | ${product.status} |\n`
+    }
+    
+    formattedOutput += `\n**${t('inventory:totalItems', 'Total')}:** ${output.count} ${t('inventory:products', 'products')} ${t('inventory:outOfStock', 'out of stock')}`
+  } else if (normalizedToolName === 'tool-searchProducts' && output.products) {
+    const products = output.products
+    const count = output.found || output.total || products.length
+    formattedOutput += `\n\n### ${t('inventory:searchProducts', 'Search Results')} for "${output.query || t('inventory:products', 'products')}"\n\n`
+    
+    if (products.length > 0) {
+      formattedOutput += `| ${t('inventory:nameHeader', 'Name')} | SKU | ${t('inventory:category', 'Category')} | ${t('inventory:stockQuantity', 'Stock')} | ${t('inventory:sellingPrice', 'Price')} | ${t('inventory:status', 'Status')} |\n`
+      formattedOutput += '|------|-----|----------|-------|-------|--------|\n'
+      
+      for (const product of products) {
+        formattedOutput += `| ${product.name} | ${product.sku} | ${product.category} | ${product.stock} | ${product.price} | ${product.status || 'N/A'} |\n`
+      }
+      
+      formattedOutput += `\n**${t('inventory:found', 'Found')}:** ${count} ${t('inventory:product', 'product')}${count !== 1 ? 's' : ''}`
+    } else {
+      formattedOutput += t('inventory:noProductsFound', 'No products found matching your search criteria.')
     }
   }
+  
+  return formattedOutput
+}
+
+// Client-side function to re-translate tool outputs
+function retranslateToolOutput(content: string, t: (key: string, fallback?: string) => string): string {
+  // Replace common patterns with translated versions
+  return content
+    .replace(/### Products Inventory/g, `### ${t('inventory:products', 'Products')} ${t('inventory:inventory', 'Inventory')}`)
+    .replace(/### Inventory Statistics/g, `### ${t('inventory:inventoryReport', 'Inventory Statistics')}`)
+    .replace(/### Low Stock Products/g, `### ${t('inventory:lowStock', 'Low Stock')} ${t('inventory:products', 'Products')}`)
+    .replace(/### Out of Stock Products/g, `### ${t('inventory:outOfStock', 'Out of Stock')} ${t('inventory:products', 'Products')}`)
+    .replace(/### Search Results for "([^"]*)"/g, `### ${t('inventory:searchProducts', 'Search Results')} "$1"`)
+    .replace(/\| Name \|/g, `| ${t('inventory:nameHeader', 'Name')} |`)
+    .replace(/\| Category \|/g, `| ${t('inventory:category', 'Category')} |`)
+    .replace(/\| Stock \|/g, `| ${t('inventory:stockQuantity', 'Stock')} |`)
+    .replace(/\| Price \|/g, `| ${t('inventory:sellingPrice', 'Price')} |`)
+    .replace(/\| Status \|/g, `| ${t('inventory:status', 'Status')} |`)
+    .replace(/\*\*Total:\*\*/g, `**${t('inventory:totalItems', 'Total')}:**`)
+    .replace(/\*\*Found:\*\*/g, `**${t('inventory:found', 'Found')}:**`)
+    .replace(/\*\*Total Products:\*\*/g, `**${t('inventory:totalItems', 'Total Products')}:**`)
+    .replace(/\*\*Total Stock:\*\*/g, `**${t('inventory:totalValue', 'Total Stock')}:**`)
+    .replace(/\*\*Low Stock Items:\*\*/g, `**${t('inventory:lowStock', 'Low Stock Items')}:**`)
+    .replace(/\*\*Out of Stock Items:\*\*/g, `**${t('inventory:outOfStock', 'Out of Stock Items')}:**`)
+    .replace(/ units/g, ` ${t('inventory:unit', 'units')}`)
+    .replace(/ products$/g, ` ${t('inventory:products', 'products')}`)
+    .replace(/ product$/g, ` ${t('inventory:product', 'product')}`)
+    .replace(/\bout of stock\b/g, t('inventory:outOfStock', 'out of stock'))
+    .replace(/\blow stock\b/g, t('inventory:lowStock', 'low stock'))
+    .replace(/threshold:/g, `${t('inventory:reorderLevel', 'threshold')}:`)
+    .replace(/No products found matching your search criteria\./g, t('inventory:noProductsFound', 'No products found matching your search criteria.'))
 }
 
 export default function MastraChat() {
+  const { t } = useTranslation(['assistant', 'inventory'])
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
+  const [streamingMessage, setStreamingMessage] = useState<string>('')
+  const [isStreaming, setIsStreaming] = useState(false)
   const viewport = useRef<HTMLDivElement>(null)
-  const fetcher = useFetcher()
 
-  const isLoading = fetcher.state !== 'idle'
-
-  // Handle fetcher response
+  // Debug: Log messages state changes
   useEffect(() => {
-    if (fetcher.data && fetcher.state === 'idle') {
-      const data = fetcher.data as { error?: string; details?: string; response?: string }
+    console.log('🎨 UI Messages updated:', messages.length, 'messages')
+    messages.forEach((msg, i) => {
+      console.log(`  ${i + 1}. ${msg.role}: ${msg.content.substring(0, 50)}...`)
+    })
+  }, [messages])
+  const abortControllerRef = useRef<AbortController | null>(null)
 
-      if (data.error) {
-        const errorMessage: Message = {
-          id: `error-${Date.now()}`,
-          role: 'assistant',
-          content: `❌ Error: ${data.error}\n\n${data.details || ''}`,
-          timestamp: new Date(),
-        }
-        setMessages((prev) => [...prev, errorMessage])
-      } else if (data.response) {
-        const assistantMessage: Message = {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: data.response,
-          timestamp: new Date(),
-        }
-        setMessages((prev) => [...prev, assistantMessage])
+  const isLoading = isStreaming || streamingMessage !== ''
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
       }
     }
-  }, [fetcher.data, fetcher.state])
+  }, [])
 
-  // Auto-scroll to bottom when new messages arrive
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only scroll when message count changes
-  useEffect(() => {
+  // Auto-scroll to bottom of chat container
+  const scrollToBottom = useCallback(() => {
     if (viewport.current) {
-      viewport.current.scrollTo({ top: viewport.current.scrollHeight, behavior: 'smooth' })
+      // For Mantine ScrollArea, we need to access the actual scrollable viewport
+      const scrollableElement = viewport.current.querySelector('[data-radix-scroll-area-viewport]')
+      if (scrollableElement) {
+        // Force immediate scroll to bottom
+        scrollableElement.scrollTop = scrollableElement.scrollHeight
+      }
     }
-  }, [messages.length, isLoading])
+  }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Auto-scroll when messages change
+  useEffect(() => {
+    scrollToBottom()
+    
+    // Also scroll with a delay to handle DOM updates and markdown rendering
+    const timeoutId = setTimeout(scrollToBottom, 200)
+    return () => clearTimeout(timeoutId)
+  }, [messages, scrollToBottom])
+
+  // Auto-scroll when streaming message updates
+  useEffect(() => {
+    if (streamingMessage) {
+      scrollToBottom()
+      
+      // Additional scroll for streaming updates
+      const timeoutId = setTimeout(scrollToBottom, 100)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [streamingMessage, scrollToBottom])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!inputValue.trim() || isLoading) return
@@ -304,13 +451,103 @@ export default function MastraChat() {
     }
 
     setMessages((prev) => [...prev, userMessage])
-
-    const formData = new FormData()
-    formData.append('message', userMessage.content)
-    formData.append('history', JSON.stringify(messages))
-
-    fetcher.submit(formData, { method: 'POST' })
     setInputValue('')
+    setIsStreaming(true)
+    setStreamingMessage('')
+
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController()
+
+    try {
+      // Use EventSource for SSE
+      const params = new URLSearchParams({
+        message: userMessage.content,
+        history: JSON.stringify(messages.map(m => ({ role: m.role, content: m.content }))),
+      })
+      const url = '/api/mastra-stream?' + params.toString()
+      
+      const eventSource = new EventSource(url)
+
+      let accumulatedMessage = ''
+      
+      eventSource.onopen = () => {
+        // Connection opened
+      }
+      
+      eventSource.onmessage = (event) => {
+        // Default message handler
+      }
+      
+      eventSource.onerror = (event) => {
+        // Error handler
+      }
+      
+      eventSource.addEventListener('connected', (event) => {
+        // Connection confirmed
+      })
+
+      eventSource.addEventListener('message', (event) => {
+        try {
+          const parsed = JSON.parse(event.data)
+          console.log('📥 Frontend received message:', parsed.content?.substring(0, 100) + '...')
+          
+          if (parsed.content) {
+            accumulatedMessage += parsed.content
+            setStreamingMessage(accumulatedMessage)
+            console.log('📝 Accumulated message length:', accumulatedMessage.length)
+          }
+        } catch (e) {
+          console.error('❌ Failed to parse SSE data:', e)
+        }
+      })
+
+      eventSource.addEventListener('done', () => {
+        eventSource.close()
+        
+        // Add the complete message to the messages array
+        if (accumulatedMessage) {
+          const assistantMessage: Message = {
+            id: `assistant-${Date.now()}`,
+            role: 'assistant',
+            content: accumulatedMessage,
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, assistantMessage])
+        }
+
+        setStreamingMessage('')
+        setIsStreaming(false)
+      })
+
+      eventSource.addEventListener('error', (event) => {
+        eventSource.close()
+        
+        const errorMessage: Message = {
+          id: `error-${Date.now()}`,
+          role: 'assistant',
+          content: t('assistant:failedToGetResponse', '❌ Error: Failed to get response from server'),
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, errorMessage])
+        setStreamingMessage('')
+        setIsStreaming(false)
+      })
+
+      // Store event source for cleanup
+      abortControllerRef.current = { abort: () => eventSource.close() } as any
+    } catch (error: unknown) {
+      if (!(error instanceof Error && error.name === 'AbortError')) {
+        const errorMessage: Message = {
+          id: `error-${Date.now()}`,
+          role: 'assistant',
+          content: `❌ ${t('assistant:failedToGetResponse', 'Error')}: ${error instanceof Error ? error.message : t('assistant:failedToGetResponse', 'Failed to get response')}`,
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, errorMessage])
+      }
+      setStreamingMessage('')
+      setIsStreaming(false)
+    }
   }
 
   const handleClear = () => {
@@ -325,7 +562,7 @@ export default function MastraChat() {
     if (messageDate.isSame(now, 'day')) {
       return messageDate.format('h:mm A')
     } else if (messageDate.isSame(now.subtract(1, 'day'), 'day')) {
-      return 'Yesterday'
+      return t('assistant:yesterday', 'Yesterday')
     } else {
       if (messageDate.isSame(now, 'year')) {
         return messageDate.format('MMM D')
@@ -347,6 +584,15 @@ export default function MastraChat() {
   const currentHour = dayjs().hour()
 
   const exampleQuestions = [
+    { title: t('assistant:showAllProducts', 'Show me all products'), icon: '📦' },
+    { title: t('assistant:inventoryStatistics', 'What are my inventory statistics?'), icon: '📊' },
+    { title: t('assistant:stockLevels', 'Which products are low on stock?'), icon: '⚠️' },
+    { title: t('assistant:searchProducts', 'Search for electronics'), icon: '🔍' },
+    { title: t('assistant:outOfStockItems', 'Show out of stock items'), icon: '❌' },
+    { title: t('assistant:getReorderRecommendations', 'What products need reordering?'), icon: '🔄' },
+  ]
+
+  const fallbackQuestions = [
     { title: 'Show me all products', icon: '📦' },
     { title: 'What are my inventory statistics?', icon: '📊' },
     { title: 'Which products are low on stock?', icon: '⚠️' },
@@ -364,42 +610,74 @@ export default function MastraChat() {
               <Box ta="center">
                 <IconSparkles
                   size={64}
-                  style={{ color: 'var(--mantine-color-teal-4)', marginBottom: '1rem' }}
+                  style={{ color: 'var(--mantine-color-teal-6)', marginBottom: '1rem' }}
                 />
                 <Text size="xl" fw={600} mb="xs">
-                  {currentHour < 12
-                    ? 'Good Morning'
-                    : currentHour < 18
-                      ? 'Good Afternoon'
-                      : 'Good Evening'}
+                  <ClientOnly fallback="Good morning!">
+                    {currentHour < 12
+                      ? t('assistant:goodMorning', 'Good Morning')
+                      : currentHour < 18
+                        ? t('assistant:goodAfternoon', 'Good Afternoon')
+                        : t('assistant:goodEvening', 'Good Evening')}
+                  </ClientOnly>
                 </Text>
                 <Text size="md" c="dimmed" ta="center" lh={1.5}>
-                  I'm your intelligent inventory assistant powered by Mastra framework. Ask me about
-                  your products, inventory levels, or get insights about your stock!
+                  <ClientOnly fallback="I'm your intelligent inventory assistant powered by Mastra framework. Ask me about your products, inventory levels, or get insights about your stock!">
+                    {t('assistant:welcomeMessage', "I'm your intelligent inventory assistant powered by Mastra framework. Ask me about your products, inventory levels, or get insights about your stock!")}
+                  </ClientOnly>
                 </Text>
               </Box>
 
               <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
-                {exampleQuestions.map((question, index) => (
-                  <UnstyledButton
-                    key={index}
-                    className={classes.exampleCard}
-                    onClick={() => setInputValue(question.title)}
-                  >
-                    <Group gap="sm" align="center">
-                      <Text size="lg">{question.icon}</Text>
-                      <Text size="sm" c="dimmed" fw={500}>
-                        {question.title}
-                      </Text>
-                    </Group>
-                  </UnstyledButton>
-                ))}
+                <ClientOnly
+                  fallback={
+                    <>
+                      {fallbackQuestions.map((question, index) => (
+                        <UnstyledButton
+                          key={index}
+                          className={classes.exampleCard}
+                          onClick={() => setInputValue(question.title)}
+                        >
+                          <Group gap="sm" align="center">
+                            <Text size="lg">{question.icon}</Text>
+                            <Text size="sm" c="dimmed" fw={500}>
+                              {question.title}
+                            </Text>
+                          </Group>
+                        </UnstyledButton>
+                      ))}
+                    </>
+                  }
+                >
+                  {exampleQuestions.map((question, index) => (
+                    <UnstyledButton
+                      key={index}
+                      className={classes.exampleCard}
+                      onClick={() => setInputValue(question.title)}
+                    >
+                      <Group gap="sm" align="center">
+                        <Text size="lg">{question.icon}</Text>
+                        <Text size="sm" c="dimmed" fw={500}>
+                          <ClientOnly fallback={question.title.split(' ').slice(-3).join(' ')}>
+                            {question.title}
+                          </ClientOnly>
+                        </Text>
+                      </Group>
+                    </UnstyledButton>
+                  ))}
+                </ClientOnly>
               </SimpleGrid>
             </Stack>
           </Center>
         </Container>
       ) : (
-        <ScrollArea ref={viewport} className={classes.messagesScrollArea}>
+        <ScrollArea 
+          ref={viewport} 
+          className={classes.messagesScrollArea}
+          offsetScrollbars
+          scrollbarSize={6}
+          h="100%"
+        >
           <Stack gap="lg">
             {messages.map((message, index) => {
               const previousMessage = index > 0 ? messages[index - 1] : undefined
@@ -429,7 +707,7 @@ export default function MastraChat() {
                             remarkPlugins={[remarkGfm]}
                             components={MarkdownComponents}
                           >
-                            {message.content || (message.isStreaming ? '' : 'No response generated')}
+                            {retranslateToolOutput(message.content || (message.isStreaming ? '' : t('assistant:noResponseGenerated', 'No response generated')), t)}
                           </ReactMarkdown>
                           {message.isStreaming && !message.content && (
                             <Stack gap="xs">
@@ -448,7 +726,23 @@ export default function MastraChat() {
               )
             })}
 
-            {isLoading && (
+            {streamingMessage && (
+              <Group align="flex-start" gap="md">
+                <Avatar size="md" radius="xl" color="teal">
+                  <IconSparkles size={16} />
+                </Avatar>
+                <Box flex={1} maw="100%">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={MarkdownComponents}
+                  >
+                    {retranslateToolOutput(streamingMessage, t)}
+                  </ReactMarkdown>
+                </Box>
+              </Group>
+            )}
+            
+            {isLoading && !streamingMessage && (
               <Group align="flex-start" gap="md">
                 <Avatar size="md" radius="xl" color="teal">
                   <IconSparkles size={16} />
@@ -469,26 +763,49 @@ export default function MastraChat() {
       <Paper radius="md" withBorder p="md" className={classes.inputContainer}>
         <form onSubmit={handleSubmit}>
           <Group gap="sm" align="flex-end">
-            <Textarea
-              placeholder={isLoading ? 'Please wait...' : 'Ask me anything about your inventory...'}
-              value={inputValue}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInputValue(e.target.value)}
-              disabled={isLoading}
-              autosize
-              minRows={1}
-              maxRows={6}
-              variant="unstyled"
-              size="sm"
-              className={classes.messageInput}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
-                  e.preventDefault()
-                  handleSubmit(e)
-                }
-              }}
-              style={{ flex: 1 }}
-              autoFocus
-            />
+            <ClientOnly
+              fallback={
+                <Textarea
+                  placeholder={isLoading ? 'Please wait...' : 'Ask me anything about your inventory...'}
+                  value={inputValue}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInputValue(e.target.value)}
+                  disabled={isLoading}
+                  autosize
+                  minRows={1}
+                  maxRows={6}
+                  variant="unstyled"
+                  size="sm"
+                  className={classes.messageInput}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
+                      e.preventDefault()
+                      handleSubmit(e)
+                    }
+                  }}
+                  style={{ flex: 1 }}
+                />
+              }
+            >
+              <Textarea
+                placeholder={isLoading ? t('assistant:pleaseWait', 'Please wait...') : t('assistant:askMeAnything', 'Ask me anything about your inventory...')}
+                value={inputValue}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInputValue(e.target.value)}
+                disabled={isLoading}
+                autosize
+                minRows={1}
+                maxRows={6}
+                variant="unstyled"
+                size="sm"
+                className={classes.messageInput}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
+                    e.preventDefault()
+                    handleSubmit(e)
+                  }
+                }}
+                style={{ flex: 1 }}
+              />
+            </ClientOnly>
             <ActionIcon
               type="submit"
               disabled={!inputValue.trim() || isLoading}
@@ -505,7 +822,9 @@ export default function MastraChat() {
         </form>
       </Paper>
       <Text size="xs" c="dimmed" ta="center" mt="xs">
-        Press Enter to send, Shift + Enter for new line
+        <ClientOnly fallback="Press Enter to send, Shift + Enter for new line">
+          {t('assistant:pressEnterToSend', 'Press Enter to send, Shift + Enter for new line')}
+        </ClientOnly>
       </Text>
     </Box>
   )

@@ -1,6 +1,7 @@
 import { Button, Flex, Text } from '@mantine/core'
 import { IconCrown } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import ClientOnly from '~/app/components/ClientOnly'
 import type { TrialUrgencyLevel } from '~/app/utils/subscription'
 import classes from './TrialAlert.module.css'
 
@@ -37,6 +38,14 @@ export default function TrialAlert({
         ? t('trial:trialExpiresIn', { days: daysRemaining })
         : t('trial:daysRemaining', { days: daysRemaining })
 
+  // Fallback message for SSR (English)
+  const fallbackMessage =
+    daysRemaining === 1
+      ? '1 day left in trial'
+      : urgencyLevel === 'medium'
+        ? `Trial expires in ${daysRemaining} days`
+        : `${daysRemaining} days remaining`
+
   // Unified alert component for all urgency levels
   return (
     <Flex
@@ -68,7 +77,9 @@ export default function TrialAlert({
           color: `light-dark(var(--mantine-color-${color}-9), var(--mantine-color-${color}-2))`,
         }}
       >
-        {message}
+        <ClientOnly fallback={fallbackMessage}>
+          {message}
+        </ClientOnly>
       </Text>
       {showUpgradeButton && (
         <Button
@@ -93,7 +104,9 @@ export default function TrialAlert({
           }}
           onClick={onUpgradeClick}
         >
-          {t('trial:upgradeNow')}
+          <ClientOnly fallback="Upgrade Now">
+            {t('trial:upgradeNow')}
+          </ClientOnly>
         </Button>
       )}
     </Flex>
