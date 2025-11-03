@@ -14,4 +14,23 @@ export function changeLanguageWithPersistence(i18n: I18nInstance, language: stri
 
   // Change the language - i18next will automatically save to cookie
   i18n.changeLanguage(language)
+  
+  // Also update URL if there's an lng parameter present
+  const url = new URL(window.location.href)
+  if (url.searchParams.has('lng')) {
+    url.searchParams.set('lng', language)
+    // Use replaceState to update URL without triggering navigation
+    window.history.replaceState({}, '', url.toString())
+  }
+}
+
+/**
+ * Navigate to a specific route with a language parameter
+ * @param path - The path to navigate to
+ * @param language - The language code to include in the URL
+ */
+export function navigateWithLanguage(path: string, language: string) {
+  const url = new URL(path, window.location.origin)
+  url.searchParams.set('lng', language)
+  window.location.href = url.toString()
 }

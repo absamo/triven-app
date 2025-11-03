@@ -34,6 +34,7 @@ import { Logo } from '~/app/components'
 import RoadmapIcon from '~/app/components/Roadmap/RoadmapIcon'
 import FrIcon from '~/app/components/SvgIcons/FrIcon'
 import UsIcon from '~/app/components/SvgIcons/UsIcon'
+import { changeLanguageWithPersistence } from '~/app/utils/i18n.client'
 import Notification from '../Notification'
 import classes from './Header.module.css'
 
@@ -287,19 +288,20 @@ export default function Header({ showNotification, user, notifications }: Header
 
               <Menu.Label>{t('navigation:languages')}</Menu.Label>
               {languages.map((language) => (
-                <form key={language.code}>
-                  <Menu.Item type="submit" name="lng" value={language.code}>
-                    <Group gap="sm" justify="space-between" style={{ width: '100%' }}>
-                      <Group gap="sm">
-                        <div className={classes.languageFlag}>
-                          <language.flag size={20} />
-                        </div>
-                        <Text size="sm">{language.name}</Text>
-                      </Group>
-                      {i18n.language === language.code && <IconCheck size={16} />}
-                    </Group>
-                  </Menu.Item>
-                </form>
+                <Menu.Item
+                  key={language.code}
+                  onClick={() => changeLanguageWithPersistence(i18n, language.code)}
+                  leftSection={
+                    <div className={classes.languageFlag}>
+                      <language.flag size={20} />
+                    </div>
+                  }
+                  rightSection={
+                    i18n.language === language.code ? <IconCheck size={16} /> : null
+                  }
+                >
+                  <Text size="sm">{language.name}</Text>
+                </Menu.Item>
               ))}
               <Menu.Divider />
               <form action="/logout" method="post">

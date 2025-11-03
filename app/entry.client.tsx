@@ -14,10 +14,11 @@ async function main() {
     .init({
       fallbackLng: 'en',
       detection: {
-        order: ['cookie', 'htmlTag'],
+        order: ['querystring', 'cookie', 'htmlTag'],
         caches: ['cookie'],
         cookieMinutes: 525600, // 1 year
         lookupCookie: 'lng',
+        lookupQuerystring: 'lng',
         cookieOptions: { path: '/', sameSite: 'lax' },
       },
       backend: { loadPath: '/api/locales/{{lng}}/{{ns}}' },

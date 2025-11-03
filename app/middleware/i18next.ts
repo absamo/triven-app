@@ -15,6 +15,10 @@ export const [i18nextMiddleware, getLocale, getInstance] = unstable_createI18nex
     supportedLanguages: ['en', 'fr'],
     fallbackLanguage: 'en',
     cookie: localeCookie,
+    // Add URL parameter support
+    searchParam: 'lng',
+    // Order matters: URL params take precedence over cookies
+    order: ['searchParam', 'cookie', 'header'],
   },
   i18next: { resources },
   plugins: [initReactI18next],
