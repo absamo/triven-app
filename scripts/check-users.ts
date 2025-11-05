@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 async function checkUsers() {
   try {
@@ -12,20 +12,20 @@ async function checkUsers() {
           select: {
             firstName: true,
             lastName: true,
-          }
-        }
-      }
-    });
+          },
+        },
+      },
+    })
 
-    console.log(`Found ${users.length} users:`);
-    users.forEach(u => {
-      console.log(`- ${u.email} (${u.profile?.firstName} ${u.profile?.lastName})`);
-    });
+    console.log(`Found ${users.length} users:`)
+    users.forEach((u) => {
+      console.log(`- ${u.email} (${u.profile?.firstName} ${u.profile?.lastName})`)
+    })
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('❌ Error:', error)
   } finally {
-    await prisma.$disconnect();
+    await prisma.$disconnect()
   }
 }
 
-checkUsers();
+checkUsers()

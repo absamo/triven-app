@@ -1,23 +1,22 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type ActionFunction,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
-import InvoiceForm from '~/app/pages/Invoices/InvoiceForm'
-import { Notification } from '~/app/components'
-import { getCustomers } from '~/app/services/customers.server'
-import { getInvoice, updateInvoice } from '~/app/services/invoices.server'
-import { type IInvoice } from '~/app/common/validations/invoiceSchema'
-import { getSalesOrdersToInvoice } from '~/app/services/sales.server'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/invoices.edit'
-import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { IAgency } from '~/app/common/validations/agencySchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { ICustomer } from '~/app/common/validations/customerSchema'
+import type { IInvoice } from '~/app/common/validations/invoiceSchema'
 import type { ISalesOrder } from '~/app/common/validations/salesOrderSchema'
 import type { ISite } from '~/app/common/validations/siteSchema'
+import { Notification } from '~/app/components'
+import InvoiceForm from '~/app/pages/Invoices/InvoiceForm'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getCustomers } from '~/app/services/customers.server'
+import { getInvoice, updateInvoice } from '~/app/services/invoices.server'
+import { getSalesOrdersToInvoice } from '~/app/services/sales.server'
+import type { Route } from './+types/invoices.edit'
 
 export const loader: LoaderFunction = async ({ request, params }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

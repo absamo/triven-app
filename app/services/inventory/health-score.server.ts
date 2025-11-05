@@ -29,7 +29,7 @@ export async function calculateHealthScore(params: {
 }): Promise<HealthScore> {
   const { companyId, agencyId, siteId, dateRange } = params
 
-    // Build where clause for products
+  // Build where clause for products
   const where: Prisma.ProductWhereInput = { companyId }
   if (agencyId) where.agencyId = agencyId
   if (siteId) where.siteId = siteId
@@ -216,7 +216,13 @@ async function calculateTurnoverRate(where: Prisma.ProductWhereInput): Promise<n
   })
 
   const totalSalesValue = salesOrders.reduce((sum, order) => {
-    return sum + order.salesOrderItems.reduce((itemSum: number, item: { amount: number | null }) => itemSum + (item.amount || 0), 0)
+    return (
+      sum +
+      order.salesOrderItems.reduce(
+        (itemSum: number, item: { amount: number | null }) => itemSum + (item.amount || 0),
+        0
+      )
+    )
   }, 0)
 
   // Get average inventory value

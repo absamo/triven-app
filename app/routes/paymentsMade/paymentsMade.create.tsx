@@ -1,26 +1,26 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type ActionFunction,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
 
 import { PAYMENT_METHODS } from '~/app/common/constants'
-import { Notification } from '~/app/components'
-import { createPaymentMade, getMaxPaymentMadeNumber } from '~/app/services/payments.server'
-import { type IPaymentsMade } from '~/app/common/validations/paymentsMadeSchema'
-import PaymentsMadeForm from '~/app/pages/PaymentsMade/PaymentsMadeForm'
-import { getBillsToPay } from '~/app/services/bills.server'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { ICurrency } from '~/app/common/validations/currencySchema'
-import type { Route } from './+types/paymentsMade.create'
 import type { IBill } from '~/app/common/validations/billSchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import type { IPaymentsMade } from '~/app/common/validations/paymentsMadeSchema'
+import { Notification } from '~/app/components'
+import PaymentsMadeForm from '~/app/pages/PaymentsMade/PaymentsMadeForm'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getBillsToPay } from '~/app/services/bills.server'
+import { createPaymentMade, getMaxPaymentMadeNumber } from '~/app/services/payments.server'
+import type { Route } from './+types/paymentsMade.create'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
   const user = await requireBetterAuthUser(request, ['create:paymentsMade'])
 
-  let paymentMadeReference = await getMaxPaymentMadeNumber(request)
+  const paymentMadeReference = await getMaxPaymentMadeNumber(request)
 
   const paymentMade = {
     paymentReference: `PM-${paymentMadeReference}`,

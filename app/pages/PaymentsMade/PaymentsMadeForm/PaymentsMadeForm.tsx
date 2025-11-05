@@ -15,15 +15,6 @@ import { useForm } from '@mantine/form'
 import { zodResolver } from 'mantine-form-zod-resolver'
 import { useTranslation } from 'react-i18next'
 import { useSubmit } from 'react-router'
-
-import { type IBill } from '~/app/common/validations/billSchema'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
-import { type IPaymentsMade, paymentsMadeSchema } from '~/app/common/validations/paymentsMadeSchema'
-import { Form } from '~/app/components'
-import { SearchableSelect } from '~/app/partials/SearchableSelect'
-import { Title } from '~/app/partials/Title'
-import classes from './PaymentsMadeForm.module.css'
-
 import { PAYMENT_STATUSES } from '~/app/common/constants'
 import {
   getAmountPaidByBill,
@@ -31,6 +22,13 @@ import {
   getTotalAmountDueByBill,
 } from '~/app/common/helpers/bill'
 import { formatMoney } from '~/app/common/helpers/money'
+import type { IBill } from '~/app/common/validations/billSchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import { type IPaymentsMade, paymentsMadeSchema } from '~/app/common/validations/paymentsMadeSchema'
+import { Form } from '~/app/components'
+import { SearchableSelect } from '~/app/partials/SearchableSelect'
+import { Title } from '~/app/partials/Title'
+import classes from './PaymentsMadeForm.module.css'
 
 interface PaymentsMadeFormProps {
   paymentMade: IPaymentsMade

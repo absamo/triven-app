@@ -220,8 +220,28 @@ async function cleanupDatabase() {
     await prisma.account.deleteMany().catch(() => {})
     await prisma.verification.deleteMany().catch(() => {})
 
-    // Business logic tables (delete children before parents)
-    // Approval and workflow tables first
+    // AI-related tables
+    await prisma.toolExecutionLog.deleteMany().catch(() => {})
+    await prisma.demandForecast.deleteMany().catch(() => {})
+    await prisma.autoReorderRule.deleteMany().catch(() => {})
+    await prisma.purchaseOrderRecommendation.deleteMany().catch(() => {})
+    await prisma.inventoryAnomaly.deleteMany().catch(() => {})
+    await prisma.businessInsight.deleteMany().catch(() => {})
+    await prisma.inventoryHealthScore.deleteMany().catch(() => {})
+    await prisma.smartAlert.deleteMany().catch(() => {})
+    await prisma.revenueOpportunity.deleteMany().catch(() => {})
+
+    // Landing page and feature management tables
+    await prisma.featureComment.deleteMany().catch(() => {})
+    await prisma.featureAuditLog.deleteMany().catch(() => {})
+    await prisma.featureVote.deleteMany().catch(() => {})
+    await prisma.featureRequest.deleteMany().catch(() => {})
+    await prisma.demoRequest.deleteMany().catch(() => {})
+    await prisma.testimonial.deleteMany().catch(() => {})
+    await prisma.successMetric.deleteMany().catch(() => {})
+    await prisma.landingPageConfig.deleteMany().catch(() => {})
+
+    // Approval and workflow tables
     await prisma.approvalComment.deleteMany().catch(() => {})
     await prisma.approvalRequest.deleteMany().catch(() => {})
     await prisma.workflowStepExecution.deleteMany().catch(() => {})
@@ -229,6 +249,7 @@ async function cleanupDatabase() {
     await prisma.workflowStep.deleteMany().catch(() => {})
     await prisma.workflowTemplate.deleteMany().catch(() => {})
 
+    // Business logic tables (delete children before parents)
     await prisma.transferOrderItem.deleteMany().catch(() => {})
     await prisma.transferOrder.deleteMany().catch(() => {})
     await prisma.section.deleteMany().catch(() => {})
@@ -250,6 +271,7 @@ async function cleanupDatabase() {
     await prisma.purchaseOrder.deleteMany().catch(() => {})
     await prisma.backorder.deleteMany().catch(() => {})
     await prisma.shipment.deleteMany().catch(() => {})
+    await prisma.returnOrder.deleteMany().catch(() => {})
     await prisma.customer.deleteMany().catch(() => {})
     await prisma.product.deleteMany().catch(() => {})
     await prisma.unitOfMeasure.deleteMany().catch(() => {})
@@ -3165,32 +3187,58 @@ async function createStripeCustomers(users: any[]) {
         return stripeCustomers
       } catch (error) {
         console.log(
-          `   ⚠️  Stripe customer ${adminUser.stripeCustomerId} not found for ${adminUser.email}, creating new one`
+          `   ⚠️  Stripe customer ${adminUser.stripeCustomerId} not found for ${adminUser.email}, clearing and creating new one`
         )
+        // Clear the invalid Stripe customer ID from database
+        await prisma.user.update({
+          where: { id: adminUser.id },
+          data: { stripeCustomerId: null },
+        })
+        adminUser.stripeCustomerId = null
       }
     }
 
-    // Create new Stripe customer for admin only
-    const customer = await stripe.customers.create({
+    // Check if a Stripe customer with this email already exists
+    const existingCustomers = await stripe.customers.list({
       email: adminUser.email,
-      name: adminUser.profile
-        ? `${adminUser.profile.firstName} ${adminUser.profile.lastName}`
-        : undefined,
-      metadata: {
-        userId: adminUser.id,
-      },
+      limit: 1,
     })
 
-    // Update admin user with Stripe customer ID
-    const updatedUser = await prisma.user.update({
-      where: { id: adminUser.id },
-      data: { stripeCustomerId: customer.id },
-    })
+    let customer
+    if (existingCustomers.data.length > 0) {
+      customer = existingCustomers.data[0]
+      console.log(`   🔗 Found existing Stripe customer for ${adminUser.email}, linking to user`)
 
-    // Update the user object in the array
-    adminUser.stripeCustomerId = customer.id
+      // Update admin user with existing Stripe customer ID
+      await prisma.user.update({
+        where: { id: adminUser.id },
+        data: { stripeCustomerId: customer.id },
+      })
+      adminUser.stripeCustomerId = customer.id
+    } else {
+      // Create new Stripe customer for admin only
+      customer = await stripe.customers.create({
+        email: adminUser.email,
+        name: adminUser.profile
+          ? `${adminUser.profile.firstName} ${adminUser.profile.lastName}`
+          : undefined,
+        metadata: {
+          userId: adminUser.id,
+        },
+      })
 
-    console.log(`   ✅ Created Stripe customer for admin: ${adminUser.email} (${customer.id})`)
+      // Update admin user with Stripe customer ID
+      await prisma.user.update({
+        where: { id: adminUser.id },
+        data: { stripeCustomerId: customer.id },
+      })
+
+      // Update the user object in the array
+      adminUser.stripeCustomerId = customer.id
+
+      console.log(`   ✅ Created Stripe customer for admin: ${adminUser.email} (${customer.id})`)
+    }
+
     stripeCustomers.push(customer)
   } catch (error) {
     console.error(`❌ Failed to create Stripe customer for admin ${adminUser.email}:`, error)
@@ -3281,9 +3329,9 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
   }
 
   try {
-    // Create trial subscription in Stripe
+    // Create trial subscription in Stripe with a 10-minute trial period
     const now = Math.floor(Date.now() / 1000) // Current time in Unix timestamp
-    const trialEnd = now + 14 * 24 * 60 * 60 // 14 days from now
+    const trialEnd = now + 10 * 60 // 10 minutes from now
 
     const stripeSubscription = await stripe.subscriptions.create({
       customer: adminUser.stripeCustomerId,
@@ -3293,7 +3341,12 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
         },
       ],
       trial_end: trialEnd,
-      payment_behavior: 'default_incomplete',
+      // Configure what happens when trial ends without payment method
+      trial_settings: {
+        end_behavior: {
+          missing_payment_method: 'cancel', // Options: 'cancel', 'pause', 'create_invoice'
+        },
+      },
       payment_settings: {
         save_default_payment_method: 'on_subscription',
       },
@@ -3341,7 +3394,7 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
     )
     console.log(`   Subscription ID: ${subscription.id}`)
     console.log(
-      `   Trial ends: ${new Date((subscription.trialEnd || 0) * 1000).toLocaleDateString()}`
+      `   Trial ends in 5 minutes: ${new Date((subscription.trialEnd || 0) * 1000).toLocaleString()}`
     )
     return subscription
   } catch (error) {

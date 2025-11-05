@@ -41,61 +41,70 @@ export default function PaymentSuccessEmail({
   invoiceUrl = 'https://app.triven.com/invoice',
   locale = 'en',
 }: PaymentSuccessEmailProps) {
-  const t = locale === 'fr' ? {
-    preview: 'Paiement reçu - Merci ! Votre abonnement Triven est actif 💳',
-    title: 'Paiement Reçu - Merci !',
-    greeting: 'Bonjour {name},',
-    intro: 'Merci ! Nous avons traité avec succès votre paiement pour votre abonnement Triven {planName}. Votre service continue sans interruption.',
-    paymentConfirmation: '✅ Confirmation de Paiement',
-    amountPaid: 'Montant Payé :',
-    plan: 'Plan :',
-    paymentDate: 'Date de Paiement :',
-    invoiceNumber: 'Numéro de Facture :',
-    nextBilling: 'Prochaine Facturation :',
-    status: 'Statut :',
-    paid: 'Payé',
-    downloadInvoice: 'Télécharger la Facture',
-    planIncludes: 'Votre plan {planName} inclut :',
-    unlimitedTracking: '✓ Suivi d\'inventaire illimité',
-    advancedAnalytics: '✓ Analyses et rapports avancés',
-    multiLocation: '✓ Gestion multi-emplacements',
-    apiAccess: '✓ Accès API et intégrations',
-    prioritySupport: '✓ Support client prioritaire',
-    automatedBackup: '✓ Sauvegarde automatisée et sécurité',
-    billingInfo: 'Informations de Facturation',
-    billingText: 'Votre prochain paiement de {amount} sera automatiquement prélevé le {nextBillingDate}. Vous pouvez gérer vos paramètres de facturation, voir l\'historique des paiements ou mettre à jour votre méthode de paiement à tout moment.',
-    manageBilling: 'Gérer la Facturation',
-    thankYou: 'Merci d\'avoir choisi Triven pour vos besoins de gestion d\'inventaire. Nous sommes là pour aider votre entreprise à réussir !',
-    bestRegards: 'Cordialement,',
-    teamName: 'L\'équipe Triven'
-  } : {
-    preview: 'Payment received - Thank you! Your Triven subscription is active 💳',
-    title: 'Payment Received - Thank You!',
-    greeting: 'Hi {name},',
-    intro: 'Thank you! We\'ve successfully processed your payment for your Triven {planName} subscription. Your service continues without interruption.',
-    paymentConfirmation: '✅ Payment Confirmation',
-    amountPaid: 'Amount Paid:',
-    plan: 'Plan:',
-    paymentDate: 'Payment Date:',
-    invoiceNumber: 'Invoice Number:',
-    nextBilling: 'Next Billing:',
-    status: 'Status:',
-    paid: 'Paid',
-    downloadInvoice: 'Download Invoice',
-    planIncludes: 'Your {planName} plan includes:',
-    unlimitedTracking: '✓ Unlimited inventory tracking',
-    advancedAnalytics: '✓ Advanced analytics and reporting',
-    multiLocation: '✓ Multi-location management',
-    apiAccess: '✓ API access and integrations',
-    prioritySupport: '✓ Priority customer support',
-    automatedBackup: '✓ Automated backup and security',
-    billingInfo: 'Billing Information',
-    billingText: 'Your next payment of {amount} will be automatically charged on {nextBillingDate}. You can manage your billing settings, view payment history, or update your payment method anytime.',
-    manageBilling: 'Manage Billing',
-    thankYou: 'Thank you for choosing Triven for your inventory management needs. We\'re here to help your business succeed!',
-    bestRegards: 'Best regards,',
-    teamName: 'The Triven Team'
-  }
+  const t =
+    locale === 'fr'
+      ? {
+          preview: 'Paiement reçu - Merci ! Votre abonnement Triven est actif 💳',
+          title: 'Paiement Reçu - Merci !',
+          greeting: 'Bonjour {name},',
+          intro:
+            'Merci ! Nous avons traité avec succès votre paiement pour votre abonnement Triven {planName}. Votre service continue sans interruption.',
+          paymentConfirmation: '✅ Confirmation de Paiement',
+          amountPaid: 'Montant Payé :',
+          plan: 'Plan :',
+          paymentDate: 'Date de Paiement :',
+          invoiceNumber: 'Numéro de Facture :',
+          nextBilling: 'Prochaine Facturation :',
+          status: 'Statut :',
+          paid: 'Payé',
+          downloadInvoice: 'Télécharger la Facture',
+          planIncludes: 'Votre plan {planName} inclut :',
+          unlimitedTracking: "✓ Suivi d'inventaire illimité",
+          advancedAnalytics: '✓ Analyses et rapports avancés',
+          multiLocation: '✓ Gestion multi-emplacements',
+          apiAccess: '✓ Accès API et intégrations',
+          prioritySupport: '✓ Support client prioritaire',
+          automatedBackup: '✓ Sauvegarde automatisée et sécurité',
+          billingInfo: 'Informations de Facturation',
+          billingText:
+            "Votre prochain paiement de {amount} sera automatiquement prélevé le {nextBillingDate}. Vous pouvez gérer vos paramètres de facturation, voir l'historique des paiements ou mettre à jour votre méthode de paiement à tout moment.",
+          manageBilling: 'Gérer la Facturation',
+          thankYou:
+            "Merci d'avoir choisi Triven pour vos besoins de gestion d'inventaire. Nous sommes là pour aider votre entreprise à réussir !",
+          bestRegards: 'Cordialement,',
+          teamName: "L'équipe Triven",
+        }
+      : {
+          preview: 'Payment received - Thank you! Your Triven subscription is active 💳',
+          title: 'Payment Received - Thank You!',
+          greeting: 'Hi {name},',
+          intro:
+            "Thank you! We've successfully processed your payment for your Triven {planName} subscription. Your service continues without interruption.",
+          paymentConfirmation: '✅ Payment Confirmation',
+          amountPaid: 'Amount Paid:',
+          plan: 'Plan:',
+          paymentDate: 'Payment Date:',
+          invoiceNumber: 'Invoice Number:',
+          nextBilling: 'Next Billing:',
+          status: 'Status:',
+          paid: 'Paid',
+          downloadInvoice: 'Download Invoice',
+          planIncludes: 'Your {planName} plan includes:',
+          unlimitedTracking: '✓ Unlimited inventory tracking',
+          advancedAnalytics: '✓ Advanced analytics and reporting',
+          multiLocation: '✓ Multi-location management',
+          apiAccess: '✓ API access and integrations',
+          prioritySupport: '✓ Priority customer support',
+          automatedBackup: '✓ Automated backup and security',
+          billingInfo: 'Billing Information',
+          billingText:
+            'Your next payment of {amount} will be automatically charged on {nextBillingDate}. You can manage your billing settings, view payment history, or update your payment method anytime.',
+          manageBilling: 'Manage Billing',
+          thankYou:
+            "Thank you for choosing Triven for your inventory management needs. We're here to help your business succeed!",
+          bestRegards: 'Best regards,',
+          teamName: 'The Triven Team',
+        }
 
   return (
     <Html lang={locale}>
@@ -116,9 +125,7 @@ export default function PaymentSuccessEmail({
           <Section style={section}>
             <Text style={title}>{t.title}</Text>
             <Text style={text}>{interpolate(t.greeting, { name })}</Text>
-            <Text style={text}>
-              {interpolate(t.intro, { planName })}
-            </Text>
+            <Text style={text}>{interpolate(t.intro, { planName })}</Text>
 
             <Section style={successBox}>
               <Text style={successTitle}>{t.paymentConfirmation}</Text>
@@ -163,9 +170,7 @@ export default function PaymentSuccessEmail({
             <Text style={text}>
               <strong>{t.billingInfo}</strong>
             </Text>
-            <Text style={text}>
-              {interpolate(t.billingText, { amount, nextBillingDate })}
-            </Text>
+            <Text style={text}>{interpolate(t.billingText, { amount, nextBillingDate })}</Text>
 
             <Section style={buttonContainer}>
               <Button style={secondaryButton} href={billingUrl}>
@@ -173,12 +178,11 @@ export default function PaymentSuccessEmail({
               </Button>
             </Section>
 
-            <Text style={footer}>
-              {t.thankYou}
-            </Text>
+            <Text style={footer}>{t.thankYou}</Text>
 
             <Text style={footer}>
-              {t.bestRegards}<br />
+              {t.bestRegards}
+              <br />
               {t.teamName}
             </Text>
           </Section>
@@ -190,7 +194,8 @@ export default function PaymentSuccessEmail({
 
 const main = {
   backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  fontFamily:
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 }
 
 const container = {

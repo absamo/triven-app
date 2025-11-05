@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { useSubmit } from 'react-router'
 import { SITE_TYPES } from '~/app/common/constants'
 
-import { type ILocation } from '~/app/common/validations/locationSchema'
-import { siteSchema, type ISite } from '~/app/common/validations/siteSchema'
+import type { ILocation } from '~/app/common/validations/locationSchema'
+import { type ISite, siteSchema } from '~/app/common/validations/siteSchema'
 
 import { Form } from '~/app/components'
 import { Location } from '~/app/partials/Location'

@@ -1,8 +1,8 @@
 import type { PurchaseOrderStatus } from '@prisma/client'
 import { BILL_STATUSES, PURCHASE_ORDER_STATUSES } from '~/app/common/constants'
-import { type IProduct } from '~/app/common/validations/productSchema'
-import { type IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
-import { type IPurchaseReceive } from '~/app/common/validations/purchaseReceiveSchema'
+import type { IProduct } from '~/app/common/validations/productSchema'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import type { IPurchaseReceive } from '~/app/common/validations/purchaseReceiveSchema'
 import { prisma } from '~/app/db.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 

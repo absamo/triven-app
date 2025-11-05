@@ -3,6 +3,7 @@ import { Badge, Group, Paper, Text } from '@mantine/core'
 import { IconDeviceAnalytics } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
+import ClientOnly from '~/app/components/ClientOnly'
 import classes from './StatusStats.module.css'
 
 interface StatusStatsProps {
@@ -85,16 +86,18 @@ export default function StatusStats({ stockStatus }: StatusStatsProps) {
       {/* Centered bar chart */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         {hasData ? (
-          <BarChart
-            h={180}
-            data={chartData}
-            dataKey="status"
-            series={[{ name: 'items', color: 'var(--mantine-color-blue-6)' }]}
-            withTooltip
-            withYAxis
-            tickLine="x"
-            barProps={{ maxBarSize: 30 }}
-          />
+          <ClientOnly>
+            <BarChart
+              h={180}
+              data={chartData}
+              dataKey="status"
+              series={[{ name: 'items', color: 'var(--mantine-color-blue-6)' }]}
+              withTooltip
+              withYAxis
+              tickLine="x"
+              barProps={{ maxBarSize: 30 }}
+            />
+          </ClientOnly>
         ) : (
           <Text ta="center" c="dimmed" py="xl">
             {t('noStockDataAvailable')}

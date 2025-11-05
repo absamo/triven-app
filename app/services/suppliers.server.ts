@@ -3,7 +3,7 @@ import type { ISupplier } from '~/app/common/validations/supplierSchema'
 import { prisma } from '~/app/db.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import { PURCHASE_ORDER_STATUSES } from '../common/constants'
-import { type IPurchaseOrder } from '../common/validations/purchaseOrderSchema'
+import type { IPurchaseOrder } from '../common/validations/purchaseOrderSchema'
 
 export async function getFilteredSuppliers(request: Request) {
   const user = await requireBetterAuthUser(request, ['read:suppliers'])

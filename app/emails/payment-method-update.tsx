@@ -43,67 +43,80 @@ export default function PaymentMethodUpdateEmail({
   supportUrl = 'https://app.triven.com/support',
   locale = 'en',
 }: PaymentMethodUpdateEmailProps) {
-  const t = locale === 'fr' ? {
-    preview: 'Méthode de paiement mise à jour avec succès pour votre abonnement Triven 💳',
-    title: 'Méthode de Paiement Mise à Jour',
-    greeting: 'Bonjour {name},',
-    intro: 'Nous confirmons que votre méthode de paiement pour votre abonnement {planName} Triven a été mise à jour avec succès.',
-    updateDetails: '💳 Détails de la Mise à Jour',
-    newMethod: 'Nouvelle Méthode :',
-    updateDate: 'Date de Mise à Jour :',
-    effectiveImmediately: 'Cette modification est effective immédiatement.',
-    nextBilling: 'Prochaine Facturation',
-    nextBillingText: 'Votre prochaine facturation de {amount} pour votre plan {planName} sera prélevée sur votre nouvelle méthode de paiement {nextBillingDate}.',
-    billingDate: 'Date de Facturation :',
-    amount: 'Montant :',
-    paymentMethod: 'Méthode de Paiement :',
-    manageBilling: 'Gérer la Facturation',
-    securityNote: '🔒 Note de Sécurité',
-    securityText: 'Si vous n\'avez pas effectué cette modification, veuillez nous contacter immédiatement. Votre sécurité compte est notre priorité.',
-    notYou: 'Ce n\'est pas vous ?',
-    contactSupport: 'Contacter le Support',
-    whatCanYouDo: 'Que pouvez-vous faire ?',
-    viewBillingHistory: '• Consulter votre historique de facturation complet',
-    updatePaymentMethods: '• Ajouter ou supprimer des méthodes de paiement',
-    manageSubscription: '• Gérer les détails de votre abonnement',
-    downloadInvoices: '• Télécharger vos factures',
-    setBackupMethod: '• Définir une méthode de paiement de sauvegarde',
-    visitBillingPage: 'Visitez votre page de facturation pour gérer tous les aspects de votre abonnement et de vos paiements.',
-    thankYou: 'Merci de nous faire confiance avec la gestion de votre inventaire. Nous nous engageons à fournir un service sécurisé et fiable.',
-    questions: 'Des questions ? Notre équipe de support est là pour vous aider.',
-    bestRegards: 'Cordialement,',
-    teamName: 'L\'équipe Triven'
-  } : {
-    preview: 'Payment method updated successfully for your Triven subscription 💳',
-    title: 'Payment Method Updated',
-    greeting: 'Hi {name},',
-    intro: 'We confirm that your payment method for your Triven {planName} subscription has been successfully updated.',
-    updateDetails: '💳 Update Details',
-    newMethod: 'New Method:',
-    updateDate: 'Update Date:',
-    effectiveImmediately: 'This change is effective immediately.',
-    nextBilling: 'Next Billing',
-    nextBillingText: 'Your next billing of {amount} for your {planName} plan will be charged to your new payment method {nextBillingDate}.',
-    billingDate: 'Billing Date:',
-    amount: 'Amount:',
-    paymentMethod: 'Payment Method:',
-    manageBilling: 'Manage Billing',
-    securityNote: '🔒 Security Note',
-    securityText: 'If you didn\'t make this change, please contact us immediately. Your account security is our priority.',
-    notYou: 'Not you?',
-    contactSupport: 'Contact Support',
-    whatCanYouDo: 'What can you do?',
-    viewBillingHistory: '• View your complete billing history',
-    updatePaymentMethods: '• Add or remove payment methods',
-    manageSubscription: '• Manage your subscription details',
-    downloadInvoices: '• Download your invoices',
-    setBackupMethod: '• Set up a backup payment method',
-    visitBillingPage: 'Visit your billing page to manage all aspects of your subscription and payments.',
-    thankYou: 'Thank you for trusting us with your inventory management. We\'re committed to providing secure and reliable service.',
-    questions: 'Questions? Our support team is here to help.',
-    bestRegards: 'Best regards,',
-    teamName: 'The Triven Team'
-  }
+  const t =
+    locale === 'fr'
+      ? {
+          preview: 'Méthode de paiement mise à jour avec succès pour votre abonnement Triven 💳',
+          title: 'Méthode de Paiement Mise à Jour',
+          greeting: 'Bonjour {name},',
+          intro:
+            'Nous confirmons que votre méthode de paiement pour votre abonnement {planName} Triven a été mise à jour avec succès.',
+          updateDetails: '💳 Détails de la Mise à Jour',
+          newMethod: 'Nouvelle Méthode :',
+          updateDate: 'Date de Mise à Jour :',
+          effectiveImmediately: 'Cette modification est effective immédiatement.',
+          nextBilling: 'Prochaine Facturation',
+          nextBillingText:
+            'Votre prochaine facturation de {amount} pour votre plan {planName} sera prélevée sur votre nouvelle méthode de paiement {nextBillingDate}.',
+          billingDate: 'Date de Facturation :',
+          amount: 'Montant :',
+          paymentMethod: 'Méthode de Paiement :',
+          manageBilling: 'Gérer la Facturation',
+          securityNote: '🔒 Note de Sécurité',
+          securityText:
+            "Si vous n'avez pas effectué cette modification, veuillez nous contacter immédiatement. Votre sécurité compte est notre priorité.",
+          notYou: "Ce n'est pas vous ?",
+          contactSupport: 'Contacter le Support',
+          whatCanYouDo: 'Que pouvez-vous faire ?',
+          viewBillingHistory: '• Consulter votre historique de facturation complet',
+          updatePaymentMethods: '• Ajouter ou supprimer des méthodes de paiement',
+          manageSubscription: '• Gérer les détails de votre abonnement',
+          downloadInvoices: '• Télécharger vos factures',
+          setBackupMethod: '• Définir une méthode de paiement de sauvegarde',
+          visitBillingPage:
+            'Visitez votre page de facturation pour gérer tous les aspects de votre abonnement et de vos paiements.',
+          thankYou:
+            'Merci de nous faire confiance avec la gestion de votre inventaire. Nous nous engageons à fournir un service sécurisé et fiable.',
+          questions: 'Des questions ? Notre équipe de support est là pour vous aider.',
+          bestRegards: 'Cordialement,',
+          teamName: "L'équipe Triven",
+        }
+      : {
+          preview: 'Payment method updated successfully for your Triven subscription 💳',
+          title: 'Payment Method Updated',
+          greeting: 'Hi {name},',
+          intro:
+            'We confirm that your payment method for your Triven {planName} subscription has been successfully updated.',
+          updateDetails: '💳 Update Details',
+          newMethod: 'New Method:',
+          updateDate: 'Update Date:',
+          effectiveImmediately: 'This change is effective immediately.',
+          nextBilling: 'Next Billing',
+          nextBillingText:
+            'Your next billing of {amount} for your {planName} plan will be charged to your new payment method {nextBillingDate}.',
+          billingDate: 'Billing Date:',
+          amount: 'Amount:',
+          paymentMethod: 'Payment Method:',
+          manageBilling: 'Manage Billing',
+          securityNote: '🔒 Security Note',
+          securityText:
+            "If you didn't make this change, please contact us immediately. Your account security is our priority.",
+          notYou: 'Not you?',
+          contactSupport: 'Contact Support',
+          whatCanYouDo: 'What can you do?',
+          viewBillingHistory: '• View your complete billing history',
+          updatePaymentMethods: '• Add or remove payment methods',
+          manageSubscription: '• Manage your subscription details',
+          downloadInvoices: '• Download your invoices',
+          setBackupMethod: '• Set up a backup payment method',
+          visitBillingPage:
+            'Visit your billing page to manage all aspects of your subscription and payments.',
+          thankYou:
+            "Thank you for trusting us with your inventory management. We're committed to providing secure and reliable service.",
+          questions: 'Questions? Our support team is here to help.',
+          bestRegards: 'Best regards,',
+          teamName: 'The Triven Team',
+        }
 
   return (
     <Html lang={locale}>
@@ -124,21 +137,18 @@ export default function PaymentMethodUpdateEmail({
           <Section style={section}>
             <Text style={title}>{t.title}</Text>
             <Text style={text}>{interpolate(t.greeting, { name })}</Text>
-            <Text style={text}>
-              {interpolate(t.intro, { planName })}
-            </Text>
+            <Text style={text}>{interpolate(t.intro, { planName })}</Text>
 
             <Section style={updateBox}>
               <Text style={updateTitle}>{t.updateDetails}</Text>
               <Text style={detailRow}>
-                <strong>{t.newMethod}</strong> {newPaymentMethod} {locale === 'fr' ? 'se terminant par' : 'ending in'} {lastFour}
+                <strong>{t.newMethod}</strong> {newPaymentMethod}{' '}
+                {locale === 'fr' ? 'se terminant par' : 'ending in'} {lastFour}
               </Text>
               <Text style={detailRow}>
                 <strong>{t.updateDate}</strong> {updateDate}
               </Text>
-              <Text style={effectiveText}>
-                {t.effectiveImmediately}
-              </Text>
+              <Text style={effectiveText}>{t.effectiveImmediately}</Text>
             </Section>
 
             <Text style={text}>
@@ -156,7 +166,8 @@ export default function PaymentMethodUpdateEmail({
                 <strong>{t.amount}</strong> {amount}
               </Text>
               <Text style={detailRow}>
-                <strong>{t.paymentMethod}</strong> {newPaymentMethod} {locale === 'fr' ? 'se terminant par' : 'ending in'} {lastFour}
+                <strong>{t.paymentMethod}</strong> {newPaymentMethod}{' '}
+                {locale === 'fr' ? 'se terminant par' : 'ending in'} {lastFour}
               </Text>
             </Section>
 
@@ -170,9 +181,7 @@ export default function PaymentMethodUpdateEmail({
 
             <Section style={securityBox}>
               <Text style={securityTitle}>{t.securityNote}</Text>
-              <Text style={text}>
-                {t.securityText}
-              </Text>
+              <Text style={text}>{t.securityText}</Text>
               <Text style={text}>
                 <strong>{t.notYou}</strong>
               </Text>
@@ -194,20 +203,15 @@ export default function PaymentMethodUpdateEmail({
             <Text style={featureText}>{t.downloadInvoices}</Text>
             <Text style={featureText}>{t.setBackupMethod}</Text>
 
-            <Text style={text}>
-              {t.visitBillingPage}
-            </Text>
+            <Text style={text}>{t.visitBillingPage}</Text>
+
+            <Text style={footer}>{t.thankYou}</Text>
+
+            <Text style={footer}>{t.questions}</Text>
 
             <Text style={footer}>
-              {t.thankYou}
-            </Text>
-
-            <Text style={footer}>
-              {t.questions}
-            </Text>
-
-            <Text style={footer}>
-              {t.bestRegards}<br />
+              {t.bestRegards}
+              <br />
               {t.teamName}
             </Text>
           </Section>
@@ -219,7 +223,8 @@ export default function PaymentMethodUpdateEmail({
 
 const main = {
   backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  fontFamily:
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 }
 
 const container = {

@@ -145,7 +145,7 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
 
   try {
     switch (name) {
-      case 'get_products':
+      case 'get_products': {
         const limit = parseInt(args.limit) || 1000 // Default to 1000 to show all products by default
         const language = args.language || 'en'
         const timeRange = parseTimeExpression(args.time_period)
@@ -180,8 +180,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
           language: language,
           timeDescription: timeRange.description,
         }
+      }
 
-      case 'search_products':
+      case 'search_products': {
         const query = args.query?.toLowerCase() || ''
         const searchTimeRange = parseTimeExpression(args.time_period)
 
@@ -226,8 +227,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
           found: searchResults.length,
           timeDescription: searchTimeRange.description,
         }
+      }
 
-      case 'generate_demand_forecast':
+      case 'generate_demand_forecast': {
         const forecastTimeRange = parseTimeExpression(args.time_period)
         let productIdForForecast = args.product_id
 
@@ -262,8 +264,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to generate forecast: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
-      case 'get_reorder_recommendations':
+      case 'get_reorder_recommendations': {
         const reorderTimeRange = parseTimeExpression(args.time_period)
         try {
           const recommendations =
@@ -291,8 +294,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to get recommendations: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
-      case 'run_anomaly_scan':
+      case 'run_anomaly_scan': {
         const anomalyTimeRange = parseTimeExpression(args.time_period)
         try {
           const anomalies = await detectInventoryAnomalies(companyId)
@@ -317,8 +321,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to run anomaly scan: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
-      case 'get_recent_anomalies':
+      case 'get_recent_anomalies': {
         const recentAnomaliesTimeRange = parseTimeExpression(args.time_period)
         try {
           const anomalies = await getRecentAnomalies(companyId, args.limit || 10)
@@ -341,8 +346,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to get anomalies: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
-      case 'generate_business_insights':
+      case 'generate_business_insights': {
         const insightsTimeRange = parseTimeExpression(args.time_period)
         try {
           const insights = await biService.generateBusinessInsights(
@@ -363,8 +369,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to generate insights: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
-      case 'analyze_product_performance':
+      case 'analyze_product_performance': {
         const analysisTimeRange = parseTimeExpression(args.time_period)
         let productIdForAnalysis = args.product_id
 
@@ -442,8 +449,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to analyze product: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
-      case 'analyze_overall_product_performance':
+      case 'analyze_overall_product_performance': {
         const overallAnalysisTimeRange = parseTimeExpression(args.time_period)
         try {
           const analysis = await biService.analyzeOverallProductPerformance(
@@ -458,8 +466,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to analyze overall product performance: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
-      case 'get_optimization_recommendations':
+      case 'get_optimization_recommendations': {
         const optimizationTimeRange = parseTimeExpression(args.time_period)
         try {
           const recommendations = await biService.getOptimizationRecommendations(
@@ -479,8 +488,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to get optimization recommendations: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
-      case 'explain_kpi_trends':
+      case 'explain_kpi_trends': {
         const kpiTimeRange = parseTimeExpression(args.time_period)
         try {
           const analysis = await biService.explainKPITrends(companyId, args.kpi_name, kpiTimeRange)
@@ -492,8 +502,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to explain KPI trends: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
-      case 'natural_language_query':
+      case 'natural_language_query': {
         const queryTimeRange = parseTimeExpression(args.time_period)
         try {
           const response = await biService.processNaturalLanguageQuery(
@@ -513,8 +524,9 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to process query: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
-      case 'show_low_stock_items':
+      case 'show_low_stock_items': {
         const lowStockTimeRange = parseTimeExpression(args.time_period)
         try {
           const response = await biService.getLowStockItemsOnly(companyId, lowStockTimeRange)
@@ -526,6 +538,7 @@ async function executeToolFunction(name: string, args: any, companyId: string) {
             error: `Failed to get low stock items: ${error instanceof Error ? error.message : 'Unknown error'}`,
           }
         }
+      }
 
       default:
         toolTimer.end()

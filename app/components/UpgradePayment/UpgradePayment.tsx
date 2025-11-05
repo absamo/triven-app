@@ -116,8 +116,9 @@ export default function UpgradePayment({
     if (billing?.paymentMethod && paymentMethodChoice === 'existing') {
       setIsProcessingPayment(true)
       try {
-        // Call the upgrade API directly with existing payment method
-        const response = await fetch('/api/subscription-upgrade', {
+        // Always use subscription-create endpoint which handles all subscription states
+        // including expired/canceled subscriptions correctly
+        const response = await fetch('/api/subscription-create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -128,8 +129,22 @@ export default function UpgradePayment({
           }),
         })
 
+        const data = await response.json()
+
+        // Check if subscription requires new payment (expired/canceled)
+        if (data.requiresNewSubscription) {
+          setIsProcessingPayment(false)
+          // Force user to use new payment method for expired subscriptions
+          setPaymentMethodChoice('new')
+          notifications.show({
+            title: t('paymentRequired', 'Payment Required'),
+            message: data.message || 'Please enter payment details to continue.',
+            color: 'yellow',
+          })
+          return
+        }
+
         if (!response.ok) {
-          const data = await response.json()
           throw new Error(data.error || 'Failed to upgrade subscription')
         }
 

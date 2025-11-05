@@ -1,21 +1,20 @@
 import { Badge, Menu, Table, Text, UnstyledButton } from '@mantine/core'
+// import InvoicePDF from "~/app/PDF/InvoicePDF"
+import { useForm } from '@mantine/form'
 import { IconDotsVertical } from '@tabler/icons-react'
 import dayjs from 'dayjs'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
-
 import { INVOICE_STATUSES } from '~/app/common/constants'
 import { getInvoiceStatusLabel } from '~/app/common/helpers/invoice'
 import { formatCurrency } from '~/app/common/helpers/money'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { IInvoice } from '~/app/common/validations/invoiceSchema'
-import { Title } from '~/app/partials/Title'
-// import InvoicePDF from "~/app/PDF/InvoicePDF"
-import { useForm } from '@mantine/form'
-import { useEffect, useState } from 'react'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
-import { type IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
+import type { IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
 import type { ISalesOrder } from '~/app/common/validations/salesOrderSchema'
 import { SalesOrderFilters } from '~/app/partials/SalesOrderFilters'
+import { Title } from '~/app/partials/Title'
 
 interface InvoicesProps {
   invoices: IInvoice[]

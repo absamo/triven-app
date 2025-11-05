@@ -1,5 +1,5 @@
 import { Center } from '@mantine/core'
-import React from 'react'
+import type React from 'react'
 
 interface AuthIconBadgeProps {
   icon: React.ComponentType<{ size?: number; color?: string; stroke?: number }>

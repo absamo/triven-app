@@ -2,13 +2,12 @@ import { Grid, Modal, NumberInput } from '@mantine/core'
 
 import { useForm } from '@mantine/form'
 import { zodResolver } from 'mantine-form-zod-resolver'
-import { useTranslation } from 'react-i18next'
-
 import { useState } from 'react'
-import { type IProduct } from '~/app/common/validations/productSchema'
+import { useTranslation } from 'react-i18next'
+import type { IProduct } from '~/app/common/validations/productSchema'
 import {
-  salesOrderItemSchema,
   type ISalesOrderItem,
+  salesOrderItemSchema,
 } from '~/app/common/validations/salesOrderItemSchema'
 import Form from '~/app/components/Form'
 import { SearchableSelect } from '~/app/partials/SearchableSelect'

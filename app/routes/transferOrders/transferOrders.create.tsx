@@ -1,4 +1,4 @@
-import { type ActionFunction, type ActionFunctionArgs, type LoaderFunction } from 'react-router'
+import type { ActionFunction, ActionFunctionArgs, LoaderFunction } from 'react-router'
 
 import { TRANSFER_ORDER_REASONS } from '~/app/common/constants'
 import type { ISite } from '~/app/common/validations/siteSchema'

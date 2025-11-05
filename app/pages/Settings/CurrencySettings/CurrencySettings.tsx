@@ -1,11 +1,10 @@
 import { Badge, Button, Flex, Group, Menu, Stack, Text, UnstyledButton } from '@mantine/core'
 import { IconDotsVertical, IconPlus, IconStar, IconTrash } from '@tabler/icons-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, useSubmit } from 'react-router'
-
-import { useState } from 'react'
 import { getCurrencyFlag } from '~/app/common/helpers/isoCountryCurrency'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
 import Currency from '~/app/components/Currency'
 import classes from './CurrencySettings.module.css'
 

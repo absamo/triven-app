@@ -3,8 +3,8 @@ import { Grid, Modal, NumberInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useTranslation } from 'react-i18next'
 
-import { type IProduct } from '~/app/common/validations/productSchema'
-import { type ITransferOrderItem } from '~/app/common/validations/transferOrderItemSchema'
+import type { IProduct } from '~/app/common/validations/productSchema'
+import type { ITransferOrderItem } from '~/app/common/validations/transferOrderItemSchema'
 import Form from '~/app/components/Form'
 import { SearchableSelect } from '~/app/partials/SearchableSelect'
 

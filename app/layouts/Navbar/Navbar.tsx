@@ -1,3 +1,4 @@
+import { Box, Menu, Stack, Text, Tooltip, UnstyledButton } from '@mantine/core'
 import {
   IconBuilding,
   IconChartPie3,
@@ -7,8 +8,6 @@ import {
   IconReceipt,
   IconTruckDelivery,
 } from '@tabler/icons-react'
-
-import { Box, Menu, Stack, Text, Tooltip, UnstyledButton } from '@mantine/core'
 import clsx from 'clsx'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -149,7 +148,7 @@ export default function Navbar({
     permissions.includes('read:approvals') || permissions.includes('read:workflows')
 
   // Build menu items - no useMemo needed as this needs to update when language changes
-  let menuItems = []
+  const menuItems = []
 
   const dashboardMenu = {
     label: t('navigation:dashboard'),
@@ -161,7 +160,7 @@ export default function Navbar({
   menuItems.push(dashboardMenu)
 
   if (canViewProducts || canViewStockAdjustments || canViewCategories) {
-    let inventorySublinks = []
+    const inventorySublinks = []
 
     if (canViewProducts) {
       inventorySublinks.push({
@@ -205,7 +204,7 @@ export default function Navbar({
 
   // Add Workflows section if user has approval permissions
   if (canViewApprovals) {
-    let workflowSublinks = []
+    const workflowSublinks = []
 
     workflowSublinks.push({
       label: t('navigation:approvals'),
@@ -240,7 +239,7 @@ export default function Navbar({
     canViewBills ||
     canViewPaymentsMade
   ) {
-    let purchasesSublinks = []
+    const purchasesSublinks = []
 
     if (canViewSuppliers) {
       purchasesSublinks.push({
@@ -297,7 +296,7 @@ export default function Navbar({
     canViewInvoices ||
     canViewPaymentsReceived
   ) {
-    let salesSublinks = []
+    const salesSublinks = []
 
     if (canViewCustomers) {
       salesSublinks.push({
@@ -365,7 +364,7 @@ export default function Navbar({
   }
 
   if (canViewSettings || canViewTeams || canViewRoles || canViewAgencies || canViewSites) {
-    let companySublinks = []
+    const companySublinks = []
 
     if (canViewPlans) {
       companySublinks.push({

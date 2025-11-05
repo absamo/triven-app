@@ -2,7 +2,7 @@ import { Table, Text } from '@mantine/core'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useNavigate } from 'react-router'
 
-import { type ISupplier } from '~/app/common/validations/supplierSchema'
+import type { ISupplier } from '~/app/common/validations/supplierSchema'
 import { Title } from '~/app/partials/Title'
 
 interface SuppliersProps {

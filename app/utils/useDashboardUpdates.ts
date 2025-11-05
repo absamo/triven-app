@@ -21,7 +21,7 @@ class DashboardStreamManager {
 
   connect(): void {
     this.connectionCount++
-    
+
     if (this.eventSource) {
       // Connection already exists, just notify this listener of current state
       this.connectionListeners.forEach((listener) => listener(this.isConnected))
@@ -130,7 +130,7 @@ export function useDashboardUpdates() {
 
   useEffect(() => {
     const manager = DashboardStreamManager.getInstance()
-    
+
     const handleUpdate = (event: DashboardUpdateEvent) => {
       setLastUpdate(event)
       // Trigger a refetch of dashboard data - use query params to get fresh data

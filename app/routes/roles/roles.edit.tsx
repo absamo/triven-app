@@ -1,15 +1,14 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunction,
-  type ActionFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
-import RolesForm from '~/app/pages/Roles/RolesForm'
-import { getRole, updateRole } from '~/app/services/roles.server'
 import type { IRole } from '~/app/common/validations/roleSchema'
 import { Notification } from '~/app/components'
+import RolesForm from '~/app/pages/Roles/RolesForm'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getRole, updateRole } from '~/app/services/roles.server'
 import type { Route } from './+types/roles.edit'
 
 export const loader: LoaderFunction = async ({ params, request }: LoaderFunctionArgs) => {

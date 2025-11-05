@@ -1,20 +1,19 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunction,
-  type ActionFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
-import SupplierForm from '~/app/pages/Suppliers/SupplierForm'
-import { getSupplier, updateSupplier } from '~/app/services/suppliers.server'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { ISupplier } from '~/app/common/validations/supplierSchema'
 import { Notification } from '~/app/components'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
-import { getCurrenciesByCompany } from '~/app/services/settings.server'
+import SupplierForm from '~/app/pages/Suppliers/SupplierForm'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getCurrenciesByCompany } from '~/app/services/settings.server'
+import { getSupplier, updateSupplier } from '~/app/services/suppliers.server'
 import type { Route } from './+types/suppliers.edit'
 
-export let handle = { hydrate: true }
+export const handle = { hydrate: true }
 
 export const loader: LoaderFunction = async ({ request, params }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

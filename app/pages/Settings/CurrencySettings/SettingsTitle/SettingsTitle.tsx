@@ -1,5 +1,6 @@
-import { Flex, Text, Button } from '@mantine/core'
+import { Button, Flex, Text } from '@mantine/core'
 import classes from './SettingsTitle.module.css'
+
 interface SettingsTitleProps {
   title?: string
   description?: string

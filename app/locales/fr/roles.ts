@@ -15,7 +15,7 @@ export const roles = {
   // Messages
   cannotEditDefaultRoles: 'Impossible de modifier les rôles par défaut',
   noDescription: 'Aucune description fournie',
-  noPermissionsWarning: 'Ce rôle n\'a aucune permission assignée',
+  noPermissionsWarning: "Ce rôle n'a aucune permission assignée",
   systemRole: 'Rôle système',
   builtInRole: 'Rôle intégré',
   customRole: 'Rôle personnalisé',
@@ -45,7 +45,8 @@ export const roles = {
   selectReportPermissions: 'Sélectionner les permissions pour les rapports et analyses',
 
   settings: 'Paramètres',
-  settingsDescription: "Configurer les plans, paramètres, rôles, membres de l'équipe, agences et sites",
+  settingsDescription:
+    "Configurer les plans, paramètres, rôles, membres de l'équipe, agences et sites",
   selectSettingsPermissions: 'Sélectionner les permissions pour les paramètres',
 
   // Permission types

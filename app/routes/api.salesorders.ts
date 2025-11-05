@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs } from 'react-router'
+import type { ActionFunctionArgs } from 'react-router'
 import { createBackorderFromSalesOrder } from '~/app/services/sales.server'
 
 export async function action({ request }: ActionFunctionArgs) {

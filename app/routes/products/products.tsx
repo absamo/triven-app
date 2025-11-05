@@ -1,4 +1,4 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import type { LoaderFunction, LoaderFunctionArgs } from 'react-router'
 import { USER_ROLES } from '~/app/common/constants'
 import type { IAgency } from '~/app/common/validations/agencySchema'
 import type { ICategory } from '~/app/common/validations/categorySchema'

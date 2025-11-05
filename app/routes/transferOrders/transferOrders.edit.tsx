@@ -1,8 +1,8 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
 
 import type { ISite } from '~/app/common/validations/siteSchema'

@@ -1,8 +1,8 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
 
 import {
@@ -10,19 +10,18 @@ import {
   PURCHASE_ORDER_STATUSES,
   USER_ROLES,
 } from '~/app/common/constants'
-import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
-import { Notification } from '~/app/components'
-import PurchaseOrdersForm from '~/app/pages/PurchaseOrders/PurchaseOrdersForm'
-import { getAgencies } from '~/app/services/agencies.server'
-import { getProducts, getProductsForAgency } from '~/app/services/products.server'
-import { createPurchaseOrder, getMaxPurchaseOrderNumber } from '~/app/services/purchases.server'
-import { getSuppliers } from '~/app/services/suppliers.server'
-
 import type { IAgency } from '~/app/common/validations/agencySchema'
 import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { IProduct } from '~/app/common/validations/productSchema'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
 import type { ISupplier } from '~/app/common/validations/supplierSchema'
+import { Notification } from '~/app/components'
+import PurchaseOrdersForm from '~/app/pages/PurchaseOrders/PurchaseOrdersForm'
+import { getAgencies } from '~/app/services/agencies.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getProducts, getProductsForAgency } from '~/app/services/products.server'
+import { createPurchaseOrder, getMaxPurchaseOrderNumber } from '~/app/services/purchases.server'
+import { getSuppliers } from '~/app/services/suppliers.server'
 import type { Route } from './+types/purchaseOrders.create'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {

@@ -1,18 +1,18 @@
 // Subscription email templates (internationalized)
-export { default as FreeTrialWelcome } from './free-trial-welcome'
-export { default as SubscriptionConfirmation } from './subscription-confirmation'
-export { default as PlanUpgrade } from './plan-upgrade'
-export { default as PaymentMethodUpdate } from './payment-method-update'
-export { default as PaymentFailed } from './payment-failed'
-export { default as PaymentSuccess } from './payment-success'
-export { default as TrialExpiring } from './trial-expiring'
-export { default as SubscriptionCancelled } from './subscription-cancelled'
 
-// Other email templates
-export { default as WelcomeEmail } from './welcome-email'
 export { default as DemoRequestEmail } from './demo-request'
 export { default as EmailOtpVerificationEmail } from './email-otp-verification'
+export { default as FreeTrialWelcome } from './free-trial-welcome'
 export { default as PasswordResetEmail } from './password-reset'
+export { default as PaymentFailed } from './payment-failed'
+export { default as PaymentMethodUpdate } from './payment-method-update'
+export { default as PaymentSuccess } from './payment-success'
+export { default as PlanUpgrade } from './plan-upgrade'
+export { default as SubscriptionCancelled } from './subscription-cancelled'
+export { default as SubscriptionConfirmation } from './subscription-confirmation'
+export { default as TrialExpiring } from './trial-expiring'
+// Other email templates
+export { default as WelcomeEmail } from './welcome-email'
 
 // Email template types for better TypeScript support
 export interface EmailTemplateProps {

@@ -54,7 +54,7 @@ export class ClientGeolocation {
   static async getUserLocation(): Promise<GeolocationData> {
     try {
       // Fall back to IP geolocation
-      const ipLocation = await this.getLocationFromIP()
+      const ipLocation = await ClientGeolocation.getLocationFromIP()
       if (ipLocation.country && ipLocation.city) {
         return ipLocation
       }

@@ -1,4 +1,4 @@
-import { type Currency, type Interval, type Plan } from '~/app/modules/stripe/plans'
+import type { Currency, Interval, Plan } from '~/app/modules/stripe/plans'
 
 interface PlanSelection {
   planId: Plan

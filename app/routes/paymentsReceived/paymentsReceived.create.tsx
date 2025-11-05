@@ -1,22 +1,22 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type ActionFunction,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
 
 import { PAYMENT_METHODS } from '~/app/common/constants'
-import { Notification } from '~/app/components'
-import { getCustomers } from '~/app/services/customers.server'
-import { createPaymentReceived, getMaxPaymentReceivedNumber } from '~/app/services/payments.server'
-import { type IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
-import PaymentsReceivedForm from '~/app/pages/PaymentsReceived/PaymentsReceivedForm'
-import { getInvoiceToPay } from '~/app/services/invoices.server'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/paymentsReceived.create'
 import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { ICustomer } from '~/app/common/validations/customerSchema'
 import type { IInvoice } from '~/app/common/validations/invoiceSchema'
+import type { IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
+import { Notification } from '~/app/components'
+import PaymentsReceivedForm from '~/app/pages/PaymentsReceived/PaymentsReceivedForm'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getCustomers } from '~/app/services/customers.server'
+import { getInvoiceToPay } from '~/app/services/invoices.server'
+import { createPaymentReceived, getMaxPaymentReceivedNumber } from '~/app/services/payments.server'
+import type { Route } from './+types/paymentsReceived.create'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
@@ -24,7 +24,7 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
 
   const paymentReceivedNumber = await getMaxPaymentReceivedNumber(request)
 
-  let paymentReceivedReference = paymentReceivedNumber
+  const paymentReceivedReference = paymentReceivedNumber
 
   const paymentReceived = {
     paymentReference: `PR-${paymentReceivedReference}`,

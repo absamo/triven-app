@@ -1,11 +1,11 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
 
-import { type ICategory } from '~/app/common/validations/categorySchema'
+import type { ICategory } from '~/app/common/validations/categorySchema'
 import { Notification } from '~/app/components'
 import CategoryForm from '~/app/pages/Categories/CategoryForm'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'

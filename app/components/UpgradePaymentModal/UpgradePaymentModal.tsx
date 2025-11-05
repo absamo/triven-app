@@ -147,6 +147,19 @@ export default function UpgradePaymentModal({
 
         const data = await response.json()
 
+        // Check if subscription requires new payment (expired/canceled)
+        if (data.requiresNewSubscription) {
+          setIsProcessingPayment(false)
+          // Force user to use new payment method for expired subscriptions
+          setSelectedPaymentMethod('new')
+          notifications.show({
+            title: t('payment:paymentRequired', 'Payment Required'),
+            message: data.message || 'Please enter payment details to continue.',
+            color: 'yellow',
+          })
+          return
+        }
+
         if (!response.ok) {
           throw new Error(data.error || 'Failed to upgrade subscription')
         }

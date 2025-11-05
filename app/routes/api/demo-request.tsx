@@ -1,5 +1,5 @@
 import { render } from '@react-email/components'
-import { type ActionFunctionArgs } from 'react-router'
+import type { ActionFunctionArgs } from 'react-router'
 
 import { demoRequestSchema } from '~/app/common/validations/demoRequestSchema'
 import DemoRequestEmail from '~/app/emails/demo-request'

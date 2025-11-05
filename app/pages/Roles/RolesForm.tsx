@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubmit } from 'react-router'
 
-import { roleSchema, type IRole } from '~/app/common/validations/roleSchema'
+import { type IRole, roleSchema } from '~/app/common/validations/roleSchema'
 import { Form } from '~/app/components'
 import { Title } from '~/app/partials/Title'
 import RolesPermission from './RolesPermission'
@@ -93,13 +93,21 @@ export default function RoleForm({ role, errors }: roleFormProps) {
                 onChange={toggleAll}
               />
             </Flex>
-            <Accordion variant="separated" multiple value={accordionValue} onChange={setAccordionValue}>
+            <Accordion
+              variant="separated"
+              multiple
+              value={accordionValue}
+              onChange={setAccordionValue}
+            >
               <Accordion.Item value="inventory">
                 <Accordion.Control>
                   <Box>
                     <Text fw={500}>{t('roles:inventories')}</Text>
                     <Text size="xs" c="dimmed">
-                      {t('roles:inventoryDescription', 'Manage products, stock adjustments, and categories')}
+                      {t(
+                        'roles:inventoryDescription',
+                        'Manage products, stock adjustments, and categories'
+                      )}
                     </Text>
                   </Box>
                 </Accordion.Control>
@@ -141,7 +149,10 @@ export default function RoleForm({ role, errors }: roleFormProps) {
                   <Box>
                     <Text fw={500}>{t('roles:workflows')}</Text>
                     <Text size="xs" c="dimmed">
-                      {t('roles:workflowsDescription', 'Manage approval workflows and view workflow history')}
+                      {t(
+                        'roles:workflowsDescription',
+                        'Manage approval workflows and view workflow history'
+                      )}
                     </Text>
                   </Box>
                 </Accordion.Control>
@@ -169,7 +180,10 @@ export default function RoleForm({ role, errors }: roleFormProps) {
                   <Box>
                     <Text fw={500}>{t('roles:purchases')}</Text>
                     <Text size="xs" c="dimmed">
-                      {t('roles:purchasesDescription', 'Control supplier relationships, orders, receiving, and payments')}
+                      {t(
+                        'roles:purchasesDescription',
+                        'Control supplier relationships, orders, receiving, and payments'
+                      )}
                     </Text>
                   </Box>
                 </Accordion.Control>
@@ -218,7 +232,10 @@ export default function RoleForm({ role, errors }: roleFormProps) {
                   <Box>
                     <Text fw={500}>{t('roles:sales')}</Text>
                     <Text size="xs" c="dimmed">
-                      {t('roles:salesDescription', 'Manage customer orders, invoicing, and payment collection')}
+                      {t(
+                        'roles:salesDescription',
+                        'Manage customer orders, invoicing, and payment collection'
+                      )}
                     </Text>
                   </Box>
                 </Accordion.Control>
@@ -267,7 +284,10 @@ export default function RoleForm({ role, errors }: roleFormProps) {
                   <Box>
                     <Text fw={500}>{t('roles:reports')}</Text>
                     <Text size="xs" c="dimmed">
-                      {t('roles:reportsDescription', 'Access analytics and business intelligence reports')}
+                      {t(
+                        'roles:reportsDescription',
+                        'Access analytics and business intelligence reports'
+                      )}
                     </Text>
                   </Box>
                 </Accordion.Control>
@@ -288,7 +308,10 @@ export default function RoleForm({ role, errors }: roleFormProps) {
                   <Box>
                     <Text fw={500}>{t('roles:settings')}</Text>
                     <Text size="xs" c="dimmed">
-                      {t('roles:settingsDescription', 'Configure plans, settings, roles, team members, agencies, and sites')}
+                      {t(
+                        'roles:settingsDescription',
+                        'Configure plans, settings, roles, team members, agencies, and sites'
+                      )}
                     </Text>
                   </Box>
                 </Accordion.Control>

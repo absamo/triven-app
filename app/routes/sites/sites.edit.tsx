@@ -1,15 +1,14 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunction,
-  type ActionFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
-import SitesForm from '~/app/pages/Sites/SitesForm'
-import { getSite, updateSite } from '~/app/services/sites.server'
-import { type ISite } from '~/app/common/validations/siteSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
 import { Notification } from '~/app/components'
+import SitesForm from '~/app/pages/Sites/SitesForm'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getSite, updateSite } from '~/app/services/sites.server'
 import type { Route } from './+types/sites.edit'
 
 export const loader: LoaderFunction = async ({ request, params }: LoaderFunctionArgs) => {

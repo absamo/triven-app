@@ -1,14 +1,13 @@
-import { type ActionFunction, type ActionFunctionArgs, type LoaderFunction } from 'react-router'
-import PaymentsReceivedPage from '~/app/pages/PaymentsReceived'
-import { Notification } from '~/app/components'
-import { getPaymentsReceived, updatePaymentReceivedStatus } from '~/app/services/payments.server'
-
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/paymentsReceived'
+import type { ActionFunction, ActionFunctionArgs, LoaderFunction } from 'react-router'
 import type { ICurrency } from '~/app/common/validations/currencySchema'
-import type { IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
-import { getInvoices } from '~/app/services/invoices.server'
 import type { IInvoice } from '~/app/common/validations/invoiceSchema'
+import type { IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
+import { Notification } from '~/app/components'
+import PaymentsReceivedPage from '~/app/pages/PaymentsReceived'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getInvoices } from '~/app/services/invoices.server'
+import { getPaymentsReceived, updatePaymentReceivedStatus } from '~/app/services/payments.server'
+import type { Route } from './+types/paymentsReceived'
 
 export const loader: LoaderFunction = async ({ request }) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

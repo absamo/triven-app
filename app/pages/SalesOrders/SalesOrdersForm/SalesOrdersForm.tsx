@@ -14,6 +14,7 @@ import {
 import { DateInput } from '@mantine/dates'
 
 import { useForm } from '@mantine/form'
+import { useDisclosure } from '@mantine/hooks'
 import { notifications } from '@mantine/notifications'
 import {
   IconEdit,
@@ -24,25 +25,22 @@ import {
   IconTruck,
 } from '@tabler/icons-react'
 import { zodResolver } from 'mantine-form-zod-resolver'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useFetcher, useSubmit } from 'react-router'
 import { PRODUCT_STATUSES, PURCHASE_ORDER_PAYMENT_TERMS } from '~/app/common/constants'
-import { type IAgency } from '~/app/common/validations/agencySchema'
-import { type IProduct } from '~/app/common/validations/productSchema'
-import { salesOrderSchema } from '~/app/common/validations/salesOrderSchema'
+import { formatMoney } from '~/app/common/helpers/money'
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import type { ICustomer } from '~/app/common/validations/customerSchema'
+import type { IProduct } from '~/app/common/validations/productSchema'
+import type { ISalesOrderItem } from '~/app/common/validations/salesOrderItemSchema'
+import { type ISalesOrder, salesOrderSchema } from '~/app/common/validations/salesOrderSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
 import { Form, TableActionsMenu } from '~/app/components'
 import { AgencySites } from '~/app/partials/AgencySites'
 import { SearchableSelect } from '~/app/partials/SearchableSelect'
 import { Title } from '~/app/partials/Title'
-
-import { useDisclosure } from '@mantine/hooks'
-import { useEffect, useState } from 'react'
-import { formatMoney } from '~/app/common/helpers/money'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
-import { type ICustomer } from '~/app/common/validations/customerSchema'
-import { type ISalesOrderItem } from '~/app/common/validations/salesOrderItemSchema'
-import { type ISalesOrder } from '~/app/common/validations/salesOrderSchema'
-import type { ISite } from '~/app/common/validations/siteSchema'
 import SalesOrderItemForm from './SalesOrderItemForm'
 import classes from './SalesOrdersForm.module.css'
 

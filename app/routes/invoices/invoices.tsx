@@ -1,13 +1,13 @@
-import { type ActionFunction, type ActionFunctionArgs, type LoaderFunction } from 'react-router'
-import InvoicesPage from '~/app/pages/Invoices'
-import { getInvoices, updateInvoiceStatus } from '~/app/services/invoices.server'
-import { Notification } from '~/app/components'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/invoices'
-import type { IInvoice } from '~/app/common/validations/invoiceSchema'
+import type { ActionFunction, ActionFunctionArgs, LoaderFunction } from 'react-router'
 import type { ICurrency } from '~/app/common/validations/currencySchema'
-import { getSalesOrders } from '~/app/services/sales.server'
+import type { IInvoice } from '~/app/common/validations/invoiceSchema'
 import type { ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import { Notification } from '~/app/components'
+import InvoicesPage from '~/app/pages/Invoices'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getInvoices, updateInvoiceStatus } from '~/app/services/invoices.server'
+import { getSalesOrders } from '~/app/services/sales.server'
+import type { Route } from './+types/invoices'
 
 export const loader: LoaderFunction = async ({ request }) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

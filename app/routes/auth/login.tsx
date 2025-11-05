@@ -9,13 +9,13 @@ export const loader: LoaderFunction = async ({ request }) => {
     const session = await auth.api.getSession({ headers: request.headers })
 
     if (session?.user) {
-      // Validate session hasn't expired by checking expiresAt if available
-      // Better Auth handles this internally, but we can add additional checks if needed
+      // User is already authenticated, redirect to dashboard
       return redirect('/dashboard')
     }
   } catch (error) {
     // Session validation failed, continue to login page
-    throw error
+    // This is expected for unauthenticated users, so don't throw
+    console.debug('No valid session found, showing login page')
   }
 
   return null

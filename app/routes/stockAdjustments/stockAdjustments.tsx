@@ -1,4 +1,4 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import type { LoaderFunction, LoaderFunctionArgs } from 'react-router'
 
 import type { ISite } from '~/app/common/validations/siteSchema'
 import type { IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'

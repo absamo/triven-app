@@ -1,20 +1,19 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunction,
-  type ActionFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
-import { updateAdjustment, getStockAdjustment } from '~/app/services/stockAdjustment.server'
-import { getSites } from '~/app/services/sites.server'
-import { type IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
-import StockAdjustmentForm from '~/app/pages/StockAdjustments/StockAdjustmentForm'
-import { getProducts } from '~/app/services/products.server'
-import { Notification } from '~/app/components'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/stockAdjustments.edit'
 import type { IProduct } from '~/app/common/validations/productSchema'
 import type { ISite } from '~/app/common/validations/siteSchema'
+import type { IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
+import { Notification } from '~/app/components'
+import StockAdjustmentForm from '~/app/pages/StockAdjustments/StockAdjustmentForm'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getProducts } from '~/app/services/products.server'
+import { getSites } from '~/app/services/sites.server'
+import { getStockAdjustment, updateAdjustment } from '~/app/services/stockAdjustment.server'
+import type { Route } from './+types/stockAdjustments.edit'
 
 export const loader: LoaderFunction = async ({ params, request }: LoaderFunctionArgs) => {
   await requireBetterAuthUser(request, ['update:stockAdjustments'])

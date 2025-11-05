@@ -9,16 +9,16 @@ import { ERRORS } from '~/app/common/errors'
 import { prisma } from '~/app/db.server'
 import { getPaymentMethodDetails } from '~/app/modules/stripe/queries.server'
 import { stripe } from '~/app/modules/stripe/stripe.server'
-import { broadcastSubscriptionUpdate } from './api.subscription-stream'
 import {
-  sendSubscriptionConfirmationEmail,
-  sendPaymentFailedEmail,
-  sendPaymentSuccessEmail,
-  sendPaymentMethodUpdateEmail,
-  getUserLocale,
-  formatDate,
   formatCurrency,
+  formatDate,
+  getUserLocale,
+  sendPaymentFailedEmail,
+  sendPaymentMethodUpdateEmail,
+  sendPaymentSuccessEmail,
+  sendSubscriptionConfirmationEmail,
 } from '~/app/services/email.server'
+import { broadcastSubscriptionUpdate } from './api.subscription-stream'
 
 export const ROUTE_PATH = '/api/webhook' as const
 
@@ -162,25 +162,37 @@ export async function action({ request }: ActionFunctionArgs) {
                 const user = await prisma.user.findUnique({
                   where: { stripeCustomerId: subscription.customer as string },
                 })
-                
+
                 const userSubscription = await prisma.subscription.findUnique({
                   where: { userId: user?.id },
                   include: { plan: true },
                 })
 
-                if (user && paymentMethodDetails && userSubscription && user.name && userSubscription.plan?.name) {
+                if (
+                  user &&
+                  paymentMethodDetails &&
+                  userSubscription &&
+                  user.name &&
+                  userSubscription.plan?.name
+                ) {
                   const locale = await getUserLocale(user.id)
-                  
+
                   await sendPaymentMethodUpdateEmail({
                     to: user.email,
                     locale,
                     name: user.name,
                     planName: userSubscription.plan.name,
-                    newPaymentMethod: paymentMethodDetails.brand.charAt(0).toUpperCase() + paymentMethodDetails.brand.slice(1),
+                    newPaymentMethod:
+                      paymentMethodDetails.brand.charAt(0).toUpperCase() +
+                      paymentMethodDetails.brand.slice(1),
                     lastFour: paymentMethodDetails.last4,
                     updateDate: formatDate(new Date(), locale),
                     nextBillingDate: formatDate((subscription as any).current_period_end, locale),
-                    amount: formatCurrency(((subscription as any).items.data[0].price.unit_amount || 0), (subscription as any).items.data[0].price.currency, locale),
+                    amount: formatCurrency(
+                      (subscription as any).items.data[0].price.unit_amount || 0,
+                      (subscription as any).items.data[0].price.currency,
+                      locale
+                    ),
                     billingUrl: `${process.env.BASE_URL}/billing`,
                     supportUrl: `${process.env.BASE_URL}/support`,
                   })
@@ -209,30 +221,74 @@ export async function action({ request }: ActionFunctionArgs) {
                 default_payment_method: paymentMethodId,
               })
             }
-            // If subscription is trialing and this is a trial_subscription type, end trial immediately
+            // If subscription is trialing and this is a trial_subscription type, upgrade and end trial immediately
             if (subscription.status === 'trialing' && metadata.type === 'trial_subscription') {
-              // End trial now by setting trial_end to 'now'
-              await stripe.subscriptions.update(metadata.subscriptionId, {
-                trial_end: 'now',
-              })
+              const newPriceId = metadata.priceId
+              const planId = metadata.planId
 
-              // Update database subscription status
-              const updatedSub = await stripe.subscriptions.retrieve(metadata.subscriptionId)
-              const subData = updatedSub as unknown as {
-                status: string
-                current_period_start: number
-                current_period_end: number
+              // Get the current subscription item ID
+              const currentItemId = subscription.items.data[0]?.id
+
+              if (newPriceId && currentItemId) {
+                // Update subscription: change price and end trial immediately
+                await stripe.subscriptions.update(metadata.subscriptionId, {
+                  items: [
+                    {
+                      id: currentItemId,
+                      price: newPriceId,
+                    },
+                  ],
+                  trial_end: 'now',
+                  proration_behavior: 'none', // No prorations since we're ending trial
+                })
+
+                // Get the updated subscription and new price details
+                const updatedSub = await stripe.subscriptions.retrieve(metadata.subscriptionId)
+                const subData = updatedSub as unknown as {
+                  status: string
+                  current_period_start: number
+                  current_period_end: number
+                }
+                const newPrice = await stripe.prices.retrieve(newPriceId)
+
+                // Update database with new subscription details
+                await prisma.subscription.update({
+                  where: { id: metadata.subscriptionId },
+                  data: {
+                    status: subData.status,
+                    planId,
+                    priceId: newPriceId,
+                    interval: newPrice.recurring?.interval || 'month',
+                    amount: newPrice.unit_amount || 0,
+                    currency: newPrice.currency,
+                    trialEnd: 0, // Clear trial end since it's no longer trialing
+                    currentPeriodStart: subData.current_period_start,
+                    currentPeriodEnd: subData.current_period_end,
+                  },
+                })
+              } else {
+                // Fallback: just end trial without price change if metadata is missing
+                await stripe.subscriptions.update(metadata.subscriptionId, {
+                  trial_end: 'now',
+                })
+
+                const updatedSub = await stripe.subscriptions.retrieve(metadata.subscriptionId)
+                const subData = updatedSub as unknown as {
+                  status: string
+                  current_period_start: number
+                  current_period_end: number
+                }
+
+                await prisma.subscription.update({
+                  where: { id: metadata.subscriptionId },
+                  data: {
+                    status: subData.status,
+                    trialEnd: 0,
+                    currentPeriodStart: subData.current_period_start,
+                    currentPeriodEnd: subData.current_period_end,
+                  },
+                })
               }
-
-              await prisma.subscription.update({
-                where: { id: metadata.subscriptionId },
-                data: {
-                  status: subData.status,
-                  trialEnd: 0, // Clear trial end since it's no longer trialing
-                  currentPeriodStart: subData.current_period_start,
-                  currentPeriodEnd: subData.current_period_end,
-                },
-              })
             }
           } catch (error) {
             console.error('❌ Failed to process SetupIntent:', error)
@@ -342,19 +398,19 @@ export async function action({ request }: ActionFunctionArgs) {
           try {
             const locale = await getUserLocale(user.id)
             const plan = await prisma.plan.findUnique({ where: { id: dbPlanId } })
-            
+
             if (user.name && plan?.name) {
               await sendPaymentSuccessEmail({
                 to: user.email,
                 locale,
                 name: user.name,
                 planName: plan.name,
-              amount: formatCurrency(invoice.amount_paid, invoice.currency, locale),
-              paymentDate: formatDate(new Date(), locale),
-              invoiceNumber: (invoice as any).number || invoice.id,
-              invoiceUrl: invoice.hosted_invoice_url || undefined,
-              billingUrl: `${process.env.BASE_URL}/billing`,
-            })
+                amount: formatCurrency(invoice.amount_paid, invoice.currency, locale),
+                paymentDate: formatDate(new Date(), locale),
+                invoiceNumber: (invoice as any).number || invoice.id,
+                invoiceUrl: invoice.hosted_invoice_url || undefined,
+                billingUrl: `${process.env.BASE_URL}/billing`,
+              })
             }
           } catch (emailError) {
             console.error('❌ Failed to send payment success email:', emailError)
@@ -409,7 +465,7 @@ export async function action({ request }: ActionFunctionArgs) {
             where: { id: subscriptionId },
             include: { plan: true },
           })
-          
+
           if (subscription && user.name && subscription.plan?.name) {
             await sendPaymentFailedEmail({
               to: user.email,
@@ -713,7 +769,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
         if (dbSubscription) {
           console.log(`🗑️ Canceling subscription for user ${user.id}, subscription ${id}`)
-          
+
           // Update status to canceled instead of deleting the record
           // This preserves subscription history and billing information
           await prisma.subscription.update({
@@ -740,7 +796,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
           // Send subscription cancelled email
           try {
-            const { handleSubscriptionCancellation } = await import('~/app/services/email-scheduler.server')
+            const { handleSubscriptionCancellation } = await import(
+              '~/app/services/email-scheduler.server'
+            )
             await handleSubscriptionCancellation(
               id,
               subscription.cancellation_details?.reason || 'Subscription cancelled'

@@ -1,4 +1,4 @@
-import { type LoaderFunction } from 'react-router'
+import type { LoaderFunction } from 'react-router'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import { getProducts } from '~/app/services/products.server'
 

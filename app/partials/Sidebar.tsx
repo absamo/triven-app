@@ -1,22 +1,22 @@
-import { useState } from 'react'
 import {
   // createStyles,
   Navbar,
-  UnstyledButton,
-  Tooltip,
   Title,
+  Tooltip,
+  UnstyledButton,
 } from '@mantine/core'
+import { MantineLogo } from '@mantine/ds'
 import {
-  IconHome2,
-  IconGauge,
+  IconCalendarStats,
   IconDeviceDesktopAnalytics,
   IconFingerprint,
-  IconCalendarStats,
-  IconUser,
-  IconSettings,
+  IconGauge,
+  IconHome2,
   IconLogout,
+  IconSettings,
+  IconUser,
 } from '@tabler/icons-react'
-import { MantineLogo } from '@mantine/ds'
+import { useState } from 'react'
 
 // const useStyles = createStyles((theme) => ({
 //   wrapper: {

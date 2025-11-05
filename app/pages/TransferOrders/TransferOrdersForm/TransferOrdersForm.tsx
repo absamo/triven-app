@@ -22,7 +22,7 @@ import type { IProduct } from '~/app/common/validations/productSchema'
 import type { ISite } from '~/app/common/validations/siteSchema'
 import type { ITransferOrderItem } from '~/app/common/validations/transferOrderItemSchema'
 
-import { type ITransferOrder } from '~/app/common/validations/transferOrderSchema'
+import type { ITransferOrder } from '~/app/common/validations/transferOrderSchema'
 
 import { Form } from '~/app/components'
 import { SearchableSelect } from '~/app/partials/SearchableSelect'

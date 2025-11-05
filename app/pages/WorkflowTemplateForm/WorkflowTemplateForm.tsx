@@ -40,9 +40,9 @@ import { useEffect, useState } from 'react'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import { useTranslation } from 'react-i18next'
 import { Link, useFetcher, useLoaderData, useNavigate, useRevalidator } from 'react-router'
-import {
-  type IWorkflowStep,
-  type IWorkflowTemplate,
+import type {
+  IWorkflowStep,
+  IWorkflowTemplate,
 } from '~/app/common/validations/workflowTemplateSchema'
 import ClientOnly from '~/app/components/ClientOnly'
 import Form from '~/app/components/Form'

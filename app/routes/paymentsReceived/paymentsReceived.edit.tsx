@@ -1,14 +1,14 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
 
 import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { ICustomer } from '~/app/common/validations/customerSchema'
 import type { IInvoice } from '~/app/common/validations/invoiceSchema'
-import { type IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
+import type { IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
 import { Notification } from '~/app/components'
 import PaymentsReceivedForm from '~/app/pages/PaymentsReceived/PaymentsReceivedForm'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'

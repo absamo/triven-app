@@ -1,17 +1,16 @@
-import {
-  type LoaderFunctionArgs,
-  type LoaderFunction,
-  type ActionFunction,
-  type ActionFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
+import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { ISupplier } from '~/app/common/validations/supplierSchema'
-import SupplierForm from '~/app/pages/Suppliers/SupplierForm'
-import { createSupplier } from '~/app/services/suppliers.server'
 import { Notification } from '~/app/components'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
-import { getCurrenciesByCompany } from '~/app/services/settings.server'
+import SupplierForm from '~/app/pages/Suppliers/SupplierForm'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getCurrenciesByCompany } from '~/app/services/settings.server'
+import { createSupplier } from '~/app/services/suppliers.server'
 import type { Route } from './+types/suppliers.create'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {

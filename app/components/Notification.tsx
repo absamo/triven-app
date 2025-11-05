@@ -1,6 +1,5 @@
-import { IconCheck, IconExclamationCircle } from '@tabler/icons-react'
-
 import { notifications, showNotification } from '@mantine/notifications'
+import { IconCheck, IconExclamationCircle } from '@tabler/icons-react'
 
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'

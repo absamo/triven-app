@@ -1,4 +1,4 @@
-import type { BetterAuthUser } from "~/app/services/better-auth.server";
+import type { BetterAuthUser } from '~/app/services/better-auth.server'
 
 /**
  * Check if a user has admin permissions
@@ -6,16 +6,16 @@ import type { BetterAuthUser } from "~/app/services/better-auth.server";
  */
 export function isAdmin(user: BetterAuthUser): boolean {
   if (!user.role) {
-    return false;
+    return false
   }
 
   // Check if role name is Admin (case-insensitive)
-  if (user.role.name.toLowerCase() === "admin") {
-    return true;
+  if (user.role.name.toLowerCase() === 'admin') {
+    return true
   }
 
   // Check if role has wildcard permission (admin)
-  return user.role.permissions.includes("*");
+  return user.role.permissions.includes('*')
 }
 
 /**
@@ -23,30 +23,30 @@ export function isAdmin(user: BetterAuthUser): boolean {
  */
 export function hasPermission(user: BetterAuthUser, permission: string): boolean {
   if (!user.role) {
-    return false;
+    return false
   }
 
   // Admin role has all permissions
-  if (user.role.name.toLowerCase() === "admin") {
-    return true;
+  if (user.role.name.toLowerCase() === 'admin') {
+    return true
   }
 
   // Check for wildcard permission
-  if (user.role.permissions.includes("*")) {
-    return true;
+  if (user.role.permissions.includes('*')) {
+    return true
   }
 
   // Check specific permission
-  return user.role.permissions.includes(permission);
+  return user.role.permissions.includes(permission)
 }
 
 /**
  * Authorization error for non-admin access
  */
 export class UnauthorizedError extends Error {
-  constructor(message = "Unauthorized: Admin access required") {
-    super(message);
-    this.name = "UnauthorizedError";
+  constructor(message = 'Unauthorized: Admin access required') {
+    super(message)
+    this.name = 'UnauthorizedError'
   }
 }
 
@@ -55,6 +55,6 @@ export class UnauthorizedError extends Error {
  */
 export function requireAdmin(user: BetterAuthUser): void {
   if (!isAdmin(user)) {
-    throw new UnauthorizedError();
+    throw new UnauthorizedError()
   }
 }

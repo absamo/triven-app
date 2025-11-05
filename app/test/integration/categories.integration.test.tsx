@@ -1,10 +1,9 @@
 import { vi } from 'vitest'
-import { categoryFixtures, permissionFixtures } from '../fixtures'
-import { createRoutesStub, render, renderWithRouterContext, screen, waitFor } from '../utils'
-
 // Import components
 import Categories from '../../pages/Categories/Categories'
 import CategoryForm from '../../pages/Categories/CategoryForm'
+import { categoryFixtures, permissionFixtures } from '../fixtures'
+import { createRoutesStub, render, renderWithRouterContext, screen, waitFor } from '../utils'
 
 describe('Categories Integration Tests', () => {
   beforeEach(() => {

@@ -6,7 +6,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, useLocation, useSubmit } from 'react-router'
 import { NOTIFICATION_STATUSES } from '~/app/common/constants'
-import { type INotification } from '~/app/common/validations/notificationSchema'
+import type { INotification } from '~/app/common/validations/notificationSchema'
 import classes from './Notification.module.css'
 
 const getNotificationTypes = (t: any) => [
@@ -83,7 +83,7 @@ export default function Notification({
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    let $form: HTMLFormElement = event.currentTarget
+    const $form: HTMLFormElement = event.currentTarget
     const formData = new FormData($form)
 
     const notificationsMarkedAsAllRead = notifications.map((notification: INotification) => {

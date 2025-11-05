@@ -258,6 +258,14 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
   const trialing = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.TRIALING
   const trialExpired = trialing && user.trialPeriodDays <= 0
+
+  console.log('🔍 [Layout Component] Trial check:', {
+    trialing,
+    trialPeriodDays: user.trialPeriodDays,
+    trialExpired,
+    subscriptionStatus: subscriptionStatus.status,
+  })
+
   const incompleteSubscription =
     subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE
   const cancelledSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.CANCELED

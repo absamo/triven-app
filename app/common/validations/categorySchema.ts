@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { getBoolean } from '~/app/common/helpers/validation'
 import { ATTRIBUTE_TYPES } from '~/app/common/constants'
+import { getBoolean } from '~/app/common/helpers/validation'
 
 export const categorySchema = z.object({
   id: z.string().optional(),

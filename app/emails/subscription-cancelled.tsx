@@ -41,73 +41,92 @@ export default function SubscriptionCancelledEmail({
   feedbackUrl = 'https://app.triven.com/feedback',
   locale = 'en',
 }: SubscriptionCancelledEmailProps) {
-  const t = locale === 'fr' ? {
-    preview: 'Abonnement annulé - Nous vous remercions d\'avoir utilisé Triven 😢',
-    title: 'Abonnement Annulé',
-    greeting: 'Bonjour {name},',
-    intro: 'Nous confirmons que votre abonnement {planName} a été annulé. Nous sommes désolés de vous voir partir et espérons avoir l\'opportunité de vous servir à nouveau dans le futur.',
-    cancellationDetails: '📅 Détails de l\'Annulation',
-    cancellationDate: 'Date d\'Annulation :',
-    accessUntil: 'Accès Jusqu\'à :',
-    reason: 'Raison :',
-    whatHappensNext: 'Que se passe-t-il maintenant ?',
-    currentAccess: '1. Accès Actuel',
-    currentAccessText: 'Vous conservez l\'accès complet à votre compte Triven jusqu\'à {endDate}. Toutes vos fonctionnalités restent actives jusqu\'alors.',
-    dataRetention: '2. Conservation des Données',
-    dataRetentionText: 'Vos données d\'inventaire, rapports et paramètres seront conservés en toute sécurité pendant 90 jours au cas où vous décideriez de revenir. Après cette période, les données seront supprimées définitivement.',
-    exportData: 'Exporter Vos Données',
-    dataExportText: 'Avant la fin de votre période d\'accès, nous vous recommandons d\'exporter vos données importantes :',
-    inventoryData: '• Données d\'inventaire et niveaux de stock',
-    orderHistory: '• Historique des commandes et transactions',
-    customerData: '• Informations sur les clients et fournisseurs',
-    reports: '• Rapports personnalisés et analyses',
-    settings: '• Paramètres et configurations',
-    downloadData: 'Télécharger Mes Données',
-    changeMind: 'Vous avez changé d\'avis ?',
-    changeMindText: 'Si vous avez annulé par erreur ou souhaitez donner une autre chance à Triven, vous pouvez facilement réactiver votre abonnement à tout moment avant {endDate}.',
-    reactivateSubscription: 'Réactiver l\'Abonnement',
-    weSadToSeeYouGo: 'Nous sommes désolés de vous voir partir',
-    sadToSeeYouGoText: 'Votre expérience est importante pour nous. Si vous avez quelques minutes, nous aimerions connaître les raisons de votre départ pour améliorer Triven pour les futurs utilisateurs.',
-    shareFeedback: 'Partager Mon Avis',
-    stayConnected: 'Restez Connecté',
-    stayConnectedText: 'Même si vous n\'utilisez plus Triven, nous aimerions rester en contact. Suivez-nous pour les mises à jour de produits, conseils sur la gestion d\'inventaire et nouvelles fonctionnalités.',
-    thankYou: 'Merci d\'avoir fait partie de la communauté Triven. Nous espérons vous revoir bientôt !',
-    bestRegards: 'Cordialement,',
-    teamName: 'L\'équipe Triven'
-  } : {
-    preview: 'Subscription cancelled - Thank you for using Triven 😢',
-    title: 'Subscription Cancelled',
-    greeting: 'Hi {name},',
-    intro: 'We confirm that your {planName} subscription has been cancelled. We\'re sorry to see you go and hope to have the opportunity to serve you again in the future.',
-    cancellationDetails: '📅 Cancellation Details',
-    cancellationDate: 'Cancellation Date:',
-    accessUntil: 'Access Until:',
-    reason: 'Reason:',
-    whatHappensNext: 'What happens next?',
-    currentAccess: '1. Current Access',
-    currentAccessText: 'You retain full access to your Triven account until {endDate}. All your features remain active until then.',
-    dataRetention: '2. Data Retention',
-    dataRetentionText: 'Your inventory data, reports, and settings will be safely stored for 90 days in case you decide to return. After this period, the data will be permanently deleted.',
-    exportData: 'Export Your Data',
-    dataExportText: 'Before your access period ends, we recommend exporting your important data:',
-    inventoryData: '• Inventory data and stock levels',
-    orderHistory: '• Order history and transactions',
-    customerData: '• Customer and supplier information',
-    reports: '• Custom reports and analytics',
-    settings: '• Settings and configurations',
-    downloadData: 'Download My Data',
-    changeMind: 'Changed your mind?',
-    changeMindText: 'If you cancelled by mistake or want to give Triven another try, you can easily reactivate your subscription anytime before {endDate}.',
-    reactivateSubscription: 'Reactivate Subscription',
-    weSadToSeeYouGo: 'We\'re sad to see you go',
-    sadToSeeYouGoText: 'Your experience matters to us. If you have a few minutes, we\'d love to know why you\'re leaving to help us improve Triven for future users.',
-    shareFeedback: 'Share My Feedback',
-    stayConnected: 'Stay Connected',
-    stayConnectedText: 'Even though you\'re no longer using Triven, we\'d love to stay in touch. Follow us for product updates, inventory management tips, and new features.',
-    thankYou: 'Thank you for being part of the Triven community. We hope to see you again soon!',
-    bestRegards: 'Best regards,',
-    teamName: 'The Triven Team'
-  }
+  const t =
+    locale === 'fr'
+      ? {
+          preview: "Abonnement annulé - Nous vous remercions d'avoir utilisé Triven 😢",
+          title: 'Abonnement Annulé',
+          greeting: 'Bonjour {name},',
+          intro:
+            "Nous confirmons que votre abonnement {planName} a été annulé. Nous sommes désolés de vous voir partir et espérons avoir l'opportunité de vous servir à nouveau dans le futur.",
+          cancellationDetails: "📅 Détails de l'Annulation",
+          cancellationDate: "Date d'Annulation :",
+          accessUntil: "Accès Jusqu'à :",
+          reason: 'Raison :',
+          whatHappensNext: 'Que se passe-t-il maintenant ?',
+          currentAccess: '1. Accès Actuel',
+          currentAccessText:
+            "Vous conservez l'accès complet à votre compte Triven jusqu'à {endDate}. Toutes vos fonctionnalités restent actives jusqu'alors.",
+          dataRetention: '2. Conservation des Données',
+          dataRetentionText:
+            "Vos données d'inventaire, rapports et paramètres seront conservés en toute sécurité pendant 90 jours au cas où vous décideriez de revenir. Après cette période, les données seront supprimées définitivement.",
+          exportData: 'Exporter Vos Données',
+          dataExportText:
+            "Avant la fin de votre période d'accès, nous vous recommandons d'exporter vos données importantes :",
+          inventoryData: "• Données d'inventaire et niveaux de stock",
+          orderHistory: '• Historique des commandes et transactions',
+          customerData: '• Informations sur les clients et fournisseurs',
+          reports: '• Rapports personnalisés et analyses',
+          settings: '• Paramètres et configurations',
+          downloadData: 'Télécharger Mes Données',
+          changeMind: "Vous avez changé d'avis ?",
+          changeMindText:
+            'Si vous avez annulé par erreur ou souhaitez donner une autre chance à Triven, vous pouvez facilement réactiver votre abonnement à tout moment avant {endDate}.',
+          reactivateSubscription: "Réactiver l'Abonnement",
+          weSadToSeeYouGo: 'Nous sommes désolés de vous voir partir',
+          sadToSeeYouGoText:
+            'Votre expérience est importante pour nous. Si vous avez quelques minutes, nous aimerions connaître les raisons de votre départ pour améliorer Triven pour les futurs utilisateurs.',
+          shareFeedback: 'Partager Mon Avis',
+          stayConnected: 'Restez Connecté',
+          stayConnectedText:
+            "Même si vous n'utilisez plus Triven, nous aimerions rester en contact. Suivez-nous pour les mises à jour de produits, conseils sur la gestion d'inventaire et nouvelles fonctionnalités.",
+          thankYou:
+            "Merci d'avoir fait partie de la communauté Triven. Nous espérons vous revoir bientôt !",
+          bestRegards: 'Cordialement,',
+          teamName: "L'équipe Triven",
+        }
+      : {
+          preview: 'Subscription cancelled - Thank you for using Triven 😢',
+          title: 'Subscription Cancelled',
+          greeting: 'Hi {name},',
+          intro:
+            "We confirm that your {planName} subscription has been cancelled. We're sorry to see you go and hope to have the opportunity to serve you again in the future.",
+          cancellationDetails: '📅 Cancellation Details',
+          cancellationDate: 'Cancellation Date:',
+          accessUntil: 'Access Until:',
+          reason: 'Reason:',
+          whatHappensNext: 'What happens next?',
+          currentAccess: '1. Current Access',
+          currentAccessText:
+            'You retain full access to your Triven account until {endDate}. All your features remain active until then.',
+          dataRetention: '2. Data Retention',
+          dataRetentionText:
+            'Your inventory data, reports, and settings will be safely stored for 90 days in case you decide to return. After this period, the data will be permanently deleted.',
+          exportData: 'Export Your Data',
+          dataExportText:
+            'Before your access period ends, we recommend exporting your important data:',
+          inventoryData: '• Inventory data and stock levels',
+          orderHistory: '• Order history and transactions',
+          customerData: '• Customer and supplier information',
+          reports: '• Custom reports and analytics',
+          settings: '• Settings and configurations',
+          downloadData: 'Download My Data',
+          changeMind: 'Changed your mind?',
+          changeMindText:
+            'If you cancelled by mistake or want to give Triven another try, you can easily reactivate your subscription anytime before {endDate}.',
+          reactivateSubscription: 'Reactivate Subscription',
+          weSadToSeeYouGo: "We're sad to see you go",
+          sadToSeeYouGoText:
+            "Your experience matters to us. If you have a few minutes, we'd love to know why you're leaving to help us improve Triven for future users.",
+          shareFeedback: 'Share My Feedback',
+          stayConnected: 'Stay Connected',
+          stayConnectedText:
+            "Even though you're no longer using Triven, we'd love to stay in touch. Follow us for product updates, inventory management tips, and new features.",
+          thankYou:
+            'Thank you for being part of the Triven community. We hope to see you again soon!',
+          bestRegards: 'Best regards,',
+          teamName: 'The Triven Team',
+        }
 
   return (
     <Html lang={locale}>
@@ -128,9 +147,7 @@ export default function SubscriptionCancelledEmail({
           <Section style={section}>
             <Text style={title}>{t.title}</Text>
             <Text style={text}>{interpolate(t.greeting, { name })}</Text>
-            <Text style={text}>
-              {interpolate(t.intro, { planName })}
-            </Text>
+            <Text style={text}>{interpolate(t.intro, { planName })}</Text>
 
             <Section style={cancellationBox}>
               <Text style={cancellationTitle}>{t.cancellationDetails}</Text>
@@ -152,25 +169,19 @@ export default function SubscriptionCancelledEmail({
             <Text style={text}>
               <strong>{t.currentAccess}</strong>
             </Text>
-            <Text style={text}>
-              {interpolate(t.currentAccessText, { endDate })}
-            </Text>
+            <Text style={text}>{interpolate(t.currentAccessText, { endDate })}</Text>
 
             <Text style={text}>
               <strong>{t.dataRetention}</strong>
             </Text>
-            <Text style={text}>
-              {t.dataRetentionText}
-            </Text>
+            <Text style={text}>{t.dataRetentionText}</Text>
 
             <Hr style={hr} />
 
             <Text style={text}>
               <strong>{t.exportData}</strong>
             </Text>
-            <Text style={text}>
-              {t.dataExportText}
-            </Text>
+            <Text style={text}>{t.dataExportText}</Text>
             <Text style={featureText}>{t.inventoryData}</Text>
             <Text style={featureText}>{t.orderHistory}</Text>
             <Text style={featureText}>{t.customerData}</Text>
@@ -188,9 +199,7 @@ export default function SubscriptionCancelledEmail({
             <Text style={text}>
               <strong>{t.changeMind}</strong>
             </Text>
-            <Text style={text}>
-              {interpolate(t.changeMindText, { endDate })}
-            </Text>
+            <Text style={text}>{interpolate(t.changeMindText, { endDate })}</Text>
 
             <Section style={buttonContainer}>
               <Button style={primaryButton} href={reactivateUrl}>
@@ -203,9 +212,7 @@ export default function SubscriptionCancelledEmail({
             <Text style={text}>
               <strong>{t.weSadToSeeYouGo}</strong>
             </Text>
-            <Text style={text}>
-              {t.sadToSeeYouGoText}
-            </Text>
+            <Text style={text}>{t.sadToSeeYouGoText}</Text>
 
             <Section style={buttonContainer}>
               <Button style={secondaryButton} href={feedbackUrl}>
@@ -216,16 +223,13 @@ export default function SubscriptionCancelledEmail({
             <Text style={text}>
               <strong>{t.stayConnected}</strong>
             </Text>
-            <Text style={text}>
-              {t.stayConnectedText}
-            </Text>
+            <Text style={text}>{t.stayConnectedText}</Text>
+
+            <Text style={footer}>{t.thankYou}</Text>
 
             <Text style={footer}>
-              {t.thankYou}
-            </Text>
-
-            <Text style={footer}>
-              {t.bestRegards}<br />
+              {t.bestRegards}
+              <br />
               {t.teamName}
             </Text>
           </Section>
@@ -237,7 +241,8 @@ export default function SubscriptionCancelledEmail({
 
 const main = {
   backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  fontFamily:
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 }
 
 const container = {

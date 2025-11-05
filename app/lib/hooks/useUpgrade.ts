@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
   CURRENCIES,
-  INTERVALS,
-  PLANS,
   type Currency,
+  INTERVALS,
   type Interval,
+  PLANS,
   type Plan,
 } from '~/app/modules/stripe/plans'
 

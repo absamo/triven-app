@@ -1,5 +1,5 @@
-import { useLoaderData, useResolvedPath, useRevalidator } from 'react-router'
 import { useEffect } from 'react'
+import { useLoaderData, useResolvedPath, useRevalidator } from 'react-router'
 import { useEventSource } from 'remix-utils/sse/react'
 
 export function useLiveLoader<T>() {

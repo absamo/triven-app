@@ -6,12 +6,12 @@ import {
   Container,
   Grid,
   Group,
+  Title as MantineTitle,
   Paper,
   Select,
   Stack,
   Text,
   ThemeIcon,
-  Title as MantineTitle,
   useMantineColorScheme,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
@@ -100,7 +100,11 @@ interface ApprovalRequest {
 export default function ApprovalsPage() {
   const { colorScheme } = useMantineColorScheme()
   const { t, i18n } = useTranslation(['approvals', 'common'])
-  const { approvalRequests, currentUser, permissions = [] } = useLoaderData<{
+  const {
+    approvalRequests,
+    currentUser,
+    permissions = [],
+  } = useLoaderData<{
     approvalRequests: ApprovalRequest[]
     currentUser: CurrentUser
     permissions: string[]
@@ -535,7 +539,10 @@ export default function ApprovalsPage() {
               padding="lg"
               radius="md"
               style={{
-                backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? 'var(--mantine-color-dark-6)'
+                    : 'var(--mantine-color-gray-0)',
                 height: '140px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -567,7 +574,10 @@ export default function ApprovalsPage() {
               padding="lg"
               radius="md"
               style={{
-                backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? 'var(--mantine-color-dark-6)'
+                    : 'var(--mantine-color-gray-0)',
                 height: '140px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -602,7 +612,10 @@ export default function ApprovalsPage() {
               padding="lg"
               radius="md"
               style={{
-                backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? 'var(--mantine-color-dark-6)'
+                    : 'var(--mantine-color-gray-0)',
                 height: '140px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -637,7 +650,10 @@ export default function ApprovalsPage() {
               padding="lg"
               radius="md"
               style={{
-                backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? 'var(--mantine-color-dark-6)'
+                    : 'var(--mantine-color-gray-0)',
                 height: '140px',
                 display: 'flex',
                 flexDirection: 'column',

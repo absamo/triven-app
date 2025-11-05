@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type LoaderFunction } from 'react-router'
+import type { LoaderFunction, LoaderFunctionArgs } from 'react-router'
 
 import { getFilteredBills } from '~/app/services/bills.server'
 

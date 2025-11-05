@@ -39,67 +39,78 @@ export default function TrialExpiringEmail({
   dashboardUrl = 'https://app.triven.com/dashboard',
   locale = 'en',
 }: TrialExpiringEmailProps) {
-  const t = locale === 'fr' ? {
-    preview: 'Votre essai Triven expire {expirationDate} - Ne perdez pas l\'accès ! ⏰',
-    title: 'Votre essai expire {expirationDate} !',
-    greeting: 'Bonjour {name},',
-    intro: 'Votre essai gratuit Triven touche à sa fin. Il vous reste {daysLeft} jours pour continuer à profiter de toutes les fonctionnalités puissantes de gestion d\'inventaire que vous avez utilisées.',
-    trialStatus: '⏰ Statut de l\'Essai',
-    daysRemaining: 'Jours Restants :',
-    expirationDate: 'Date d\'Expiration :',
-    recommendedPlan: 'Plan Recommandé :',
-    upgradeNow: 'Mettre à Niveau Maintenant - {planPrice}/mois',
-    dontLoseAccess: 'Ne perdez pas l\'accès à :',
-    inventoryData: '✓ Toutes vos données d\'inventaire et produits',
-    analytics: '✓ Analyses et insights avancés',
-    reorderNotifications: '✓ Notifications de réapprovisionnement automatisées',
-    multiLocation: '✓ Gestion multi-emplacements',
-    customReports: '✓ Rapports personnalisés et intégrations',
-    prioritySupport: '✓ Support client prioritaire',
-    trialUsage: '📊 Utilisation de Votre Essai',
-    usageText: 'Pendant votre essai, vous avez expérimenté la puissance de la gestion d\'inventaire professionnelle. Voici ce que signifie la mise à niveau :',
-    keepData: '• Conservez toutes vos données et paramètres',
-    unlimitedTracking: '• Débloquez le suivi d\'inventaire illimité',
-    advancedFeatures: '• Accédez aux fonctionnalités avancées et intégrations',
-    getPrioritySupport: '• Obtenez un support prioritaire',
-    whatIfDontUpgrade: 'Que se passe-t-il si je ne fais pas la mise à niveau ?',
-    suspensionText: 'Après l\'expiration de votre essai, votre compte sera temporairement suspendu. Vous perdrez l\'accès à votre tableau de bord et à vos données jusqu\'à ce que vous passiez à un plan payant. Ne vous inquiétez pas - vos données sont en sécurité et seront restaurées lorsque vous ferez la mise à niveau.',
-    choosePlan: 'Choisir Votre Plan',
-    viewDashboard: 'Voir le Tableau de Bord',
-    supportText: 'Des questions sur la mise à niveau ? Notre équipe est là pour vous aider à choisir le bon plan pour votre entreprise.',
-    bestRegards: 'Cordialement,',
-    teamName: 'L\'équipe Triven'
-  } : {
-    preview: 'Your Triven trial expires {expirationDate} - Don\'t lose access! ⏰',
-    title: 'Your trial expires {expirationDate}!',
-    greeting: 'Hi {name},',
-    intro: 'Your Triven free trial is coming to an end. You have {daysLeft} days left to continue enjoying all the powerful inventory management features you\'ve been using.',
-    trialStatus: '⏰ Trial Status',
-    daysRemaining: 'Days Remaining:',
-    expirationDate: 'Expiration Date:',
-    recommendedPlan: 'Recommended Plan:',
-    upgradeNow: 'Upgrade Now - {planPrice}/month',
-    dontLoseAccess: 'Don\'t lose access to:',
-    inventoryData: '✓ All your inventory data and products',
-    analytics: '✓ Advanced analytics and insights',
-    reorderNotifications: '✓ Automated reorder notifications',
-    multiLocation: '✓ Multi-location management',
-    customReports: '✓ Custom reports and integrations',
-    prioritySupport: '✓ Priority customer support',
-    trialUsage: '📊 Your Trial Usage',
-    usageText: 'During your trial, you\'ve experienced the power of professional inventory management. Here\'s what upgrading means:',
-    keepData: '• Keep all your data and settings',
-    unlimitedTracking: '• Unlock unlimited inventory tracking',
-    advancedFeatures: '• Access advanced features and integrations',
-    getPrioritySupport: '• Get priority support',
-    whatIfDontUpgrade: 'What happens if I don\'t upgrade?',
-    suspensionText: 'After your trial expires, your account will be temporarily suspended. You\'ll lose access to your dashboard and data until you upgrade to a paid plan. Don\'t worry - your data is safe and will be restored when you upgrade.',
-    choosePlan: 'Choose Your Plan',
-    viewDashboard: 'View Dashboard',
-    supportText: 'Questions about upgrading? Our team is here to help you choose the right plan for your business.',
-    bestRegards: 'Best regards,',
-    teamName: 'The Triven Team'
-  }
+  const t =
+    locale === 'fr'
+      ? {
+          preview: "Votre essai Triven expire {expirationDate} - Ne perdez pas l'accès ! ⏰",
+          title: 'Votre essai expire {expirationDate} !',
+          greeting: 'Bonjour {name},',
+          intro:
+            "Votre essai gratuit Triven touche à sa fin. Il vous reste {daysLeft} jours pour continuer à profiter de toutes les fonctionnalités puissantes de gestion d'inventaire que vous avez utilisées.",
+          trialStatus: "⏰ Statut de l'Essai",
+          daysRemaining: 'Jours Restants :',
+          expirationDate: "Date d'Expiration :",
+          recommendedPlan: 'Plan Recommandé :',
+          upgradeNow: 'Mettre à Niveau Maintenant - {planPrice}/mois',
+          dontLoseAccess: "Ne perdez pas l'accès à :",
+          inventoryData: "✓ Toutes vos données d'inventaire et produits",
+          analytics: '✓ Analyses et insights avancés',
+          reorderNotifications: '✓ Notifications de réapprovisionnement automatisées',
+          multiLocation: '✓ Gestion multi-emplacements',
+          customReports: '✓ Rapports personnalisés et intégrations',
+          prioritySupport: '✓ Support client prioritaire',
+          trialUsage: '📊 Utilisation de Votre Essai',
+          usageText:
+            "Pendant votre essai, vous avez expérimenté la puissance de la gestion d'inventaire professionnelle. Voici ce que signifie la mise à niveau :",
+          keepData: '• Conservez toutes vos données et paramètres',
+          unlimitedTracking: "• Débloquez le suivi d'inventaire illimité",
+          advancedFeatures: '• Accédez aux fonctionnalités avancées et intégrations',
+          getPrioritySupport: '• Obtenez un support prioritaire',
+          whatIfDontUpgrade: 'Que se passe-t-il si je ne fais pas la mise à niveau ?',
+          suspensionText:
+            "Après l'expiration de votre essai, votre compte sera temporairement suspendu. Vous perdrez l'accès à votre tableau de bord et à vos données jusqu'à ce que vous passiez à un plan payant. Ne vous inquiétez pas - vos données sont en sécurité et seront restaurées lorsque vous ferez la mise à niveau.",
+          choosePlan: 'Choisir Votre Plan',
+          viewDashboard: 'Voir le Tableau de Bord',
+          supportText:
+            'Des questions sur la mise à niveau ? Notre équipe est là pour vous aider à choisir le bon plan pour votre entreprise.',
+          bestRegards: 'Cordialement,',
+          teamName: "L'équipe Triven",
+        }
+      : {
+          preview: "Your Triven trial expires {expirationDate} - Don't lose access! ⏰",
+          title: 'Your trial expires {expirationDate}!',
+          greeting: 'Hi {name},',
+          intro:
+            "Your Triven free trial is coming to an end. You have {daysLeft} days left to continue enjoying all the powerful inventory management features you've been using.",
+          trialStatus: '⏰ Trial Status',
+          daysRemaining: 'Days Remaining:',
+          expirationDate: 'Expiration Date:',
+          recommendedPlan: 'Recommended Plan:',
+          upgradeNow: 'Upgrade Now - {planPrice}/month',
+          dontLoseAccess: "Don't lose access to:",
+          inventoryData: '✓ All your inventory data and products',
+          analytics: '✓ Advanced analytics and insights',
+          reorderNotifications: '✓ Automated reorder notifications',
+          multiLocation: '✓ Multi-location management',
+          customReports: '✓ Custom reports and integrations',
+          prioritySupport: '✓ Priority customer support',
+          trialUsage: '📊 Your Trial Usage',
+          usageText:
+            "During your trial, you've experienced the power of professional inventory management. Here's what upgrading means:",
+          keepData: '• Keep all your data and settings',
+          unlimitedTracking: '• Unlock unlimited inventory tracking',
+          advancedFeatures: '• Access advanced features and integrations',
+          getPrioritySupport: '• Get priority support',
+          whatIfDontUpgrade: "What happens if I don't upgrade?",
+          suspensionText:
+            "After your trial expires, your account will be temporarily suspended. You'll lose access to your dashboard and data until you upgrade to a paid plan. Don't worry - your data is safe and will be restored when you upgrade.",
+          choosePlan: 'Choose Your Plan',
+          viewDashboard: 'View Dashboard',
+          supportText:
+            'Questions about upgrading? Our team is here to help you choose the right plan for your business.',
+          bestRegards: 'Best regards,',
+          teamName: 'The Triven Team',
+        }
 
   return (
     <Html lang={locale}>
@@ -120,14 +131,15 @@ export default function TrialExpiringEmail({
           <Section style={section}>
             <Text style={title}>{interpolate(t.title, { expirationDate })}</Text>
             <Text style={text}>{interpolate(t.greeting, { name })}</Text>
-            <Text style={text}>
-              {interpolate(t.intro, { daysLeft: String(daysLeft) })}
-            </Text>
+            <Text style={text}>{interpolate(t.intro, { daysLeft: String(daysLeft) })}</Text>
 
             <Section style={expirationBox}>
               <Text style={expirationTitle}>{t.trialStatus}</Text>
               <Text style={detailRow}>
-                <strong>{t.daysRemaining}</strong> <span style={urgentText}>{daysLeft} {locale === 'fr' ? 'jours' : 'days'}</span>
+                <strong>{t.daysRemaining}</strong>{' '}
+                <span style={urgentText}>
+                  {daysLeft} {locale === 'fr' ? 'jours' : 'days'}
+                </span>
               </Text>
               <Text style={detailRow}>
                 <strong>{t.expirationDate}</strong> {expirationDate}
@@ -155,9 +167,7 @@ export default function TrialExpiringEmail({
 
             <Section style={statsBox}>
               <Text style={statsTitle}>{t.trialUsage}</Text>
-              <Text style={text}>
-                {t.usageText}
-              </Text>
+              <Text style={text}>{t.usageText}</Text>
               <Text style={statsText}>{t.keepData}</Text>
               <Text style={statsText}>{t.unlimitedTracking}</Text>
               <Text style={statsText}>{t.advancedFeatures}</Text>
@@ -169,9 +179,7 @@ export default function TrialExpiringEmail({
             <Text style={text}>
               <strong>{t.whatIfDontUpgrade}</strong>
             </Text>
-            <Text style={text}>
-              {t.suspensionText}
-            </Text>
+            <Text style={text}>{t.suspensionText}</Text>
 
             <Section style={buttonContainer}>
               <Button style={button} href={upgradeUrl}>
@@ -182,12 +190,11 @@ export default function TrialExpiringEmail({
               </Button>
             </Section>
 
-            <Text style={footer}>
-              {t.supportText}
-            </Text>
+            <Text style={footer}>{t.supportText}</Text>
 
             <Text style={footer}>
-              {t.bestRegards}<br />
+              {t.bestRegards}
+              <br />
               {t.teamName}
             </Text>
           </Section>
@@ -199,7 +206,8 @@ export default function TrialExpiringEmail({
 
 const main = {
   backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  fontFamily:
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 }
 
 const container = {

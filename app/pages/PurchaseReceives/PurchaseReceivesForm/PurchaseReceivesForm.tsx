@@ -2,21 +2,20 @@ import { ActionIcon, Alert, Badge, Grid, Loader, Table, Text, TextInput } from '
 import { DateInput } from '@mantine/dates'
 
 import { useForm } from '@mantine/form'
-import { zodResolver } from 'mantine-form-zod-resolver'
-import { useTranslation } from 'react-i18next'
-import { useFetcher, useSubmit } from 'react-router'
-
 import { useDisclosure } from '@mantine/hooks'
 import { IconEdit, IconExclamationCircle } from '@tabler/icons-react'
+import { zodResolver } from 'mantine-form-zod-resolver'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useFetcher, useSubmit } from 'react-router'
 import { PURCHASE_ORDER_STATUSES } from '~/app/common/constants'
 import { getPurchaseOrderItemsStatusLabel } from '~/app/common/helpers/purchase'
 import type { IPurchaseOrderItem } from '~/app/common/validations/purchaseOrderItemSchema'
-import { type IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
-import { type IPurchaseReceiveItem } from '~/app/common/validations/purchaseReceiveItemSchema'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import type { IPurchaseReceiveItem } from '~/app/common/validations/purchaseReceiveItemSchema'
 import {
-  purchaseReceiveSchema,
   type IPurchaseReceive,
+  purchaseReceiveSchema,
 } from '~/app/common/validations/purchaseReceiveSchema'
 import { Form } from '~/app/components'
 import { SearchableSelect } from '~/app/partials/SearchableSelect'
@@ -55,13 +54,13 @@ export default function PurchaseReceivesForm({
     },
   })
 
-  let fetcher = useFetcher()
+  const fetcher = useFetcher()
 
   type FetcherData = {
     purchaseOrder: IPurchaseOrder
   }
 
-  let data = fetcher.data as FetcherData
+  const data = fetcher.data as FetcherData
 
   useEffect(() => {
     if (data) {

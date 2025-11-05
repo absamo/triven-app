@@ -14,15 +14,47 @@ Triven App is an AI-powered inventory management platform built with:
 
 When working on this project, you have access to these Spec Kit commands:
 
-### `/specify [feature description]`
+### Core Workflow Commands
+
+#### `/speckit.constitution [principle description]`
+Establishes or updates project constitutional principles.
+Example: `/speckit.constitution Establish principles for scalable inventory management`
+
+#### `/speckit.specify [feature description]`
 Creates a new feature specification and Git branch from natural language description.
-Example: `/specify Add inventory low-stock alerts with email notifications`
+Example: `/speckit.specify Add inventory low-stock alerts with email notifications`
 
-### `/plan [implementation details]`
+#### `/speckit.clarify`
+Asks structured questions to de-risk ambiguous areas in the specification.
+Use this before `/speckit.plan` to ensure specification completeness.
+
+#### `/speckit.plan [implementation details]`
 Generates detailed implementation plan with technical design, API contracts, and database schemas.
-Example: `/plan Use WebSocket for real-time alerts, PostgreSQL for thresholds, Resend for emails`
+Example: `/speckit.plan Use WebSocket for real-time alerts, PostgreSQL for thresholds, Resend for emails`
 
-### `/tasks`
+#### `/speckit.checklist`
+Generates quality checklists to validate requirements completeness, clarity, and consistency.
+Use this after `/speckit.plan` to ensure quality.
+
+#### `/speckit.tasks`
+Breaks down the implementation plan into executable, ordered development tasks.
+
+#### `/speckit.analyze`
+Performs cross-artifact consistency and alignment report.
+Use this after `/speckit.tasks`, before `/speckit.implement`.
+
+#### `/speckit.implement`
+Executes the generated tasks following TDD principles and constitutional guidelines.
+
+### Legacy Commands (Still Supported)
+
+#### `/specify [feature description]`
+Creates a new feature specification and Git branch from natural language description.
+
+#### `/plan [implementation details]`
+Generates detailed implementation plan with technical design, API contracts, and database schemas.
+
+#### `/tasks`
 Breaks down the implementation plan into executable, ordered development tasks.
 
 ## Constitutional Compliance
@@ -145,3 +177,10 @@ Reference these environment variables as needed:
 6. Add proper documentation and comments
 
 Remember: This is an inventory management platform focused on real-time updates, data integrity, and AI-enhanced capabilities. All features should support the core business operations of tracking inventory, managing orders, and serving customers efficiently.
+
+## Active Technologies
+- TypeScript 5.8+, Node.js 20+, Bun runtime (001-mastra-assistant-tools)
+- PostgreSQL (existing Prisma schema with Product, Category, Order, Supplier, PurchaseOrder entities) (001-mastra-assistant-tools)
+
+## Recent Changes
+- 001-mastra-assistant-tools: Added TypeScript 5.8+, Node.js 20+, Bun runtime

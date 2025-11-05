@@ -1,21 +1,20 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunction,
-  type ActionFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
-import TeamsForm from '~/app/pages/Teams/TeamsForm'
-import { getTeamMember, updateTeamMember } from '~/app/services/teams.server'
-import type { ITeam } from '~/app/common/validations/teamSchema'
-import { getAgencies } from '~/app/services/agencies.server'
-import { getRoles } from '~/app/services/roles.server'
-import { Notification } from '~/app/components'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/teams.edit'
 import type { IAgency } from '~/app/common/validations/agencySchema'
 import type { IRole } from '~/app/common/validations/roleSchema'
 import type { ISite } from '~/app/common/validations/siteSchema'
+import type { ITeam } from '~/app/common/validations/teamSchema'
+import { Notification } from '~/app/components'
+import TeamsForm from '~/app/pages/Teams/TeamsForm'
+import { getAgencies } from '~/app/services/agencies.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getRoles } from '~/app/services/roles.server'
+import { getTeamMember, updateTeamMember } from '~/app/services/teams.server'
+import type { Route } from './+types/teams.edit'
 
 export const loader: LoaderFunction = async ({ request, params }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

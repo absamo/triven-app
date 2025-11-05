@@ -33,53 +33,63 @@ export default function FreeTrialWelcomeEmail({
   planUpgradeUrl = 'https://app.triven.com/billing',
   locale = 'en',
 }: FreeTrialWelcomeEmailProps) {
-  const t = locale === 'fr' ? {
-    preview: 'Bienvenue à votre essai gratuit Triven ! Commencez à explorer dès aujourd\'hui 🚀',
-    title: 'Bienvenue à votre essai gratuit !',
-    greeting: 'Bonjour {name},',
-    intro: 'Félicitations ! Vous avez démarré avec succès votre essai gratuit Triven. Vous avez maintenant un accès complet à notre plateforme puissante de gestion d\'inventaire pour les prochains {trialEndDate}.',
-    trialIncludes: '🎉 Votre essai gratuit inclut :',
-    inventoryTracking: '✓ Suivi complet de l\'inventaire',
-    analytics: '✓ Tableau de bord analytique en temps réel',
-    orderManagement: '✓ Gestion des commandes',
-    supplierManagement: '✓ Gestion des fournisseurs',
-    multiLocation: '✓ Support multi-emplacements',
-    support: '✓ Support client',
-    startManaging: 'Commencer la Gestion d\'Inventaire',
-    quickStart: 'Guide de démarrage rapide :',
-    step1: '1. Ajoutez vos premiers produits à l\'inventaire',
-    step2: '2. Configurez vos fournisseurs et emplacements',
-    step3: '3. Créez votre première commande d\'achat',
-    step4: '4. Explorez les analyses en temps réel',
-    trialExpiry: 'Votre essai expirera le {trialEndDate}. Pour continuer à utiliser Triven sans interruption, vous pouvez passer à un plan payant à tout moment.',
-    viewPricing: 'Voir les Plans Tarifaires',
-    supportText: 'Besoin d\'aide pour commencer ? Notre équipe de support est là pour vous aider à tirer le meilleur parti de votre essai.',
-    bestRegards: 'Cordialement,',
-    teamName: 'L\'équipe Triven'
-  } : {
-    preview: 'Welcome to your Triven free trial! Start exploring today 🚀',
-    title: 'Welcome to your free trial!',
-    greeting: 'Hi {name},',
-    intro: 'Congratulations! You\'ve successfully started your Triven free trial. You now have full access to our powerful inventory management platform for the next {trialEndDate}.',
-    trialIncludes: '🎉 Your free trial includes:',
-    inventoryTracking: '✓ Complete inventory tracking',
-    analytics: '✓ Real-time analytics dashboard',
-    orderManagement: '✓ Order management',
-    supplierManagement: '✓ Supplier management',
-    multiLocation: '✓ Multi-location support',
-    support: '✓ Customer support',
-    startManaging: 'Start Managing Inventory',
-    quickStart: 'Quick start guide:',
-    step1: '1. Add your first products to the inventory',
-    step2: '2. Set up your suppliers and locations',
-    step3: '3. Create your first purchase order',
-    step4: '4. Explore the real-time analytics',
-    trialExpiry: 'Your trial will expire on {trialEndDate}. To continue using Triven without interruption, you can upgrade to a paid plan at any time.',
-    viewPricing: 'View Pricing Plans',
-    supportText: 'Need help getting started? Our support team is here to help you make the most of your trial.',
-    bestRegards: 'Best regards,',
-    teamName: 'The Triven Team'
-  }
+  const t =
+    locale === 'fr'
+      ? {
+          preview:
+            "Bienvenue à votre essai gratuit Triven ! Commencez à explorer dès aujourd'hui 🚀",
+          title: 'Bienvenue à votre essai gratuit !',
+          greeting: 'Bonjour {name},',
+          intro:
+            "Félicitations ! Vous avez démarré avec succès votre essai gratuit Triven. Vous avez maintenant un accès complet à notre plateforme puissante de gestion d'inventaire pour les prochains {trialEndDate}.",
+          trialIncludes: '🎉 Votre essai gratuit inclut :',
+          inventoryTracking: "✓ Suivi complet de l'inventaire",
+          analytics: '✓ Tableau de bord analytique en temps réel',
+          orderManagement: '✓ Gestion des commandes',
+          supplierManagement: '✓ Gestion des fournisseurs',
+          multiLocation: '✓ Support multi-emplacements',
+          support: '✓ Support client',
+          startManaging: "Commencer la Gestion d'Inventaire",
+          quickStart: 'Guide de démarrage rapide :',
+          step1: "1. Ajoutez vos premiers produits à l'inventaire",
+          step2: '2. Configurez vos fournisseurs et emplacements',
+          step3: "3. Créez votre première commande d'achat",
+          step4: '4. Explorez les analyses en temps réel',
+          trialExpiry:
+            'Votre essai expirera le {trialEndDate}. Pour continuer à utiliser Triven sans interruption, vous pouvez passer à un plan payant à tout moment.',
+          viewPricing: 'Voir les Plans Tarifaires',
+          supportText:
+            "Besoin d'aide pour commencer ? Notre équipe de support est là pour vous aider à tirer le meilleur parti de votre essai.",
+          bestRegards: 'Cordialement,',
+          teamName: "L'équipe Triven",
+        }
+      : {
+          preview: 'Welcome to your Triven free trial! Start exploring today 🚀',
+          title: 'Welcome to your free trial!',
+          greeting: 'Hi {name},',
+          intro:
+            "Congratulations! You've successfully started your Triven free trial. You now have full access to our powerful inventory management platform for the next {trialEndDate}.",
+          trialIncludes: '🎉 Your free trial includes:',
+          inventoryTracking: '✓ Complete inventory tracking',
+          analytics: '✓ Real-time analytics dashboard',
+          orderManagement: '✓ Order management',
+          supplierManagement: '✓ Supplier management',
+          multiLocation: '✓ Multi-location support',
+          support: '✓ Customer support',
+          startManaging: 'Start Managing Inventory',
+          quickStart: 'Quick start guide:',
+          step1: '1. Add your first products to the inventory',
+          step2: '2. Set up your suppliers and locations',
+          step3: '3. Create your first purchase order',
+          step4: '4. Explore the real-time analytics',
+          trialExpiry:
+            'Your trial will expire on {trialEndDate}. To continue using Triven without interruption, you can upgrade to a paid plan at any time.',
+          viewPricing: 'View Pricing Plans',
+          supportText:
+            'Need help getting started? Our support team is here to help you make the most of your trial.',
+          bestRegards: 'Best regards,',
+          teamName: 'The Triven Team',
+        }
 
   return (
     <Html lang={locale}>
@@ -100,14 +110,10 @@ export default function FreeTrialWelcomeEmail({
           <Section style={section}>
             <Text style={title}>{t.title}</Text>
             <Text style={text}>{interpolate(t.greeting, { name })}</Text>
-            <Text style={text}>
-              {interpolate(t.intro, { trialEndDate })}
-            </Text>
+            <Text style={text}>{interpolate(t.intro, { trialEndDate })}</Text>
 
             <Section style={trialBanner}>
-              <Text style={trialText}>
-                {t.trialIncludes}
-              </Text>
+              <Text style={trialText}>{t.trialIncludes}</Text>
               <Text style={featureText}>{t.inventoryTracking}</Text>
               <Text style={featureText}>{t.analytics}</Text>
               <Text style={featureText}>{t.orderManagement}</Text>
@@ -132,9 +138,7 @@ export default function FreeTrialWelcomeEmail({
 
             <Hr style={hr} />
 
-            <Text style={text}>
-              {interpolate(t.trialExpiry, { trialEndDate })}
-            </Text>
+            <Text style={text}>{interpolate(t.trialExpiry, { trialEndDate })}</Text>
 
             <Section style={buttonContainer}>
               <Button style={secondaryButton} href={planUpgradeUrl}>
@@ -142,12 +146,11 @@ export default function FreeTrialWelcomeEmail({
               </Button>
             </Section>
 
-            <Text style={footer}>
-              {t.supportText}
-            </Text>
+            <Text style={footer}>{t.supportText}</Text>
 
             <Text style={footer}>
-              {t.bestRegards}<br />
+              {t.bestRegards}
+              <br />
               {t.teamName}
             </Text>
           </Section>
@@ -159,7 +162,8 @@ export default function FreeTrialWelcomeEmail({
 
 const main = {
   backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  fontFamily:
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 }
 
 const container = {

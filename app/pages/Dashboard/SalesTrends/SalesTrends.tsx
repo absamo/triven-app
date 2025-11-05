@@ -3,6 +3,7 @@ import { Group, Paper, Text, ThemeIcon, Title } from '@mantine/core'
 import { IconChartLine } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '~/app/common/helpers/money'
+import ClientOnly from '~/app/components/ClientOnly'
 import classes from './SalesTrends.module.css'
 
 interface SalesTrendsProps {
@@ -40,89 +41,91 @@ export default function SalesTrends({ salesTrends }: SalesTrendsProps) {
 
       {hasData ? (
         <div className={classes.chartContainer}>
-          <LineChart
-            h={200}
-            data={salesTrends}
-            dataKey="month"
-            withLegend
-            withTooltip
-            gridAxis="xy"
-            tooltipProps={{
-              content: ({ payload }) => {
-                if (payload && payload.length) {
+          <ClientOnly>
+            <LineChart
+              h={200}
+              data={salesTrends}
+              dataKey="month"
+              withLegend
+              withTooltip
+              gridAxis="xy"
+              tooltipProps={{
+                content: ({ payload }) => {
+                  if (payload && payload.length) {
+                    return (
+                      <div className={classes.tooltip}>
+                        <div className={classes.tooltipTitle}>{payload[0].payload.month}</div>
+                        {payload.map((entry) => (
+                          <div key={entry.dataKey} className={classes.tooltipItem}>
+                            <div
+                              className={classes.tooltipItemDot}
+                              style={{ background: entry.color }}
+                            />
+                            <div className={classes.tooltipItemLabel}>
+                              {entry.dataKey === 'salesValue'
+                                ? t('dashboard:revenue')
+                                : t('dashboard:orders')}
+                            </div>
+                            <div className={classes.tooltipItemValue}>
+                              {entry.dataKey === 'salesValue'
+                                ? formatCurrency(entry.value, '$')
+                                : entry.value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  }
+                  return null
+                },
+              }}
+              legendProps={{
+                content: ({ payload }) => {
                   return (
-                    <div className={classes.tooltip}>
-                      <div className={classes.tooltipTitle}>{payload[0].payload.month}</div>
-                      {payload.map((entry) => (
-                        <div key={entry.dataKey} className={classes.tooltipItem}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '20px',
+                      }}
+                    >
+                      {payload?.map((entry) => (
+                        <div
+                          key={entry.value}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
                           <div
-                            className={classes.tooltipItemDot}
-                            style={{ background: entry.color }}
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              backgroundColor: entry.color,
+                              borderRadius: '50%',
+                            }}
                           />
-                          <div className={classes.tooltipItemLabel}>
-                            {entry.dataKey === 'salesValue'
+                          <span
+                            style={{
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              color: 'var(--mantine-color-gray-7)',
+                            }}
+                          >
+                            {entry.value === 'salesValue'
                               ? t('dashboard:revenue')
                               : t('dashboard:orders')}
-                          </div>
-                          <div className={classes.tooltipItemValue}>
-                            {entry.dataKey === 'salesValue'
-                              ? formatCurrency(entry.value, '$')
-                              : entry.value}
-                          </div>
+                          </span>
                         </div>
                       ))}
                     </div>
                   )
-                }
-                return null
-              },
-            }}
-            legendProps={{
-              content: ({ payload }) => {
-                return (
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      gap: '20px',
-                    }}
-                  >
-                    {payload?.map((entry) => (
-                      <div
-                        key={entry.value}
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <div
-                          style={{
-                            width: '8px',
-                            height: '8px',
-                            backgroundColor: entry.color,
-                            borderRadius: '50%',
-                          }}
-                        />
-                        <span
-                          style={{
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            color: 'var(--mantine-color-gray-7)',
-                          }}
-                        >
-                          {entry.value === 'salesValue'
-                            ? t('dashboard:revenue')
-                            : t('dashboard:orders')}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )
-              },
-            }}
-            series={[
-              { name: 'salesCount', color: 'blue.6' },
-              { name: 'salesValue', color: 'teal.6' },
-            ]}
-          />
+                },
+              }}
+              series={[
+                { name: 'salesCount', color: 'blue.6' },
+                { name: 'salesValue', color: 'teal.6' },
+              ]}
+            />
+          </ClientOnly>
         </div>
       ) : (
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--mantine-color-gray-5)' }}>

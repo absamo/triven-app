@@ -1,5 +1,5 @@
 import { Container, Text, Title } from '@mantine/core'
-import { type ErrorResponse } from 'react-router'
+import type { ErrorResponse } from 'react-router'
 import { BackButton } from '~/app/components'
 import classes from './Error.module.css'
 

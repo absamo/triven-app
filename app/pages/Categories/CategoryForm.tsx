@@ -1,4 +1,4 @@
-import { Grid, TextInput, Textarea } from '@mantine/core'
+import { Grid, Textarea, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { zodResolver } from 'mantine-form-zod-resolver'
 import { useTranslation } from 'react-i18next'

@@ -1,0 +1,467 @@
+# Recommendation & Analytics Tools - API Contracts
+# Feature: 001-mastra-assistant-tools
+# Requirements: FR-012, FR-013, FR-014
+
+tools:
+  - name: getReorderRecommendations
+    description: "Get intelligent reorder recommendations based on sales velocity and current stock levels"
+    requirements: [FR-012]
+    authorization:
+      requiredPermission: VIEW_INVENTORY
+      allowedRoles: [Admin, Manager, Staff, Viewer]
+    
+    input:
+      schema:
+        type: object
+        properties:
+          categoryId:
+            type: string
+            description: "Filter recommendations by category"
+          minSalesVelocity:
+            type: number
+            minimum: 0
+            description: "Only include products with velocity >= this value (units/day)"
+          limit:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          urgencyLevel:
+            type: string
+            enum: [critical, high, medium, all]
+            default: all
+            description: "Filter by urgency level based on days until stockout"
+      
+      examples:
+        - name: "Critical reorders only"
+          value:
+            urgencyLevel: critical
+            limit: 50
+        
+        - name: "Fast-moving electronics"
+          value:
+            categoryId: "cat_electronics"
+            minSalesVelocity: 5
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            recommendations:
+              type: array
+              items:
+                type: object
+                properties:
+                  product:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      sku: { type: string }
+                      name: { type: string }
+                      category: { type: object }
+                      currentStock: { type: integer }
+                      reorderLevel: { type: integer }
+                  analytics:
+                    type: object
+                    properties:
+                      salesVelocity: { type: number, description: "Units per day (30-day avg)" }
+                      daysUntilStockout: { type: number, description: "Days until inventory depleted" }
+                      recommendedOrderQty: { type: integer }
+                      estimatedCostSavings: { type: number, description: "Savings from avoiding stockout" }
+                  urgency:
+                    type: string
+                    enum: [critical, high, medium, low]
+                  supplier:
+                    type: object
+                    nullable: true
+                    properties:
+                      id: { type: string }
+                      name: { type: string }
+                      leadTimeDays: { type: integer }
+            summary:
+              type: object
+              properties:
+                totalRecommendations: { type: integer }
+                criticalCount: { type: integer }
+                highCount: { type: integer }
+                mediumCount: { type: integer }
+                totalEstimatedCost: { type: number }
+            message: { type: string }
+        
+        example:
+          success: true
+          recommendations:
+            - product:
+                id: "prod_001"
+                sku: "SKU-001"
+                name: "Widget A"
+                category: { id: "cat_widgets", name: "Widgets" }
+                currentStock: 15
+                reorderLevel: 20
+              analytics:
+                salesVelocity: 5.2
+                daysUntilStockout: 2.9
+                recommendedOrderQty: 100
+                estimatedCostSavings: 1250.00
+              urgency: "critical"
+              supplier:
+                id: "sup_abc123"
+                name: "Widgets R Us"
+                leadTimeDays: 7
+            - product:
+                id: "prod_002"
+                sku: "SKU-002"
+                name: "Widget B"
+                category: { id: "cat_widgets", name: "Widgets" }
+                currentStock: 45
+                reorderLevel: 50
+              analytics:
+                salesVelocity: 3.1
+                daysUntilStockout: 14.5
+                recommendedOrderQty: 75
+                estimatedCostSavings: 900.00
+              urgency: "medium"
+              supplier:
+                id: "sup_abc123"
+                name: "Widgets R Us"
+                leadTimeDays: 7
+          summary:
+            totalRecommendations: 2
+            criticalCount: 1
+            highCount: 0
+            mediumCount: 1
+            totalEstimatedCost: 2637.50
+          message: "Found 2 reorder recommendations (1 critical, 0 high, 1 medium)"
+      
+      errors:
+        - code: CATEGORY_NOT_FOUND
+          status: 404
+    
+    sideEffects:
+      - "Creates ToolExecutionLog entry"
+      - "Read-only operation"
+    
+    performance:
+      targetLatency: "< 2s"
+      cachingStrategy: "Cache for 1 hour, invalidate on sales/inventory changes"
+    
+    calculation:
+      salesVelocity: "SUM(SalesOrderItem.quantity WHERE createdAt >= NOW() - 30 days) / 30"
+      daysUntilStockout: "Product.availableQuantity / salesVelocity"
+      recommendedOrderQty: "MAX(reorderLevel * 2, salesVelocity * (supplier.leadTimeDays + 7))"
+      urgency:
+        critical: "daysUntilStockout <= 3"
+        high: "daysUntilStockout <= 7"
+        medium: "daysUntilStockout <= 14"
+        low: "daysUntilStockout > 14"
+
+  - name: getSlowMovingInventory
+    description: "Identify slow-moving or obsolete inventory for clearance or discontinuation"
+    requirements: [FR-013]
+    authorization:
+      requiredPermission: VIEW_INVENTORY
+      allowedRoles: [Admin, Manager]
+    
+    input:
+      schema:
+        type: object
+        properties:
+          categoryId:
+            type: string
+          minDaysSinceLastSale:
+            type: integer
+            minimum: 1
+            default: 90
+            description: "Products with no sales in this many days"
+          minInventoryValue:
+            type: number
+            minimum: 0
+            description: "Only include products with inventory value >= this amount"
+          limit:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      
+      examples:
+        - name: "90-day stagnant inventory"
+          value:
+            minDaysSinceLastSale: 90
+            limit: 50
+        
+        - name: "High-value slow movers"
+          value:
+            minDaysSinceLastSale: 60
+            minInventoryValue: 1000
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            products:
+              type: array
+              items:
+                type: object
+                properties:
+                  product:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      sku: { type: string }
+                      name: { type: string }
+                      category: { type: object }
+                      currentStock: { type: integer }
+                      costPrice: { type: number }
+                  analytics:
+                    type: object
+                    properties:
+                      daysSinceLastSale: { type: integer, nullable: true }
+                      lastSaleDate: { type: string, format: date, nullable: true }
+                      inventoryValue: { type: number }
+                      totalSalesLast90Days: { type: integer }
+                      turnoverRate: { type: number, description: "Annual turnover rate" }
+                  recommendation:
+                    type: string
+                    enum: [clearance_sale, discontinue, adjust_reorder_level, no_action]
+            summary:
+              type: object
+              properties:
+                totalProducts: { type: integer }
+                totalInventoryValue: { type: number }
+                recommendations:
+                  type: object
+                  properties:
+                    clearanceSale: { type: integer }
+                    discontinue: { type: integer }
+                    adjustReorderLevel: { type: integer }
+            message: { type: string }
+        
+        example:
+          success: true
+          products:
+            - product:
+                id: "prod_old100"
+                sku: "SKU-OLD-100"
+                name: "Legacy Widget V1"
+                category: { id: "cat_discontinued", name: "Discontinued" }
+                currentStock: 150
+                costPrice: 10.00
+              analytics:
+                daysSinceLastSale: 180
+                lastSaleDate: "2025-05-07"
+                inventoryValue: 1500.00
+                totalSalesLast90Days: 0
+                turnoverRate: 0.0
+              recommendation: "discontinue"
+            - product:
+                id: "prod_old200"
+                sku: "SKU-OLD-200"
+                name: "Seasonal Gadget"
+                category: { id: "cat_seasonal", name: "Seasonal" }
+                currentStock: 80
+                costPrice: 15.00
+              analytics:
+                daysSinceLastSale: 95
+                lastSaleDate: "2025-07-30"
+                inventoryValue: 1200.00
+                totalSalesLast90Days: 3
+                turnoverRate: 0.5
+              recommendation: "clearance_sale"
+          summary:
+            totalProducts: 2
+            totalInventoryValue: 2700.00
+            recommendations:
+              clearanceSale: 1
+              discontinue: 1
+              adjustReorderLevel: 0
+          message: "Found 2 slow-moving products worth $2,700.00 (1 recommended for clearance, 1 for discontinuation)"
+      
+      errors:
+        - code: CATEGORY_NOT_FOUND
+          status: 404
+    
+    sideEffects:
+      - "Creates ToolExecutionLog entry"
+      - "Read-only operation"
+    
+    performance:
+      targetLatency: "< 2.5s"
+      cachingStrategy: "Cache for 6 hours (slow-changing data)"
+    
+    calculation:
+      daysSinceLastSale: "NOW() - MAX(SalesOrderItem.createdAt)"
+      inventoryValue: "Product.availableQuantity * Product.costPrice"
+      turnoverRate: "SUM(SalesOrderItem.quantity WHERE createdAt >= NOW() - 365 days) / Product.availableQuantity"
+      recommendation:
+        discontinue: "daysSinceLastSale > 180 AND totalSalesLast90Days = 0"
+        clearance_sale: "daysSinceLastSale > 90 AND turnoverRate < 1.0"
+        adjust_reorder_level: "daysSinceLastSale > 60 AND turnoverRate < 2.0"
+        no_action: "Otherwise"
+
+  - name: getDailyActionItems
+    description: "Get a prioritized list of daily action items for inventory management"
+    requirements: [FR-014]
+    authorization:
+      requiredPermission: VIEW_INVENTORY
+      allowedRoles: [Admin, Manager, Staff, Viewer]
+    
+    input:
+      schema:
+        type: object
+        properties:
+          date:
+            type: string
+            format: date
+            description: "Date for action items (defaults to today)"
+          includeCompleted:
+            type: boolean
+            default: false
+      
+      examples:
+        - name: "Today's actions"
+          value: {}
+        
+        - name: "Specific date"
+          value:
+            date: "2025-11-04"
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            date: { type: string, format: date }
+            actionItems:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  type:
+                    type: string
+                    enum: [reorder, low_stock_alert, order_to_ship, po_to_receive, price_review, inventory_audit]
+                  priority:
+                    type: string
+                    enum: [critical, high, medium, low]
+                  title: { type: string }
+                  description: { type: string }
+                  relatedEntity:
+                    type: object
+                    properties:
+                      type: { type: string }
+                      id: { type: string }
+                      name: { type: string }
+                  actionRequired: { type: string }
+                  deadline: { type: string, format: date-time, nullable: true }
+                  completed: { type: boolean }
+            summary:
+              type: object
+              properties:
+                totalActions: { type: integer }
+                criticalCount: { type: integer }
+                highCount: { type: integer }
+                completedToday: { type: integer }
+            message: { type: string }
+        
+        example:
+          success: true
+          date: "2025-11-03"
+          actionItems:
+            - id: "action_reorder_001"
+              type: "reorder"
+              priority: "critical"
+              title: "Critical reorder: Widget A"
+              description: "Stock will run out in 2.9 days based on current sales velocity"
+              relatedEntity:
+                type: "product"
+                id: "prod_001"
+                name: "Widget A (SKU-001)"
+              actionRequired: "Create purchase order for 100 units"
+              deadline: "2025-11-05T23:59:59Z"
+              completed: false
+            - id: "action_ship_order_042"
+              type: "order_to_ship"
+              priority: "high"
+              title: "Ship order SO-20251103-00042"
+              description: "Confirmed order awaiting shipment to Acme Corp"
+              relatedEntity:
+                type: "order"
+                id: "order_123"
+                name: "SO-20251103-00042"
+              actionRequired: "Prepare and ship order"
+              deadline: "2025-11-04T17:00:00Z"
+              completed: false
+            - id: "action_receive_po_012"
+              type: "po_to_receive"
+              priority: "medium"
+              title: "Receive PO PO-20251103-00012"
+              description: "Expected delivery today from Widgets R Us"
+              relatedEntity:
+                type: "purchase_order"
+                id: "po_456"
+                name: "PO-20251103-00012"
+              actionRequired: "Verify and receive inventory"
+              deadline: "2025-11-03T23:59:59Z"
+              completed: false
+          summary:
+            totalActions: 3
+            criticalCount: 1
+            highCount: 1
+            completedToday: 0
+          message: "3 action items for Nov 3, 2025 (1 critical, 1 high, 1 medium)"
+      
+      errors: []
+    
+    sideEffects:
+      - "Creates ToolExecutionLog entry"
+      - "Read-only operation"
+    
+    performance:
+      targetLatency: "< 2s"
+      cachingStrategy: "Cache for 15 minutes during business hours"
+    
+    actionSources:
+      reorder: "Products from getReorderRecommendations with critical/high urgency"
+      low_stock_alert: "Products below reorder level"
+      order_to_ship: "SalesOrders with status CONFIRMED"
+      po_to_receive: "PurchaseOrders with expectedDate <= today"
+      price_review: "Products with costPrice changes in last 30 days"
+      inventory_audit: "Categories with discrepancies or scheduled audit dates"
+
+# Performance Benchmarks
+performance:
+  getReorderRecommendations: "< 2s for 100 products"
+  getSlowMovingInventory: "< 2.5s for 500 products"
+  getDailyActionItems: "< 2s"
+
+# Testing Requirements
+testing:
+  unitTests:
+    - "Sales velocity calculation with sparse data"
+    - "Days until stockout calculation"
+    - "Recommended order quantity formula"
+    - "Urgency level determination"
+    - "Turnover rate calculation"
+    - "Action item prioritization logic"
+  
+  integrationTests:
+    - "Reorder recommendations with real sales data"
+    - "Slow-moving inventory identification"
+    - "Action item aggregation from multiple sources"
+    - "Cache invalidation on data changes"
+  
+  e2eTests:
+    - "Daily action items dashboard rendering"
+    - "Reorder workflow from recommendation to PO creation"
+    - "Slow inventory clearance campaign setup"
+
+# Changelog
+changelog:
+  - version: 1.0.0
+    date: 2025-11-03
+    changes: "Initial contract definition for recommendation and analytics tools"

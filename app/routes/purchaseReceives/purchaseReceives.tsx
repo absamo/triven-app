@@ -1,21 +1,20 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
-import PurchaseReceives from '~/app/pages/PurchaseReceives'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import type { IPurchaseReceive } from '~/app/common/validations/purchaseReceiveSchema'
 import { Notification } from '~/app/components'
+import PurchaseReceives from '~/app/pages/PurchaseReceives'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/purchaseReceives'
 import {
   getPurchaseOrders,
   getPurchaseReceives,
   updatePurchaseReceiveStatus,
 } from '~/app/services/purchases.server'
-import type { IPurchaseReceive } from '~/app/common/validations/purchaseReceiveSchema'
-import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import type { Route } from './+types/purchaseReceives'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

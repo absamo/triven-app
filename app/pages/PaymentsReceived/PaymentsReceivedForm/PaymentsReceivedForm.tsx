@@ -21,9 +21,9 @@ import {
   getTotalAmountDueByInvoice,
 } from '~/app/common/helpers/invoice'
 import { formatMoney } from '~/app/common/helpers/money'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
-import { type ICustomer } from '~/app/common/validations/customerSchema'
-import { type IInvoice } from '~/app/common/validations/invoiceSchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import type { ICustomer } from '~/app/common/validations/customerSchema'
+import type { IInvoice } from '~/app/common/validations/invoiceSchema'
 import {
   type IPaymentsReceived,
   paymentsReceivedSchema,

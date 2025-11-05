@@ -1,11 +1,10 @@
-import { Checkbox, Grid, Input, MultiSelect, TextInput, type ComboboxItem } from '@mantine/core'
+import { Checkbox, type ComboboxItem, Grid, Input, MultiSelect, TextInput } from '@mantine/core'
 import { DatePickerInput, type DatesRangeValue, type DateValue } from '@mantine/dates'
 import { IconCalendar, IconSearch } from '@tabler/icons-react'
-import classes from './StockAdjustmentFilters.module.css'
-
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
+import classes from './StockAdjustmentFilters.module.css'
 
 type FiltersProps = {
   searchProps?: {

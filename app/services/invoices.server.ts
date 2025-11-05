@@ -1,5 +1,5 @@
 import type { InvoiceStatus } from '@prisma/client'
-import { type IInvoice } from '~/app/common/validations/invoiceSchema'
+import type { IInvoice } from '~/app/common/validations/invoiceSchema'
 import { prisma } from '~/app/db.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import { INVOICE_STATUSES } from '../common/constants'

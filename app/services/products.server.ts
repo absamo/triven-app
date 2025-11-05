@@ -7,8 +7,8 @@ import {
   USER_ROLES,
 } from '~/app/common/constants'
 import { getStockNotificationMessage, getStockStatus } from '~/app/common/helpers/inventories'
-import { type IAgency } from '~/app/common/validations/agencySchema'
-import { type IProduct } from '~/app/common/validations/productSchema'
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import type { IProduct } from '~/app/common/validations/productSchema'
 import { prisma } from '~/app/db.server'
 import { getBetterAuthUser } from '~/app/services/better-auth.server'
 import { emitter } from '~/app/utils/emitter.server'

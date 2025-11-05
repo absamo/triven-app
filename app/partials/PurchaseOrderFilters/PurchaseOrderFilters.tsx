@@ -1,5 +1,6 @@
 import {
   Button,
+  type ComboboxItem,
   Container,
   Divider,
   Grid,
@@ -11,14 +12,12 @@ import {
   Stack,
   TextInput,
   Title,
-  type ComboboxItem,
 } from '@mantine/core'
 import { DatePickerInput } from '@mantine/dates'
 import { IconCalendar, IconSearch } from '@tabler/icons-react'
-import classes from '~/app/partials/PurchaseOrderFilters/PurchaseOrderFilters.module.css'
-
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useFetcher } from 'react-router'
+import classes from '~/app/partials/PurchaseOrderFilters/PurchaseOrderFilters.module.css'
 
 // import { useDebouncedValue } from "@mantine/hooks"
 

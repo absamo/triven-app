@@ -1,10 +1,9 @@
 import { Badge, Menu, Table, Text } from '@mantine/core'
+import { useForm } from '@mantine/form'
 import dayjs from 'dayjs'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, useLocation, useNavigate, useSubmit } from 'react-router'
-
-import { useForm } from '@mantine/form'
-import { useEffect, useState } from 'react'
 import { BACKORDER_STATUSES } from '~/app/common/constants'
 import { getBackorderStatusLabel } from '~/app/common/helpers/backorders'
 import { formatCurrency } from '~/app/common/helpers/money'
@@ -133,7 +132,10 @@ export default function BackordersPage({ backorders = [], permissions = [] }: Ba
       <Title
         to={'/backorders/create'}
         canCreate={canCreate}
-        description={t('backorders:description', 'Manage and track backorders for out-of-stock items')}
+        description={t(
+          'backorders:description',
+          'Manage and track backorders for out-of-stock items'
+        )}
       >
         {t('backorders:title')}
       </Title>

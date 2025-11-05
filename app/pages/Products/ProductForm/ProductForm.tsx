@@ -10,15 +10,15 @@ import {
   Title as MantineTitle,
   Modal,
   NumberInput,
+  rem,
   Select,
   Stack,
   Table,
   Tabs,
   Text,
-  TextInput,
   Textarea,
+  TextInput,
   Tooltip,
-  rem,
 } from '@mantine/core'
 import { Dropzone, type FileWithPath } from '@mantine/dropzone'
 import { useForm } from '@mantine/form'
@@ -54,19 +54,19 @@ import {
 import { createEan13 } from '~/app/common/helpers/inventories'
 import { getPurchaseOrderStatusLabel } from '~/app/common/helpers/purchase'
 import { getSalesOrderStatusLabel } from '~/app/common/helpers/sales'
-import { type IAgency } from '~/app/common/validations/agencySchema'
-import { type IAsset } from '~/app/common/validations/assetSchema'
-import { type ICategory } from '~/app/common/validations/categorySchema'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
-import { type IInvoice } from '~/app/common/validations/invoiceSchema'
-import { productSchema, type IProduct } from '~/app/common/validations/productSchema'
-import { type IPurchaseOrderItem } from '~/app/common/validations/purchaseOrderItemSchema'
-import { type IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
-import { type IPurchaseReceiveItem } from '~/app/common/validations/purchaseReceiveItemSchema'
-import { type ISalesOrderItem } from '~/app/common/validations/salesOrderItemSchema'
-import { type ISalesOrder } from '~/app/common/validations/salesOrderSchema'
-import { type ISite } from '~/app/common/validations/siteSchema'
-import { type IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import type { IAsset } from '~/app/common/validations/assetSchema'
+import type { ICategory } from '~/app/common/validations/categorySchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import type { IInvoice } from '~/app/common/validations/invoiceSchema'
+import { type IProduct, productSchema } from '~/app/common/validations/productSchema'
+import type { IPurchaseOrderItem } from '~/app/common/validations/purchaseOrderItemSchema'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import type { IPurchaseReceiveItem } from '~/app/common/validations/purchaseReceiveItemSchema'
+import type { ISalesOrderItem } from '~/app/common/validations/salesOrderItemSchema'
+import type { ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
+import type { IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
 import { Form } from '~/app/components'
 import { AgencySites } from '~/app/partials/AgencySites'
 import { SearchableSelect } from '~/app/partials/SearchableSelect'

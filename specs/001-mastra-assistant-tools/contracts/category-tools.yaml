@@ -1,0 +1,331 @@
+# Category Management Tools - API Contracts
+# Feature: 001-mastra-assistant-tools
+# Requirements: FR-005, FR-006, FR-007
+
+tools:
+  - name: listCategories
+    description: "List all categories with product counts and inventory statistics"
+    requirements: [FR-005]
+    authorization:
+      requiredPermission: VIEW_INVENTORY
+      allowedRoles: [Admin, Manager, Staff, Viewer]
+    
+    input:
+      schema:
+        type: object
+        properties:
+          includeEmpty:
+            type: boolean
+            default: false
+            description: "Include categories with zero products"
+          sortBy:
+            type: string
+            enum: [name, productCount, inventoryValue]
+            default: name
+          sortOrder:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      
+      examples:
+        - name: "Default list"
+          value: {}
+        
+        - name: "Sorted by inventory value"
+          value:
+            includeEmpty: false
+            sortBy: inventoryValue
+            sortOrder: desc
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            categories:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  name: { type: string }
+                  description: { type: string }
+                  productCount: { type: integer }
+                  totalInventoryValue: { type: number }
+                  lowStockCount: { type: integer }
+            message: { type: string }
+        
+        example:
+          success: true
+          categories:
+            - id: "cat_electronics"
+              name: "Electronics"
+              description: "Electronic devices and accessories"
+              productCount: 45
+              totalInventoryValue: 125430.50
+              lowStockCount: 3
+            - id: "cat_furniture"
+              name: "Furniture"
+              description: "Office and home furniture"
+              productCount: 28
+              totalInventoryValue: 89200.00
+              lowStockCount: 0
+          message: "Found 2 categories with products"
+      
+      errors:
+        - code: INSUFFICIENT_PERMISSIONS
+          status: 403
+    
+    sideEffects:
+      - "Creates ToolExecutionLog entry"
+      - "Results may be cached (5 minute TTL)"
+    
+    performance:
+      targetLatency: "< 1s"
+      databaseOperations: 1
+      cachingStrategy: "Cache aggregations, invalidate on category/product changes"
+
+  - name: createCategory
+    description: "Create a new category for organizing products"
+    requirements: [FR-006]
+    authorization:
+      requiredPermission: MANAGE_PRODUCTS
+      allowedRoles: [Admin, Manager]
+    
+    input:
+      schema:
+        type: object
+        required: [name]
+        properties:
+          name:
+            type: string
+            minLength: 1
+            maxLength: 200
+            description: "Category name (must be unique per company)"
+          description:
+            type: string
+            maxLength: 1000
+      
+      examples:
+        - name: "Simple category"
+          value:
+            name: "Seasonal Items"
+        
+        - name: "Category with description"
+          value:
+            name: "Office Supplies"
+            description: "Pens, paper, folders, and other office essentials"
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            category:
+              type: object
+              properties:
+                id: { type: string }
+                name: { type: string }
+                description: { type: string }
+                productCount: { type: integer, const: 0 }
+                createdAt: { type: string, format: date-time }
+            message: { type: string }
+        
+        example:
+          success: true
+          category:
+            id: "cat_new456"
+            name: "Office Supplies"
+            description: "Pens, paper, folders, and other office essentials"
+            productCount: 0
+            createdAt: "2025-11-03T15:00:00Z"
+          message: "Category 'Office Supplies' created successfully"
+      
+      errors:
+        - code: DUPLICATE_CATEGORY_NAME
+          status: 409
+          message: "A category named 'Office Supplies' already exists"
+        - code: INVALID_NAME
+          status: 400
+          message: "Category name cannot be empty or contain only whitespace"
+    
+    sideEffects:
+      - "Inserts new Category record"
+      - "Creates ToolExecutionLog entry"
+      - "Invalidates category list cache"
+    
+    performance:
+      targetLatency: "< 300ms"
+
+  - name: moveProductsBetweenCategories
+    description: "Move multiple products from one category to another in a single operation"
+    requirements: [FR-007]
+    authorization:
+      requiredPermission: MANAGE_PRODUCTS
+      allowedRoles: [Admin, Manager]
+    
+    input:
+      schema:
+        type: object
+        required: [productIds, targetCategoryId]
+        properties:
+          productIds:
+            type: array
+            items:
+              type: string
+            minItems: 1
+            maxItems: 100
+            description: "Product IDs to move (max 100 per operation)"
+          targetCategoryId:
+            type: string
+            description: "Destination category ID (or null to remove category)"
+            nullable: true
+          sourceCategoryId:
+            type: string
+            description: "Optional: verify products are currently in this category"
+      
+      examples:
+        - name: "Move products to new category"
+          value:
+            productIds: ["prod_abc123", "prod_xyz789", "prod_def456"]
+            targetCategoryId: "cat_clearance"
+        
+        - name: "Remove category assignment"
+          value:
+            productIds: ["prod_old999"]
+            targetCategoryId: null
+        
+        - name: "Move with source verification"
+          value:
+            productIds: ["prod_123", "prod_456"]
+            targetCategoryId: "cat_featured"
+            sourceCategoryId: "cat_regular"
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            movedCount: { type: integer }
+            notFoundCount: { type: integer }
+            products:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  sku: { type: string }
+                  name: { type: string }
+                  oldCategoryId: { type: string, nullable: true }
+                  newCategoryId: { type: string, nullable: true }
+            message: { type: string }
+        
+        example:
+          success: true
+          movedCount: 3
+          notFoundCount: 0
+          products:
+            - id: "prod_abc123"
+              sku: "SKU-001"
+              name: "Widget A"
+              oldCategoryId: "cat_regular"
+              newCategoryId: "cat_clearance"
+            - id: "prod_xyz789"
+              sku: "SKU-002"
+              name: "Widget B"
+              oldCategoryId: "cat_regular"
+              newCategoryId: "cat_clearance"
+            - id: "prod_def456"
+              sku: "SKU-003"
+              name: "Widget C"
+              oldCategoryId: null
+              newCategoryId: "cat_clearance"
+          message: "Successfully moved 3 products to category 'Clearance'"
+      
+      partialSuccess:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: false }
+            movedCount: { type: integer }
+            notFoundCount: { type: integer }
+            errors:
+              type: array
+              items:
+                type: object
+                properties:
+                  productId: { type: string }
+                  reason: { type: string }
+            message: { type: string }
+        
+        example:
+          success: false
+          movedCount: 2
+          notFoundCount: 1
+          errors:
+            - productId: "prod_invalid"
+              reason: "Product not found"
+          message: "Moved 2 of 3 products. 1 product not found."
+      
+      errors:
+        - code: TARGET_CATEGORY_NOT_FOUND
+          status: 404
+          message: "Target category not found"
+        - code: SOURCE_CATEGORY_MISMATCH
+          status: 400
+          message: "Some products are not in the specified source category"
+        - code: TOO_MANY_PRODUCTS
+          status: 400
+          message: "Maximum 100 products per batch operation"
+        - code: EMPTY_PRODUCT_LIST
+          status: 400
+          message: "At least one product ID must be provided"
+    
+    sideEffects:
+      - "Updates Product.categoryId for all specified products in a transaction"
+      - "Creates single ToolExecutionLog entry with batch results"
+      - "Invalidates category statistics cache for both source and target categories"
+    
+    performance:
+      targetLatency: "< 2s for 100 products"
+      databaseOperations: "1 batch update + 2 verification queries"
+      transactionIsolation: "READ COMMITTED"
+
+# Performance Benchmarks
+performance:
+  listCategories:
+    cached: "< 100ms"
+    uncached: "< 1s"
+  createCategory: "< 300ms"
+  moveProductsBetweenCategories:
+    small: "< 500ms (1-10 products)"
+    medium: "< 1s (11-50 products)"
+    large: "< 2s (51-100 products)"
+
+# Testing Requirements
+testing:
+  unitTests:
+    - "Input validation for all parameters"
+    - "Authorization checks"
+    - "Aggregation calculations (product count, inventory value)"
+    - "Error message formatting"
+  
+  integrationTests:
+    - "Category uniqueness constraint"
+    - "Batch product update transaction"
+    - "Cache invalidation on mutations"
+    - "Partial success handling in moveProducts"
+  
+  e2eTests:
+    - "Create category and assign products via chat"
+    - "Move products between categories with visual feedback"
+    - "List categories with real-time statistics"
+
+# Changelog
+changelog:
+  - version: 1.0.0
+    date: 2025-11-03
+    changes: "Initial contract definition for category management tools"

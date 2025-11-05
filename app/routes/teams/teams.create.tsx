@@ -1,11 +1,10 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-} from 'react-router'
-
 import { render } from '@react-email/components'
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
+} from 'react-router'
 import { Resend } from 'resend'
 import type { IAgency } from '~/app/common/validations/agencySchema'
 import type { IProfile } from '~/app/common/validations/profileSchema'

@@ -13,14 +13,14 @@ import {
 import { type ReactElement, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { countriesCodes } from '~/app/common/helpers/isoCountryCurrency'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
 import classes from './Currency.module.css'
 
 type CurrencyProps = Omit<ICurrency, 'base' | 'symbol'> & {
   flag: ReactElement
 }
 
-let currencies = countriesCodes.map((c) => {
+const currencies = countriesCodes.map((c) => {
   const Flag = c.currencyFlag as React.FC
   return {
     flag: <Flag />,

@@ -1,10 +1,9 @@
-import { type LoaderFunction, type ActionFunction, type ActionFunctionArgs } from 'react-router'
-
+import type { ActionFunction, ActionFunctionArgs, LoaderFunction } from 'react-router'
+import type { IRole } from '~/app/common/validations/roleSchema'
 import { Notification } from '~/app/components'
 import RolesForm from '~/app/pages/Roles/RolesForm'
-import { createRole } from '~/app/services/roles.server'
-import type { IRole } from '~/app/common/validations/roleSchema'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { createRole } from '~/app/services/roles.server'
 import type { Route } from './+types/roles.create'
 
 export const loader: LoaderFunction = async ({ request }) => {

@@ -1,12 +1,11 @@
-import { type LoaderFunction, type ActionFunction, type ActionFunctionArgs } from 'react-router'
-
-import type { ISite } from '~/app/common/validations/siteSchema'
-import SitesForm from '~/app/pages/Sites/SitesForm'
-import { createSite } from '~/app/services/sites.server'
-import { Notification } from '~/app/components'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/sites.create'
+import type { ActionFunction, ActionFunctionArgs, LoaderFunction } from 'react-router'
 import { SITE_TYPES } from '~/app/common/constants'
+import type { ISite } from '~/app/common/validations/siteSchema'
+import { Notification } from '~/app/components'
+import SitesForm from '~/app/pages/Sites/SitesForm'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { createSite } from '~/app/services/sites.server'
+import type { Route } from './+types/sites.create'
 
 export const loader: LoaderFunction = async ({ request }) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

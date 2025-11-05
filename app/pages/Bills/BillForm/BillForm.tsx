@@ -4,8 +4,8 @@ import {
   Paper,
   Table,
   Text,
-  TextInput,
   Textarea,
+  TextInput,
   useMantineTheme,
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
@@ -15,9 +15,9 @@ import { zodResolver } from 'mantine-form-zod-resolver'
 import { useTranslation } from 'react-i18next'
 import { useSubmit } from 'react-router'
 
-import { type IBill, billSchema } from '~/app/common/validations/billSchema'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
-import { type IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import { billSchema, type IBill } from '~/app/common/validations/billSchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
 import { Form } from '~/app/components'
 import { SearchableSelect } from '~/app/partials/SearchableSelect'
 import { Title } from '~/app/partials/Title'

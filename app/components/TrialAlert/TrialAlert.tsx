@@ -63,7 +63,7 @@ export default function TrialAlert({
         position: 'sticky',
         marginTop: '-24px',
         top: 70,
-        marginBottom: '30px',   
+        marginBottom: '30px',
         zIndex: 100,
         backgroundColor: 'light-dark(var(--mantine-color-white), var(--mantine-color-dark-7))',
       }}
@@ -77,9 +77,7 @@ export default function TrialAlert({
           color: `light-dark(var(--mantine-color-${color}-9), var(--mantine-color-${color}-2))`,
         }}
       >
-        <ClientOnly fallback={fallbackMessage}>
-          {message}
-        </ClientOnly>
+        <ClientOnly fallback={fallbackMessage}>{message}</ClientOnly>
       </Text>
       {showUpgradeButton && (
         <Button
@@ -104,9 +102,7 @@ export default function TrialAlert({
           }}
           onClick={onUpgradeClick}
         >
-          <ClientOnly fallback="Upgrade Now">
-            {t('trial:upgradeNow')}
-          </ClientOnly>
+          <ClientOnly fallback="Upgrade Now">{t('trial:upgradeNow')}</ClientOnly>
         </Button>
       )}
     </Flex>

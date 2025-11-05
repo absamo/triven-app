@@ -190,7 +190,7 @@ export const inventoryTools = [
 // Comprehensive executeFunction that handles all tool calls
 export async function executeFunction(name: string, args: any) {
   switch (name) {
-    case 'get_inventory_stats':
+    case 'get_inventory_stats': {
       // Optimized: Single query with aggregations instead of multiple queries
       const [totalProducts, productData, totalCategories] = await Promise.all([
         prisma.product.count(),
@@ -226,8 +226,9 @@ export async function executeFunction(name: string, args: any) {
         categories: totalCategories,
         last_updated: new Date().toISOString(),
       }
+    }
 
-    case 'check_stock_level':
+    case 'check_stock_level': {
       const productName = args.product_name?.toLowerCase() || ''
 
       const product = await prisma.product.findFirst({
@@ -280,8 +281,9 @@ export async function executeFunction(name: string, args: any) {
         unit: product.unit,
         last_updated: product.updatedAt?.toISOString() || new Date().toISOString(),
       }
+    }
 
-    case 'get_low_stock_products':
+    case 'get_low_stock_products': {
       const threshold = args.threshold || 10
 
       const allProducts = await prisma.product.findMany({
@@ -319,8 +321,9 @@ export async function executeFunction(name: string, args: any) {
           status: item.availableQuantity === 0 ? 'Out of Stock' : 'Low Stock',
         })),
       }
+    }
 
-    case 'get_out_of_stock_products':
+    case 'get_out_of_stock_products': {
       const includeCategory = args.include_category !== false // Default to true
 
       const outOfStockProductsList = await prisma.product.findMany({
@@ -363,8 +366,9 @@ export async function executeFunction(name: string, args: any) {
           last_updated: product.updatedAt?.toISOString() || new Date().toISOString(),
         })),
       }
+    }
 
-    case 'calculate_reorder_suggestion':
+    case 'calculate_reorder_suggestion': {
       const reorderProductName = args.product_name?.toLowerCase() || ''
       const reorderProduct = await prisma.product.findFirst({
         where: {
@@ -438,8 +442,9 @@ export async function executeFunction(name: string, args: any) {
               ? 'Medium'
               : 'Low',
       }
+    }
 
-    case 'get_all_products':
+    case 'get_all_products': {
       const includeOutOfStock = args.include_out_of_stock !== false // Default to true
       const categoryFilter = args.category_filter?.toLowerCase()
       const sortBy = args.sort_by || 'name'
@@ -513,6 +518,7 @@ export async function executeFunction(name: string, args: any) {
           last_updated: product.updatedAt?.toISOString() || new Date().toISOString(),
         })),
       }
+    }
 
     case 'get_current_time':
       return {
@@ -521,7 +527,7 @@ export async function executeFunction(name: string, args: any) {
         formatted_time: new Date().toLocaleString(),
       }
 
-    case 'get_product_details':
+    case 'get_product_details': {
       const searchTerm = args.search_term?.toLowerCase() || ''
 
       // Search by name or SKU
@@ -637,8 +643,9 @@ export async function executeFunction(name: string, args: any) {
           },
         },
       }
+    }
 
-    case 'navigate_to_page':
+    case 'navigate_to_page': {
       const page = args.page?.toLowerCase()
       const reason = args.reason || 'User navigation request'
 
@@ -713,6 +720,7 @@ export async function executeFunction(name: string, args: any) {
         link_text: `Go to ${pageName}`,
         success: true,
       }
+    }
 
     default:
       throw new Error(`Unknown function: ${name}`)

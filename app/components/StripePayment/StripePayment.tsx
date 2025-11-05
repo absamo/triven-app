@@ -110,6 +110,7 @@ function PaymentForm({
       }
 
       let secret = clientSecret
+      let actualSubscriptionId = staticValues.subscriptionId // Track the actual subscription ID
 
       // Deferred mode: create PaymentIntent only when user clicks Pay
       if (!secret) {
@@ -138,6 +139,13 @@ function PaymentForm({
 
           const data = await res.json()
           console.log('📦 Received response from server:', data)
+
+          // IMPORTANT: Update subscription ID if backend created a new subscription
+          // This happens when a cancelled trial subscription is replaced with a new one
+          if (data.subscriptionId) {
+            actualSubscriptionId = data.subscriptionId
+            console.log('🔄 Updated subscription ID from response:', actualSubscriptionId)
+          }
 
           // Check if payment is required (backend handles automatic upgrades)
           if (data.paymentRequired === false) {
@@ -206,11 +214,8 @@ function PaymentForm({
         onError(error.message || t('payment:paymentError'))
       } else {
         // If this is a trial conversion, confirm payment and end trial
-        if (staticValues.isTrialConversion && staticValues.subscriptionId) {
-          console.log(
-            '🎯 Confirming trial conversion for subscription:',
-            staticValues.subscriptionId
-          )
+        if (staticValues.isTrialConversion && actualSubscriptionId) {
+          console.log('🎯 Confirming trial conversion for subscription:', actualSubscriptionId)
           try {
             const endpoint = staticValues.createPaymentPath
             const res = await fetch(endpoint, {
@@ -218,7 +223,7 @@ function PaymentForm({
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 confirmPayment: true,
-                subscriptionId: staticValues.subscriptionId,
+                subscriptionId: actualSubscriptionId,
                 planId: staticValues.planId,
                 interval: staticValues.interval,
                 currency: staticValues.currency,
@@ -302,8 +307,7 @@ function PaymentForm({
     if (onSubmitReady) {
       onSubmitReady(handleSubmit, !!(stripe && elements))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onSubmitReady, stripe, elements])
+  }, [onSubmitReady, stripe, elements, handleSubmit])
 
   return (
     <Paper p={0} radius="md" className={classes.paymentElement} withBorder={false}>

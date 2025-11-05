@@ -1,11 +1,16 @@
-import { type ActionFunction, type ActionFunctionArgs, type LoaderFunction } from 'react-router'
-import { useActionData, useLoaderData } from 'react-router'
-import CustomersPage from '~/app/pages/Customers'
-import { getCustomers, updateCustomerPortalAccess } from '~/app/services/customers.server'
-import { Notification } from '~/app/components'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/customers'
+import {
+  type ActionFunction,
+  type ActionFunctionArgs,
+  type LoaderFunction,
+  useActionData,
+  useLoaderData,
+} from 'react-router'
 import type { ICustomer } from '~/app/common/validations/customerSchema'
+import { Notification } from '~/app/components'
+import CustomersPage from '~/app/pages/Customers'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getCustomers, updateCustomerPortalAccess } from '~/app/services/customers.server'
+import type { Route } from './+types/customers'
 
 export const loader: LoaderFunction = async ({ request }) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

@@ -1,7 +1,6 @@
 import { z } from 'zod'
-
-import { profileSchema } from './profileSchema'
 import { companySchema } from './companySchema'
+import { profileSchema } from './profileSchema'
 
 export const loginSchema = z.object({
   email: z.string().email('Invalid email').min(1, 'Email is required'),

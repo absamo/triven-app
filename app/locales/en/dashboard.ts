@@ -118,19 +118,22 @@ export default {
   noCriticalAlerts: 'No critical alerts',
   noOpportunitiesDetected: 'No opportunities detected',
   confidence: 'confidence',
-  
+
   // Health Score Tooltips
   healthScoreTooltip: '0-100 rating measuring inventory health',
-  capitalTiedUpTooltip: 'Total inventory value sitting on your shelves. Lower is better - means you\'re not over-investing in stock.',
-  revenueAtRiskTooltip: 'Potential lost sales from out-of-stock items. Shows revenue you could earn if you had these products available.',
-  turnoverRateTooltip: 'How many times per year you sell through your inventory. Higher is better - means inventory moves quickly and generates cash.',
-  
+  capitalTiedUpTooltip:
+    "Total inventory value sitting on your shelves. Lower is better - means you're not over-investing in stock.",
+  revenueAtRiskTooltip:
+    'Potential lost sales from out-of-stock items. Shows revenue you could earn if you had these products available.',
+  turnoverRateTooltip:
+    'How many times per year you sell through your inventory. Higher is better - means inventory moves quickly and generates cash.',
+
   // Health Score Breakdown
   stockLevelAdequacy: 'Stock Level',
   agingInventory: 'Freshness',
   backorderRate: 'Fulfillment',
   supplierReliability: 'Supplier Reliability',
-  
+
   // Health Score Breakdown Tooltip
   healthScoreBreakdownTooltip: 'Five factors contributing to your Health Score',
   stockLevelDescription: 'How well stocked you are vs. demand',

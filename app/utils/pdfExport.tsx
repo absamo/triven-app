@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, pdf } from '@react-pdf/renderer'
+import { pdf, StyleSheet, Text, View } from '@react-pdf/renderer'
 import type { IProduct } from '~/app/common/validations/productSchema'
 import PDFLayout, { pdfLayoutStyles } from './pdfLayout'
 

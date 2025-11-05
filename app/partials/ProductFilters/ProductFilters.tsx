@@ -1,18 +1,17 @@
 import {
   ActionIcon,
+  type ComboboxItem,
   Grid,
   Input,
   MultiSelect,
   TextInput,
   Tooltip,
-  type ComboboxItem,
 } from '@mantine/core'
 import { IconFilter, IconFilterOff, IconSearch } from '@tabler/icons-react'
-import { useTranslation } from 'react-i18next'
-import classes from './ProductFilters.module.css'
-
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFetcher, useNavigate, useSearchParams } from 'react-router'
+import classes from './ProductFilters.module.css'
 
 type FiltersProps = {
   searchProps?: {

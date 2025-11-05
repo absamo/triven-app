@@ -1,4 +1,5 @@
 ---
+
 description: "Task list template for feature implementation"
 ---
 
@@ -12,11 +13,13 @@ description: "Task list template for feature implementation"
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description`
+
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
 
 ## Path Conventions
+
 - **Single project**: `src/`, `tests/` at repository root
 - **Web app**: `backend/src/`, `frontend/src/`
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
@@ -78,26 +81,19 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
 
-**NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
 - [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
-- [ ] T012 [P] [US1] Component unit test: ComponentName/ComponentName.test.tsx (React Testing Library)
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T014 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T015 [US1] Implement [Service] in src/services/[service].py (depends on T013, T014)
-- [ ] T016 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T017 [US1] Create component directory ComponentName/ with 4-file structure:
-  - [ ] ComponentName/index.ts (export component)
-  - [ ] ComponentName/ComponentName.tsx (implementation)
-  - [ ] ComponentName/ComponentName.module.css (CSS Modules per Principle VIII)
-  - [ ] ComponentName/ComponentName.test.tsx (unit tests per Principle IX)
-- [ ] T018 [US1] Add validation and error handling
-- [ ] T019 [US1] Verify dark/light mode support in all UI components
-- [ ] T020 [US1] Add logging for user story 1 operations
+- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
+- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
+- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
+- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T016 [US1] Add validation and error handling
+- [ ] T017 [US1] Add logging for user story 1 operations
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -111,17 +107,15 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T021 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T022 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
-- [ ] T023 [P] [US2] Component unit test: ComponentName/ComponentName.test.tsx
+- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 2
 
-- [ ] T024 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T025 [US2] Implement [Service] in src/services/[service].py
-- [ ] T026 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T027 [US2] Create component directory ComponentName/ with 4-file structure (index.ts, Component.tsx, .module.css, .test.tsx)
-- [ ] T028 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
+- [ ] T021 [US2] Implement [Service] in src/services/[service].py
+- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T023 [US2] Integrate with User Story 1 components (if needed)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -135,16 +129,14 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T029 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T030 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
-- [ ] T031 [P] [US3] Component unit test: ComponentName/ComponentName.test.tsx
+- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 3
 
-- [ ] T032 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T033 [US3] Implement [Service] in src/services/[service].py
-- [ ] T034 [US3] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T035 [US3] Create component directory ComponentName/ with 4-file structure (index.ts, Component.tsx, .module.css, .test.tsx)
+- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
+- [ ] T027 [US3] Implement [Service] in src/services/[service].py
+- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -257,6 +249,3 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
-
-
-

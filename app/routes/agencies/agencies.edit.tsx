@@ -1,21 +1,20 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunction,
-  type ActionFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
+import type { IStore } from '~/app/common/validations/storeSchema'
+import { Notification } from '~/app/components'
 import AgencyForm from '~/app/pages/Agencies/AgencyForm'
 import { getAgency, updateAgency } from '~/app/services/agencies.server'
-import { getSites } from '~/app/services/sites.server'
-import { type IAgency } from '~/app/common/validations/agencySchema'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
-import { getCurrenciesByCompany } from '~/app/services/settings.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getCurrenciesByCompany } from '~/app/services/settings.server'
+import { getSites } from '~/app/services/sites.server'
 import type { Route } from './+types/agencies.edit'
-import { Notification } from '~/app/components'
-import type { IStore } from '~/app/common/validations/storeSchema'
-import type { ISite } from '~/app/common/validations/siteSchema'
 
 export const loader: LoaderFunction = async ({ request, params }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

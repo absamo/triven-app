@@ -1,5 +1,5 @@
 import { NOTIFICATION_STATUSES } from '~/app/common/constants'
-import { type IUser } from '~/app/common/validations/userSchema'
+import type { IUser } from '~/app/common/validations/userSchema'
 import { prisma } from '~/app/db.server'
 import { emitter } from '~/app/utils/emitter.server'
 

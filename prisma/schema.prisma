@@ -47,6 +47,7 @@ model Company {
   inventoryHealthScores InventoryHealthScore[]
   smartAlerts           SmartAlert[]
   revenueOpportunities  RevenueOpportunity[]
+  toolExecutionLogs     ToolExecutionLog[]
 }
 
 model Currency {
@@ -96,6 +97,7 @@ model User {
   subscriptions            Subscription?
   accounts                 Account[]
   sessions                 Session[]
+  toolExecutionLogs        ToolExecutionLog[]
   agency                   Agency?                  @relation(fields: [agencyId], references: [id])
   company                  Company?                 @relation(fields: [companyId], references: [id])
   role                     Role?                    @relation(fields: [roleId], references: [id])
@@ -510,6 +512,7 @@ model Product {
   status                       ProductStatus
   unitOfMeasureId              String?
   unit                         ProductUnit
+  version                      Int                           @default(1)
   attributeTypes               AttributeType[]
   createdby                    String
   updatedBy                    String?
@@ -1797,3 +1800,29 @@ model LandingPageConfig {
 
   @@map("landing_page_config")
 }
+
+model ToolExecutionLog {
+  id              String    @id @default(cuid())
+  toolName        String    @db.VarChar(100)
+  userId          String
+  companyId       String?
+  parameters      Json
+  result          Json?
+  success         Boolean
+  errorMessage    String?   @db.Text
+  executionTimeMs Int
+  ipAddress       String?   @db.VarChar(45)
+  userAgent       String?   @db.Text
+  createdAt       DateTime  @default(now())
+  
+  user            User      @relation(fields: [userId], references: [id])
+  company         Company?  @relation(fields: [companyId], references: [id])
+  
+  @@index([toolName, createdAt])
+  @@index([userId, createdAt])
+  @@index([companyId, createdAt])
+  @@index([success, createdAt])
+  @@index([createdAt])
+  @@map("tool_execution_logs")
+}
+

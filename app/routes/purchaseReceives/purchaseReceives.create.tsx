@@ -1,23 +1,22 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type ActionFunction,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
-import { Notification } from '~/app/components'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/purchaseReceives.create'
-import type { IPurchaseReceive } from '~/app/common/validations/purchaseReceiveSchema'
+import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
 import type { IPurchaseReceiveItem } from '~/app/common/validations/purchaseReceiveItemSchema'
+import type { IPurchaseReceive } from '~/app/common/validations/purchaseReceiveSchema'
+import type { ISupplier } from '~/app/common/validations/supplierSchema'
+import { Notification } from '~/app/components'
+import PurchaseReceivesForm from '~/app/pages/PurchaseReceives/PurchaseReceivesForm'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import {
   createPurchaseReceive,
   getMaxPurchaseReceiveNumber,
   getUnreceivedPurchaseOrders,
 } from '~/app/services/purchases.server'
-import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
-import type { ISupplier } from '~/app/common/validations/supplierSchema'
-import PurchaseReceivesForm from '~/app/pages/PurchaseReceives/PurchaseReceivesForm'
+import type { Route } from './+types/purchaseReceives.create'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

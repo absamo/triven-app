@@ -1,7 +1,7 @@
-import { type ICustomer } from '~/app/common/validations/customerSchema'
+import type { ICustomer } from '~/app/common/validations/customerSchema'
 import { prisma } from '~/app/db.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import { type ILocation } from '../common/validations/locationSchema'
+import type { ILocation } from '../common/validations/locationSchema'
 
 export async function getCustomers(request: Request) {
   const user = await requireBetterAuthUser(request, ['read:customers'])

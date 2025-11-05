@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
+import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { z } from 'zod'
 import { workflowTemplateSchema } from '~/app/common/validations/workflowTemplateSchema'
 import { prisma } from '~/app/db.server'

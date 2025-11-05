@@ -2,7 +2,7 @@ import { Fieldset, type FieldsetProps, Grid, Input, TextInput } from '@mantine/c
 import dot from 'dot-object'
 import { useTranslation } from 'react-i18next'
 
-import { type ILocation } from '~/app/common/validations/locationSchema'
+import type { ILocation } from '~/app/common/validations/locationSchema'
 
 interface LocationProps {
   value: ILocation

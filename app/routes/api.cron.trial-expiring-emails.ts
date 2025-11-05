@@ -6,7 +6,7 @@ export const ROUTE_PATH = '/api/cron/trial-expiring-emails' as const
 /**
  * API endpoint for sending trial expiring emails
  * This should be called by a cron job service (like GitHub Actions, Vercel Cron, etc.)
- * 
+ *
  * Security: In production, add authentication or IP allowlisting
  */
 export async function action({ request }: ActionFunctionArgs) {

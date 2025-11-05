@@ -1,8 +1,8 @@
 import Ean from 'ean-generator'
 import { PRODUCT_STATUSES } from '~/app/common/constants'
-import { type IProduct } from '../validations/productSchema'
+import type { IProduct } from '../validations/productSchema'
 
-let ean = new Ean(['300', '310', '320', '330', '340', '350', '360', '370'])
+const ean = new Ean(['300', '310', '320', '330', '340', '350', '360', '370'])
 
 export function isEan13(barcode: string): boolean {
   return ean.isValid(barcode)

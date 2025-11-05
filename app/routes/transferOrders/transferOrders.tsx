@@ -1,10 +1,9 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
-
-import TransferOrders from '~/app/pages/TransferOrders'
-import { getTransferOrders } from '~/app/services/transferOrders'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/transferOrders'
+import type { LoaderFunction, LoaderFunctionArgs } from 'react-router'
 import type { ITransferOrder } from '~/app/common/validations/transferOrderSchema'
+import TransferOrders from '~/app/pages/TransferOrders'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getTransferOrders } from '~/app/services/transferOrders'
+import type { Route } from './+types/transferOrders'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

@@ -1,7 +1,7 @@
 import { z } from 'zod'
+import { SITE_TYPES } from '../constants'
 import { agencySchema } from './agencySchema'
 import { locationSchema } from './locationSchema'
-import { SITE_TYPES } from '../constants'
 
 export const siteSchema = z.object({
   id: z.string().optional(),

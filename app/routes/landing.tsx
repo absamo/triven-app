@@ -17,12 +17,24 @@ import {
   //   LandingSocialProof,
   //   LandingTestimonials,
 } from '~/app/components'
+import { auth } from '~/app/lib/auth.server'
 import PublicLayout from '~/app/pages/PublicLayout'
 import { getLandingPageConfig } from '~/app/services/landing-config.server'
 import { getActiveSuccessMetrics } from '~/app/services/success-metrics.server'
 import { getActiveTestimonials } from '~/app/services/testimonials.server'
 
-export async function loader() {
+export async function loader({ request }: { request: Request }) {
+  // Check if user is already authenticated
+  try {
+    const session = await auth.api.getSession({ headers: request.headers })
+    if (session?.user) {
+      // User is authenticated, redirect to dashboard
+      return redirect('/dashboard')
+    }
+  } catch {
+    // User not authenticated, continue to landing page
+  }
+
   try {
     const [config, testimonials, successMetrics] = await Promise.all([
       getLandingPageConfig(),

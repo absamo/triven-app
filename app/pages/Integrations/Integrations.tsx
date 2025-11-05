@@ -26,7 +26,8 @@ import {
   IconRocket,
   IconUsers,
 } from '@tabler/icons-react'
-import React, { useState } from 'react'
+import type React from 'react'
+import { useState } from 'react'
 import { useLoaderData } from 'react-router'
 import AgenciesImportModal from '~/app/pages/Integrations/AgenciesImportModal'
 import ProductImportModal from '~/app/pages/Integrations/ProductImportModal'

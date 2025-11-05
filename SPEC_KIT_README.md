@@ -1,6 +1,18 @@
 # Spec Kit Integration - Triven App
 
-This project now includes GitHub Spec Kit for **Spec-Driven Development**, enabling you to create features using natural language descriptions that get automatically converted into detailed specifications, implementation plans, and executable tasks.
+This project now includes GitHub Spec Kit **v0.0.79** for **Spec-Driven Development**, enabling you to create features using natural language descriptions that get automatically converted into detailed specifications, implementation plans, and executable tasks.
+
+## What's New in v0.0.79
+
+The latest version includes enhanced workflow commands:
+
+- **Constitution Management** - `/speckit.constitution` for establishing project principles
+- **Clarification Phase** - `/speckit.clarify` for de-risking ambiguous specifications
+- **Quality Validation** - `/speckit.checklist` for requirements validation
+- **Consistency Analysis** - `/speckit.analyze` for cross-artifact validation
+- **Automated Implementation** - `/speckit.implement` for executing generated tasks
+- **Improved Templates** - Updated templates for better code generation
+- **Enhanced Documentation** - Better guidance and examples throughout
 
 ## Quick Start
 
@@ -8,6 +20,23 @@ This project now includes GitHub Spec Kit for **Spec-Driven Development**, enabl
 
 In VS Code, you can now use these commands with GitHub Copilot:
 
+**Core Workflow Commands:**
+```
+/speckit.constitution  - Establish project principles
+/speckit.specify       - Create baseline specification
+/speckit.plan          - Create implementation plan
+/speckit.tasks         - Generate actionable tasks
+/speckit.implement     - Execute implementation
+```
+
+**Enhancement Commands (Optional):**
+```
+/speckit.clarify       - Ask structured questions to de-risk ambiguous areas
+/speckit.analyze       - Cross-artifact consistency & alignment report
+/speckit.checklist     - Generate quality checklists
+```
+
+**Legacy Commands (Still Supported):**
 ```
 /specify [feature description]
 /plan [implementation details] 
@@ -16,18 +45,52 @@ In VS Code, you can now use these commands with GitHub Copilot:
 
 ### 2. Example Feature Creation
 
-**Create a Feature Specification:**
+**Using New Workflow Commands:**
+
+1. **Establish Constitution (if not already done):**
 ```
-/specify Add inventory low-stock alerts that automatically notify managers when products fall below minimum thresholds, with email notifications and dashboard warnings
+/speckit.constitution
 ```
 
-**Generate Implementation Plan:**
+2. **Create a Feature Specification:**
 ```
-/plan Use WebSocket for real-time alerts, PostgreSQL for threshold storage, Resend for email notifications, and add alert management UI
+/speckit.specify Add inventory low-stock alerts that automatically notify managers when products fall below minimum thresholds, with email notifications and dashboard warnings
 ```
 
-**Break Down Into Tasks:**
+3. **Optional: Clarify Ambiguities:**
 ```
+/speckit.clarify
+```
+
+4. **Generate Implementation Plan:**
+```
+/speckit.plan Use WebSocket for real-time alerts, PostgreSQL for threshold storage, Resend for email notifications, and add alert management UI
+```
+
+5. **Optional: Validate Quality:**
+```
+/speckit.checklist
+```
+
+6. **Break Down Into Tasks:**
+```
+/speckit.tasks
+```
+
+7. **Optional: Analyze Consistency:**
+```
+/speckit.analyze
+```
+
+8. **Execute Implementation:**
+```
+/speckit.implement
+```
+
+**Using Legacy Commands:**
+```
+/specify Add inventory low-stock alerts...
+/plan Use WebSocket for real-time alerts...
 /tasks
 ```
 
@@ -80,27 +143,55 @@ specs/                 # Generated feature specifications (created as needed)
 
 ## Workflow
 
-### 1. Specification Phase
-Use `/specify` to create a feature specification from natural language:
-- Creates a new Git branch
-- Generates a structured specification document
-- Identifies user scenarios and requirements
-- Marks areas needing clarification
+### Complete Spec-Driven Development Workflow
 
-### 2. Planning Phase  
-Use `/plan` to generate detailed implementation plans:
-- Technical architecture and design decisions
-- Database schema changes needed
-- API contracts and endpoints
-- Integration requirements
-- Research documentation for unknowns
+1. **Constitution Phase** (One-time setup)
+   - Use `/speckit.constitution` to establish project principles
+   - Defines architectural standards and constraints
+   - Creates `.specify/memory/constitution.md`
 
-### 3. Task Generation
-Use `/tasks` to break the plan into executable development tasks:
-- Ordered, dependency-aware task list
-- Test-driven development workflow
-- Parallel execution opportunities
-- Clear acceptance criteria
+2. **Specification Phase**
+   - Use `/speckit.specify` to create a feature specification
+   - Creates a new Git branch
+   - Generates a structured specification document
+   - Identifies user scenarios and requirements
+   - Marks areas needing clarification
+
+3. **Clarification Phase** (Optional)
+   - Use `/speckit.clarify` to ask structured questions
+   - De-risks ambiguous areas before planning
+   - Helps ensure specification completeness
+
+4. **Planning Phase**
+   - Use `/speckit.plan` to generate detailed implementation plans
+   - Technical architecture and design decisions
+   - Database schema changes needed
+   - API contracts and endpoints
+   - Integration requirements
+   - Research documentation for unknowns
+
+5. **Quality Validation** (Optional)
+   - Use `/speckit.checklist` to validate requirements
+   - Checks completeness, clarity, and consistency
+   - Ensures alignment with constitution
+
+6. **Task Generation**
+   - Use `/speckit.tasks` to break the plan into executable tasks
+   - Ordered, dependency-aware task list
+   - Test-driven development workflow
+   - Parallel execution opportunities
+   - Clear acceptance criteria
+
+7. **Consistency Analysis** (Optional)
+   - Use `/speckit.analyze` for cross-artifact consistency check
+   - Validates alignment between spec, plan, and tasks
+   - Identifies gaps or inconsistencies
+
+8. **Implementation Phase**
+   - Use `/speckit.implement` to execute the tasks
+   - Automated implementation based on generated tasks
+   - Follows TDD and constitutional principles
+   - Creates all necessary code and tests
 
 ## Constitutional Principles
 
@@ -126,16 +217,51 @@ Spec Kit integrates seamlessly with your current development process:
 
 ## Example Commands
 
-Here are some example commands you can try:
+Here are some example commands you can try with the new workflow:
 
+**Constitution Setup:**
 ```
-/specify Add real-time inventory tracking dashboard with live updates when stock levels change
+/speckit.constitution Establish principles for building a scalable inventory management platform
+```
 
-/specify Create customer order management system with order status tracking and email notifications
+**Feature Specifications:**
+```
+/speckit.specify Add real-time inventory tracking dashboard with live updates when stock levels change
 
-/specify Implement barcode scanning for inventory management with mobile-friendly interface
+/speckit.specify Create customer order management system with order status tracking and email notifications
 
-/specify Add AI-powered inventory forecasting based on historical sales data and seasonal trends
+/speckit.specify Implement barcode scanning for inventory management with mobile-friendly interface
+
+/speckit.specify Add AI-powered inventory forecasting based on historical sales data and seasonal trends
+```
+
+**Clarification:**
+```
+/speckit.clarify What are the ambiguous areas in the current specification?
+```
+
+**Planning:**
+```
+/speckit.plan Use React hooks for state management, Mantine UI for components, and WebSocket for real-time updates
+
+/speckit.plan Implement with Prisma ORM, add caching layer with Redis, use Stripe for payments
+```
+
+**Quality Checks:**
+```
+/speckit.checklist Validate the implementation plan against requirements
+
+/speckit.analyze Check consistency across all specification artifacts
+```
+
+**Task Management:**
+```
+/speckit.tasks Break down the implementation plan into executable development tasks
+```
+
+**Implementation:**
+```
+/speckit.implement Execute the generated tasks following TDD principles
 ```
 
 ## Benefits
@@ -146,6 +272,10 @@ Here are some example commands you can try:
 - **Test-Driven Development** - Built-in TDD workflow
 - **Team Collaboration** - Clear specifications for better communication
 - **Quality Assurance** - Constitutional compliance checking
+- **Risk Mitigation** - Optional clarification phase to de-risk ambiguous areas
+- **Consistency Validation** - Cross-artifact analysis ensures alignment
+- **Automated Implementation** - AI-powered code generation following best practices
+- **Enhanced Quality Control** - Optional checklists for requirements validation
 
 ## Support
 

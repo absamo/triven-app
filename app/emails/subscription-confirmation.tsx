@@ -40,59 +40,67 @@ export default function SubscriptionConfirmationEmail({
   locale = 'en',
 }: SubscriptionConfirmationEmailProps) {
   // Get translations based on locale
-  const t = locale === 'fr' ? {
-    subject: 'Bienvenue à Triven {planName} ! Votre abonnement est actif 🎉',
-    preview: 'Bienvenue à Triven {planName} ! Votre abonnement est actif 🎉',
-    title: 'Abonnement Confirmé !',
-    greeting: 'Bonjour {name},',
-    intro: 'Merci de vous être abonné à Triven ! Votre plan {planName} est maintenant actif et vous avez un accès complet à toutes les fonctionnalités premium.',
-    subscriptionDetails: 'Détails de Votre Abonnement',
-    plan: 'Plan :',
-    price: 'Prix :',
-    nextBilling: 'Prochaine facturation :',
-    status: 'Statut :',
-    active: 'Actif',
-    accessDashboard: 'Accéder au Tableau de Bord',
-    whatsIncluded: 'Ce qui est inclus dans votre plan {planName} :',
-    unlimitedTracking: '✓ Suivi d\'inventaire illimité',
-    advancedAnalytics: '✓ Analyses et rapports avancés',
-    multiLocation: '✓ Gestion multi-emplacements',
-    apiAccess: '✓ Accès API',
-    prioritySupport: '✓ Support client prioritaire',
-    customIntegrations: '✓ Intégrations personnalisées',
-    billingInfo: 'Informations de Facturation',
-    billingText: 'Votre abonnement se renouvellera automatiquement le {nextBillingDate}. Vous pouvez gérer vos paramètres de facturation, mettre à jour les méthodes de paiement ou annuler votre abonnement à tout moment.',
-    manageBilling: 'Gérer la Facturation',
-    supportText: 'Des questions sur votre abonnement ? Notre équipe de support est là pour vous aider !',
-    bestRegards: 'Cordialement,',
-    support: 'L\'équipe Triven'
-  } : {
-    subject: 'Welcome to Triven {planName}! Your subscription is active 🎉',
-    preview: 'Welcome to Triven {planName}! Your subscription is active 🎉',
-    title: 'Subscription Confirmed!',
-    greeting: 'Hi {name},',
-    intro: 'Thank you for subscribing to Triven! Your {planName} plan is now active and you have full access to all premium features.',
-    subscriptionDetails: 'Your Subscription Details',
-    plan: 'Plan:',
-    price: 'Price:',
-    nextBilling: 'Next billing:',
-    status: 'Status:',
-    active: 'Active',
-    accessDashboard: 'Access Your Dashboard',
-    whatsIncluded: 'What\'s included in your {planName} plan:',
-    unlimitedTracking: '✓ Unlimited inventory tracking',
-    advancedAnalytics: '✓ Advanced analytics and reporting',
-    multiLocation: '✓ Multi-location management',
-    apiAccess: '✓ API access',
-    prioritySupport: '✓ Priority customer support',
-    customIntegrations: '✓ Custom integrations',
-    billingInfo: 'Billing Information',
-    billingText: 'Your subscription will automatically renew on {nextBillingDate}. You can manage your billing settings, update payment methods, or cancel your subscription at any time.',
-    manageBilling: 'Manage Billing',
-    supportText: 'Questions about your subscription? Our support team is here to help!',
-    bestRegards: 'Best regards,',
-    support: 'The Triven Team'
-  }
+  const t =
+    locale === 'fr'
+      ? {
+          subject: 'Bienvenue à Triven {planName} ! Votre abonnement est actif 🎉',
+          preview: 'Bienvenue à Triven {planName} ! Votre abonnement est actif 🎉',
+          title: 'Abonnement Confirmé !',
+          greeting: 'Bonjour {name},',
+          intro:
+            'Merci de vous être abonné à Triven ! Votre plan {planName} est maintenant actif et vous avez un accès complet à toutes les fonctionnalités premium.',
+          subscriptionDetails: 'Détails de Votre Abonnement',
+          plan: 'Plan :',
+          price: 'Prix :',
+          nextBilling: 'Prochaine facturation :',
+          status: 'Statut :',
+          active: 'Actif',
+          accessDashboard: 'Accéder au Tableau de Bord',
+          whatsIncluded: 'Ce qui est inclus dans votre plan {planName} :',
+          unlimitedTracking: "✓ Suivi d'inventaire illimité",
+          advancedAnalytics: '✓ Analyses et rapports avancés',
+          multiLocation: '✓ Gestion multi-emplacements',
+          apiAccess: '✓ Accès API',
+          prioritySupport: '✓ Support client prioritaire',
+          customIntegrations: '✓ Intégrations personnalisées',
+          billingInfo: 'Informations de Facturation',
+          billingText:
+            'Votre abonnement se renouvellera automatiquement le {nextBillingDate}. Vous pouvez gérer vos paramètres de facturation, mettre à jour les méthodes de paiement ou annuler votre abonnement à tout moment.',
+          manageBilling: 'Gérer la Facturation',
+          supportText:
+            'Des questions sur votre abonnement ? Notre équipe de support est là pour vous aider !',
+          bestRegards: 'Cordialement,',
+          support: "L'équipe Triven",
+        }
+      : {
+          subject: 'Welcome to Triven {planName}! Your subscription is active 🎉',
+          preview: 'Welcome to Triven {planName}! Your subscription is active 🎉',
+          title: 'Subscription Confirmed!',
+          greeting: 'Hi {name},',
+          intro:
+            'Thank you for subscribing to Triven! Your {planName} plan is now active and you have full access to all premium features.',
+          subscriptionDetails: 'Your Subscription Details',
+          plan: 'Plan:',
+          price: 'Price:',
+          nextBilling: 'Next billing:',
+          status: 'Status:',
+          active: 'Active',
+          accessDashboard: 'Access Your Dashboard',
+          whatsIncluded: "What's included in your {planName} plan:",
+          unlimitedTracking: '✓ Unlimited inventory tracking',
+          advancedAnalytics: '✓ Advanced analytics and reporting',
+          multiLocation: '✓ Multi-location management',
+          apiAccess: '✓ API access',
+          prioritySupport: '✓ Priority customer support',
+          customIntegrations: '✓ Custom integrations',
+          billingInfo: 'Billing Information',
+          billingText:
+            'Your subscription will automatically renew on {nextBillingDate}. You can manage your billing settings, update payment methods, or cancel your subscription at any time.',
+          manageBilling: 'Manage Billing',
+          supportText: 'Questions about your subscription? Our support team is here to help!',
+          bestRegards: 'Best regards,',
+          support: 'The Triven Team',
+        }
 
   return (
     <Html lang={locale}>
@@ -113,9 +121,7 @@ export default function SubscriptionConfirmationEmail({
           <Section style={section}>
             <Text style={title}>{t.title}</Text>
             <Text style={text}>{interpolate(t.greeting, { name })}</Text>
-            <Text style={text}>
-              {interpolate(t.intro, { planName })}
-            </Text>
+            <Text style={text}>{interpolate(t.intro, { planName })}</Text>
 
             <Section style={subscriptionBox}>
               <Text style={subscriptionTitle}>{t.subscriptionDetails}</Text>
@@ -154,9 +160,7 @@ export default function SubscriptionConfirmationEmail({
             <Text style={text}>
               <strong>{t.billingInfo}</strong>
             </Text>
-            <Text style={text}>
-              {interpolate(t.billingText, { nextBillingDate })}
-            </Text>
+            <Text style={text}>{interpolate(t.billingText, { nextBillingDate })}</Text>
 
             <Section style={buttonContainer}>
               <Button style={secondaryButton} href={billingUrl}>
@@ -164,12 +168,11 @@ export default function SubscriptionConfirmationEmail({
               </Button>
             </Section>
 
-            <Text style={footer}>
-              {t.supportText}
-            </Text>
+            <Text style={footer}>{t.supportText}</Text>
 
             <Text style={footer}>
-              {t.bestRegards}<br />
+              {t.bestRegards}
+              <br />
               {t.support}
             </Text>
           </Section>
@@ -181,7 +184,8 @@ export default function SubscriptionConfirmationEmail({
 
 const main = {
   backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  fontFamily:
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 }
 
 const container = {

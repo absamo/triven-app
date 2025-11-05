@@ -1,4 +1,4 @@
-import { generateText, streamText, type CoreMessage } from 'ai'
+import { type CoreMessage, generateText, streamText } from 'ai'
 import { DEFAULT_MODELS, MODEL_CONFIGS, ollama } from '~/app/lib/ai-sdk-ollama'
 
 /**

@@ -1,4 +1,4 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import type { LoaderFunction, LoaderFunctionArgs } from 'react-router'
 import { InventoryOverview } from '~/app/pages/Analytics'
 import { getInventoryAnalytics } from '~/app/services/analytics.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'

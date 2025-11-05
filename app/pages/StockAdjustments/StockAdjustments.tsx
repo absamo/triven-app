@@ -1,15 +1,12 @@
 import { Table, Text } from '@mantine/core'
-
+import dayjs from 'dayjs'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-
-import dayjs from 'dayjs'
-
-import { useState } from 'react'
 import { ADJUSTMENT_REASONS } from '~/app/common/constants'
 import { getStockAdjustmentReasonLabel } from '~/app/common/helpers/stockAdjustment'
-import { type ISite } from '~/app/common/validations/siteSchema'
-import { type IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
+import type { IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
 import StockAdjustmentFilters from '~/app/partials/StockAdjustmentFilters/StockAdjustmentFilters'
 import { Title } from '~/app/partials/Title'
 

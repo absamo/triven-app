@@ -3,15 +3,15 @@ import {
   type ActionFunctionArgs,
   type LoaderFunction,
   type LoaderFunctionArgs,
+  useActionData,
+  useLoaderData,
 } from 'react-router'
-import { useActionData, useLoaderData } from 'react-router'
-
-import SalesOrders from '~/app/pages/SalesOrders'
-import { getSalesOrders, updateSalesOrderStatus } from '~/app/services/sales.server'
-import { Notification } from '~/app/components'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/salesOrders'
 import type { ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import { Notification } from '~/app/components'
+import SalesOrders from '~/app/pages/SalesOrders'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getSalesOrders, updateSalesOrderStatus } from '~/app/services/sales.server'
+import type { Route } from './+types/salesOrders'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

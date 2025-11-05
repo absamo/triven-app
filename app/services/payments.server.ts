@@ -5,9 +5,9 @@ import {
   getInvoiceStatus,
   getTotalAmountDueByInvoice,
 } from '~/app/common/helpers/invoice'
-import { type IPaymentsMade } from '~/app/common/validations/paymentsMadeSchema'
-import { type IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
-import { type IUser } from '~/app/common/validations/userSchema'
+import type { IPaymentsMade } from '~/app/common/validations/paymentsMadeSchema'
+import type { IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
+import type { IUser } from '~/app/common/validations/userSchema'
 import { prisma } from '~/app/db.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import {

@@ -2,7 +2,7 @@ import { Menu, Table, Text, UnstyledButton, useMantineTheme } from '@mantine/cor
 import { IconDotsVertical, IconLockAccess, IconLockAccessOff } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { Form, useNavigate, useSubmit } from 'react-router'
-import { type ICustomer } from '~/app/common/validations/customerSchema'
+import type { ICustomer } from '~/app/common/validations/customerSchema'
 import { Title } from '~/app/partials/Title'
 
 interface CustomersProps {

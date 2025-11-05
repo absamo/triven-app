@@ -43,61 +43,72 @@ export default function PaymentFailedEmail({
   supportUrl = 'https://app.triven.com/support',
   locale = 'en',
 }: PaymentFailedEmailProps) {
-  const t = locale === 'fr' ? {
-    preview: 'Action requise : Échec du paiement pour votre abonnement Triven ⚠️',
-    title: 'Échec du Paiement - Action Requise',
-    greeting: 'Bonjour {name},',
-    intro: 'Nous n\'avons pas pu traiter votre paiement pour votre abonnement Triven {planName}. Pour assurer un service ininterrompu, veuillez mettre à jour votre méthode de paiement dès que possible.',
-    paymentDetails: '⚠️ Détails du Paiement',
-    plan: 'Plan :',
-    amount: 'Montant :',
-    failureReason: 'Raison de l\'Échec :',
-    nextRetry: 'Prochaine Tentative :',
-    updatePayment: 'Mettre à Jour la Méthode de Paiement',
-    whatHappensNext: '📅 Ce Qui Se Passe Ensuite',
-    timelineToday: 'Aujourd\'hui : Échec du paiement - mettez à jour votre méthode de paiement',
-    timelineRetry: '{retryDate} : Nous réessaierons automatiquement le paiement',
-    timelineSuspension: '{suspensionDate} : Le compte sera suspendu si le paiement échoue encore',
-    howToResolve: 'Comment résoudre ceci :',
-    step1: '1. Cliquez sur "Mettre à Jour la Méthode de Paiement" ci-dessus',
-    step2: '2. Ajoutez une nouvelle méthode de paiement ou mettez à jour l\'existante',
-    step3: '3. Vérifiez que vos informations de facturation sont correctes',
-    step4: '4. Contactez votre banque si vous avez besoin d\'aide',
-    needHelp: 'Besoin d\'Aide ?',
-    helpText: 'Si vous avez des difficultés à mettre à jour votre méthode de paiement ou avez des questions sur cette charge, notre équipe de support est là pour vous aider.',
-    viewBilling: 'Voir l\'Historique de Facturation',
-    contactSupport: 'Contacter le Support',
-    keepActive: 'Nous voulons maintenir votre service Triven actif. Veuillez mettre à jour votre méthode de paiement pour éviter toute interruption de service.',
-    bestRegards: 'Cordialement,',
-    teamName: 'L\'équipe Triven'
-  } : {
-    preview: 'Action required: Payment failed for your Triven subscription ⚠️',
-    title: 'Payment Failed - Action Required',
-    greeting: 'Hi {name},',
-    intro: 'We were unable to process your payment for your Triven {planName} subscription. To ensure uninterrupted service, please update your payment method as soon as possible.',
-    paymentDetails: '⚠️ Payment Details',
-    plan: 'Plan:',
-    amount: 'Amount:',
-    failureReason: 'Failure Reason:',
-    nextRetry: 'Next Retry:',
-    updatePayment: 'Update Payment Method',
-    whatHappensNext: '📅 What Happens Next',
-    timelineToday: 'Today: Payment failed - update your payment method',
-    timelineRetry: '{retryDate}: We\'ll automatically retry the payment',
-    timelineSuspension: '{suspensionDate}: Account will be suspended if payment still fails',
-    howToResolve: 'How to resolve this:',
-    step1: '1. Click "Update Payment Method" above',
-    step2: '2. Add a new payment method or update your existing one',
-    step3: '3. Verify your billing information is correct',
-    step4: '4. Contact your bank if you need assistance',
-    needHelp: 'Need Help?',
-    helpText: 'If you\'re having trouble updating your payment method or have questions about this charge, our support team is here to help.',
-    viewBilling: 'View Billing History',
-    contactSupport: 'Contact Support',
-    keepActive: 'We want to keep your Triven service active. Please update your payment method to avoid any service interruption.',
-    bestRegards: 'Best regards,',
-    teamName: 'The Triven Team'
-  }
+  const t =
+    locale === 'fr'
+      ? {
+          preview: 'Action requise : Échec du paiement pour votre abonnement Triven ⚠️',
+          title: 'Échec du Paiement - Action Requise',
+          greeting: 'Bonjour {name},',
+          intro:
+            "Nous n'avons pas pu traiter votre paiement pour votre abonnement Triven {planName}. Pour assurer un service ininterrompu, veuillez mettre à jour votre méthode de paiement dès que possible.",
+          paymentDetails: '⚠️ Détails du Paiement',
+          plan: 'Plan :',
+          amount: 'Montant :',
+          failureReason: "Raison de l'Échec :",
+          nextRetry: 'Prochaine Tentative :',
+          updatePayment: 'Mettre à Jour la Méthode de Paiement',
+          whatHappensNext: '📅 Ce Qui Se Passe Ensuite',
+          timelineToday:
+            "Aujourd'hui : Échec du paiement - mettez à jour votre méthode de paiement",
+          timelineRetry: '{retryDate} : Nous réessaierons automatiquement le paiement',
+          timelineSuspension:
+            '{suspensionDate} : Le compte sera suspendu si le paiement échoue encore',
+          howToResolve: 'Comment résoudre ceci :',
+          step1: '1. Cliquez sur "Mettre à Jour la Méthode de Paiement" ci-dessus',
+          step2: "2. Ajoutez une nouvelle méthode de paiement ou mettez à jour l'existante",
+          step3: '3. Vérifiez que vos informations de facturation sont correctes',
+          step4: "4. Contactez votre banque si vous avez besoin d'aide",
+          needHelp: "Besoin d'Aide ?",
+          helpText:
+            'Si vous avez des difficultés à mettre à jour votre méthode de paiement ou avez des questions sur cette charge, notre équipe de support est là pour vous aider.',
+          viewBilling: "Voir l'Historique de Facturation",
+          contactSupport: 'Contacter le Support',
+          keepActive:
+            'Nous voulons maintenir votre service Triven actif. Veuillez mettre à jour votre méthode de paiement pour éviter toute interruption de service.',
+          bestRegards: 'Cordialement,',
+          teamName: "L'équipe Triven",
+        }
+      : {
+          preview: 'Action required: Payment failed for your Triven subscription ⚠️',
+          title: 'Payment Failed - Action Required',
+          greeting: 'Hi {name},',
+          intro:
+            'We were unable to process your payment for your Triven {planName} subscription. To ensure uninterrupted service, please update your payment method as soon as possible.',
+          paymentDetails: '⚠️ Payment Details',
+          plan: 'Plan:',
+          amount: 'Amount:',
+          failureReason: 'Failure Reason:',
+          nextRetry: 'Next Retry:',
+          updatePayment: 'Update Payment Method',
+          whatHappensNext: '📅 What Happens Next',
+          timelineToday: 'Today: Payment failed - update your payment method',
+          timelineRetry: "{retryDate}: We'll automatically retry the payment",
+          timelineSuspension: '{suspensionDate}: Account will be suspended if payment still fails',
+          howToResolve: 'How to resolve this:',
+          step1: '1. Click "Update Payment Method" above',
+          step2: '2. Add a new payment method or update your existing one',
+          step3: '3. Verify your billing information is correct',
+          step4: '4. Contact your bank if you need assistance',
+          needHelp: 'Need Help?',
+          helpText:
+            "If you're having trouble updating your payment method or have questions about this charge, our support team is here to help.",
+          viewBilling: 'View Billing History',
+          contactSupport: 'Contact Support',
+          keepActive:
+            'We want to keep your Triven service active. Please update your payment method to avoid any service interruption.',
+          bestRegards: 'Best regards,',
+          teamName: 'The Triven Team',
+        }
 
   return (
     <Html lang={locale}>
@@ -118,9 +129,7 @@ export default function PaymentFailedEmail({
           <Section style={section}>
             <Text style={title}>{t.title}</Text>
             <Text style={text}>{interpolate(t.greeting, { name })}</Text>
-            <Text style={text}>
-              {interpolate(t.intro, { planName })}
-            </Text>
+            <Text style={text}>{interpolate(t.intro, { planName })}</Text>
 
             <Section style={failureBox}>
               <Text style={failureTitle}>{t.paymentDetails}</Text>
@@ -170,9 +179,7 @@ export default function PaymentFailedEmail({
             <Text style={text}>
               <strong>{t.needHelp}</strong>
             </Text>
-            <Text style={text}>
-              {t.helpText}
-            </Text>
+            <Text style={text}>{t.helpText}</Text>
 
             <Section style={buttonContainer}>
               <Button style={secondaryButton} href={billingUrl}>
@@ -183,12 +190,11 @@ export default function PaymentFailedEmail({
               </Button>
             </Section>
 
-            <Text style={footer}>
-              {t.keepActive}
-            </Text>
+            <Text style={footer}>{t.keepActive}</Text>
 
             <Text style={footer}>
-              {t.bestRegards}<br />
+              {t.bestRegards}
+              <br />
               {t.teamName}
             </Text>
           </Section>
@@ -200,7 +206,8 @@ export default function PaymentFailedEmail({
 
 const main = {
   backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  fontFamily:
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 }
 
 const container = {

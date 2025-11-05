@@ -1,9 +1,9 @@
 import { prisma } from '~/app/db.server'
-import { 
-  sendTrialExpiringEmail,
-  sendSubscriptionCancelledEmail,
-  getUserLocale,
+import {
   formatDate,
+  getUserLocale,
+  sendSubscriptionCancelledEmail,
+  sendTrialExpiringEmail,
 } from '~/app/services/email.server'
 
 /**
@@ -13,11 +13,11 @@ import {
 export async function sendTrialExpiringEmails() {
   try {
     console.log('🔍 Checking for expiring trials...')
-    
+
     // Find users with trials expiring in 3 days and 1 day
-    const threeDaysFromNow = Math.floor(Date.now() / 1000) + (3 * 24 * 60 * 60)
-    const oneDayFromNow = Math.floor(Date.now() / 1000) + (1 * 24 * 60 * 60)
-    
+    const threeDaysFromNow = Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60
+    const oneDayFromNow = Math.floor(Date.now() / 1000) + 1 * 24 * 60 * 60
+
     // Get subscriptions expiring in 3 days
     const trialsExpiring3Days = await prisma.subscription.findMany({
       where: {
@@ -55,7 +55,7 @@ export async function sendTrialExpiringEmails() {
     for (const subscription of trialsExpiring3Days) {
       try {
         const locale = await getUserLocale(subscription.userId)
-        
+
         await sendTrialExpiringEmail({
           to: subscription.user.email,
           locale,
@@ -67,7 +67,7 @@ export async function sendTrialExpiringEmails() {
           upgradeUrl: `${process.env.BASE_URL}/billing`,
           dashboardUrl: `${process.env.BASE_URL}/dashboard`,
         })
-        
+
         console.log(`✅ Sent 3-day expiry email to ${subscription.user.email}`)
       } catch (error) {
         console.error(`❌ Failed to send 3-day expiry email to ${subscription.user.email}:`, error)
@@ -78,7 +78,7 @@ export async function sendTrialExpiringEmails() {
     for (const subscription of trialsExpiring1Day) {
       try {
         const locale = await getUserLocale(subscription.userId)
-        
+
         await sendTrialExpiringEmail({
           to: subscription.user.email,
           locale,
@@ -90,7 +90,7 @@ export async function sendTrialExpiringEmails() {
           upgradeUrl: `${process.env.BASE_URL}/billing`,
           dashboardUrl: `${process.env.BASE_URL}/dashboard`,
         })
-        
+
         console.log(`✅ Sent 1-day expiry email to ${subscription.user.email}`)
       } catch (error) {
         console.error(`❌ Failed to send 1-day expiry email to ${subscription.user.email}:`, error)
@@ -111,7 +111,10 @@ export async function sendTrialExpiringEmails() {
  * Handles subscription cancellation emails
  * Called when a subscription is cancelled via webhook or API
  */
-export async function handleSubscriptionCancellation(subscriptionId: string, cancellationReason?: string) {
+export async function handleSubscriptionCancellation(
+  subscriptionId: string,
+  cancellationReason?: string
+) {
   try {
     const subscription = await prisma.subscription.findUnique({
       where: { id: subscriptionId },
@@ -127,7 +130,7 @@ export async function handleSubscriptionCancellation(subscriptionId: string, can
     }
 
     const locale = await getUserLocale(subscription.userId)
-    
+
     await sendSubscriptionCancelledEmail({
       to: subscription.user.email,
       locale,
@@ -140,7 +143,7 @@ export async function handleSubscriptionCancellation(subscriptionId: string, can
       exportDataUrl: `${process.env.BASE_URL}/export`,
       feedbackUrl: `${process.env.BASE_URL}/feedback`,
     })
-    
+
     console.log(`✅ Sent cancellation email to ${subscription.user.email}`)
   } catch (error) {
     console.error(`❌ Failed to send cancellation email for subscription ${subscriptionId}:`, error)
@@ -154,7 +157,7 @@ export async function handleSubscriptionCancellation(subscriptionId: string, can
  */
 export async function cronTrialExpiringEmails() {
   console.log('🕐 Starting scheduled trial expiring emails job...')
-  
+
   try {
     const result = await sendTrialExpiringEmails()
     console.log(`✅ Trial expiring emails job completed:`, result)
@@ -172,22 +175,28 @@ export async function cronTrialExpiringEmails() {
 export async function handleTrialExpiringEmailsRequest() {
   try {
     const result = await cronTrialExpiringEmails()
-    return new Response(JSON.stringify({
-      success: true,
-      message: 'Trial expiring emails sent successfully',
-      ...result,
-    }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Trial expiring emails sent successfully',
+        ...result,
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
   } catch (error) {
     console.error('Trial expiring emails request failed:', error)
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'Failed to send trial expiring emails',
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Failed to send trial expiring emails',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
   }
 }

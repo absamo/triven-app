@@ -1,6 +1,6 @@
-import { type ActionFunction, type ActionFunctionArgs, type LoaderFunction } from 'react-router'
+import type { ActionFunction, ActionFunctionArgs, LoaderFunction } from 'react-router'
 
-import { updateCurrencyBase, deleteCurrency } from '~/app/services/settings.server'
+import { deleteCurrency, updateCurrencyBase } from '~/app/services/settings.server'
 
 export const loader: LoaderFunction = async () => {
   return {}

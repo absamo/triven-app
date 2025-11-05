@@ -1,4 +1,4 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
+import type { LoaderFunction, LoaderFunctionArgs } from 'react-router'
 import { getFilteredProducts } from '~/app/services/products.server'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {

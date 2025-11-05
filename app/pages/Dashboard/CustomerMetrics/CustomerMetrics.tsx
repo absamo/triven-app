@@ -2,6 +2,7 @@ import { DonutChart } from '@mantine/charts'
 import { Grid, Group, Paper, Text, ThemeIcon, Title } from '@mantine/core'
 import { IconUserCog, IconUserPlus, IconUsers } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import ClientOnly from '~/app/components/ClientOnly'
 
 interface CustomerMetricsProps {
   customerMetrics: {
@@ -85,32 +86,36 @@ export default function CustomerMetrics({ customerMetrics }: CustomerMetricsProp
             <Title order={6} ta="center" mb="sm">
               {t('dashboard:customerTypes')}
             </Title>
-            <DonutChart
-              data={customerMetrics.customersByType}
-              size={200}
-              thickness={40}
-              withLabels
-              withTooltip
-              tooltipDataSource="segment"
-              chartLabel={t('dashboard:customers')}
-              style={{ margin: '0 auto' }}
-            />
+            <ClientOnly>
+              <DonutChart
+                data={customerMetrics.customersByType}
+                size={200}
+                thickness={40}
+                withLabels
+                withTooltip
+                tooltipDataSource="segment"
+                chartLabel={t('dashboard:customers')}
+                style={{ margin: '0 auto' }}
+              />
+            </ClientOnly>
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Title order={6} ta="center" mb="sm">
               {t('dashboard:engagementLevels')}
             </Title>
-            <DonutChart
-              data={customerMetrics.customerActivity}
-              size={200}
-              thickness={40}
-              withLabels
-              withTooltip
-              tooltipDataSource="segment"
-              chartLabel={t('dashboard:activity')}
-              style={{ margin: '0 auto' }}
-            />
+            <ClientOnly>
+              <DonutChart
+                data={customerMetrics.customerActivity}
+                size={200}
+                thickness={40}
+                withLabels
+                withTooltip
+                tooltipDataSource="segment"
+                chartLabel={t('dashboard:activity')}
+                style={{ margin: '0 auto' }}
+              />
+            </ClientOnly>
           </Grid.Col>
         </Grid>
       ) : (

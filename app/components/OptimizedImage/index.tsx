@@ -1,3 +1,4 @@
+export type { OptimizedImageProps } from './OptimizedImage'
 export {
   Avatar,
   CardImage,
@@ -5,4 +6,3 @@ export {
   OptimizedImage,
   Thumbnail,
 } from './OptimizedImage'
-export type { OptimizedImageProps } from './OptimizedImage'

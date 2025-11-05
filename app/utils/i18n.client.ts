@@ -14,7 +14,7 @@ export function changeLanguageWithPersistence(i18n: I18nInstance, language: stri
 
   // Change the language - i18next will automatically save to cookie
   i18n.changeLanguage(language)
-  
+
   // Also update URL if there's an lng parameter present
   const url = new URL(window.location.href)
   if (url.searchParams.has('lng')) {

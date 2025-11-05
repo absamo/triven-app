@@ -1,0 +1,425 @@
+# Product Management Tools - API Contracts
+# Feature: 001-mastra-assistant-tools
+# Requirements: FR-001, FR-002, FR-003, FR-004
+
+tools:
+  - name: updateProductStock
+    description: "Update the available quantity of a product with optimistic locking to prevent race conditions"
+    requirements: [FR-001]
+    authorization:
+      requiredPermission: MANAGE_PRODUCTS
+      allowedRoles: [Admin, Manager, Staff]
+    
+    input:
+      schema:
+        type: object
+        required: [productId, quantity, version]
+        properties:
+          productId:
+            type: string
+            description: "Unique product identifier"
+            pattern: "^[a-zA-Z0-9_-]+$"
+          quantity:
+            type: integer
+            minimum: 0
+            description: "New available quantity (absolute value, not delta)"
+          version:
+            type: integer
+            minimum: 1
+            description: "Current version for optimistic locking"
+          reason:
+            type: string
+            maxLength: 200
+            description: "Optional reason for stock update (for audit trail)"
+      
+      examples:
+        - name: "Inventory count update"
+          value:
+            productId: "prod_abc123"
+            quantity: 150
+            version: 5
+            reason: "Physical inventory count adjustment"
+        
+        - name: "Stock replenishment"
+          value:
+            productId: "prod_xyz789"
+            quantity: 500
+            version: 12
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+              const: true
+            product:
+              type: object
+              properties:
+                id: { type: string }
+                sku: { type: string }
+                name: { type: string }
+                availableQuantity: { type: integer }
+                version: { type: integer }
+                updatedAt: { type: string, format: date-time }
+            message:
+              type: string
+        
+        example:
+          success: true
+          product:
+            id: "prod_abc123"
+            sku: "SKU-001"
+            name: "Widget A"
+            availableQuantity: 150
+            version: 6
+            updatedAt: "2025-11-03T14:30:00Z"
+          message: "Stock updated successfully to 150 units"
+      
+      errors:
+        - code: VERSION_CONFLICT
+          status: 409
+          message: "Product was modified by another user. Please refresh and try again."
+          resolution: "Fetch latest product version and resubmit with updated version number"
+        
+        - code: PRODUCT_NOT_FOUND
+          status: 404
+          message: "Product not found"
+        
+        - code: INSUFFICIENT_PERMISSIONS
+          status: 403
+          message: "User lacks MANAGE_PRODUCTS permission"
+    
+    sideEffects:
+      - "Updates Product.availableQuantity and increments Product.version"
+      - "Creates ToolExecutionLog entry with parameters and result"
+      - "May trigger low-stock alerts if quantity falls below reorderLevel"
+    
+    performance:
+      targetLatency: "< 500ms"
+      databaseOperations: 2
+      cachingStrategy: "Invalidate product cache on success"
+
+  - name: updateProductPrice
+    description: "Update the selling price and/or cost price of a product"
+    requirements: [FR-002]
+    authorization:
+      requiredPermission: MANAGE_PRODUCTS
+      allowedRoles: [Admin, Manager]
+    
+    input:
+      schema:
+        type: object
+        required: [productId]
+        properties:
+          productId:
+            type: string
+          sellingPrice:
+            type: number
+            format: decimal
+            minimum: 0.01
+            description: "New selling price (optional if costPrice provided)"
+          costPrice:
+            type: number
+            format: decimal
+            minimum: 0
+            description: "New cost price (optional if sellingPrice provided)"
+        
+        # At least one price must be provided
+        anyOf:
+          - required: [sellingPrice]
+          - required: [costPrice]
+      
+      examples:
+        - name: "Update both prices"
+          value:
+            productId: "prod_abc123"
+            sellingPrice: 29.99
+            costPrice: 15.50
+        
+        - name: "Update only selling price"
+          value:
+            productId: "prod_xyz789"
+            sellingPrice: 49.99
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            product:
+              type: object
+              properties:
+                id: { type: string }
+                sku: { type: string }
+                name: { type: string }
+                sellingPrice: { type: number }
+                costPrice: { type: number }
+                margin: { type: number, description: "Profit margin percentage" }
+                updatedAt: { type: string, format: date-time }
+            message: { type: string }
+        
+        example:
+          success: true
+          product:
+            id: "prod_abc123"
+            sku: "SKU-001"
+            name: "Widget A"
+            sellingPrice: 29.99
+            costPrice: 15.50
+            margin: 48.28
+            updatedAt: "2025-11-03T14:35:00Z"
+          message: "Price updated successfully. New margin: 48.3%"
+      
+      errors:
+        - code: PRODUCT_NOT_FOUND
+          status: 404
+        - code: INVALID_PRICE
+          status: 400
+          message: "Selling price must be greater than zero"
+        - code: NEGATIVE_MARGIN_WARNING
+          status: 200
+          message: "Warning: Selling price is lower than cost price (negative margin)"
+    
+    sideEffects:
+      - "Updates Product.sellingPrice and/or Product.costPrice"
+      - "Creates ToolExecutionLog entry"
+      - "May require repricing of pending orders (depends on business rules)"
+    
+    performance:
+      targetLatency: "< 300ms"
+
+  - name: createProduct
+    description: "Create a new product with initial inventory"
+    requirements: [FR-003]
+    authorization:
+      requiredPermission: MANAGE_PRODUCTS
+      allowedRoles: [Admin, Manager]
+    
+    input:
+      schema:
+        type: object
+        required: [sku, name, sellingPrice, categoryId]
+        properties:
+          sku:
+            type: string
+            pattern: "^[A-Z0-9-]+$"
+            maxLength: 50
+            description: "Stock keeping unit (must be unique per company)"
+          name:
+            type: string
+            minLength: 1
+            maxLength: 200
+          description:
+            type: string
+            maxLength: 1000
+          sellingPrice:
+            type: number
+            format: decimal
+            minimum: 0.01
+          costPrice:
+            type: number
+            format: decimal
+            minimum: 0
+          availableQuantity:
+            type: integer
+            minimum: 0
+            default: 0
+          reorderLevel:
+            type: integer
+            minimum: 0
+            default: 10
+          categoryId:
+            type: string
+          status:
+            type: string
+            enum: [ACTIVE, INACTIVE, DISCONTINUED]
+            default: ACTIVE
+      
+      examples:
+        - name: "New product with inventory"
+          value:
+            sku: "WGT-500"
+            name: "Premium Widget 500"
+            description: "High-quality widget with extended warranty"
+            sellingPrice: 99.99
+            costPrice: 55.00
+            availableQuantity: 100
+            reorderLevel: 20
+            categoryId: "cat_widgets"
+            status: "ACTIVE"
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            product:
+              type: object
+              properties:
+                id: { type: string }
+                sku: { type: string }
+                name: { type: string }
+                sellingPrice: { type: number }
+                availableQuantity: { type: integer }
+                version: { type: integer, const: 1 }
+                createdAt: { type: string, format: date-time }
+            message: { type: string }
+        
+        example:
+          success: true
+          product:
+            id: "prod_new123"
+            sku: "WGT-500"
+            name: "Premium Widget 500"
+            sellingPrice: 99.99
+            availableQuantity: 100
+            version: 1
+            createdAt: "2025-11-03T14:40:00Z"
+          message: "Product 'Premium Widget 500' created successfully with SKU WGT-500"
+      
+      errors:
+        - code: DUPLICATE_SKU
+          status: 409
+          message: "A product with SKU 'WGT-500' already exists"
+        - code: CATEGORY_NOT_FOUND
+          status: 404
+          message: "Category not found"
+        - code: INVALID_SKU_FORMAT
+          status: 400
+          message: "SKU must contain only uppercase letters, numbers, and hyphens"
+    
+    sideEffects:
+      - "Inserts new Product record with version=1"
+      - "Creates ToolExecutionLog entry"
+      - "Emits product-created event for integrations"
+    
+    performance:
+      targetLatency: "< 500ms"
+
+  - name: updateProductDetails
+    description: "Update non-financial product information (name, description, category, status)"
+    requirements: [FR-004]
+    authorization:
+      requiredPermission: MANAGE_PRODUCTS
+      allowedRoles: [Admin, Manager, Staff]
+    
+    input:
+      schema:
+        type: object
+        required: [productId]
+        properties:
+          productId:
+            type: string
+          name:
+            type: string
+            minLength: 1
+            maxLength: 200
+          description:
+            type: string
+            maxLength: 1000
+          categoryId:
+            type: string
+          status:
+            type: string
+            enum: [ACTIVE, INACTIVE, DISCONTINUED]
+          reorderLevel:
+            type: integer
+            minimum: 0
+        
+        minProperties: 2  # At least one field besides productId
+      
+      examples:
+        - name: "Update category and status"
+          value:
+            productId: "prod_abc123"
+            categoryId: "cat_featured"
+            status: "ACTIVE"
+        
+        - name: "Update description and reorder level"
+          value:
+            productId: "prod_xyz789"
+            description: "Updated product description with new features"
+            reorderLevel: 50
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            product:
+              type: object
+              properties:
+                id: { type: string }
+                sku: { type: string }
+                name: { type: string }
+                description: { type: string }
+                category: { type: object }
+                status: { type: string }
+                reorderLevel: { type: integer }
+                updatedAt: { type: string, format: date-time }
+            message: { type: string }
+        
+        example:
+          success: true
+          product:
+            id: "prod_abc123"
+            sku: "SKU-001"
+            name: "Widget A"
+            description: "Updated description"
+            category: { id: "cat_featured", name: "Featured Products" }
+            status: "ACTIVE"
+            reorderLevel: 50
+            updatedAt: "2025-11-03T14:45:00Z"
+          message: "Product details updated successfully"
+      
+      errors:
+        - code: PRODUCT_NOT_FOUND
+          status: 404
+        - code: CATEGORY_NOT_FOUND
+          status: 404
+        - code: NO_FIELDS_PROVIDED
+          status: 400
+          message: "At least one field must be provided for update"
+    
+    sideEffects:
+      - "Updates specified Product fields"
+      - "Creates ToolExecutionLog entry"
+    
+    performance:
+      targetLatency: "< 400ms"
+
+# Performance Benchmarks
+performance:
+  batchOperations: "Not supported in v1 - use individual tool calls"
+  concurrentRequests: "Safe for parallel execution (optimistic locking on updateProductStock)"
+  rateLimit: "100 requests/minute per user"
+
+# Testing Requirements
+testing:
+  unitTests:
+    - "Zod schema validation for all inputs"
+    - "Authorization checks for each role"
+    - "Version conflict simulation"
+    - "Error message formatting"
+  
+  integrationTests:
+    - "Database transaction rollback on error"
+    - "ToolExecutionLog creation"
+    - "Optimistic locking with concurrent updates"
+    - "Category lookup and validation"
+  
+  e2eTests:
+    - "Complete product creation workflow via chat"
+    - "Stock update with conflict resolution UI"
+    - "Price update with margin calculation display"
+
+# Changelog
+changelog:
+  - version: 1.0.0
+    date: 2025-11-03
+    changes: "Initial contract definition for product management tools"

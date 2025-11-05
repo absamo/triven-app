@@ -21,13 +21,13 @@ export default function RolesPermission({
   const { t } = useTranslation(['roles', 'common'])
 
   return (
-    <Switch.Group 
-      value={permissions} 
-      label={label} 
-      mt={20} 
-      pb={20} 
-      style={{ 
-        borderBottom: isLast ? 'none' : '1px solid var(--mantine-color-default-border)' 
+    <Switch.Group
+      value={permissions}
+      label={label}
+      mt={20}
+      pb={20}
+      style={{
+        borderBottom: isLast ? 'none' : '1px solid var(--mantine-color-default-border)',
       }}
     >
       <Flex mt="xs" justify={'space-between'}>

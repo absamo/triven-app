@@ -204,7 +204,7 @@ export default function Chat() {
         setMessages([])
         return true // Command was handled
 
-      case '/help':
+      case '/help': {
         const helpMessage: Message = {
           id: Date.now().toString() + '-help',
           content: `${t('assistant:commandsHeader')}\n\n${availableCommands.map((cmd) => `${cmd.icon} **${cmd.command}** - ${cmd.description}`).join('\n')}`,
@@ -213,6 +213,7 @@ export default function Chat() {
         }
         setMessages((prev) => [...prev, helpMessage])
         return true // Command was handled
+      }
 
       default:
         return false // Command not recognized

@@ -47,7 +47,12 @@ export async function generateRevenueOpportunities({
     opportunities.push(...stockoutOpps)
 
     // 2. Fast-Moving Inventory Opportunities
-    const fastMovingOpps = await findFastMovingOpportunities({ companyId, agencyId, siteId, dateRange })
+    const fastMovingOpps = await findFastMovingOpportunities({
+      companyId,
+      agencyId,
+      siteId,
+      dateRange,
+    })
     opportunities.push(...fastMovingOpps)
 
     // 3. Low Stock Opportunities (simpler, inventory-based)
@@ -70,11 +75,13 @@ async function findStockoutOpportunities({
   dateRange,
 }: GenerateOpportunitiesParams): Promise<RevenueOpportunity[]> {
   // Use date range or default to last 30 days
-  const startDate = dateRange?.startDate || (() => {
-    const d = new Date()
-    d.setDate(d.getDate() - 30)
-    return d
-  })()
+  const startDate =
+    dateRange?.startDate ||
+    (() => {
+      const d = new Date()
+      d.setDate(d.getDate() - 30)
+      return d
+    })()
   const endDate = dateRange?.endDate || new Date()
 
   // Get out-of-stock products
@@ -111,7 +118,8 @@ async function findStockoutOpportunities({
     )
 
     if (totalQuantitySold > 0) {
-      const daysInPeriod = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) || 30
+      const daysInPeriod =
+        Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) || 30
       const avgDailyDemand = totalQuantitySold / daysInPeriod
       const suggestedStock = Math.ceil(avgDailyDemand * 30) // 30 days supply
       const estimatedRevenue = suggestedStock * product.sellingPrice
@@ -153,11 +161,13 @@ async function findFastMovingOpportunities({
   dateRange,
 }: GenerateOpportunitiesParams): Promise<RevenueOpportunity[]> {
   // Use date range or default to last 30 days
-  const startDate = dateRange?.startDate || (() => {
-    const d = new Date()
-    d.setDate(d.getDate() - 30)
-    return d
-  })()
+  const startDate =
+    dateRange?.startDate ||
+    (() => {
+      const d = new Date()
+      d.setDate(d.getDate() - 30)
+      return d
+    })()
   const endDate = dateRange?.endDate || new Date()
 
   // Get products with recent sales
@@ -184,7 +194,8 @@ async function findFastMovingOpportunities({
   })
 
   const opportunities: RevenueOpportunity[] = []
-  const daysInPeriod = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) || 30
+  const daysInPeriod =
+    Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) || 30
 
   for (const product of products) {
     const totalQuantitySold = product.salesOrderItems.reduce(
@@ -279,7 +290,7 @@ async function findLowStockOpportunities({
     const reorderLevel = product.reorderPoint || 10
     const suggestedStock = Math.max(reorderLevel * 2, 50) // Restock to 2x reorder point or 50 units
     const additionalUnits = suggestedStock - currentStock
-    
+
     if (additionalUnits > 0) {
       const estimatedRevenue = additionalUnits * product.sellingPrice
       const margin = ((product.sellingPrice - product.costPrice) / product.sellingPrice) * 100

@@ -1,15 +1,14 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-
-import PurchaseOrders from '~/app/pages/PurchaseOrders'
-import { updatePurchaseOrderStatus, getPurchaseOrders } from '~/app/services/purchases.server'
-import { Notification } from '~/app/components'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
+import { Notification } from '~/app/components'
+import PurchaseOrders from '~/app/pages/PurchaseOrders'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getPurchaseOrders, updatePurchaseOrderStatus } from '~/app/services/purchases.server'
 import type { Route } from './+types/purchaseOrders'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {

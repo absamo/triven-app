@@ -1,16 +1,16 @@
+import dayjs from 'dayjs'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import { z } from 'zod'
 import {
   INVOICE_STATUSES,
   PURCHASE_ORDER_PAYMENT_TERMS,
   SALES_ORDERS_STATUSES,
 } from '~/app/common/constants'
 import { agencySchema } from './agencySchema'
+import { companySchema } from './companySchema'
+import { customerSchema } from './customerSchema'
 import { salesOrderItemSchema } from './salesOrderItemSchema'
 
-import { z } from 'zod'
-import dayjs from 'dayjs'
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
-import { customerSchema } from './customerSchema'
-import { companySchema } from './companySchema'
 dayjs.extend(isSameOrAfter)
 
 export const salesOrderSchema = z.object({

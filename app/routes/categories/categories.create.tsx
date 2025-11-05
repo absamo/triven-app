@@ -1,4 +1,4 @@
-import { type ActionFunction, type ActionFunctionArgs, type LoaderFunction } from 'react-router'
+import type { ActionFunction, ActionFunctionArgs, LoaderFunction } from 'react-router'
 
 import type { ICategory } from '~/app/common/validations/categorySchema'
 import { Notification } from '~/app/components'

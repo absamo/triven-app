@@ -1,10 +1,9 @@
 import { Badge, Menu, Table, Text } from '@mantine/core'
+import { useForm } from '@mantine/form'
 import dayjs from 'dayjs'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
-
-import { useForm } from '@mantine/form'
-import { useEffect, useState } from 'react'
 import { SALES_ORDERS_STATUSES } from '~/app/common/constants'
 import { formatCurrency } from '~/app/common/helpers/money'
 import { getSalesOrderStatusLabel } from '~/app/common/helpers/sales'

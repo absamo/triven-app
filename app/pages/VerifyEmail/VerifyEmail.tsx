@@ -1,4 +1,4 @@
-import { Alert, Button, Flex, Paper, PinInput, Stack, Text, Title, rem } from '@mantine/core'
+import { Alert, Button, Flex, Paper, PinInput, rem, Stack, Text, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { IconExclamationCircle, IconMail } from '@tabler/icons-react'
 import { useState } from 'react'

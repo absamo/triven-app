@@ -1,18 +1,18 @@
-import {
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type ActionFunction,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
-import { getAgencies } from '~/app/services/agencies.server'
+import type { IAgency } from '~/app/common/validations/agencySchema'
+import type { ICustomer } from '~/app/common/validations/customerSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
 import { Notification } from '~/app/components'
 import CustomerForm from '~/app/pages/Customers/CustomerForm'
-import { createCustomer } from '~/app/services/customers.server'
-import { type ICustomer } from '~/app/common/validations/customerSchema'
+import { getAgencies } from '~/app/services/agencies.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { createCustomer } from '~/app/services/customers.server'
 import type { Route } from './+types/customers.create'
-import type { IAgency } from '~/app/common/validations/agencySchema'
-import type { ISite } from '~/app/common/validations/siteSchema'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

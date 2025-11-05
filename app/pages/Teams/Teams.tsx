@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSubmit } from 'react-router'
 
 import { getUserRoleLabel, getUserStatusLabel } from '~/app/common/helpers/user'
-import { type ITeam } from '~/app/common/validations/teamSchema'
+import type { ITeam } from '~/app/common/validations/teamSchema'
 import { formatRelativeTime } from '~/app/lib/dayjs'
 import { useAutoRevalidate } from '~/app/lib/hooks/useAutoRevalidate'
 import { Title } from '~/app/partials/Title'

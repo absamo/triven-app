@@ -17,6 +17,8 @@ import {
 } from '@mantine/core'
 import {
   IconArrowUp,
+  IconBrandMastercard,
+  IconBrandVisa,
   IconCreditCard,
   IconCrown,
   IconDots,
@@ -25,13 +27,11 @@ import {
   IconInfoCircle,
   IconPremiumRights,
   IconX,
-  IconBrandMastercard,
-  IconBrandVisa,
 } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRevalidator, useNavigate } from 'react-router'
+import { useNavigate, useRevalidator } from 'react-router'
 import {
   canUpgrade,
   getNextPlan,
@@ -133,16 +133,16 @@ export default function Settings({
   // Handle upgrade button click - redirect to billing page with upgrade action
   const handleUpgrade = () => {
     let targetPlan = 'professional' // default
-    
+
     if (billing?.planStatus === 'trialing' || billing?.planStatus === 'incomplete') {
-      // For trial/incomplete, upgrade to their current plan
+      // For trial/incomplete/incomplete_expired, upgrade to their current plan
       targetPlan = billing?.currentPlan || 'professional'
     } else {
       // For active subscriptions, get the next plan
       const nextPlan = getNextPlan(billing?.currentPlan || '', billing?.planStatus || '')
       targetPlan = nextPlan || 'professional'
     }
-    
+
     navigate(`/billing?action=upgrade&plan=${targetPlan}`)
   }
 
@@ -211,10 +211,7 @@ export default function Settings({
                 <Menu.Dropdown>
                   {shouldShowUpgrade(billing?.planStatus) &&
                     canUpgrade(billing?.currentPlan || '', billing?.planStatus) && (
-                      <Menu.Item
-                        leftSection={<IconArrowUp size={16} />}
-                        onClick={handleUpgrade}
-                      >
+                      <Menu.Item leftSection={<IconArrowUp size={16} />} onClick={handleUpgrade}>
                         {(() => {
                           if (
                             billing?.planStatus === 'trialing' ||
@@ -458,7 +455,7 @@ export default function Settings({
                   </div>
                 </Group>
               </Group>
-              
+
               <Table>
                 <Table.Thead>
                   <Table.Tr>
@@ -478,9 +475,7 @@ export default function Settings({
                         </Text>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="sm">
-                          {dayjs.unix(invoice.created).format('MMM D, YYYY')}
-                        </Text>
+                        <Text size="sm">{dayjs.unix(invoice.created).format('MMM D, YYYY')}</Text>
                       </Table.Td>
                       <Table.Td>
                         <Group gap={4} align="baseline">

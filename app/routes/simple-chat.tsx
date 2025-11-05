@@ -62,7 +62,7 @@ const simpleTools = [
 // Function to execute tools
 async function executeTool(name: string, args: any) {
   switch (name) {
-    case 'get_products':
+    case 'get_products': {
       const limit = parseInt(args.limit) || 10
       const language = args.language || 'en' // Default to English
 
@@ -94,8 +94,9 @@ async function executeTool(name: string, args: any) {
         showingAll: products.length === totalCount,
         language: language,
       }
+    }
 
-    case 'search_products':
+    case 'search_products': {
       const query = args.query?.toLowerCase() || ''
       const searchResults = await prisma.product.findMany({
         where: {
@@ -135,6 +136,7 @@ async function executeTool(name: string, args: any) {
         })),
         found: searchResults.length,
       }
+    }
 
     default:
       throw new Error(`Unknown tool: ${name}`)

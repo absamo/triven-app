@@ -1,21 +1,20 @@
 import { Badge, Menu, Table, Text, UnstyledButton } from '@mantine/core'
-import { IconDotsVertical } from '@tabler/icons-react'
-import dayjs from 'dayjs'
-import { useTranslation } from 'react-i18next'
-import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
-
-import { formatCurrency } from '~/app/common/helpers/money'
-import { getPaymentMethodLabel, getPaymentStatusLabel } from '~/app/common/helpers/payment'
-import { Title } from '~/app/partials/Title'
 // import InvoicePDF from "~/app/PDF/InvoicePDF"
 import { useForm } from '@mantine/form'
+import { IconDotsVertical } from '@tabler/icons-react'
+import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
 import { PAYMENT_STATUSES } from '~/app/common/constants'
 import { getTotalAmountDueByBill } from '~/app/common/helpers/bill'
+import { formatCurrency } from '~/app/common/helpers/money'
+import { getPaymentMethodLabel, getPaymentStatusLabel } from '~/app/common/helpers/payment'
 import type { IBill } from '~/app/common/validations/billSchema'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
-import { type IPaymentsMade } from '~/app/common/validations/paymentsMadeSchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
+import type { IPaymentsMade } from '~/app/common/validations/paymentsMadeSchema'
 import { PurchaseOrderFilters } from '~/app/partials/PurchaseOrderFilters'
+import { Title } from '~/app/partials/Title'
 
 interface PaymentsMadeProps {
   paymentsMade: IPaymentsMade[]

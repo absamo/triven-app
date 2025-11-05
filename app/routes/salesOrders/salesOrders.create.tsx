@@ -1,8 +1,8 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
 } from 'react-router'
 import { SALES_ORDERS_STATUSES, USER_ROLES } from '~/app/common/constants'
 import type { IAgency } from '~/app/common/validations/agencySchema'

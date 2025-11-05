@@ -7,11 +7,11 @@ import { getPaymentMethodDetails } from '~/app/modules/stripe/queries.server'
 import { stripe } from '~/app/modules/stripe/stripe.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import {
-  sendTrialWelcomeEmail,
-  sendSubscriptionConfirmationEmail,
-  getUserLocale,
-  formatDate,
   formatCurrency,
+  formatDate,
+  getUserLocale,
+  sendSubscriptionConfirmationEmail,
+  sendTrialWelcomeEmail,
 } from '~/app/services/email.server'
 
 const subscriptionSchema = z.object({
@@ -117,18 +117,24 @@ export async function action({ request }: ActionFunctionArgs) {
       where: { userId: user.id },
     })
 
-    // If subscription is set to cancel at period end, treat it as if it doesn't exist
+    // If subscription is set to cancel at period end or already canceled, treat it as if it doesn't exist
     // so we create a fresh subscription instead of trying to upgrade
     if (existingSubscription) {
       try {
         const stripeSubscription = await stripe.subscriptions.retrieve(existingSubscription.id)
-        if (stripeSubscription.cancel_at_period_end) {
+        if (
+          stripeSubscription.cancel_at_period_end ||
+          stripeSubscription.status === 'canceled' ||
+          stripeSubscription.status === 'incomplete_expired'
+        ) {
           console.log(
-            `⚠️ Subscription ${existingSubscription.id} is set to cancel at period end. Canceling it immediately and will create new subscription.`
+            `⚠️ Subscription ${existingSubscription.id} is ${stripeSubscription.status}${stripeSubscription.cancel_at_period_end ? ' and set to cancel at period end' : ''}. Will create new subscription.`
           )
-          // Cancel it immediately since user wants to subscribe again
-          await stripe.subscriptions.cancel(existingSubscription.id)
-          console.log(`✅ Canceled subscription ${existingSubscription.id}`)
+          // Cancel it immediately if not already canceled
+          if (stripeSubscription.status !== 'canceled') {
+            await stripe.subscriptions.cancel(existingSubscription.id)
+            console.log(`✅ Canceled subscription ${existingSubscription.id}`)
+          }
           // Treat as if no subscription exists
           existingSubscription = null
         }
@@ -250,111 +256,39 @@ export async function action({ request }: ActionFunctionArgs) {
       // Check if this is a trial subscription that needs payment method
       if (existingSubscription.status === 'trialing') {
         isTrialConversion = true
-        console.log(`🎯 Converting trial subscription ${existingSubscription.id} to paid`)
+        console.log(
+          `🎯 Trial conversion for subscription ${existingSubscription.id} - preparing SetupIntent`
+        )
 
-        try {
-          // Retrieve existing Stripe subscription
-          const stripeSubscription = await stripe.subscriptions.retrieve(existingSubscription.id, {
-            expand: ['pending_setup_intent'],
-          })
+        // For trial conversion, ONLY create a SetupIntent
+        // The webhook will handle updating the subscription and database when payment succeeds
+        const setupIntent = await stripe.setupIntents.create({
+          customer: stripeCustomerId,
+          automatic_payment_methods: { enabled: true },
+          usage: 'off_session',
+          metadata: {
+            subscriptionId: existingSubscription.id,
+            userId: user.id,
+            type: 'trial_subscription',
+            planId,
+            interval,
+            priceId,
+          },
+        })
 
-          console.log(
-            `✅ Found Stripe subscription ${stripeSubscription.id} with status: ${stripeSubscription.status}`
-          )
+        console.log(`✅ Created SetupIntent ${setupIntent.id} for trial conversion`)
 
-          // Update subscription price if needed, but let trial end naturally
-          // Stripe will automatically charge when trial ends if payment method is attached
-          const subscriptionItemId = stripeSubscription.items.data[0].id
-          subscription = await stripe.subscriptions.update(existingSubscription.id, {
-            items: [
-              {
-                id: subscriptionItemId,
-                price: priceId,
-              },
-            ],
-            payment_settings: {
-              save_default_payment_method: 'on_subscription',
-            },
-            proration_behavior: 'none',
-            expand: ['pending_setup_intent'],
-            metadata: {
-              userId: user.id,
-              planId,
-              interval,
-            },
-          })
-
-          console.log(`✅ Updated subscription price for trial ${subscription.id}`)
-        } catch (error: unknown) {
-          if (
-            error &&
-            typeof error === 'object' &&
-            'code' in error &&
-            error.code === 'resource_missing'
-          ) {
-            // Database has wrong subscription ID - search for actual trial subscription in Stripe
-            console.log(
-              `⚠️ Subscription ${existingSubscription.id} not found in Stripe, searching for customer's trial subscriptions`
-            )
-
-            // List all subscriptions for this customer to find any trialing subscription
-            const customerSubscriptions = await stripe.subscriptions.list({
-              customer: stripeCustomerId,
-              status: 'trialing',
-              limit: 1,
-            })
-
-            if (customerSubscriptions.data.length > 0) {
-              // Found a trial subscription - update it and sync database
-              const trialSub = customerSubscriptions.data[0]
-              const subscriptionItemId = trialSub.items.data[0].id
-
-              console.log(`✅ Found actual trial subscription in Stripe: ${trialSub.id}`)
-
-              subscription = await stripe.subscriptions.update(trialSub.id, {
-                items: [
-                  {
-                    id: subscriptionItemId,
-                    price: priceId,
-                  },
-                ],
-                payment_settings: {
-                  save_default_payment_method: 'on_subscription',
-                },
-                proration_behavior: 'none',
-                expand: ['pending_setup_intent'],
-                metadata: {
-                  userId: user.id,
-                  planId,
-                  interval,
-                },
-              })
-
-              console.log(`✅ Updated actual trial subscription ${trialSub.id}`)
-            } else {
-              // No trial subscription found in Stripe at all - create new one
-              console.log(`⚠️ No trial subscription found in Stripe, creating new subscription`)
-
-              subscription = await stripe.subscriptions.create({
-                customer: stripeCustomerId,
-                items: [{ price: priceId }],
-                payment_behavior: 'default_incomplete',
-                payment_settings: {
-                  save_default_payment_method: 'on_subscription',
-                },
-                collection_method: 'charge_automatically',
-                expand: ['pending_setup_intent'],
-                metadata: {
-                  userId: user.id,
-                  planId,
-                  interval,
-                },
-              })
-            }
-          } else {
-            throw error
-          }
-        }
+        // Return early with SetupIntent - no Stripe or database updates until payment succeeds
+        return Response.json({
+          subscriptionId: existingSubscription.id,
+          clientSecret: setupIntent.client_secret,
+          amount: dbPrice.amount,
+          currency: dbPrice.currency.toUpperCase(),
+          planName: plan.name,
+          isUpgrade: false,
+          isTrialConversion: true,
+          paymentRequired: true,
+        })
       } else if (existingSubscription.status === 'active') {
         // This is a regular upgrade - modify existing subscription with prorating
         isUpgrade = true
@@ -404,8 +338,11 @@ export async function action({ request }: ActionFunctionArgs) {
               priceId: priceId,
               interval,
               status: subscription.status,
-              currentPeriodStart: (subscription as any).current_period_start || Math.floor(Date.now() / 1000),
-              currentPeriodEnd: (subscription as any).current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000),
+              currentPeriodStart:
+                (subscription as any).current_period_start || Math.floor(Date.now() / 1000),
+              currentPeriodEnd:
+                (subscription as any).current_period_end ||
+                Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000),
               cancelAtPeriodEnd: false,
               trialStart: (subscription as any).trial_start || 0,
               trialEnd: (subscription as any).trial_end || 0,
@@ -519,8 +456,11 @@ export async function action({ request }: ActionFunctionArgs) {
               priceId: priceId,
               interval,
               status: subscription.status,
-              currentPeriodStart: (subscription as any).current_period_start || Math.floor(Date.now() / 1000),
-              currentPeriodEnd: (subscription as any).current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000),
+              currentPeriodStart:
+                (subscription as any).current_period_start || Math.floor(Date.now() / 1000),
+              currentPeriodEnd:
+                (subscription as any).current_period_end ||
+                Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000),
               cancelAtPeriodEnd: false,
               trialStart: (subscription as any).trial_start || 0,
               trialEnd: (subscription as any).trial_end || 0,
@@ -539,46 +479,9 @@ export async function action({ request }: ActionFunctionArgs) {
           `🔄 Reactivating subscription ${existingSubscription.id} (was ${existingSubscription.status})`
         )
 
-        // Check if customer has any attached payment methods
-        const paymentMethods = await stripe.paymentMethods.list({
-          customer: stripeCustomerId,
-          type: 'card',
-        })
-
-        if (paymentMethods.data.length === 0) {
-          console.log(`💳 No payment methods found for customer, creating SetupIntent first`)
-
-          // Create SetupIntent to collect payment method
-          const setupIntent = await stripe.setupIntents.create({
-            customer: stripeCustomerId,
-            automatic_payment_methods: { enabled: true },
-            usage: 'off_session',
-            metadata: {
-              userId: user.id,
-              subscriptionId: existingSubscription.id,
-              type: 'subscription_reactivation_setup',
-              planId,
-              interval,
-            },
-          })
-
-          return Response.json({
-            setupRequired: true,
-            clientSecret: setupIntent.client_secret,
-            subscriptionId: existingSubscription.id,
-            message: 'Payment method setup required for reactivation',
-          })
-        }
-
-        // Set the first available payment method as default for the customer
-        const defaultPaymentMethod = paymentMethods.data[0]
-        await stripe.customers.update(stripeCustomerId, {
-          invoice_settings: {
-            default_payment_method: defaultPaymentMethod.id,
-          },
-        })
-
-        console.log(`✅ Set default payment method ${defaultPaymentMethod.id} for customer`)
+        // For reactivation, don't use existing payment methods automatically
+        // Let user enter new payment details when they click Pay
+        console.log(`💳 Reactivation requires new payment details from user`)
 
         try {
           // Try to reactivate the existing subscription
@@ -586,48 +489,58 @@ export async function action({ request }: ActionFunctionArgs) {
           // First check if the subscription exists in Stripe
           const stripeSubscription = await stripe.subscriptions.retrieve(existingSubscription.id)
 
-          if (stripeSubscription.status === 'canceled') {
-            // User can choose any plan after cancellation
+          // Treat both canceled and incomplete_expired subscriptions the same way
+          // Both cannot be updated and require creating a new subscription
+          if (
+            stripeSubscription.status === 'canceled' ||
+            stripeSubscription.status === 'incomplete_expired'
+          ) {
+            // User can choose any plan after cancellation or expiration
             const previousPlanId = existingSubscription.planId
             const isChangingPlan = previousPlanId !== planId
 
             console.log(
-              `🔄 Subscription ${existingSubscription.id} is canceled. Creating new subscription for ${planId} plan${
+              `🔄 Subscription ${existingSubscription.id} is ${stripeSubscription.status}. Creating new subscription for ${planId} plan${
                 isChangingPlan ? ` (was ${previousPlanId})` : ''
               }.`
             )
 
-            // IMPORTANT: Cancel any other active subscriptions before creating new one
-            // This prevents multiple active subscriptions
-            console.log(
-              `🔍 Checking for other active subscriptions for customer ${stripeCustomerId}`
-            )
+            // IMPORTANT: Cancel any problematic subscriptions before creating new one
+            // This prevents duplicate subscriptions and cleans up orphaned ones
+            console.log(`🔍 Checking for existing subscriptions for customer ${stripeCustomerId}`)
             const allSubscriptions = await stripe.subscriptions.list({
               customer: stripeCustomerId,
               status: 'all',
               limit: 100,
             })
 
-            const activeSubscriptions = allSubscriptions.data.filter(
-              (sub) => sub.status === 'active' || sub.status === 'trialing'
+            // Cancel subscriptions that should not coexist with a new one
+            const subscriptionsToCancel = allSubscriptions.data.filter(
+              (sub) =>
+                sub.status === 'active' ||
+                sub.status === 'trialing' ||
+                sub.status === 'past_due' ||
+                sub.status === 'incomplete' ||
+                sub.status === 'incomplete_expired'
             )
 
-            if (activeSubscriptions.length > 0) {
+            if (subscriptionsToCancel.length > 0) {
               console.log(
-                `⚠️ Found ${activeSubscriptions.length} active/trialing subscription(s). Canceling them before creating new one.`
+                `⚠️ Found ${subscriptionsToCancel.length} subscription(s) to clean up. Canceling them before creating new one.`
               )
-              for (const activeSub of activeSubscriptions) {
-                await stripe.subscriptions.cancel(activeSub.id)
-                console.log(`✅ Canceled subscription ${activeSub.id}`)
+              for (const subToCancel of subscriptionsToCancel) {
+                await stripe.subscriptions.cancel(subToCancel.id)
+                console.log(
+                  `✅ Canceled subscription ${subToCancel.id} (status: ${subToCancel.status})`
+                )
               }
             }
 
             // Follow Stripe's recommendation: create a new subscription for cancelled ones
-            // User can select any plan they want
+            // User will provide payment details - don't use old payment methods
             subscription = await stripe.subscriptions.create({
               customer: stripeCustomerId,
               items: [{ price: priceId }],
-              default_payment_method: defaultPaymentMethod.id,
               payment_behavior: 'allow_incomplete',
               payment_settings: {
                 save_default_payment_method: 'on_subscription',
@@ -656,7 +569,6 @@ export async function action({ request }: ActionFunctionArgs) {
                   price: priceId,
                 },
               ],
-              default_payment_method: defaultPaymentMethod.id,
               payment_behavior: 'allow_incomplete',
               payment_settings: {
                 save_default_payment_method: 'on_subscription',
@@ -678,55 +590,61 @@ export async function action({ request }: ActionFunctionArgs) {
         }
       }
     } else {
-      // Create new subscription with proper Stripe defaults
-      console.log(`🆕 Creating new subscription for user ${user.id}`)
+      // No existing subscription
+      
+      // If this is NOT a payment submission (initial page load), return pricing info only
+      // Payment submission is indicated by useExistingPaymentMethod === false
+      if (useExistingPaymentMethod !== false) {
+        console.log(`💳 No existing subscription - returning deferred mode (waiting for payment)`)
+        return Response.json({
+          subscriptionId: null, // No subscription created yet
+          clientSecret: null, // No payment intent yet
+          amount,
+          currency: dbPrice.currency.toUpperCase(),
+          planName: plan.name,
+          isUpgrade: false,
+          isTrialConversion: false,
+          paymentRequired: true,
+          deferredMode: true, // Frontend will collect payment first
+        })
+      }
 
-      // IMPORTANT: Before creating a new subscription, check if customer has any active subscriptions
-      // This prevents duplicate subscriptions if database is out of sync
-      console.log(`🔍 Checking for existing active subscriptions for customer ${stripeCustomerId}`)
+      // This is a payment submission - create the subscription now
+      console.log(`🆕 Creating new subscription with payment for user ${user.id}`)
+
+      // Before creating, check for and clean up any existing subscriptions
+      console.log(`🔍 Checking for existing subscriptions for customer ${stripeCustomerId}`)
       const existingStripeSubscriptions = await stripe.subscriptions.list({
         customer: stripeCustomerId,
         status: 'all',
         limit: 100,
       })
 
-      const activeStripeSubscriptions = existingStripeSubscriptions.data.filter(
-        (sub) => sub.status === 'active' || sub.status === 'trialing'
+      const subscriptionsToCancel = existingStripeSubscriptions.data.filter(
+        (sub) =>
+          sub.status === 'active' ||
+          sub.status === 'trialing' ||
+          sub.status === 'past_due' ||
+          sub.status === 'incomplete' ||
+          sub.status === 'incomplete_expired'
       )
 
-      if (activeStripeSubscriptions.length > 0) {
+      if (subscriptionsToCancel.length > 0) {
         console.log(
-          `⚠️ Found ${activeStripeSubscriptions.length} active/trialing subscription(s) in Stripe. Canceling them before creating new one.`
+          `⚠️ Found ${subscriptionsToCancel.length} subscription(s) to clean up before creating new one`
         )
-        for (const activeSub of activeStripeSubscriptions) {
-          await stripe.subscriptions.cancel(activeSub.id)
-          console.log(`✅ Canceled subscription ${activeSub.id}`)
+        for (const subToCancel of subscriptionsToCancel) {
+          await stripe.subscriptions.cancel(subToCancel.id)
+          console.log(`✅ Canceled subscription ${subToCancel.id} (status: ${subToCancel.status})`)
         }
       }
 
-      // For new subscriptions, check if customer has payment methods
-      const paymentMethods = await stripe.paymentMethods.list({
-        customer: stripeCustomerId,
-        type: 'card',
-      })
-
-      let defaultPaymentMethod = null
-      if (paymentMethods.data.length > 0) {
-        defaultPaymentMethod = paymentMethods.data[0].id
-        // Set as customer's default payment method
-        await stripe.customers.update(stripeCustomerId, {
-          invoice_settings: {
-            default_payment_method: defaultPaymentMethod,
-          },
-        })
-        console.log(`✅ Using existing payment method ${defaultPaymentMethod} for new subscription`)
-      }
-
+      // Create subscription with payment_behavior: 'default_incomplete'
+      // This will create an invoice with a payment intent that needs to be paid
       subscription = await stripe.subscriptions.create({
         customer: stripeCustomerId,
         items: [{ price: priceId }],
-        ...(defaultPaymentMethod && { default_payment_method: defaultPaymentMethod }),
-        payment_behavior: 'allow_incomplete',
+        payment_behavior: 'default_incomplete',
         payment_settings: {
           save_default_payment_method: 'on_subscription',
         },
@@ -738,6 +656,8 @@ export async function action({ request }: ActionFunctionArgs) {
           interval,
         },
       })
+
+      console.log(`✅ Created subscription ${subscription.id} with payment intent`)
     }
 
     const invoice = subscription.latest_invoice
@@ -949,19 +869,22 @@ export async function action({ request }: ActionFunctionArgs) {
     try {
       const locale = await getUserLocale(user.id)
       const userName = dbUser.email.split('@')[0] // Fallback to email prefix if no name
-      
+
       // For trial subscriptions (new or trial conversion), send trial welcome email
       if (dbStatus === 'trialing' && !isTrialConversion) {
         await sendTrialWelcomeEmail({
           to: dbUser.email,
           locale,
           name: userName,
-          trialEndDate: formatDate(subscription.trial_end || Date.now() / 1000 + 14 * 24 * 60 * 60, locale),
+          trialEndDate: formatDate(
+            subscription.trial_end || Date.now() / 1000 + 14 * 24 * 60 * 60,
+            locale
+          ),
           dashboardUrl: `${process.env.BASE_URL}/dashboard`,
         })
         console.log('✅ Trial welcome email sent')
       }
-      
+
       // For active subscriptions (paid), send subscription confirmation
       if (dbStatus === 'active' && !isUpgrade) {
         await sendSubscriptionConfirmationEmail({
@@ -970,8 +893,18 @@ export async function action({ request }: ActionFunctionArgs) {
           name: userName,
           planName: plan.name,
           planPrice: formatCurrency(amount, dbPrice.currency, locale),
-          billingCycle: interval === 'year' ? (locale === 'fr' ? 'annuel' : 'yearly') : (locale === 'fr' ? 'mensuel' : 'monthly'),
-          nextBillingDate: formatDate(subscription.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, locale),
+          billingCycle:
+            interval === 'year'
+              ? locale === 'fr'
+                ? 'annuel'
+                : 'yearly'
+              : locale === 'fr'
+                ? 'mensuel'
+                : 'monthly',
+          nextBillingDate: formatDate(
+            subscription.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+            locale
+          ),
           dashboardUrl: `${process.env.BASE_URL}/dashboard`,
           billingUrl: `${process.env.BASE_URL}/billing`,
         })

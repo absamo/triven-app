@@ -1,9 +1,11 @@
 import { Badge, Menu, Table, Text, UnstyledButton } from '@mantine/core'
+// import InvoicePDF from "~/app/PDF/InvoicePDF"
+import { useForm } from '@mantine/form'
 import { IconDotsVertical } from '@tabler/icons-react'
 import dayjs from 'dayjs'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
-
 import { BILL_STATUSES, PAYMENT_STATUSES } from '~/app/common/constants'
 import {
   getBillStatusLabel,
@@ -12,13 +14,10 @@ import {
 } from '~/app/common/helpers/bill'
 import { formatCurrency } from '~/app/common/helpers/money'
 import type { IBill } from '~/app/common/validations/billSchema'
-import { Title } from '~/app/partials/Title'
-// import InvoicePDF from "~/app/PDF/InvoicePDF"
-import { useForm } from '@mantine/form'
-import { useEffect, useState } from 'react'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
 import { PurchaseOrderFilters } from '~/app/partials/PurchaseOrderFilters'
+import { Title } from '~/app/partials/Title'
 
 interface BillsProps {
   bills: IBill[]

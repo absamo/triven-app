@@ -60,6 +60,27 @@ export async function action({ request }: ActionFunctionArgs) {
       // Retrieve the current Stripe subscription
       const stripeSubscription = await stripe.subscriptions.retrieve(subscription.id)
 
+      console.log(`🔍 Current subscription status: ${stripeSubscription.status}`)
+
+      // Check if subscription is in a state that cannot be updated
+      // These statuses require creating a new subscription instead of updating
+      const cannotUpdate = ['canceled', 'incomplete_expired', 'unpaid'].includes(
+        stripeSubscription.status
+      )
+
+      if (cannotUpdate) {
+        console.log(
+          `⚠️ Subscription ${subscription.id} has status ${stripeSubscription.status}. Cannot update - must create new subscription.`
+        )
+
+        // For expired/canceled subscriptions, redirect to create new subscription flow
+        return data({
+          requiresNewSubscription: true,
+          message: 'Your subscription has expired. Please complete the payment to upgrade.',
+          status: stripeSubscription.status,
+        })
+      }
+
       // Update the subscription with the new price
       const updatedSubscription = await stripe.subscriptions.update(subscription.id, {
         items: [
@@ -91,10 +112,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // If not using existing payment method, create a checkout session
     // (This would be handled by the Stripe payment form flow)
-    return data(
-      { error: 'Payment method required. Please use the payment form.' },
-      { status: 400 }
-    )
+    return data({ error: 'Payment method required. Please use the payment form.' }, { status: 400 })
   } catch (error) {
     console.error('Subscription upgrade error:', error)
 

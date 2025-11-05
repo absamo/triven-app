@@ -1,7 +1,7 @@
-import { Grid, Box, NavLink, Paper, VisuallyHidden } from '@mantine/core'
-import { Link, Outlet } from 'react-router'
-import { IconGauge, IconFingerprint, IconActivity, IconChevronRight } from '@tabler/icons-react'
+import { Box, Grid, NavLink, Paper, VisuallyHidden } from '@mantine/core'
+import { IconActivity, IconChevronRight, IconFingerprint, IconGauge } from '@tabler/icons-react'
 import { useState } from 'react'
+import { Link, Outlet } from 'react-router'
 
 // import Currency from "~/app/components/Currency"
 

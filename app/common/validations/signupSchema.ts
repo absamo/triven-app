@@ -1,7 +1,6 @@
 import { z } from 'zod'
-
-import { profileSchema } from './profileSchema'
 import { companySchema } from './companySchema'
+import { profileSchema } from './profileSchema'
 
 export const signupSchema = z.object({
   id: z.string().optional(),

@@ -1,17 +1,16 @@
-import {
-  type ActionFunction,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-  type LoaderFunctionArgs,
-} from 'react-router'
-
 import { type FileUpload, parseFormData } from '@remix-run/form-data-parser'
+import type {
+  ActionFunction,
+  ActionFunctionArgs,
+  LoaderFunction,
+  LoaderFunctionArgs,
+} from 'react-router'
 
 import type { IAgency } from '~/app/common/validations/agencySchema'
 import type { ICategory } from '~/app/common/validations/categorySchema'
 import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { IInvoice } from '~/app/common/validations/invoiceSchema'
-import { type IProduct } from '~/app/common/validations/productSchema'
+import type { IProduct } from '~/app/common/validations/productSchema'
 import type { IPurchaseOrderItem } from '~/app/common/validations/purchaseOrderItemSchema'
 import type { IPurchaseOrder } from '~/app/common/validations/purchaseOrderSchema'
 import type { IPurchaseReceiveItem } from '~/app/common/validations/purchaseReceiveItemSchema'

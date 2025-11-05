@@ -1,7 +1,7 @@
 import { z } from 'zod'
+import { NOTIFICATION_STATUSES } from '~/app/common/constants'
 import { productSchema } from './productSchema'
 import { userSchema } from './userSchema'
-import { NOTIFICATION_STATUSES } from '~/app/common/constants'
 
 export const notificationSchema = z.object({
   id: z.string().optional(),

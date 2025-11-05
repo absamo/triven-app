@@ -1,11 +1,9 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
-import { useLoaderData } from 'react-router'
-
-import Suppliers from '~/app/pages/Suppliers'
-import { getSuppliers } from '~/app/services/suppliers.server'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/suppliers'
+import { type LoaderFunction, type LoaderFunctionArgs, useLoaderData } from 'react-router'
 import type { ISupplier } from '~/app/common/validations/supplierSchema'
+import Suppliers from '~/app/pages/Suppliers'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getSuppliers } from '~/app/services/suppliers.server'
+import type { Route } from './+types/suppliers'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

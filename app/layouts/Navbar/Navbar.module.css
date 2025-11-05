@@ -35,7 +35,9 @@
   align-items: center;
   justify-content: center;
   color: light-dark(#64748b, var(--mantine-color-gray-4));
-  transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   margin-bottom: 8px;
 

@@ -29,10 +29,11 @@ import {
   IconRefresh,
   IconTrendingUp,
 } from '@tabler/icons-react'
+import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
-import dayjs from 'dayjs'
+import ClientOnly from '~/app/components/ClientOnly'
 import classes from './InventoryCommandCenter.module.css'
 
 interface HealthScore {
@@ -158,7 +159,7 @@ export default function InventoryCommandCenter({
       if (siteId) params.append('siteId', siteId)
       if (dateRange?.startDate) params.append('startDate', dateRange.startDate)
       if (dateRange?.endDate) params.append('endDate', dateRange.endDate)
-      
+
       // Only fetch if not already loading
       if (fetcher.state === 'idle') {
         fetcher.load(`/api/inventory/command-center?${params.toString()}`)
@@ -189,7 +190,7 @@ export default function InventoryCommandCenter({
   }
 
   const criticalAlerts = (propCriticalAlerts || fetchedData?.alerts || []).slice(0, 5)
-  const opportunities = (propOpportunities || fetchedData?.opportunities || [])
+  const opportunities = propOpportunities || fetchedData?.opportunities || []
 
   // Map API metrics to component metrics structure
   const apiMetrics = fetchedData?.metrics
@@ -329,7 +330,10 @@ export default function InventoryCommandCenter({
                 },
               }}
             >
-              <IconInfoCircle size={16} style={{ color: 'var(--mantine-color-dimmed)', cursor: 'pointer' }} />
+              <IconInfoCircle
+                size={16}
+                style={{ color: 'var(--mantine-color-dimmed)', cursor: 'pointer' }}
+              />
             </Tooltip>
           </Group>
           <Stack align="center" gap="md">
@@ -380,13 +384,15 @@ export default function InventoryCommandCenter({
             {/* Sparkline */}
             {healthScore.trend && healthScore.trend.length > 0 && (
               <div style={{ width: '100%', height: 30 }}>
-                <Sparkline
-                  data={healthScore.trend.map((t: { score: number }) => t.score)}
-                  color={getHealthColor(healthScore.rating)}
-                  fillOpacity={0.2}
-                  strokeWidth={2}
-                  curveType="natural"
-                />
+                <ClientOnly>
+                  <Sparkline
+                    data={healthScore.trend.map((t: { score: number }) => t.score)}
+                    color={getHealthColor(healthScore.rating)}
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                    curveType="natural"
+                  />
+                </ClientOnly>
               </div>
             )}
           </Stack>
@@ -431,12 +437,25 @@ export default function InventoryCommandCenter({
           <Tooltip
             label={
               <div>
-                <div style={{ marginBottom: 6, fontWeight: 600 }}>{t('healthScoreBreakdownTooltip')}:</div>
-                <div>• <strong>{t('stockLevelAdequacy')}:</strong> {t('stockLevelDescription')}</div>
-                <div>• <strong>{t('turnoverRate')}:</strong> {t('turnoverRateDescription')}</div>
-                <div>• <strong>{t('agingInventory')}:</strong> {t('freshnessDescription')}</div>
-                <div>• <strong>{t('backorderRate')}:</strong> {t('fulfillmentDescription')}</div>
-                <div>• <strong>{t('supplierReliability')}:</strong> {t('supplierReliabilityDescription')}</div>
+                <div style={{ marginBottom: 6, fontWeight: 600 }}>
+                  {t('healthScoreBreakdownTooltip')}:
+                </div>
+                <div>
+                  • <strong>{t('stockLevelAdequacy')}:</strong> {t('stockLevelDescription')}
+                </div>
+                <div>
+                  • <strong>{t('turnoverRate')}:</strong> {t('turnoverRateDescription')}
+                </div>
+                <div>
+                  • <strong>{t('agingInventory')}:</strong> {t('freshnessDescription')}
+                </div>
+                <div>
+                  • <strong>{t('backorderRate')}:</strong> {t('fulfillmentDescription')}
+                </div>
+                <div>
+                  • <strong>{t('supplierReliability')}:</strong>{' '}
+                  {t('supplierReliabilityDescription')}
+                </div>
               </div>
             }
             multiline
@@ -450,7 +469,10 @@ export default function InventoryCommandCenter({
               },
             }}
           >
-            <IconInfoCircle size={16} style={{ color: 'var(--mantine-color-dimmed)', cursor: 'pointer' }} />
+            <IconInfoCircle
+              size={16}
+              style={{ color: 'var(--mantine-color-dimmed)', cursor: 'pointer' }}
+            />
           </Tooltip>
         </Group>
         <SimpleGrid cols={{ base: 1, sm: 2, md: 5 }} spacing="md">
@@ -486,9 +508,13 @@ export default function InventoryCommandCenter({
           <Group justify="space-between" mb="sm">
             <Group gap="xs">
               <IconAlertTriangle size={18} color="var(--mantine-color-red-6)" />
-              <Text size="sm" fw={600}>{t('criticalActions')}</Text>
+              <Text size="sm" fw={600}>
+                {t('criticalActions')}
+              </Text>
             </Group>
-            <Badge size="sm" color="red">{criticalAlerts.length}</Badge>
+            <Badge size="sm" color="red">
+              {criticalAlerts.length}
+            </Badge>
           </Group>
 
           <ScrollArea style={{ flex: 1 }} type="auto" offsetScrollbars>
@@ -516,7 +542,12 @@ export default function InventoryCommandCenter({
                         )}
                       </Group>
                       {alert.financialImpact !== 0 && (
-                        <Text size="xs" fw={600} c={alert.financialImpact > 0 ? 'green' : 'red'} style={{ whiteSpace: 'nowrap' }}>
+                        <Text
+                          size="xs"
+                          fw={600}
+                          c={alert.financialImpact > 0 ? 'green' : 'red'}
+                          style={{ whiteSpace: 'nowrap' }}
+                        >
                           {formatCurrency(alert.financialImpact)}
                         </Text>
                       )}
@@ -567,9 +598,13 @@ export default function InventoryCommandCenter({
           <Group justify="space-between" mb="sm">
             <Group gap="xs">
               <IconTrendingUp size={18} color="var(--mantine-color-green-6)" />
-              <Text size="sm" fw={600}>{t('revenueOpportunities')}</Text>
+              <Text size="sm" fw={600}>
+                {t('revenueOpportunities')}
+              </Text>
             </Group>
-            <Badge size="sm" color="green">{opportunities.length}</Badge>
+            <Badge size="sm" color="green">
+              {opportunities.length}
+            </Badge>
           </Group>
 
           <ScrollArea style={{ flex: 1 }} type="auto" offsetScrollbars>
@@ -663,7 +698,10 @@ function MetricCard({
               },
             }}
           >
-            <IconInfoCircle size={16} style={{ color: 'var(--mantine-color-dimmed)', cursor: 'pointer' }} />
+            <IconInfoCircle
+              size={16}
+              style={{ color: 'var(--mantine-color-dimmed)', cursor: 'pointer' }}
+            />
           </Tooltip>
         )}
       </Group>
@@ -686,13 +724,15 @@ function MetricCard({
           </Badge>
         )}
         <div style={{ width: 60, height: 20 }}>
-          <Sparkline
-            data={sparkline}
-            color={color}
-            fillOpacity={0.2}
-            strokeWidth={1.5}
-            curveType="natural"
-          />
+          <ClientOnly>
+            <Sparkline
+              data={sparkline}
+              color={color}
+              fillOpacity={0.2}
+              strokeWidth={1.5}
+              curveType="natural"
+            />
+          </ClientOnly>
         </div>
       </Group>
     </Card>

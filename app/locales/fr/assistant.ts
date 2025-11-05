@@ -21,7 +21,7 @@ export default {
   optimizationRecommendations: "Donner des recommandations d'optimisation",
   naturalQuestions: 'Quels sont les articles les plus vendus ?',
   stockLevels: 'Afficher les articles en stock faible',
-  inventoryStatistics: 'Quelles sont mes statistiques d\'inventaire ?',
+  inventoryStatistics: "Quelles sont mes statistiques d'inventaire ?",
   outOfStockItems: 'Afficher les articles en rupture de stock',
 
   // Input area

@@ -1,20 +1,19 @@
 import { Badge, Menu, Table, Text, UnstyledButton } from '@mantine/core'
-import { IconDotsVertical } from '@tabler/icons-react'
-import dayjs from 'dayjs'
-import { useTranslation } from 'react-i18next'
-import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
-
-import { formatCurrency } from '~/app/common/helpers/money'
-import { getPaymentMethodLabel, getPaymentStatusLabel } from '~/app/common/helpers/payment'
-import { Title } from '~/app/partials/Title'
 // import InvoicePDF from "~/app/PDF/InvoicePDF"
 import { useForm } from '@mantine/form'
+import { IconDotsVertical } from '@tabler/icons-react'
+import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Form, Link, useLocation, useNavigate, useSubmit } from 'react-router'
 import { PAYMENT_STATUSES } from '~/app/common/constants'
-import { type ICurrency } from '~/app/common/validations/currencySchema'
+import { formatCurrency } from '~/app/common/helpers/money'
+import { getPaymentMethodLabel, getPaymentStatusLabel } from '~/app/common/helpers/payment'
+import type { ICurrency } from '~/app/common/validations/currencySchema'
 import type { IInvoice } from '~/app/common/validations/invoiceSchema'
-import { type IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
+import type { IPaymentsReceived } from '~/app/common/validations/paymentsReceivedSchema'
 import { SalesOrderFilters } from '~/app/partials/SalesOrderFilters'
+import { Title } from '~/app/partials/Title'
 
 interface PaymentsReceivedProps {
   paymentsReceived: IPaymentsReceived[]

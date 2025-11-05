@@ -1,11 +1,11 @@
 import { Grid, Modal } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { zodResolver } from 'mantine-form-zod-resolver'
-import { type ReactElement } from 'react'
+import type { ReactElement } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubmit } from 'react-router'
 
-import { type ICurrency, currencySchema } from '~/app/common/validations/currencySchema'
+import { currencySchema, type ICurrency } from '~/app/common/validations/currencySchema'
 import Currency from '~/app/components/Currency'
 
 import Form from '~/app/components/Form'

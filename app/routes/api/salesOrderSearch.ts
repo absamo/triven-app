@@ -1,5 +1,5 @@
 import type { ComboboxItem } from '@mantine/core'
-import { type LoaderFunctionArgs, type LoaderFunction } from 'react-router'
+import type { LoaderFunction, LoaderFunctionArgs } from 'react-router'
 
 import { getFilteredSalesOrders } from '~/app/services/sales.server'
 

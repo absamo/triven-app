@@ -11,7 +11,7 @@ import {
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { IconCrown, IconLock } from '@tabler/icons-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useRevalidator } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES, SUBSCRIPTION_MODAL_MODES } from '~/app/common/constants'
@@ -70,6 +70,8 @@ export default function SubscriptionStatusModal({
   const [showReactivateModal, setShowReactivateModal] = useState(false)
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false)
   const [isButtonLoading, setIsButtonLoading] = useState(false)
+  const [stripeSubmit, setStripeSubmit] = useState<(() => Promise<void>) | null>(null)
+  const [isStripeReady, setIsStripeReady] = useState(false)
 
   // Helper function to get modal content based on mode
   const getModalContent = () => {
@@ -186,6 +188,32 @@ export default function SubscriptionStatusModal({
   const handleUpgrade = async () => {
     setIsButtonLoading(true)
 
+    // For trial expired or no subscription, create a new subscription payment intent
+    if (
+      mode === SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED ||
+      mode === SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION
+    ) {
+      // Load config first
+      if (!configFetcher.data) {
+        configFetcher.load('/api/config')
+      }
+
+      // Create a new subscription payment intent
+      paymentFetcher.submit(
+        {
+          planId: currentPlan.toLowerCase(),
+          interval: INTERVALS.MONTHLY,
+          currency: CURRENCIES.USD,
+        },
+        {
+          method: 'POST',
+          action: '/api/subscription-create',
+          encType: 'application/json',
+        }
+      )
+      return
+    }
+
     // For cancelled subscriptions, show reactivation modal immediately (no health check needed)
     if (mode === STRIPE_SUBSCRIPTION_STATUSES.CANCELED) {
       setShowReactivateModal(true)
@@ -240,6 +268,35 @@ export default function SubscriptionStatusModal({
 
     // Force page reload to ensure subscription status updates
     window.location.reload()
+  }
+
+  // Handle Stripe form submission readiness
+  const handleStripeSubmitReady = useCallback(
+    (submitFunction: () => Promise<void>, isReady: boolean) => {
+      setStripeSubmit(() => submitFunction)
+      setIsStripeReady(isReady)
+    },
+    []
+  )
+
+  // Handle Pay button click
+  const handlePayClick = async () => {
+    if (!stripeSubmit) {
+      notifications.show({
+        title: t('payment:error', 'Error'),
+        message: t('payment:paymentNotReady', 'Payment form is not ready. Please try again.'),
+        color: 'red',
+      })
+      return
+    }
+
+    setIsProcessingPayment(true)
+    try {
+      await stripeSubmit()
+    } catch (error) {
+      console.error('Payment error:', error)
+      setIsProcessingPayment(false)
+    }
   }
 
   // Handle fetcher state changes
@@ -364,7 +421,7 @@ export default function SubscriptionStatusModal({
       >
         <div className={classes.modalContent}>
           {!showPayment ? (
-            // Initial trial expired screen
+            // Initial status screen
             <>
               {/* Icon */}
               <Center mb="xl">
@@ -423,16 +480,44 @@ export default function SubscriptionStatusModal({
             // Stripe payment form
             <>
               {paymentFetcher.data && configFetcher.data && !('error' in paymentFetcher.data) ? (
-                <StripePayment
-                  clientSecret={paymentFetcher.data.clientSecret}
-                  amount={paymentFetcher.data.amount}
-                  currency={paymentFetcher.data.currency}
-                  planName={paymentFetcher.data.planName}
-                  publishableKey={configFetcher.data.stripePublicKey}
-                  onSuccess={handlePaymentSuccess}
-                  onError={handlePaymentError}
-                  isProcessing={isProcessingPayment}
-                />
+                <>
+                  <Title order={2} mb="lg">
+                    {t('payment:completePayment', 'Complete Payment')}
+                  </Title>
+                  <StripePayment
+                    clientSecret={paymentFetcher.data.clientSecret}
+                    amount={paymentFetcher.data.amount}
+                    currency={paymentFetcher.data.currency}
+                    planName={paymentFetcher.data.planName}
+                    publishableKey={configFetcher.data.stripePublicKey}
+                    onSuccess={handlePaymentSuccess}
+                    onError={handlePaymentError}
+                    isProcessing={isProcessingPayment}
+                    onSubmitReady={handleStripeSubmitReady}
+                    // Trial conversion parameters
+                    subscriptionId={subscription?.id}
+                    isTrialConversion={mode === SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED}
+                    planId={currentPlan.toLowerCase()}
+                    interval={INTERVALS.MONTHLY}
+                  />
+                  <Stack gap="md" mt="xl">
+                    <Button
+                      size="lg"
+                      fullWidth
+                      onClick={handlePayClick}
+                      gradient={{ from: 'teal', to: 'blue' }}
+                      variant="gradient"
+                      leftSection={<IconLock size={20} />}
+                      loading={isProcessingPayment}
+                      disabled={isProcessingPayment || !isStripeReady}
+                    >
+                      {isProcessingPayment ? t('payment:processing') : t('payment:pay', 'Pay')}
+                    </Button>
+                    <Text ta="center" size="xs" c="dimmed">
+                      {t('payment:securePayment', 'Your payment is secure and encrypted')}
+                    </Text>
+                  </Stack>
+                </>
               ) : (
                 <Center p="xl">
                   <Stack gap="md" align="center">

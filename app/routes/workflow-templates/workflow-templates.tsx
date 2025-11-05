@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
 import { prisma } from '~/app/db.server'
 import WorkflowTemplatesPage from '~/app/pages/WorkflowTemplates/WorkflowTemplates'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
@@ -128,12 +128,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         name: role.name,
         description: role.description,
       })),
-      permissions: user?.role?.permissions?.filter(
-        (permission) =>
-          permission === 'create:workflows' ||
-          permission === 'update:workflows' ||
-          permission === 'delete:workflows'
-      ) || [],
+      permissions:
+        user?.role?.permissions?.filter(
+          (permission) =>
+            permission === 'create:workflows' ||
+            permission === 'update:workflows' ||
+            permission === 'delete:workflows'
+        ) || [],
     }),
     {
       headers: {

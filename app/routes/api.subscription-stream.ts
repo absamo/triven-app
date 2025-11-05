@@ -14,21 +14,24 @@ export async function loader({ request }: Route.LoaderArgs) {
     start(controller) {
       // Limit connections per user to prevent leaks
       const MAX_CONNECTIONS_PER_USER = 10
-      
+
       // Add client to user-specific set
       if (!clients.has(user.id)) {
         clients.set(user.id, new Set())
       }
       const userClients = clients.get(user.id)
-      
+
       if (userClients) {
         // If too many connections, close oldest ones
         if (userClients.size >= MAX_CONNECTIONS_PER_USER) {
           console.warn(
             `⚠️ User ${user.id} has ${userClients.size} connections. Closing oldest connections.`
           )
-          const controllersToClose = Array.from(userClients).slice(0, userClients.size - MAX_CONNECTIONS_PER_USER + 1)
-          controllersToClose.forEach(ctrl => {
+          const controllersToClose = Array.from(userClients).slice(
+            0,
+            userClients.size - MAX_CONNECTIONS_PER_USER + 1
+          )
+          controllersToClose.forEach((ctrl) => {
             try {
               ctrl.close()
               userClients.delete(ctrl)
@@ -37,7 +40,7 @@ export async function loader({ request }: Route.LoaderArgs) {
             }
           })
         }
-        
+
         userClients.add(controller)
       }
 

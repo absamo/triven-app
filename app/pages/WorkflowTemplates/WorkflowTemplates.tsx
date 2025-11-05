@@ -107,7 +107,13 @@ export default function WorkflowTemplatesPage() {
   const { colorScheme } = useMantineColorScheme()
   const { t, i18n } = useTranslation(['workflows', 'common'])
   const navigate = useNavigate()
-  const { workflowTemplates, currentUser, users, roles, permissions = [] } = useLoaderData<{
+  const {
+    workflowTemplates,
+    currentUser,
+    users,
+    roles,
+    permissions = [],
+  } = useLoaderData<{
     workflowTemplates: WorkflowTemplate[]
     currentUser: CurrentUser
     users: UserOption[]

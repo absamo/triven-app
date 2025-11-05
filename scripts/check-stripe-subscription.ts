@@ -1,5 +1,5 @@
-import Stripe from 'stripe'
 import { PrismaClient } from '@prisma/client'
+import Stripe from 'stripe'
 
 const db = new PrismaClient()
 
@@ -39,13 +39,17 @@ async function checkSubscriptionStatus() {
       try {
         // Fetch from Stripe
         const stripeSubscription = await stripe.subscriptions.retrieve(sub.id)
-        
+
         console.log(`\n🔹 Stripe Status: ${stripeSubscription.status}`)
         console.log(`🔹 Stripe Plan: ${stripeSubscription.items.data[0]?.price?.id || 'N/A'}`)
         console.log(`🔹 Stripe Cancel at Period End: ${stripeSubscription.cancel_at_period_end}`)
-        console.log(`🔹 Stripe Cancelled At: ${stripeSubscription.canceled_at ? new Date(stripeSubscription.canceled_at * 1000).toISOString() : 'N/A'}`)
+        console.log(
+          `🔹 Stripe Cancelled At: ${stripeSubscription.canceled_at ? new Date(stripeSubscription.canceled_at * 1000).toISOString() : 'N/A'}`
+        )
         const periodEnd = (stripeSubscription as any).current_period_end
-        console.log(`🔹 Stripe Current Period End: ${periodEnd ? new Date(periodEnd * 1000).toISOString() : 'N/A'}`)
+        console.log(
+          `🔹 Stripe Current Period End: ${periodEnd ? new Date(periodEnd * 1000).toISOString() : 'N/A'}`
+        )
 
         // Check for mismatch
         if (sub.status !== stripeSubscription.status) {
@@ -56,7 +60,6 @@ async function checkSubscriptionStatus() {
         } else {
           console.log(`\n✅ Status matches between database and Stripe`)
         }
-
       } catch (error) {
         if (error instanceof Stripe.errors.StripeError) {
           console.log(`\n❌ Error fetching from Stripe: ${error.message}`)
@@ -68,7 +71,6 @@ async function checkSubscriptionStatus() {
     }
 
     console.log(`\n${'='.repeat(80)}\n`)
-
   } catch (error) {
     console.error('Error checking subscriptions:', error)
     process.exit(1)

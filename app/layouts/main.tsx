@@ -55,11 +55,28 @@ export async function loader({ request }: Route.LoaderArgs) {
   const notifications = ((await getNotifications(request, { read: false })) ||
     []) as unknown as INotification[]
 
+  // Debug: Log subscription data
+  console.log('🔍 [Layout Loader] Subscription Debug:', {
+    status: user.subscriptions?.status,
+    trialEnd: user.subscriptions?.trialEnd,
+    trialEndDate: user.subscriptions?.trialEnd
+      ? new Date(user.subscriptions.trialEnd * 1000).toISOString()
+      : 'No trialEnd',
+    now: new Date().toISOString(),
+  })
+
   const trialing = user.subscriptions?.status === 'trialing'
+  // Calculate actual days remaining for trialing subscriptions
   const trialPeriodDays =
     trialing && user.subscriptions?.trialEnd
-      ? dayjs(user.subscriptions.trialEnd * 1000).diff(dayjs(), 'days')
-      : undefined
+      ? Math.ceil(dayjs.unix(user.subscriptions.trialEnd).diff(dayjs(), 'day', true))
+      : trialing
+        ? 1 // If trialing but no trialEnd, assume at least 1 day
+        : 0 // Not trialing, return 0
+
+  console.log('🔍 [Layout Loader] Calculated trialPeriodDays:', trialPeriodDays)
+  console.log('🔍 [Layout Loader] trialing:', trialing)
+  console.log('🔍 [Layout Loader] Should show modal:', trialing && trialPeriodDays <= 0)
 
   // Fetch payment method and subscription details if user has a subscription
   let paymentMethod = null
@@ -108,7 +125,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       },
       currentPlan: user.subscriptions?.planId || 'free',
       planStatus: user.subscriptions?.status || 'inactive',
-      trialPeriodDays: trialPeriodDays || 0,
+      trialPeriodDays: trialPeriodDays,
       paymentMethod,
       subscription: subscriptionData,
     },

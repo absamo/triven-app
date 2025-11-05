@@ -1,5 +1,5 @@
 import type { BillStatus, Prisma } from '@prisma/client'
-import { type IBill } from '~/app/common/validations/billSchema'
+import type { IBill } from '~/app/common/validations/billSchema'
 import { prisma } from '~/app/db.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import { BILL_STATUSES, PAYMENT_STATUSES } from '../common/constants'

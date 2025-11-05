@@ -1,18 +1,17 @@
-import { type LoaderFunction, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router'
 import dayjs from 'dayjs'
 import randomize from 'randomatic'
-
-import { createAdjustment } from '~/app/services/stockAdjustment.server'
-import { getAgencies } from '~/app/services/agencies.server'
-import { type IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
-import StockAdjustmentForm from '~/app/pages/StockAdjustments/StockAdjustmentForm'
-import { getProducts } from '~/app/services/products.server'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/stockAdjustments.create'
-import type { IProduct } from '~/app/common/validations/productSchema'
-import { Notification } from '~/app/components'
+import type { ActionFunctionArgs, LoaderFunction, LoaderFunctionArgs } from 'react-router'
 import type { IAgency } from '~/app/common/validations/agencySchema'
+import type { IProduct } from '~/app/common/validations/productSchema'
 import type { ISite } from '~/app/common/validations/siteSchema'
+import type { IStockAdjustment } from '~/app/common/validations/stockAdjustmentsSchema'
+import { Notification } from '~/app/components'
+import StockAdjustmentForm from '~/app/pages/StockAdjustments/StockAdjustmentForm'
+import { getAgencies } from '~/app/services/agencies.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getProducts } from '~/app/services/products.server'
+import { createAdjustment } from '~/app/services/stockAdjustment.server'
+import type { Route } from './+types/stockAdjustments.create'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error

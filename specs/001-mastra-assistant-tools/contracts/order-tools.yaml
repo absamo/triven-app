@@ -1,0 +1,510 @@
+# Order Management Tools - API Contracts
+# Feature: 001-mastra-assistant-tools
+# Requirements: FR-008, FR-009, FR-010, FR-011
+
+tools:
+  - name: getOrders
+    description: "Retrieve sales orders with filtering by date range, status, and customer"
+    requirements: [FR-008]
+    authorization:
+      requiredPermission: VIEW_ORDERS
+      allowedRoles: [Admin, Manager, Staff, Viewer]
+    
+    input:
+      schema:
+        type: object
+        properties:
+          startDate:
+            type: string
+            format: date
+            description: "Filter orders from this date (inclusive)"
+          endDate:
+            type: string
+            format: date
+            description: "Filter orders up to this date (inclusive)"
+          status:
+            type: string
+            enum: [DRAFT, PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED, ALL]
+            default: ALL
+          customerId:
+            type: string
+            description: "Filter by specific customer"
+          limit:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          offset:
+            type: integer
+            minimum: 0
+            default: 0
+      
+      examples:
+        - name: "Recent orders"
+          value:
+            startDate: "2025-10-01"
+            endDate: "2025-11-03"
+            status: "ALL"
+            limit: 50
+        
+        - name: "Pending orders for customer"
+          value:
+            customerId: "cust_abc123"
+            status: "PENDING"
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            orders:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  orderNumber: { type: string }
+                  customer: { type: object }
+                  status: { type: string }
+                  total: { type: number }
+                  itemCount: { type: integer }
+                  createdAt: { type: string, format: date-time }
+                  shippedAt: { type: string, format: date-time, nullable: true }
+            totalCount: { type: integer }
+            message: { type: string }
+        
+        example:
+          success: true
+          orders:
+            - id: "order_123"
+              orderNumber: "SO-20251103-00042"
+              customer: { id: "cust_abc", name: "Acme Corp" }
+              status: "CONFIRMED"
+              total: 1250.00
+              itemCount: 5
+              createdAt: "2025-11-03T10:30:00Z"
+              shippedAt: null
+            - id: "order_124"
+              orderNumber: "SO-20251103-00043"
+              customer: { id: "cust_xyz", name: "TechStart Inc" }
+              status: "SHIPPED"
+              total: 750.50
+              itemCount: 3
+              createdAt: "2025-11-03T11:15:00Z"
+              shippedAt: "2025-11-03T14:00:00Z"
+          totalCount: 87
+          message: "Found 87 orders matching criteria (showing 20)"
+      
+      errors:
+        - code: INVALID_DATE_RANGE
+          status: 400
+          message: "End date must be after start date"
+        - code: CUSTOMER_NOT_FOUND
+          status: 404
+    
+    sideEffects:
+      - "Creates ToolExecutionLog entry"
+      - "Read-only operation, no data modifications"
+    
+    performance:
+      targetLatency: "< 1.5s"
+
+  - name: createOrder
+    description: "Create a new sales order with line items and automatic inventory adjustment"
+    requirements: [FR-009]
+    authorization:
+      requiredPermission: MANAGE_ORDERS
+      allowedRoles: [Admin, Manager, Staff]
+    
+    input:
+      schema:
+        type: object
+        required: [customerId, items]
+        properties:
+          customerId:
+            type: string
+          items:
+            type: array
+            minItems: 1
+            maxItems: 50
+            items:
+              type: object
+              required: [productId, quantity]
+              properties:
+                productId: { type: string }
+                quantity: { type: integer, minimum: 1 }
+          tax:
+            type: number
+            format: decimal
+            minimum: 0
+            default: 0
+          notes:
+            type: string
+            maxLength: 1000
+          status:
+            type: string
+            enum: [DRAFT, PENDING]
+            default: PENDING
+            description: "Initial status (DRAFT does not reserve inventory)"
+      
+      examples:
+        - name: "Standard order"
+          value:
+            customerId: "cust_abc123"
+            items:
+              - productId: "prod_001"
+                quantity: 10
+              - productId: "prod_002"
+                quantity: 5
+            tax: 45.50
+            status: "PENDING"
+        
+        - name: "Draft order (no inventory reservation)"
+          value:
+            customerId: "cust_xyz789"
+            items:
+              - productId: "prod_100"
+                quantity: 100
+            notes: "Awaiting customer confirmation"
+            status: "DRAFT"
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            order:
+              type: object
+              properties:
+                id: { type: string }
+                orderNumber: { type: string }
+                customer: { type: object }
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product: { type: object }
+                      quantity: { type: integer }
+                      unitPrice: { type: number }
+                      subtotal: { type: number }
+                subtotal: { type: number }
+                tax: { type: number }
+                total: { type: number }
+                status: { type: string }
+                createdAt: { type: string, format: date-time }
+            message: { type: string }
+        
+        example:
+          success: true
+          order:
+            id: "order_new789"
+            orderNumber: "SO-20251103-00044"
+            customer: { id: "cust_abc123", name: "Acme Corp" }
+            items:
+              - product: { id: "prod_001", sku: "SKU-001", name: "Widget A" }
+                quantity: 10
+                unitPrice: 25.00
+                subtotal: 250.00
+              - product: { id: "prod_002", sku: "SKU-002", name: "Widget B" }
+                quantity: 5
+                unitPrice: 40.00
+                subtotal: 200.00
+            subtotal: 450.00
+            tax: 45.50
+            total: 495.50
+            status: "PENDING"
+            createdAt: "2025-11-03T15:30:00Z"
+          message: "Order SO-20251103-00044 created successfully. Inventory reserved for 10 items."
+      
+      errors:
+        - code: CUSTOMER_NOT_FOUND
+          status: 404
+        - code: PRODUCT_NOT_FOUND
+          status: 404
+          message: "Product 'prod_001' not found"
+        - code: INSUFFICIENT_STOCK
+          status: 409
+          message: "Insufficient stock for product 'Widget A' (requested: 10, available: 5)"
+        - code: INVALID_QUANTITY
+          status: 400
+          message: "Quantity must be positive"
+        - code: EMPTY_ORDER
+          status: 400
+          message: "Order must contain at least one item"
+    
+    sideEffects:
+      - "Inserts SalesOrder and SalesOrderItem records in transaction"
+      - "Decrements Product.availableQuantity for each item if status is PENDING/CONFIRMED"
+      - "Generates unique orderNumber with format SO-YYYYMMDD-XXXXX"
+      - "Creates ToolExecutionLog entry"
+      - "May trigger low-stock alerts"
+    
+    performance:
+      targetLatency: "< 1.5s"
+      databaseOperations: "3 + (2 × items.length)"
+      transactionIsolation: "SERIALIZABLE (to prevent overselling)"
+
+  - name: updateOrderStatus
+    description: "Update the status of an existing order with proper state transitions"
+    requirements: [FR-010]
+    authorization:
+      requiredPermission: MANAGE_ORDERS
+      allowedRoles: [Admin, Manager]
+    
+    input:
+      schema:
+        type: object
+        required: [orderId, status]
+        properties:
+          orderId:
+            type: string
+          status:
+            type: string
+            enum: [PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED]
+          notes:
+            type: string
+            maxLength: 500
+            description: "Reason for status change (required for CANCELLED)"
+      
+      examples:
+        - name: "Mark as shipped"
+          value:
+            orderId: "order_123"
+            status: "SHIPPED"
+        
+        - name: "Cancel with reason"
+          value:
+            orderId: "order_456"
+            status: "CANCELLED"
+            notes: "Customer requested cancellation - out of stock item"
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            order:
+              type: object
+              properties:
+                id: { type: string }
+                orderNumber: { type: string }
+                status: { type: string }
+                previousStatus: { type: string }
+                shippedAt: { type: string, format: date-time, nullable: true }
+                deliveredAt: { type: string, format: date-time, nullable: true }
+                cancelledAt: { type: string, format: date-time, nullable: true }
+                updatedAt: { type: string, format: date-time }
+            inventoryRestored: { type: boolean }
+            message: { type: string }
+        
+        example:
+          success: true
+          order:
+            id: "order_123"
+            orderNumber: "SO-20251103-00042"
+            status: "SHIPPED"
+            previousStatus: "CONFIRMED"
+            shippedAt: "2025-11-03T16:00:00Z"
+            deliveredAt: null
+            cancelledAt: null
+            updatedAt: "2025-11-03T16:00:00Z"
+          inventoryRestored: false
+          message: "Order SO-20251103-00042 marked as SHIPPED"
+      
+      errors:
+        - code: ORDER_NOT_FOUND
+          status: 404
+        - code: INVALID_STATUS_TRANSITION
+          status: 400
+          message: "Cannot transition from SHIPPED to PENDING"
+          details:
+            currentStatus: "SHIPPED"
+            requestedStatus: "PENDING"
+            validNextStates: ["DELIVERED"]
+        - code: CANNOT_CANCEL_SHIPPED_ORDER
+          status: 400
+          message: "Orders cannot be cancelled once shipped"
+        - code: CANCELLATION_REASON_REQUIRED
+          status: 400
+          message: "Notes field is required when cancelling an order"
+    
+    sideEffects:
+      - "Updates SalesOrder.status and timestamp fields"
+      - "Restores Product.availableQuantity if transitioning to CANCELLED"
+      - "Triggers notification emails (shipped/delivered confirmations)"
+      - "Creates ToolExecutionLog entry"
+    
+    performance:
+      targetLatency: "< 800ms"
+    
+    stateTransitions:
+      DRAFT:
+        validNext: [PENDING, CANCELLED]
+      PENDING:
+        validNext: [CONFIRMED, CANCELLED]
+      CONFIRMED:
+        validNext: [SHIPPED, CANCELLED]
+      SHIPPED:
+        validNext: [DELIVERED]
+        notes: "Cannot cancel once shipped"
+      DELIVERED:
+        validNext: []
+        notes: "Terminal state"
+      CANCELLED:
+        validNext: []
+        notes: "Terminal state"
+
+  - name: getSalesAnalytics
+    description: "Generate sales analytics by product, category, or time period"
+    requirements: [FR-011]
+    authorization:
+      requiredPermission: VIEW_REPORTS
+      allowedRoles: [Admin, Manager]
+    
+    input:
+      schema:
+        type: object
+        required: [startDate, endDate]
+        properties:
+          startDate:
+            type: string
+            format: date
+          endDate:
+            type: string
+            format: date
+          groupBy:
+            type: string
+            enum: [product, category, day, week, month]
+            default: product
+          categoryId:
+            type: string
+            description: "Filter by specific category"
+          topN:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+            description: "Return top N items (for product/category grouping)"
+      
+      examples:
+        - name: "Top products last 30 days"
+          value:
+            startDate: "2025-10-04"
+            endDate: "2025-11-03"
+            groupBy: "product"
+            topN: 20
+        
+        - name: "Monthly sales trend"
+          value:
+            startDate: "2025-01-01"
+            endDate: "2025-11-03"
+            groupBy: "month"
+    
+    output:
+      success:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, const: true }
+            analytics:
+              type: object
+              properties:
+                period: { type: object }
+                groupBy: { type: string }
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      key: { type: string }
+                      label: { type: string }
+                      orderCount: { type: integer }
+                      unitsSold: { type: integer }
+                      revenue: { type: number }
+                      averageOrderValue: { type: number }
+                summary:
+                  type: object
+                  properties:
+                    totalOrders: { type: integer }
+                    totalRevenue: { type: number }
+                    totalUnitsSold: { type: integer }
+            message: { type: string }
+        
+        example:
+          success: true
+          analytics:
+            period:
+              startDate: "2025-10-04"
+              endDate: "2025-11-03"
+            groupBy: "product"
+            data:
+              - key: "prod_001"
+                label: "Widget A (SKU-001)"
+                orderCount: 45
+                unitsSold: 320
+                revenue: 8000.00
+                averageOrderValue: 177.78
+              - key: "prod_002"
+                label: "Widget B (SKU-002)"
+                orderCount: 32
+                unitsSold: 180
+                revenue: 7200.00
+                averageOrderValue: 225.00
+            summary:
+              totalOrders: 203
+              totalRevenue: 45230.50
+              totalUnitsSold: 1850
+          message: "Sales analytics for top 10 products from Oct 4 to Nov 3, 2025"
+      
+      errors:
+        - code: INVALID_DATE_RANGE
+          status: 400
+        - code: DATE_RANGE_TOO_LARGE
+          status: 400
+          message: "Date range cannot exceed 2 years"
+    
+    sideEffects:
+      - "Creates ToolExecutionLog entry"
+      - "Read-only operation"
+      - "Results may be cached (15 minute TTL for completed periods)"
+    
+    performance:
+      targetLatency: "< 3s"
+      databaseOperations: "1-2 complex aggregation queries"
+      cachingStrategy: "Cache completed periods, invalidate on order updates"
+
+# Performance Benchmarks
+performance:
+  getOrders: "< 1.5s for 1000 orders"
+  createOrder: "< 1.5s for 10-item order"
+  updateOrderStatus: "< 800ms"
+  getSalesAnalytics: "< 3s for 30-day period"
+
+# Testing Requirements
+testing:
+  unitTests:
+    - "Status transition validation logic"
+    - "Inventory adjustment calculations"
+    - "Order number generation uniqueness"
+    - "Date range validation"
+  
+  integrationTests:
+    - "Transaction rollback on insufficient stock"
+    - "Inventory restoration on order cancellation"
+    - "Concurrent order creation (no overselling)"
+    - "Analytics aggregation accuracy"
+  
+  e2eTests:
+    - "Complete order lifecycle (create → ship → deliver)"
+    - "Order cancellation with inventory restoration"
+    - "Sales analytics dashboard rendering"
+
+# Changelog
+changelog:
+  - version: 1.0.0
+    date: 2025-11-03
+    changes: "Initial contract definition for order management tools"

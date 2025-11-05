@@ -111,6 +111,7 @@ export function renderWithRouter(
 // Export the screen, waitFor, and userEvent from @testing-library/react
 // to allow easier access in tests
 import * as RTL from '@testing-library/react'
+
 const { screen, waitFor } = RTL as any
 export { screen, userEvent, waitFor }
 

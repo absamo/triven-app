@@ -1,4 +1,4 @@
-import { SALES_ORDERS_STATUSES, SALES_ORDERS_ITEMS_STATUSES } from '~/app/common/constants'
+import { SALES_ORDERS_ITEMS_STATUSES, SALES_ORDERS_STATUSES } from '~/app/common/constants'
 
 export function getSalesOrderStatusLabel(status: string) {
   switch (status) {

@@ -1,5 +1,5 @@
 import type { Prisma, SalesOrderStatus } from '@prisma/client'
-import { type ISalesOrder } from '~/app/common/validations/salesOrderSchema'
+import type { ISalesOrder } from '~/app/common/validations/salesOrderSchema'
 import { prisma } from '~/app/db.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import { emitter } from '~/app/utils/emitter.server'
@@ -9,7 +9,7 @@ import {
   INVOICE_STATUSES,
   SALES_ORDERS_STATUSES,
 } from '../common/constants'
-import { type IProduct } from '../common/validations/productSchema'
+import type { IProduct } from '../common/validations/productSchema'
 import { getMaxBackorderNumber } from './backorders.server'
 
 export async function getSalesOrders(

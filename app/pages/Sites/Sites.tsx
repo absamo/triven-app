@@ -23,7 +23,7 @@ import { useNavigate } from 'react-router'
 import { SITE_TYPES } from '~/app/common/constants'
 import { getSiteTypeLabel } from '~/app/common/helpers/site'
 
-import { type ISite } from '~/app/common/validations/siteSchema'
+import type { ISite } from '~/app/common/validations/siteSchema'
 import { Title } from '~/app/partials/Title'
 
 interface SitesProps {

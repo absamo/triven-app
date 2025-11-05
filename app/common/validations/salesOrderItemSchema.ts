@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { productSchema } from './productSchema'
 import { SALES_ORDERS_ITEMS_STATUSES } from '../constants'
+import { productSchema } from './productSchema'
 
 export const salesOrderItemSchema = z.object({
   id: z.string().optional(),

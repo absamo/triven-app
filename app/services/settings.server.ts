@@ -2,7 +2,7 @@ import { redirect } from 'react-router'
 
 import { prisma } from '~/app/db.server'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import { type ICurrency } from '../common/validations/currencySchema'
+import type { ICurrency } from '../common/validations/currencySchema'
 
 export async function getCurrenciesByCompany(request: Request) {
   const user = await requireBetterAuthUser(request, ['read:settings'])

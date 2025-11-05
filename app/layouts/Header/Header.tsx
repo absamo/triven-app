@@ -29,8 +29,8 @@ import { Link } from 'react-router'
 import type { INotification } from '~/app/common/validations/notificationSchema'
 import type { IProfile } from '~/app/common/validations/profileSchema'
 import type { IRole } from '~/app/common/validations/roleSchema'
-import ClientOnly from '~/app/components/ClientOnly'
 import { Logo } from '~/app/components'
+import ClientOnly from '~/app/components/ClientOnly'
 import RoadmapIcon from '~/app/components/Roadmap/RoadmapIcon'
 import FrIcon from '~/app/components/SvgIcons/FrIcon'
 import UsIcon from '~/app/components/SvgIcons/UsIcon'
@@ -131,7 +131,7 @@ export default function Header({ showNotification, user, notifications }: Header
       <Flex align="center" justify="space-between" h="100%" w="100%"></Flex>
       {/* Logo on the left - absolutely positioned */}
       <Flex align="center" h="100%" style={{ position: 'absolute', left: 20 }}>
-        <Logo width={140} variant="auto" mb={-10}/>
+        <Logo width={140} variant="auto" mb={-10} />
 
         {/* Plan badge */}
         {user.currentPlan && (
@@ -296,9 +296,7 @@ export default function Header({ showNotification, user, notifications }: Header
                       <language.flag size={20} />
                     </div>
                   }
-                  rightSection={
-                    i18n.language === language.code ? <IconCheck size={16} /> : null
-                  }
+                  rightSection={i18n.language === language.code ? <IconCheck size={16} /> : null}
                 >
                   <Text size="sm">{language.name}</Text>
                 </Menu.Item>

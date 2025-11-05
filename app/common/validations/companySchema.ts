@@ -1,7 +1,6 @@
 import { z } from 'zod'
-
-import { locationSchema } from './locationSchema'
 import { currencySchema } from './currencySchema'
+import { locationSchema } from './locationSchema'
 
 export const companySchema = z.object({
   id: z.string().optional(),

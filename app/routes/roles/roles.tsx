@@ -1,10 +1,9 @@
-import { type LoaderFunction, type LoaderFunctionArgs } from 'react-router'
-
-import Roles from '~/app/pages/Roles'
-import { getRoles } from '~/app/services/roles.server'
-import { requireBetterAuthUser } from '~/app/services/better-auth.server'
-import type { Route } from './+types/roles'
+import type { LoaderFunction, LoaderFunctionArgs } from 'react-router'
 import type { IRole } from '~/app/common/validations/roleSchema'
+import Roles from '~/app/pages/Roles'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
+import { getRoles } from '~/app/services/roles.server'
+import type { Route } from './+types/roles'
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
