@@ -110,8 +110,20 @@ export async function handleTrialSubscriptionSetup(
     })
   }
 
+  console.log(`✅ Payment method attached to subscription ${subscriptionId}`)
+  console.log(`   Subscription status: ${subscription.status}`)
+  console.log(`   Metadata type: ${metadata.type}`)
+
+  // Handle trial conversion - check metadata type first, regardless of current status
+  if (metadata.type === 'trial_subscription') {
+    console.log(`🎯 Processing trial conversion for subscription ${subscriptionId}`)
+    await convertTrialSubscription(subscriptionId, metadata)
+    console.log(`✅ Trial conversion completed`)
+    return
+  }
+
   // Handle paused subscription reactivation
-  if (subscription.status === 'paused' && metadata.type === 'paused_subscription_reactivation') {
+  if (metadata.type === 'paused_subscription_reactivation') {
     console.log(`🔄 Resuming paused subscription ${subscriptionId} after payment method setup`)
     
     try {
@@ -175,12 +187,7 @@ export async function handleTrialSubscriptionSetup(
     return
   }
 
-  // Handle trial conversion if needed
-  if (subscription.status === 'trialing' && metadata.type === 'trial_subscription') {
-    await convertTrialSubscription(subscriptionId, metadata)
-  }
-
-  console.log(`✅ Setup completed for trial subscription ${subscriptionId}`)
+  console.log(`✅ Setup completed for subscription ${subscriptionId}`)
 }
 
 /**
@@ -521,6 +528,7 @@ async function convertTrialSubscription(
 
   if (newPriceId && currentItemId) {
     // Update subscription: change price and end trial
+    console.log(`📝 Updating subscription ${subscriptionId}: price=${newPriceId}, ending trial`)
     await stripe.subscriptions.update(subscriptionId, {
       items: [{ id: currentItemId, price: newPriceId }],
       trial_end: 'now',

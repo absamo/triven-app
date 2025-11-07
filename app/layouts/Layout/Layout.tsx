@@ -181,6 +181,13 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
       // Update local state immediately for instant UI update
       // Note: We trust all subscription updates from the server since SSE is user-specific
       if (data.type === 'subscription') {
+        console.log('📡 [Layout SSE] Subscription update received:', {
+          status: data.status,
+          trialEnd: data.trialEnd,
+          confirmed: data.confirmed,
+          pendingUpgrade: pendingUpgradeRef.current,
+        })
+        
         setSubscriptionStatus({
           status: data.status,
           trialEnd: data.trialEnd,
@@ -195,6 +202,8 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
         ) {
           // Clear pending flag - upgrade is complete
           pendingUpgradeRef.current = false
+          // Close the upgrade modal now that subscription is confirmed active
+          setShowUpgradeModal(false)
         }
 
         // Revalidate to fetch fresh data from server
@@ -267,6 +276,17 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   const trialing = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.TRIALING
   const trialExpired = (trialing && user.trialPeriodDays <= 0) || isPausedFromExpiredTrial
 
+  console.log('🔍 [Layout] Modal state calculation:', {
+    status: subscriptionStatus.status,
+    trialEnd: subscriptionStatus.trialEnd,
+    now: Math.floor(Date.now() / 1000),
+    isPausedFromExpiredTrial,
+    trialing,
+    trialPeriodDays: user.trialPeriodDays,
+    trialExpired,
+    isPendingPayment: pendingUpgradeRef.current,
+  })
+
   console.log('🔍 [Layout Component] Trial check:', {
     trialing,
     trialPeriodDays: user.trialPeriodDays,
@@ -274,19 +294,24 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     isPausedFromExpiredTrial,
     trialEnd: subscriptionStatus.trialEnd,
     subscriptionStatus: subscriptionStatus.status,
+    pendingUpgrade: pendingUpgradeRef.current,
   })
 
+  // Suppress all blocking modals when payment is being processed
+  const isPendingPayment = pendingUpgradeRef.current
+
+  // Suppress other modals when trial is expired to prevent modal switching during payment
   const incompleteSubscription =
-    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE
-  const cancelledSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.CANCELED
-  const pastDueSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE
-  const unpaidSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.UNPAID
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE && !isPendingPayment && !trialExpired
+  const cancelledSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.CANCELED && !isPendingPayment && !trialExpired
+  const pastDueSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE && !isPendingPayment && !trialExpired
+  const unpaidSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.UNPAID && !isPendingPayment && !trialExpired
   const incompleteExpiredSubscription =
-    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED && !isPendingPayment && !trialExpired
   
-  // Only show paused modal if it's NOT from an expired trial
+  // Only show paused modal if it's NOT from an expired trial and NOT pending payment
   const pausedSubscription =
-    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAUSED && !isPausedFromExpiredTrial
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAUSED && !isPausedFromExpiredTrial && !isPendingPayment && !trialExpired
 
   // Handle users with no active subscription (inactive, null, undefined, etc.)
   const noActiveSubscription =
@@ -343,9 +368,20 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     // Set flag to indicate payment succeeded, waiting for final confirmation
     pendingUpgradeRef.current = true
 
-    // Close modal immediately after payment success
-    // SSE will update subscription status in the background
-    setShowUpgradeModal(false)
+    // Keep modal open - it will show loading state while waiting for confirmation
+    // Modal will close when SSE confirms active status
+    // Don't close modal here - let the pending state handle it
+  }
+
+  // Handle payment start - set flag as soon as payment process begins
+  const handlePaymentStart = () => {
+    console.log('💳 [Layout] Payment process started, setting pending flag')
+    console.log('💳 [Layout] Current subscription status:', {
+      status: subscriptionStatus.status,
+      trialEnd: subscriptionStatus.trialEnd,
+      trialExpired,
+    })
+    pendingUpgradeRef.current = true
   }
 
   // Handle modal close
@@ -492,7 +528,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
       {/* No Active Subscription Modal - blocks access when no subscription exists */}
       <SubscriptionStatusModal
-        opened={noActiveSubscription}
+        opened={noActiveSubscription && !isPendingPayment}
         currentPlan={user.currentPlan}
         mode={SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION}
       />
@@ -502,7 +538,10 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
         opened={trialExpired}
         currentPlan={user.currentPlan}
         mode={SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED}
+        onPaymentStart={handlePaymentStart}
       />
+      {trialExpired && console.log('🚪 [Layout] Trial Expired Modal OPENED')}
+      {!trialExpired && console.log('🚪 [Layout] Trial Expired Modal CLOSED')}
 
       {/* Incomplete Subscription Modal - blocks access when subscription is incomplete */}
       <SubscriptionStatusModal

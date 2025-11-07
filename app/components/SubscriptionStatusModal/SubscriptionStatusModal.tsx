@@ -41,6 +41,7 @@ interface SubscriptionStatusModalProps {
     amount: number
     currency: string
   }
+  onPaymentStart?: () => void
 }
 
 interface PaymentData {
@@ -59,6 +60,7 @@ export default function SubscriptionStatusModal({
   currentPlan,
   mode,
   subscription,
+  onPaymentStart,
 }: SubscriptionStatusModalProps) {
   const { colorScheme } = useMantineColorScheme()
   const { t } = useTranslation(['payment', 'common'])
@@ -193,6 +195,9 @@ export default function SubscriptionStatusModal({
       mode === SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED ||
       mode === SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION
     ) {
+      // Notify parent that payment flow is starting (lock modal open)
+      onPaymentStart?.()
+      
       // Load config first
       if (!configFetcher.data) {
         configFetcher.load('/api/config')
@@ -337,45 +342,12 @@ export default function SubscriptionStatusModal({
   const handlePaymentSuccess = async () => {
     setIsProcessingPayment(true)
 
-    console.log('💳 Trial payment succeeded, revalidating subscription data...')
+    console.log('💳 Trial payment succeeded, waiting for invoice payment confirmation...')
 
-    // Use revalidator to refresh the loader data
+    // Don't reload - keep modal open with loading state
+    // The Layout component will close the modal when SSE confirms subscription is active
+    // Just revalidate to get latest data
     revalidator.revalidate()
-
-    // Wait for revalidation to complete or timeout after 5 seconds
-    let attempts = 0
-    const maxAttempts = 10 // 5 seconds with 500ms intervals
-
-    const checkRevalidation = () => {
-      return new Promise<void>((resolve) => {
-        const checkInterval = setInterval(() => {
-          attempts++
-
-          console.log(
-            `� Trial revalidation attempt ${attempts}/${maxAttempts}, state: ${revalidator.state}`
-          )
-
-          // Check if revalidation is complete
-          if (revalidator.state === 'idle') {
-            clearInterval(checkInterval)
-            console.log('✅ Trial revalidation completed successfully')
-            resolve()
-          }
-
-          // Timeout after max attempts
-          if (attempts >= maxAttempts) {
-            clearInterval(checkInterval)
-            console.log('⚠️ Trial revalidation timeout reached, reloading page')
-            resolve()
-          }
-        }, 500) // Check every 500ms
-      })
-    }
-
-    await checkRevalidation()
-
-    // Reload the page to ensure fresh state and close modal
-    window.location.reload()
   }
 
   const handlePaymentError = (error: string) => {

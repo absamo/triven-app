@@ -118,7 +118,7 @@ export async function action({ request }: ActionFunctionArgs) {
     let isUpgrade = false
     let isTrialConversion = false
 
-    // Handle trial subscription conversion
+    // Handle trial subscription conversion (only for active trialing subscriptions)
     if (existingSubscription?.status === 'trialing') {
       const result = await handleTrialConversion(ctx, existingSubscription.id)
       return Response.json(result)
