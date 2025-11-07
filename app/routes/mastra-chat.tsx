@@ -956,9 +956,9 @@ export default function MastraChat() {
                           </ReactMarkdown>
                           {message.isStreaming && !message.content && (
                             <Stack gap="xs">
-                              <Skeleton height={8} radius="xl" />
-                              <Skeleton height={8} width="70%" radius="xl" />
-                              <Skeleton height={8} width="40%" radius="xl" />
+                              <Skeleton height={10} radius="xl" animate />
+                              <Skeleton height={10} width="80%" radius="xl" animate />
+                              <Skeleton height={10} width="60%" radius="xl" animate />
                             </Stack>
                           )}
                         </Box>
@@ -991,9 +991,14 @@ export default function MastraChat() {
                 </Avatar>
                 <Box flex={1}>
                   <Stack gap="xs">
-                    <Skeleton height={8} radius="xl" />
-                    <Skeleton height={8} width="70%" radius="xl" />
-                    <Skeleton height={8} width="40%" radius="xl" />
+                    <Skeleton height={10} radius="xl" animate />
+                    <Skeleton height={10} width="85%" radius="xl" animate />
+                    <Skeleton height={10} width="70%" radius="xl" animate />
+                    <Skeleton height={10} width="60%" radius="xl" animate />
+                    <Box mt="xs">
+                      <Skeleton height={8} width="90%" radius="xl" animate />
+                      <Skeleton height={8} width="75%" radius="xl" mt="xs" animate />
+                    </Box>
                   </Stack>
                 </Box>
               </Group>

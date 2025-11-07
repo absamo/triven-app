@@ -3329,9 +3329,9 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
   }
 
   try {
-    // Create trial subscription in Stripe with a 10-minute trial period
+    // Create trial subscription in Stripe with a 1-minute trial period
     const now = Math.floor(Date.now() / 1000) // Current time in Unix timestamp
-    const trialEnd = now + 10 * 60 // 10 minutes from now
+    const trialEnd = now + 1 * 60 // 1 minute from now
 
     const stripeSubscription = await stripe.subscriptions.create({
       customer: adminUser.stripeCustomerId,
@@ -3344,7 +3344,7 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
       // Configure what happens when trial ends without payment method
       trial_settings: {
         end_behavior: {
-          missing_payment_method: 'cancel', // Options: 'cancel', 'pause', 'create_invoice'
+          missing_payment_method: 'pause', // Options: 'cancel', 'pause', 'create_invoice'
         },
       },
       payment_settings: {

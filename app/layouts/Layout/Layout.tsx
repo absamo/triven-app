@@ -143,10 +143,11 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
   // Initialize subscription status from user prop, then update via SSE
   const [subscriptionStatus, setSubscriptionStatus] = useState(() => {
-    const trialEnd =
-      user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING && user.trialPeriodDays > 0
+    // Use trialEnd from database if available, otherwise calculate from trialPeriodDays
+    const trialEnd = user.trialEnd || 
+      (user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING && user.trialPeriodDays > 0
         ? Math.floor(dayjs().add(user.trialPeriodDays, 'days').valueOf() / 1000)
-        : 0
+        : 0)
     return {
       status: user.planStatus,
       trialEnd,
@@ -161,15 +162,16 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
       return
     }
 
-    const trialEnd =
-      user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING && user.trialPeriodDays > 0
+    // Use trialEnd from database if available, otherwise calculate from trialPeriodDays
+    const trialEnd = user.trialEnd || 
+      (user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING && user.trialPeriodDays > 0
         ? Math.floor(dayjs().add(user.trialPeriodDays, 'days').valueOf() / 1000)
-        : 0
+        : 0)
     setSubscriptionStatus({
       status: user.planStatus,
       trialEnd,
     })
-  }, [user.planStatus, user.trialPeriodDays])
+  }, [user.planStatus, user.trialPeriodDays, user.trialEnd])
 
   useEffect(() => {
     const manager = SubscriptionStreamManager.getInstance()
@@ -256,13 +258,21 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     }
   }
 
+  // Check if paused subscription is from an expired trial (define first)
+  const isPausedFromExpiredTrial =
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAUSED &&
+    subscriptionStatus.trialEnd > 0 &&
+    subscriptionStatus.trialEnd <= Math.floor(Date.now() / 1000)
+
   const trialing = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.TRIALING
-  const trialExpired = trialing && user.trialPeriodDays <= 0
+  const trialExpired = (trialing && user.trialPeriodDays <= 0) || isPausedFromExpiredTrial
 
   console.log('🔍 [Layout Component] Trial check:', {
     trialing,
     trialPeriodDays: user.trialPeriodDays,
     trialExpired,
+    isPausedFromExpiredTrial,
+    trialEnd: subscriptionStatus.trialEnd,
     subscriptionStatus: subscriptionStatus.status,
   })
 
@@ -273,7 +283,10 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   const unpaidSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.UNPAID
   const incompleteExpiredSubscription =
     subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED
-  const pausedSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAUSED
+  
+  // Only show paused modal if it's NOT from an expired trial
+  const pausedSubscription =
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAUSED && !isPausedFromExpiredTrial
 
   // Handle users with no active subscription (inactive, null, undefined, etc.)
   const noActiveSubscription =
@@ -560,6 +573,7 @@ type LayoutPageProps = {
     profile: IProfile
     planStatus: string
     trialPeriodDays: number
+    trialEnd: number // Add trialEnd timestamp
     currentPlan: string
     paymentMethod?: {
       last4: string
