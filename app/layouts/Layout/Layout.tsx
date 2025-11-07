@@ -181,13 +181,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
       // Update local state immediately for instant UI update
       // Note: We trust all subscription updates from the server since SSE is user-specific
       if (data.type === 'subscription') {
-        console.log('📡 [Layout SSE] Subscription update received:', {
-          status: data.status,
-          trialEnd: data.trialEnd,
-          confirmed: data.confirmed,
-          pendingUpgrade: pendingUpgradeRef.current,
-        })
-        
         setSubscriptionStatus({
           status: data.status,
           trialEnd: data.trialEnd,
@@ -276,27 +269,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   const trialing = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.TRIALING
   const trialExpired = (trialing && user.trialPeriodDays <= 0) || isPausedFromExpiredTrial
 
-  console.log('🔍 [Layout] Modal state calculation:', {
-    status: subscriptionStatus.status,
-    trialEnd: subscriptionStatus.trialEnd,
-    now: Math.floor(Date.now() / 1000),
-    isPausedFromExpiredTrial,
-    trialing,
-    trialPeriodDays: user.trialPeriodDays,
-    trialExpired,
-    isPendingPayment: pendingUpgradeRef.current,
-  })
-
-  console.log('🔍 [Layout Component] Trial check:', {
-    trialing,
-    trialPeriodDays: user.trialPeriodDays,
-    trialExpired,
-    isPausedFromExpiredTrial,
-    trialEnd: subscriptionStatus.trialEnd,
-    subscriptionStatus: subscriptionStatus.status,
-    pendingUpgrade: pendingUpgradeRef.current,
-  })
-
   // Suppress all blocking modals when payment is being processed
   const isPendingPayment = pendingUpgradeRef.current
 
@@ -375,12 +347,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
   // Handle payment start - set flag as soon as payment process begins
   const handlePaymentStart = () => {
-    console.log('💳 [Layout] Payment process started, setting pending flag')
-    console.log('💳 [Layout] Current subscription status:', {
-      status: subscriptionStatus.status,
-      trialEnd: subscriptionStatus.trialEnd,
-      trialExpired,
-    })
     pendingUpgradeRef.current = true
   }
 

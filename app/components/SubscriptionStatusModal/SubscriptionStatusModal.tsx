@@ -342,8 +342,6 @@ export default function SubscriptionStatusModal({
   const handlePaymentSuccess = async () => {
     setIsProcessingPayment(true)
 
-    console.log('💳 Trial payment succeeded, waiting for invoice payment confirmation...')
-
     // Don't reload - keep modal open with loading state
     // The Layout component will close the modal when SSE confirms subscription is active
     // Just revalidate to get latest data
