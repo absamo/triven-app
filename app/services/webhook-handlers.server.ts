@@ -286,6 +286,19 @@ export async function handleInvoicePaymentSuccess(
   }
 
   console.log(`✅ [WEBHOOK-INVOICE-PAID] Invoice payment processed for subscription ${subscriptionId}`)
+
+  // Broadcast to SSE clients when invoice is paid and subscription is active
+  if (stripeSubscription.status === 'active') {
+    const { broadcastSubscriptionUpdate } = await import('../routes/api.subscription-stream')
+    broadcastSubscriptionUpdate({
+      userId: user.id,
+      status: stripeSubscription.status,
+      planId: dbPlanId,
+      trialEnd: shouldEndTrial ? 0 : subscriptionData.trial_end || 0,
+      confirmed: true,
+    })
+    console.log(`📡 [WEBHOOK-INVOICE-PAID] Broadcasted confirmed active subscription to SSE clients`)
+  }
 }
 
 /**

@@ -307,7 +307,8 @@ function PaymentForm({
     if (onSubmitReady) {
       onSubmitReady(handleSubmit, !!(stripe && elements))
     }
-  }, [onSubmitReady, stripe, elements, handleSubmit])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stripe, elements])
 
   return (
     <Paper p={0} radius="md" className={classes.paymentElement} withBorder={false}>

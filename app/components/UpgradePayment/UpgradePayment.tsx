@@ -23,7 +23,6 @@ import {
 } from '@tabler/icons-react'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher } from 'react-router'
 import { STRIPE_SUBSCRIPTION_STATUSES } from '~/app/common/constants'
 import {
   calculateProratedAmount,
@@ -62,10 +61,6 @@ interface UpgradePaymentProps {
   }
 }
 
-interface ConfigData {
-  stripePublicKey: string
-}
-
 export default function UpgradePayment({
   onSuccess,
   onPaymentStart,
@@ -85,14 +80,6 @@ export default function UpgradePayment({
     billing?.paymentMethod ? 'existing' : 'new'
   )
 
-  // Fetcher for config only (if not provided as prop)
-  const configFetcher = useFetcher<ConfigData>()
-
-  // Fetch config if not provided
-  if (!config && configFetcher.state === 'idle' && !configFetcher.data) {
-    configFetcher.load('/api/config')
-  }
-
   // Handle payment success
   const handlePaymentSuccess = async () => {
     console.log('💳 Payment succeeded, waiting for confirmed subscription update...')
@@ -101,6 +88,8 @@ export default function UpgradePayment({
     if (onSuccess) {
       onSuccess()
     }
+
+    // Don't reset isProcessingPayment here - let SSE event do it after webhook confirms
   }
 
   // Handle Stripe form submission
@@ -155,6 +144,7 @@ export default function UpgradePayment({
           throw new Error(data.error || 'Failed to upgrade subscription')
         }
 
+        // Call success handler (which resets processing state)
         await handlePaymentSuccess()
       } catch (error) {
         console.error('Upgrade error:', error)
@@ -187,8 +177,7 @@ export default function UpgradePayment({
     }
   }
 
-  // Get effective config from props or fetcher
-  const effectiveConfig = config || configFetcher.data
+  // Get effective config
 
   // Calculate pricing
   const targetPrice = getTargetPlanPrice(planId, interval, currency)
@@ -306,7 +295,7 @@ export default function UpgradePayment({
       )}
 
       {/* Payment Form */}
-      {effectiveConfig?.stripePublicKey ? (
+      {config?.stripePublicKey ? (
         <Stack gap="lg">
           {/* Payment Method Selection */}
           {billing?.paymentMethod && (
@@ -363,7 +352,7 @@ export default function UpgradePayment({
                         {t('payment:paymentDetails', 'Payment Details')}
                       </Text>
                       <StripePayment
-                        publishableKey={effectiveConfig.stripePublicKey}
+                        publishableKey={config.stripePublicKey}
                         amount={proratedAmount * 100}
                         currency={currency}
                         planName={getTranslatedPlanLabel(planId, t)}
@@ -393,7 +382,7 @@ export default function UpgradePayment({
           {!billing?.paymentMethod && (
             <Card padding="lg" radius="md" withBorder>
               <StripePayment
-                publishableKey={effectiveConfig.stripePublicKey}
+                publishableKey={config.stripePublicKey}
                 amount={proratedAmount * 100}
                 currency={currency}
                 planName={getTranslatedPlanLabel(planId, t)}

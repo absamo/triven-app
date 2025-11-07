@@ -25,10 +25,10 @@ import {
   IconDownload,
 } from '@tabler/icons-react'
 import dayjs from 'dayjs'
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { LoaderFunctionArgs } from 'react-router'
-import { data, useLoaderData, useNavigate, useSearchParams } from 'react-router'
+import { data, useLoaderData, useNavigate, useRevalidator, useSearchParams } from 'react-router'
 import { formatCurrency } from '~/app/common/helpers/money'
 import BackButton from '~/app/components/BackButton'
 import UpgradePayment from '~/app/components/UpgradePayment'
@@ -164,6 +164,7 @@ export default function BillingPage() {
   const loaderData = useLoaderData<BillingData>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const revalidator = useRevalidator()
   const paymentProcessingRef = useRef(false)
 
   const { subscription, config } = loaderData
@@ -175,45 +176,61 @@ export default function BillingPage() {
 
   // Set up SSE connection to listen for subscription updates
   useEffect(() => {
-    const eventSource = new EventSource('/api/subscription-events')
+    const eventSource = new EventSource('/api/subscription-stream')
+    let hasRedirected = false
 
-    eventSource.onmessage = (event) => {
+    console.log('[Billing] SSE connection established')
+
+    eventSource.addEventListener('connected', () => {
+      console.log('[Billing] SSE connected')
+    })
+
+    eventSource.addEventListener('subscription', (event) => {
       try {
         const update = JSON.parse(event.data)
+        console.log('[Billing] Received SSE update:', update)
+        console.log('[Billing] Payment processing:', paymentProcessingRef.current)
+
+        // Revalidate to update the UI
+        revalidator.revalidate()
 
         // If we're processing payment and get confirmed active status, redirect to settings
-        if (paymentProcessingRef.current && update.status === 'active' && update.confirmed) {
+        if (
+          !hasRedirected &&
+          paymentProcessingRef.current &&
+          update.status === 'active' &&
+          update.confirmed
+        ) {
+          console.log('[Billing] Redirecting to settings...')
+          hasRedirected = true
+          paymentProcessingRef.current = false
           navigate('/settings')
         }
       } catch (error) {
-        console.error('Failed to parse SSE message:', error)
+        console.error('[Billing] Failed to parse SSE message:', error)
       }
-    }
+    })
 
-    eventSource.onerror = () => {
+    eventSource.onerror = (error) => {
+      console.error('[Billing] SSE error:', error)
       eventSource.close()
     }
 
     return () => {
+      console.log('[Billing] SSE connection closed')
       eventSource.close()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate])
 
-  const handlePaymentStart = () => {
+  const handlePaymentStart = useCallback(() => {
+    console.log('[Billing] Payment started')
     paymentProcessingRef.current = true
-  }
+  }, [])
 
-  const handlePaymentSuccess = () => {
-    // Keep the loading state until SSE confirms active subscription
-    // The redirect will happen in the SSE handler
-  }
-
-  const { subscription, config } = loaderData
-  // If user is trialing, use their current plan as the target plan (to complete the trial)
-  const targetPlan =
-    searchParams.get('plan') ||
-    (subscription?.status === 'trialing' ? subscription.planId : undefined)
-  const returnTo = searchParams.get('returnTo')
+  const handlePaymentSuccess = useCallback(() => {
+    console.log('[Billing] Payment success - waiting for SSE confirmation')
+  }, [])
 
   if (!subscription || !targetPlan) {
     return (
