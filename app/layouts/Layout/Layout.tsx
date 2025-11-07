@@ -197,6 +197,8 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
           pendingUpgradeRef.current = false
           // Close the upgrade modal now that subscription is confirmed active
           setShowUpgradeModal(false)
+          // Redirect to settings page to show successful upgrade
+          navigate('/settings')
         }
 
         // Revalidate to fetch fresh data from server

@@ -25,6 +25,7 @@ import {
   IconDownload,
 } from '@tabler/icons-react'
 import dayjs from 'dayjs'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { LoaderFunctionArgs } from 'react-router'
 import { data, useLoaderData, useNavigate, useSearchParams } from 'react-router'
@@ -163,6 +164,49 @@ export default function BillingPage() {
   const loaderData = useLoaderData<BillingData>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const paymentProcessingRef = useRef(false)
+
+  const { subscription, config } = loaderData
+  // If user is trialing, use their current plan as the target plan (to complete the trial)
+  const targetPlan =
+    searchParams.get('plan') ||
+    (subscription?.status === 'trialing' ? subscription.planId : undefined)
+  const returnTo = searchParams.get('returnTo')
+
+  // Set up SSE connection to listen for subscription updates
+  useEffect(() => {
+    const eventSource = new EventSource('/api/subscription-events')
+
+    eventSource.onmessage = (event) => {
+      try {
+        const update = JSON.parse(event.data)
+
+        // If we're processing payment and get confirmed active status, redirect to settings
+        if (paymentProcessingRef.current && update.status === 'active' && update.confirmed) {
+          navigate('/settings')
+        }
+      } catch (error) {
+        console.error('Failed to parse SSE message:', error)
+      }
+    }
+
+    eventSource.onerror = () => {
+      eventSource.close()
+    }
+
+    return () => {
+      eventSource.close()
+    }
+  }, [navigate])
+
+  const handlePaymentStart = () => {
+    paymentProcessingRef.current = true
+  }
+
+  const handlePaymentSuccess = () => {
+    // Keep the loading state until SSE confirms active subscription
+    // The redirect will happen in the SSE handler
+  }
 
   const { subscription, config } = loaderData
   // If user is trialing, use their current plan as the target plan (to complete the trial)
@@ -232,13 +276,8 @@ export default function BillingPage() {
             amount: subscription.amount,
             paymentMethod: subscription.paymentMethod,
           }}
-          onSuccess={() => {
-            if (returnTo) {
-              navigate(returnTo)
-            } else {
-              navigate(-1)
-            }
-          }}
+          onPaymentStart={handlePaymentStart}
+          onSuccess={handlePaymentSuccess}
         />
       </Stack>
     </div>

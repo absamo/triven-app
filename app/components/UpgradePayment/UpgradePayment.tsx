@@ -38,6 +38,7 @@ import StripePayment from '../StripePayment'
 
 interface UpgradePaymentProps {
   onSuccess?: () => void
+  onPaymentStart?: () => void
   userPlanStatus: string
   planId?: string
   interval?: string
@@ -67,6 +68,7 @@ interface ConfigData {
 
 export default function UpgradePayment({
   onSuccess,
+  onPaymentStart,
   userPlanStatus,
   planId = PLANS.STANDARD,
   interval = INTERVALS.MONTHLY,
@@ -112,6 +114,11 @@ export default function UpgradePayment({
 
   // Handle payment processing
   const handlePayClick = async () => {
+    // Notify parent that payment is starting
+    if (onPaymentStart) {
+      onPaymentStart()
+    }
+
     // If using existing payment method, process upgrade directly
     if (billing?.paymentMethod && paymentMethodChoice === 'existing') {
       setIsProcessingPayment(true)

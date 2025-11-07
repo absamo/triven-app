@@ -3331,7 +3331,7 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
   try {
     // Create trial subscription in Stripe with a 1-minute trial period
     const now = Math.floor(Date.now() / 1000) // Current time in Unix timestamp
-    const trialEnd = now + 1 * 60 // 1 minute from now
+    const trialEnd = now + 10 * 60 // 1 minute from now
 
     const stripeSubscription = await stripe.subscriptions.create({
       customer: adminUser.stripeCustomerId,
