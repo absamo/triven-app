@@ -16,7 +16,7 @@ export default {
   sites: 'Sites',
   teams: 'Teams',
   roles: 'Roles',
-  assistant: 'Assistant',
+  assistant: 'AI Agent',
   plans: 'Plans',
 
   // Inventory and stock management

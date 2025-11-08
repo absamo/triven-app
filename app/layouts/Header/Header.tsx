@@ -147,16 +147,16 @@ export default function Header({ showNotification, user, notifications }: Header
 
       {/* Right side content */}
       <Flex align="center" gap="md" h="100%" style={{ marginLeft: 'auto' }}>
-        {/* AI Assistant, Roadmap, and Notification Bell */}
+        {/* AI Agent, Roadmap, and Notification Bell */}
         <Flex align="center" justify="center" gap="md">
-          <Tooltip label="AI Assistant" position="bottom" withArrow>
+          <Tooltip label={t('navigation:assistant')} position="bottom" withArrow>
             <ActionIcon
               variant="subtle"
               color="teal"
               size="lg"
               radius="xl"
               component={Link}
-              to="/ai-assistant"
+              to="/ai-agent"
               style={{
                 transition: 'all 0.2s ease',
                 color: 'light-dark(var(--mantine-color-dark-9), var(--mantine-color-gray-3))',

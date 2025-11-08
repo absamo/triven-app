@@ -191,15 +191,9 @@ export default [
     route('workflow-instances/:instanceId/step', 'routes/workflow-instances/$instanceId.step.tsx'),
     route('workflow-history', 'routes/workflows/workflow-history.tsx'),
 
-    //assistant
-    route('ai-assistant', 'routes/ai-assistant/assistant.tsx'),
-    route('assistant/chat', 'routes/assistant/chat.tsx'),
-
-    // Simple chat
-    route('simple-chat', 'routes/simple-chat.tsx'),
 
     // Mastra AI chat
-    route('mastra-chat', 'routes/mastra-chat.tsx'),
+    route('ai-agent', 'routes/mastra-chat.tsx'),
 
     // Roadmap
     route('roadmap', 'routes/roadmap.tsx'),

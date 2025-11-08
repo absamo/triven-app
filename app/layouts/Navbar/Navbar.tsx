@@ -413,7 +413,7 @@ export default function Navbar({
     // AI Assistant menu item - always available
     companySublinks.push({
       label: t('navigation:assistant'),
-      link: '/ai-assistant',
+      link: '/ai-agent',
       active: false,
       badge: {
         text: 'NEW',
