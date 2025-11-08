@@ -167,8 +167,14 @@ export default function BillingPage() {
   const navigate = useNavigate()
   const revalidator = useRevalidator()
   const paymentProcessingRef = useRef(false)
+  const initialSubscriptionStatusRef = useRef<string | null>(null)
 
   const { subscription, config } = loaderData
+  
+  // Store initial subscription status on first render
+  if (initialSubscriptionStatusRef.current === null && subscription) {
+    initialSubscriptionStatusRef.current = subscription.status
+  }
   // If user is trialing, use their current plan as the target plan (to complete the trial)
   const targetPlan =
     searchParams.get('plan') ||
@@ -285,6 +291,7 @@ export default function BillingPage() {
             currency: subscription.currency,
             amount: subscription.amount,
             paymentMethod: subscription.paymentMethod,
+            initialPlanStatus: initialSubscriptionStatusRef.current,
           }}
           onPaymentStart={handlePaymentStart}
           onSuccess={handlePaymentSuccess}

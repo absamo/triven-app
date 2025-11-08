@@ -504,9 +504,10 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
       {/* Trial Expiration Modal - blocks access when trial has expired */}
       <SubscriptionStatusModal
-        opened={trialExpired}
+        opened={trialExpired && !isOnBillingPage}
         currentPlan={user.currentPlan}
         mode={SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED}
+        subscription={user.subscription || undefined}
         onPaymentStart={handlePaymentStart}
       />
       {trialExpired && console.log('🚪 [Layout] Trial Expired Modal OPENED')}

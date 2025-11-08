@@ -55,6 +55,7 @@ interface UpgradePaymentProps {
       expMonth: number
       expYear: number
     } | null
+    initialPlanStatus?: string | null
   }
 }
 
@@ -72,9 +73,15 @@ export default function UpgradePayment({
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [stripeSubmit, setStripeSubmit] = useState<(() => Promise<void>) | null>(null)
   const [isStripeReady, setIsStripeReady] = useState(false)
-  const [paymentMethodChoice, setPaymentMethodChoice] = useState<'existing' | 'new'>(
-    billing?.paymentMethod ? 'existing' : 'new'
-  )
+  
+  // For trial/paused subscriptions, always default to 'new' payment method
+  // even if they have an existing payment method on file
+  const [paymentMethodChoice, setPaymentMethodChoice] = useState<'existing' | 'new'>(() => {
+    if (billing?.initialPlanStatus === 'trialing' || billing?.initialPlanStatus === 'paused') {
+      return 'new'
+    }
+    return billing?.paymentMethod ? 'existing' : 'new'
+  })
 
   // Handle payment success
   const handlePaymentSuccess = async () => {
@@ -123,25 +130,31 @@ export default function UpgradePayment({
 
         const data = await response.json()
 
-        // Check if subscription requires new payment (expired/canceled)
-        if (data.requiresNewSubscription) {
-          setIsProcessingPayment(false)
-          // Force user to use new payment method for expired subscriptions
-          setPaymentMethodChoice('new')
-          notifications.show({
-            title: t('paymentRequired', 'Payment Required'),
-            message: data.message || 'Please enter payment details to continue.',
-            color: 'yellow',
-          })
-          return
-        }
-
         if (!response.ok) {
           throw new Error(data.error || 'Failed to upgrade subscription')
         }
 
-        // Call success handler (which resets processing state)
-        await handlePaymentSuccess()
+        // Check if subscription requires new payment method (paused/expired/canceled)
+        // Backend returns clientSecret for deferred payment collection
+        if (data.clientSecret || data.requiresNewSubscription) {
+          setIsProcessingPayment(false)
+          // Force user to use new payment method for subscriptions requiring payment setup
+          setPaymentMethodChoice('new')
+          // Don't show notification - just silently switch to new payment method form
+          return
+        }
+
+        // Check if payment is not required (automatic upgrade completed)
+        if (data.paymentRequired === false) {
+          // Call success handler
+          await handlePaymentSuccess()
+          return
+        }
+
+        // If we get here with a successful response but no clear indication,
+        // it might still be processing. Reset the loading state.
+        console.log('⚠️ Unexpected response structure:', data)
+        setIsProcessingPayment(false)
       } catch (error) {
         console.error('Upgrade error:', error)
         setIsProcessingPayment(false)
@@ -200,14 +213,17 @@ export default function UpgradePayment({
                   <Text size="sm" fw={500} truncate>
                     {getTranslatedPlanLabel(billing.currentPlan, t)}
                   </Text>
-                  {billing.planStatus === 'trialing' && (
+                  {(billing.planStatus === 'trialing' || 
+                    billing.initialPlanStatus === 'trialing' || 
+                    billing.planStatus === 'paused' || 
+                    billing.initialPlanStatus === 'paused') && (
                     <Badge size="xs" variant="light" color="orange">
                       {t('payment:trial', 'Trial')}
                     </Badge>
                   )}
                 </Group>
                 <Text size="xs" c="dimmed">
-                  {billing.planStatus === 'trialing'
+                  {(billing.planStatus === 'trialing' || billing.initialPlanStatus === 'trialing' || billing.initialPlanStatus === 'paused')
                     ? t('payment:free', 'Free')
                     : formatCurrency(
                         getCurrentPlanPrice(
@@ -219,7 +235,7 @@ export default function UpgradePayment({
                         currency.toUpperCase()
                       )}{' '}
                   /{' '}
-                  {billing.planStatus === 'trialing'
+                  {(billing.planStatus === 'trialing' || billing.initialPlanStatus === 'trialing' || billing.initialPlanStatus === 'paused')
                     ? t('payment:trial', 'trial')
                     : billing.interval === 'month'
                       ? t('payment:month', 'month')
@@ -249,17 +265,27 @@ export default function UpgradePayment({
           </Paper>
 
           {/* Prorated Upgrade */}
-          {(billing.planStatus === 'active' || billing.planStatus === 'trialing') && (
+          {(billing.planStatus === 'active' || 
+            billing.planStatus === 'trialing' || 
+            billing.initialPlanStatus === 'trialing' || 
+            billing.planStatus === 'paused' || 
+            billing.initialPlanStatus === 'paused') && (
             <Card padding="md" radius="md" withBorder bg="var(--mantine-color-default-hover)">
               <Group justify="space-between" align="flex-start">
                 <div>
                   <Text size="sm" fw={500} mb={4}>
-                    {billing.planStatus === 'trialing'
+                    {(billing.planStatus === 'trialing' || 
+                      billing.initialPlanStatus === 'trialing' || 
+                      billing.planStatus === 'paused' || 
+                      billing.initialPlanStatus === 'paused')
                       ? t('payment:startSubscription', 'Start Subscription')
                       : t('payment:proratedUpgrade', 'Prorated Upgrade')}
                   </Text>
                   <Text size="xs" c="dimmed">
-                    {billing.planStatus === 'trialing'
+                    {(billing.planStatus === 'trialing' || 
+                      billing.initialPlanStatus === 'trialing' || 
+                      billing.planStatus === 'paused' || 
+                      billing.initialPlanStatus === 'paused')
                       ? t(
                           'payment:proratedUpgradeTrialDescription',
                           'Pay difference for remaining period'
@@ -287,8 +313,10 @@ export default function UpgradePayment({
       {/* Payment Form */}
       {config?.stripePublicKey ? (
         <Stack gap="lg">
-          {/* Payment Method Selection */}
-          {billing?.paymentMethod && billing.planStatus !== 'trialing' && (
+          {/* Payment Method Selection - only show if user has existing payment method and not in trial/paused conversion */}
+          {billing?.paymentMethod && 
+           billing.initialPlanStatus !== 'trialing' && 
+           billing.initialPlanStatus !== 'paused' && (
             <Card padding="lg" radius="md" withBorder>
               <Text size="lg" fw={600} mb="md">
                 {t('payment:paymentMethod', 'Payment Method')}
@@ -355,7 +383,7 @@ export default function UpgradePayment({
                         planId={planId}
                         interval={interval}
                         isTrialConversion={billing?.planStatus === 'trialing'}
-                        useSetupMode={billing?.planStatus === 'canceled'}
+                        useSetupMode={billing?.planStatus === 'canceled' || billing?.planStatus === 'paused'}
                         onSubmitReady={handleStripeSubmitReady}
                         onSuccess={handlePaymentSuccess}
                         onError={(error) => {
@@ -375,8 +403,10 @@ export default function UpgradePayment({
             </Card>
           )}
 
-          {/* Stripe Payment Component - only show if no existing payment method */}
-          {!billing?.paymentMethod && (
+          {/* Stripe Payment Component - show for users without payment method OR those in trial/paused conversion */}
+          {(!billing?.paymentMethod || 
+            billing?.initialPlanStatus === 'trialing' || 
+            billing?.initialPlanStatus === 'paused') && (
             <Card padding="lg" radius="md" withBorder>
               <StripePayment
                 publishableKey={config.stripePublicKey}
@@ -386,7 +416,7 @@ export default function UpgradePayment({
                 planId={planId}
                 interval={interval}
                 isTrialConversion={billing?.planStatus === 'trialing'}
-                useSetupMode={billing?.planStatus === 'canceled'}
+                useSetupMode={billing?.planStatus === 'canceled' || billing?.planStatus === 'paused'}
                 onSubmitReady={handleStripeSubmitReady}
                 onSuccess={handlePaymentSuccess}
                 onError={(error) => {

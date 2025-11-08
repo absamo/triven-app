@@ -190,32 +190,15 @@ export default function SubscriptionStatusModal({
   const handleUpgrade = async () => {
     setIsButtonLoading(true)
 
-    // For trial expired or no subscription, create a new subscription payment intent
-    if (
-      mode === SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED ||
-      mode === SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION
-    ) {
-      // Notify parent that payment flow is starting (lock modal open)
-      onPaymentStart?.()
-      
-      // Load config first
-      if (!configFetcher.data) {
-        configFetcher.load('/api/config')
-      }
+    // For trial expired, redirect to billing page with stripe payment
+    if (mode === SUBSCRIPTION_MODAL_MODES.TRIAL_EXPIRED && subscription) {
+      window.location.href = `/billing?plan=${subscription.planId}`
+      return
+    }
 
-      // Create a new subscription payment intent
-      paymentFetcher.submit(
-        {
-          planId: currentPlan.toLowerCase(),
-          interval: INTERVALS.MONTHLY,
-          currency: CURRENCIES.USD,
-        },
-        {
-          method: 'POST',
-          action: '/api/subscription-create',
-          encType: 'application/json',
-        }
-      )
+    // For no subscription, redirect to billing page with the selected plan
+    if (mode === SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION) {
+      window.location.href = `/billing?plan=${currentPlan.toLowerCase()}`
       return
     }
 

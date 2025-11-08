@@ -3331,7 +3331,7 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
   try {
     // Create trial subscription in Stripe with a 1-minute trial period
     const now = Math.floor(Date.now() / 1000) // Current time in Unix timestamp
-    const trialEnd = now + 10 * 60 // 1 minute from now
+    const trialEnd = now + 1 * 60 // 1 minute from now
 
     const stripeSubscription = await stripe.subscriptions.create({
       customer: adminUser.stripeCustomerId,
@@ -3404,74 +3404,338 @@ async function createDemoSubscription(users: any[], subscriptionPlans: any[]) {
 }
 
 async function createFeatureRoadmap(users: any[]) {
-  console.log('Creating feature roadmap...')
+  console.log('🗺️ Creating feature roadmap...')
 
   const adminUser = users.find((u) => u.email === 'admin@flowtech.com')
-  const featureStatuses = ['TODO', 'PLANNED', 'IN_PROGRESS', 'SHIPPED']
+  const managerUser = users.find((u) => u.email === 'manager@flowtech.com')
+  const warehouseUser = users.find((u) => u.email === 'warehouse@flowtech.com')
+  const salesUser = users.find((u) => u.email === 'sales@flowtech.com')
+  const accountantUser = users.find((u) => u.email === 'accountant@flowtech.com')
 
+  // More diverse and realistic feature ideas
   const featureIdeas = [
     {
       title: 'Multi-currency Support for International Sales',
       description:
-        'Enable support for multiple currencies in sales orders, invoices, and reporting. Allow automatic currency conversion and maintain exchange rate history.',
+        'Enable support for multiple currencies in sales orders, invoices, and reporting. Allow automatic currency conversion and maintain exchange rate history for accurate financial tracking across international transactions.',
       status: 'TODO',
+      minVotes: 15,
+      maxVotes: 25,
+      comments: [
+        {
+          user: salesUser,
+          content:
+            "This would be incredibly helpful for our growing international customer base. Right now we're managing currency conversions manually in spreadsheets which is time-consuming and error-prone.",
+        },
+        {
+          user: accountantUser,
+          content:
+            'Essential for proper financial reporting. We need accurate exchange rate tracking and the ability to generate reports in both local and base currencies.',
+        },
+      ],
     },
     {
       title: 'Advanced Analytics Dashboard',
       description:
-        'Create comprehensive analytics dashboard with real-time insights into inventory health, sales trends, and financial metrics. Include customizable widgets and export capabilities.',
+        'Create comprehensive analytics dashboard with real-time insights into inventory health, sales trends, and financial metrics. Include customizable widgets, drill-down capabilities, and export features for deeper analysis.',
       status: 'TODO',
+      minVotes: 20,
+      maxVotes: 30,
+      comments: [
+        {
+          user: managerUser,
+          content:
+            'This would help us make data-driven decisions much faster. Currently, we have to compile data from multiple sources to get a complete picture.',
+        },
+        {
+          user: adminUser,
+          content:
+            'Agreed. The ability to customize dashboards for different roles would be particularly valuable.',
+        },
+      ],
     },
     {
       title: 'Mobile App for Warehouse Management',
       description:
-        'Develop native mobile applications for iOS and Android to enable warehouse staff to manage inventory, process orders, and perform stock counts on the go.',
+        'Develop native mobile applications for iOS and Android to enable warehouse staff to manage inventory, process orders, and perform stock counts on the go. Include offline mode for areas with poor connectivity.',
       status: 'PLANNED',
+      minVotes: 30,
+      maxVotes: 45,
+      comments: [
+        {
+          user: warehouseUser,
+          content:
+            "A mobile app would be a game-changer! We're constantly moving around the warehouse and having to go back to the computer to update inventory is inefficient.",
+        },
+        {
+          user: managerUser,
+          content:
+            'Make sure it includes barcode scanning and the ability to perform cycle counts. Offline mode is critical for our larger warehouses.',
+        },
+        {
+          user: warehouseUser,
+          content:
+            "Yes! And it would be great if we could receive notifications for new orders and low stock alerts directly on our phones.",
+        },
+      ],
     },
     {
       title: 'Automated Reordering System',
       description:
-        'Implement intelligent automated reordering based on sales velocity, lead times, and seasonal trends. Include configurable rules and approval workflows.',
+        'Implement intelligent automated reordering based on sales velocity, lead times, and seasonal trends. Include configurable rules, approval workflows, and machine learning for demand forecasting.',
       status: 'PLANNED',
+      minVotes: 25,
+      maxVotes: 40,
+      comments: [
+        {
+          user: managerUser,
+          content:
+            'This is exactly what we need to prevent stockouts while minimizing excess inventory. The seasonal trend analysis would be particularly useful.',
+        },
+        {
+          user: accountantUser,
+          content:
+            'Will this include cost optimization? We should be able to set budget constraints and get recommendations that balance availability with cash flow.',
+        },
+      ],
     },
     {
       title: 'Integration with Popular E-commerce Platforms',
       description:
-        'Build integrations with Shopify, WooCommerce, and Magento to automatically sync inventory levels, process orders, and update product information.',
+        'Build integrations with Shopify, WooCommerce, Magento, and BigCommerce to automatically sync inventory levels, process orders, and update product information. Real-time synchronization to prevent overselling.',
       status: 'IN_PROGRESS',
+      minVotes: 35,
+      maxVotes: 50,
+      comments: [
+        {
+          user: salesUser,
+          content:
+            "We're currently using Shopify and manually updating inventory levels. This integration would save us hours every day and eliminate the risk of selling out-of-stock items.",
+        },
+        {
+          user: adminUser,
+          content:
+            'Great to see this is in progress! When can we expect the first integration to be ready? Shopify should be the priority.',
+        },
+        {
+          user: managerUser,
+          content:
+            'Make sure the integration is bi-directional and includes order status updates, not just inventory sync.',
+        },
+      ],
     },
     {
       title: 'Barcode Scanner Integration',
       description:
-        'Add support for barcode scanning throughout the application for faster product lookup, receiving, and stock counting. Support various barcode formats.',
+        'Add support for barcode scanning throughout the application for faster product lookup, receiving, and stock counting. Support various barcode formats including EAN-13, UPC, Code 128, and QR codes.',
       status: 'SHIPPED',
+      minVotes: 40,
+      maxVotes: 55,
+      comments: [
+        {
+          user: warehouseUser,
+          content:
+            'This feature has been fantastic! Product receiving is now 3x faster and we make far fewer errors.',
+        },
+        {
+          user: managerUser,
+          content:
+            'Huge improvement in operational efficiency. Stock counts that used to take a full day now take just a few hours.',
+        },
+      ],
     },
     {
       title: 'Advanced Reporting Engine',
       description:
-        'Create a flexible reporting engine with customizable templates, scheduled reports, and automated distribution. Include visual report builder.',
+        'Create a flexible reporting engine with customizable templates, scheduled reports, and automated distribution. Include visual report builder, custom fields, and the ability to share reports with stakeholders.',
       status: 'SHIPPED',
+      minVotes: 28,
+      maxVotes: 42,
+      comments: [
+        {
+          user: accountantUser,
+          content:
+            'The scheduled reports feature has been incredibly helpful for our monthly financial reviews. No more manual report generation!',
+        },
+        {
+          user: adminUser,
+          content:
+            'Love the ability to customize reports. We can now create exactly the views we need for different stakeholders.',
+        },
+      ],
+    },
+    {
+      title: 'Batch Import/Export for Products',
+      description:
+        'Add robust batch import and export functionality for products, with support for CSV and Excel formats. Include data validation, error reporting, and the ability to update existing products in bulk.',
+      status: 'TODO',
+      minVotes: 18,
+      maxVotes: 28,
+      comments: [
+        {
+          user: managerUser,
+          content:
+            "We're adding hundreds of new products from our suppliers every month. Being able to import them in bulk would save so much time.",
+        },
+      ],
+    },
+    {
+      title: 'Customer Portal for Order Tracking',
+      description:
+        'Create a self-service customer portal where customers can view their orders, track shipments, download invoices, and manage their account information. Include real-time notifications for order status changes.',
+      status: 'PLANNED',
+      minVotes: 22,
+      maxVotes: 35,
+      comments: [
+        {
+          user: salesUser,
+          content:
+            'Our customers keep asking about order status. A portal would reduce support inquiries significantly.',
+        },
+        {
+          user: adminUser,
+          content:
+            'This would improve customer satisfaction and reduce the workload on our sales team. Should include mobile responsiveness.',
+        },
+      ],
+    },
+    {
+      title: 'Warehouse Layout & Bin Location Management',
+      description:
+        'Implement visual warehouse layout management with bin locations, aisles, and zones. Enable optimal picking routes and location-based inventory tracking for faster fulfillment.',
+      status: 'TODO',
+      minVotes: 16,
+      maxVotes: 24,
+      comments: [
+        {
+          user: warehouseUser,
+          content:
+            'This would drastically improve our picking efficiency. Right now our staff waste a lot of time searching for items.',
+        },
+        {
+          user: managerUser,
+          content:
+            'Yes, and the ability to optimize storage based on product velocity would help us make better use of our warehouse space.',
+        },
+      ],
+    },
+    {
+      title: 'Supplier Performance Analytics',
+      description:
+        'Track and analyze supplier performance metrics including on-time delivery rates, quality scores, pricing trends, and lead time reliability. Generate supplier scorecards and comparative reports.',
+      status: 'PLANNED',
+      minVotes: 12,
+      maxVotes: 20,
+      comments: [
+        {
+          user: managerUser,
+          content:
+            'This would help us make better sourcing decisions and negotiate better terms with our suppliers.',
+        },
+      ],
+    },
+    {
+      title: 'Serial Number & Lot Tracking',
+      description:
+        'Add comprehensive serial number and lot tracking for products requiring traceability. Enable recall management, warranty tracking, and compliance reporting for regulated industries.',
+      status: 'TODO',
+      minVotes: 10,
+      maxVotes: 18,
+      comments: [
+        {
+          user: warehouseUser,
+          content:
+            'Critical for our electronics inventory. We need to track individual units for warranty and recall purposes.',
+        },
+        {
+          user: accountantUser,
+          content:
+            'This is also important for regulatory compliance in certain industries.',
+        },
+      ],
+    },
+    {
+      title: 'Kitting & Assembly Management',
+      description:
+        'Support for product kits and assemblies with automatic inventory adjustments when kits are created or disassembled. Include bill of materials (BOM) management and assembly workflows.',
+      status: 'TODO',
+      minVotes: 14,
+      maxVotes: 22,
+      comments: [
+        {
+          user: managerUser,
+          content:
+            "We sell several bundled products and currently manage them manually. This would ensure our component inventory stays accurate.",
+        },
+      ],
+    },
+    {
+      title: 'Drop Shipping Support',
+      description:
+        'Enable drop shipping workflows where orders are automatically forwarded to suppliers who ship directly to customers. Include supplier acknowledgment, tracking integration, and commission management.',
+      status: 'PLANNED',
+      minVotes: 8,
+      maxVotes: 15,
+      comments: [
+        {
+          user: salesUser,
+          content:
+            'This would allow us to expand our product catalog without increasing inventory costs.',
+        },
+      ],
+    },
+    {
+      title: 'Email Template Customization',
+      description:
+        'Allow customization of all system email templates including order confirmations, shipping notifications, and payment receipts. Support for custom branding, variables, and multi-language content.',
+      status: 'SHIPPED',
+      minVotes: 32,
+      maxVotes: 45,
+      comments: [
+        {
+          user: salesUser,
+          content:
+            'The ability to customize email templates has really helped maintain our brand consistency across all customer communications.',
+        },
+      ],
     },
   ]
 
   const features = []
 
-  for (const [index, idea] of featureIdeas.entries()) {
+  for (const idea of featureIdeas) {
+    // Randomly determine actual vote count within the specified range
+    const actualVoteCount = faker.number.int({ min: idea.minVotes, max: idea.maxVotes })
+
     const feature = await prisma.featureRequest.create({
       data: {
         title: idea.title,
         description: idea.description,
         status: idea.status as any,
-        voteCount: faker.number.int({ min: 0, max: 50 }),
-        createdById: adminUser.id,
+        voteCount: 0, // Will be updated after adding votes
+        createdById: adminUser!.id,
       },
     })
 
     features.push(feature)
 
-    // Add some votes from random users
-    const numVotes = faker.number.int({ min: 0, max: 5 })
-    const voters = faker.helpers.arrayElements(users, numVotes)
+    // Add comments if defined
+    if (idea.comments && idea.comments.length > 0) {
+      for (const commentData of idea.comments) {
+        await prisma.featureComment.create({
+          data: {
+            featureId: feature.id,
+            userId: commentData.user!.id,
+            content: commentData.content,
+          },
+        })
+      }
+    }
+
+    // Add votes from random users (ensuring we reach the actual vote count)
+    const availableVoters = users.filter((u) => u.id !== adminUser!.id) // Exclude admin as they created the feature
+    const numVotesToAdd = Math.min(actualVoteCount, availableVoters.length)
+    const voters = faker.helpers.arrayElements(availableVoters, numVotesToAdd)
 
     for (const voter of voters) {
       await prisma.featureVote.create({
@@ -3482,16 +3746,16 @@ async function createFeatureRoadmap(users: any[]) {
       })
     }
 
-    // Update the vote count
+    // Update the vote count to reflect actual votes
     await prisma.featureRequest.update({
       where: { id: feature.id },
       data: {
-        voteCount: numVotes,
+        voteCount: numVotesToAdd,
       },
     })
   }
 
-  console.log(`✅ Created ${features.length} feature requests with votes`)
+  console.log(`✅ Created ${features.length} feature requests with votes and comments`)
   return features
 }
 
@@ -3676,6 +3940,10 @@ async function seed() {
     // 22. Create landing page data
     await createLandingPageData()
 
+    // Count feature comments
+    const featureCommentCount = await prisma.featureComment.count()
+    const featureVoteCount = await prisma.featureVote.count()
+
     console.log('✅ Seed completed successfully!')
     console.log('\n📊 Summary:')
     console.log(`   Company: ${company.name}`)
@@ -3699,6 +3967,8 @@ async function seed() {
     console.log(`   Workflow Templates: ${workflowTemplates.length}`)
     console.log(`   Approval Requests: ${approvalRequests.length}`)
     console.log(`   Feature Requests: ${features.length}`)
+    console.log(`   Feature Comments: ${featureCommentCount}`)
+    console.log(`   Feature Votes: ${featureVoteCount}`)
 
     console.log('\n🔑 Demo Login Credentials:')
     console.log('   Admin: admin@flowtech.com / password123')
@@ -3727,7 +3997,29 @@ async function seed() {
     console.log('   - 4 demo approval requests with different statuses')
     console.log('   - Automatic timeout and escalation support')
 
-    console.log('\n💳 Subscription Plans:')
+    console.log('\n�️ Feature Roadmap:')
+    console.log(`   - ${features.length} diverse feature requests across all statuses`)
+    console.log('   - Features span TODO, PLANNED, IN_PROGRESS, and SHIPPED statuses')
+    console.log(`   - ${featureCommentCount} realistic comments from team members`)
+    console.log(`   - ${featureVoteCount} votes from users`)
+    console.log('   - Features include:')
+    console.log('     • Multi-currency support for international sales')
+    console.log('     • Advanced analytics dashboard')
+    console.log('     • Mobile app for warehouse management')
+    console.log('     • Automated reordering system')
+    console.log('     • E-commerce platform integrations')
+    console.log('     • Barcode scanner integration (shipped)')
+    console.log('     • Advanced reporting engine (shipped)')
+    console.log('     • Batch import/export for products')
+    console.log('     • Customer portal for order tracking')
+    console.log('     • Warehouse layout & bin location management')
+    console.log('     • Supplier performance analytics')
+    console.log('     • Serial number & lot tracking')
+    console.log('     • Kitting & assembly management')
+    console.log('     • Drop shipping support')
+    console.log('     • Email template customization (shipped)')
+
+    console.log('\n�💳 Subscription Plans:')
     console.log('   - Standard Plan: $29/month, $19/year (500 orders, 3 users, 1 agency, 2 sites)')
     console.log(
       '   - Professional Plan: $39/month, $29/year (1,000 orders, 10 users, 2 agencies, 4 sites)'
