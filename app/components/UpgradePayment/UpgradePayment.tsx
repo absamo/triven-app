@@ -18,19 +18,16 @@ import {
   IconBrandVisa,
   IconCreditCard,
   IconLock,
-  IconPlus,
   IconShieldCheck,
 } from '@tabler/icons-react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { STRIPE_SUBSCRIPTION_STATUSES } from '~/app/common/constants'
 import {
   calculateProratedAmount,
   formatCurrency,
   getCurrentPlanPrice,
   getTargetPlanPrice,
   getTranslatedPlanLabel,
-  getYearlySavings,
 } from '~/app/common/helpers/payment'
 import { CURRENCIES, INTERVALS, PLANS } from '~/app/modules/stripe/plans'
 import StripePayment from '../StripePayment'
@@ -64,7 +61,6 @@ interface UpgradePaymentProps {
 export default function UpgradePayment({
   onSuccess,
   onPaymentStart,
-  userPlanStatus,
   planId = PLANS.STANDARD,
   interval = INTERVALS.MONTHLY,
   currency = CURRENCIES.USD,
@@ -177,20 +173,14 @@ export default function UpgradePayment({
     }
   }
 
-  // Get effective config
 
   // Calculate pricing
   const targetPrice = getTargetPlanPrice(planId, interval, currency)
-  const currentPrice = billing
-    ? getCurrentPlanPrice(billing.currentPlan, billing.interval, billing.currency, billing.amount)
-    : 0
 
   const proratedAmount =
     billing?.planStatus === 'active' || billing?.planStatus === 'trialing'
       ? calculateProratedAmount(billing, planId, interval, currency)
       : targetPrice
-
-  const yearlySavings = getYearlySavings(planId, currency)
 
   return (
     <Stack gap="md">
@@ -298,7 +288,7 @@ export default function UpgradePayment({
       {config?.stripePublicKey ? (
         <Stack gap="lg">
           {/* Payment Method Selection */}
-          {billing?.paymentMethod && (
+          {billing?.paymentMethod && !isProcessingPayment &&(
             <Card padding="lg" radius="md" withBorder>
               <Text size="lg" fw={600} mb="md">
                 {t('payment:paymentMethod', 'Payment Method')}
@@ -346,7 +336,7 @@ export default function UpgradePayment({
                   </div>
 
                   {/* Stripe Payment Component - show inline when new payment method is selected */}
-                  {paymentMethodChoice === 'new' && (
+                  {(paymentMethodChoice === 'new' ) && (
                     <Stack gap="md" mt="xs" pl="xl">
                       <Text size="sm" fw={500} c="dimmed">
                         {t('payment:paymentDetails', 'Payment Details')}

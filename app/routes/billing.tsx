@@ -13,7 +13,7 @@ import {
   Table,
   Text,
   ThemeIcon,
-  Title,
+  Title as MantineTitle,
 } from '@mantine/core'
 import {
   IconAlertTriangle,
@@ -34,6 +34,7 @@ import BackButton from '~/app/components/BackButton'
 import UpgradePayment from '~/app/components/UpgradePayment'
 import { prisma } from '~/app/db.server'
 import { getAllInvoices, getUpcomingInvoice } from '~/app/modules/stripe/queries.server'
+import { Title } from '~/app/partials/Title'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 export const ROUTE_PATH = '/billing' as const
@@ -242,9 +243,9 @@ export default function BillingPage() {
               <IconCreditCard size={30} />
             </ThemeIcon>
             <div style={{ textAlign: 'center' }}>
-              <Title order={2} mb="sm">
+              <MantineTitle order={2} mb="sm">
                 {t('payment:noActiveSubscription')}
-              </Title>
+              </MantineTitle>
               <Text c="dimmed" mb="xl">
                 {t('payment:noSubscriptionMessage')}
               </Text>
@@ -266,17 +267,9 @@ export default function BillingPage() {
     <div style={{ minHeight: '100vh', padding: 'var(--mantine-spacing-xl)' }}>
       <Stack gap="xl" maw="1200px" mx="auto">
         {/* Header with Back Button */}
-        <Group justify="space-between" align="flex-start">
-          <div>
-            <BackButton onClick={() => navigate(-1)}>{t('common:back')}</BackButton>
-            <Title order={1} mt="md" mb="sm">
-              {subscription.status === 'trialing'
-                ? t('payment:upgradePlan')
-                : t('payment:upgradeTo', { planName: getPlanLabel(targetPlan) })}
-            </Title>
-            <Text c="dimmed">{t('payment:upgradeDescription')}</Text>
-          </div>
-        </Group>
+        <Title backTo="/settings" description={t('payment:upgradeDescription')}>
+          {t('payment:billing', 'Billing')}
+        </Title>
 
         {/* Upgrade payment form */}
         <UpgradePayment
