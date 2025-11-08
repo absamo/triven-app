@@ -219,10 +219,15 @@ export default function SubscriptionStatusModal({
       return
     }
 
-    // For cancelled subscriptions, show reactivation modal immediately (no health check needed)
-    if (mode === STRIPE_SUBSCRIPTION_STATUSES.CANCELED) {
-      setShowReactivateModal(true)
-      setIsButtonLoading(false)
+    // For cancelled or incomplete subscriptions, redirect to billing page to complete payment
+    if (
+      (mode === STRIPE_SUBSCRIPTION_STATUSES.CANCELED ||
+        mode === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE) &&
+      subscription
+    ) {
+      // Redirect to billing page with the subscription plan
+      const action = mode === STRIPE_SUBSCRIPTION_STATUSES.CANCELED ? 'reactivate' : 'complete'
+      window.location.href = `/billing?action=${action}&plan=${subscription.planId}`
       return
     }
 

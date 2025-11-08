@@ -39,6 +39,7 @@ interface StripePaymentProps {
   isPaymentMethodUpdate?: boolean // Flag to indicate payment method update (use setup mode)
   isProcessing?: boolean // External loading state to keep button loading
   onSubmitReady?: (submitFn: () => Promise<void>, isReady: boolean) => void // Callback to expose submit function
+  useSetupMode?: boolean // Flag to force setup mode for canceled subscription reactivation
 }
 
 function PaymentForm({
@@ -53,6 +54,7 @@ function PaymentForm({
   isTrialConversion,
   isPaymentMethodUpdate,
   onSubmitReady,
+  useSetupMode,
 }: {
   currency: string
   onSuccess: () => void
@@ -65,6 +67,7 @@ function PaymentForm({
   isTrialConversion?: boolean
   isPaymentMethodUpdate?: boolean // Used in options for Elements mode
   onSubmitReady?: (submitFn: () => Promise<void>, isReady: boolean) => void
+  useSetupMode?: boolean
 }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -344,6 +347,7 @@ export default function StripePayment({
   isTrialConversion,
   isPaymentMethodUpdate,
   onSubmitReady,
+  useSetupMode,
 }: StripePaymentProps) {
   const { colorScheme } = useMantineColorScheme()
   const { i18n } = useTranslation()
@@ -396,9 +400,9 @@ export default function StripePayment({
             appearance,
             locale: i18n.language === 'fr' ? ('fr' as const) : ('en' as const),
           }
-        : isTrialConversion || isPaymentMethodUpdate
+        : isTrialConversion || isPaymentMethodUpdate || useSetupMode
           ? {
-              // For trial subscriptions or payment method updates: use 'setup' mode WITHOUT amount
+              // For trial subscriptions, payment method updates, or canceled subscription reactivation: use 'setup' mode
               mode: 'setup' as const,
               currency: currency.toLowerCase(),
               appearance,
@@ -417,6 +421,7 @@ export default function StripePayment({
       clientSecret,
       isTrialConversion,
       isPaymentMethodUpdate,
+      useSetupMode,
       amount,
       currency,
       appearance,
@@ -438,6 +443,7 @@ export default function StripePayment({
         isTrialConversion={isTrialConversion}
         isPaymentMethodUpdate={isPaymentMethodUpdate}
         onSubmitReady={onSubmitReady}
+        useSetupMode={useSetupMode}
       />
     </Elements>
   )

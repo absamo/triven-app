@@ -5,6 +5,7 @@ import { ERRORS } from '~/app/common/errors'
 import { prisma } from '~/app/db.server'
 import { stripe } from '~/app/modules/stripe/stripe.server'
 import {
+  handleCanceledSubscriptionReactivation,
   handleInvoicePaymentActionRequired,
   handleInvoicePaymentFailed,
   handleInvoicePaymentSuccess,
@@ -68,6 +69,24 @@ export async function action({ request }: ActionFunctionArgs) {
       case 'setup_intent.succeeded': {
         const setupIntent = event.data.object
         const { metadata } = setupIntent
+
+        console.log(`🎉 [WEBHOOK] setup_intent.succeeded received`)
+        console.log(`🎉 [WEBHOOK] SetupIntent ID: ${setupIntent.id}`)
+        console.log(`🎉 [WEBHOOK] Type: ${metadata?.type}`)
+        console.log(`🎉 [WEBHOOK] Metadata:`, JSON.stringify(metadata, null, 2))
+
+        // For canceled subscription reactivation, we don't have a subscriptionId (creating new sub)
+        if (metadata?.type === 'canceled_subscription_reactivation') {
+          console.log(`🔄 [WEBHOOK] Processing canceled subscription reactivation`)
+          if (!setupIntent.payment_method || !metadata?.userId || !metadata?.priceId) {
+            console.log(`⚠️ [WEBHOOK] Missing required data - skipping`)
+            console.log(`⚠️ [WEBHOOK] payment_method: ${!!setupIntent.payment_method}, userId: ${!!metadata?.userId}, priceId: ${!!metadata?.priceId}`)
+            return new Response(null, { status: 200 })
+          }
+          console.log(`✅ [WEBHOOK] Validation passed - calling handler`)
+          await handleCanceledSubscriptionReactivation(setupIntent, metadata)
+          return new Response(null, { status: 200 })
+        }
 
         if (
           !metadata?.subscriptionId ||

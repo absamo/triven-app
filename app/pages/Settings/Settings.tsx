@@ -186,6 +186,36 @@ export default function Settings({
       ),
       content: () => (
         <Stack gap="lg">
+            {/* Cancelled Subscription Notice */}
+          {billing?.subscriptionId &&
+            billing?.planStatus === 'active' &&
+            billing?.cancelAtPeriodEnd && (
+              <Card
+                padding="lg"
+                radius="md"
+                withBorder
+                style={{
+                  borderColor: theme.colors.orange[4],
+                  background:
+                    colorScheme === 'dark' ? 'rgba(255, 152, 0, 0.1)' : 'rgba(255, 243, 224, 0.5)',
+                }}
+              >
+                <Group gap="xs">
+                  <ThemeIcon size="lg" radius="md" variant="light" color="orange">
+                    <IconInfoCircle size={20} />
+                  </ThemeIcon>
+                  <div>
+                    <Text size="sm" fw={600} c="orange.7" mb={4}>
+                      {t('payment:subscriptionEnding', 'Subscription Ending')}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {t('payment:accessUntil', 'You will have access until')}{' '}
+                      {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
+                    </Text>
+                  </div>
+                </Group>
+              </Card>
+            )}
           {/* Current Plan Card */}
           <Card padding="xl" radius="md" withBorder>
             <Group justify="space-between" mb="lg">
@@ -518,36 +548,7 @@ export default function Settings({
             </Card>
           )}
 
-          {/* Cancelled Subscription Notice */}
-          {billing?.subscriptionId &&
-            billing?.planStatus === 'active' &&
-            billing?.cancelAtPeriodEnd && (
-              <Card
-                padding="lg"
-                radius="md"
-                withBorder
-                style={{
-                  borderColor: theme.colors.orange[4],
-                  background:
-                    colorScheme === 'dark' ? 'rgba(255, 152, 0, 0.1)' : 'rgba(255, 243, 224, 0.5)',
-                }}
-              >
-                <Group gap="xs">
-                  <ThemeIcon size="lg" radius="md" variant="light" color="orange">
-                    <IconInfoCircle size={20} />
-                  </ThemeIcon>
-                  <div>
-                    <Text size="sm" fw={600} c="orange.7" mb={4}>
-                      {t('payment:subscriptionEnding', 'Subscription Ending')}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                      {t('payment:accessUntil', 'You will have access until')}{' '}
-                      {dayjs(billing.currentPeriodEnd * 1000).format('MMM DD, YYYY')}
-                    </Text>
-                  </div>
-                </Group>
-              </Card>
-            )}
+        
         </Stack>
       ),
     },

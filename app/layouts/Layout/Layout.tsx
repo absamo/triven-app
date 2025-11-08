@@ -330,6 +330,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
   const navigate = useNavigate()
   const location = useLocation()
+  const isOnBillingPage = location.pathname === '/billing'
 
   const handleUpgradeClick = () => {
     // Pass current location as returnTo parameter
@@ -513,16 +514,20 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
       {/* Incomplete Subscription Modal - blocks access when subscription is incomplete */}
       <SubscriptionStatusModal
-        opened={incompleteSubscription}
+        opened={incompleteSubscription && !isOnBillingPage}
         currentPlan={user.currentPlan}
         mode={SUBSCRIPTION_MODAL_MODES.INCOMPLETE}
+        subscription={user.subscription || undefined}
+        onPaymentStart={handlePaymentStart}
       />
 
       {/* Cancelled Subscription Modal - blocks access when subscription is cancelled */}
       <SubscriptionStatusModal
-        opened={cancelledSubscription}
+        opened={cancelledSubscription && !isOnBillingPage}
         currentPlan={user.currentPlan}
         mode={SUBSCRIPTION_MODAL_MODES.CANCELED}
+        subscription={user.subscription || undefined}
+        onPaymentStart={handlePaymentStart}
       />
 
       {/* Past Due Subscription Modal - blocks access when payment is past due */}

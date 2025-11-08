@@ -57,12 +57,21 @@ export default function ReactivateSubscriptionModal({
   const [selectedPlan, setSelectedPlan] = useState<string>(cancelledPlan || PLANS.STANDARD)
   const [selectedInterval, setSelectedInterval] = useState<string>(INTERVALS.MONTHLY)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [hasHandledResponse, setHasHandledResponse] = useState(false)
 
   const paymentFetcher = useFetcher<PaymentData>()
+
+  // Reset handled flag when modal opens/closes
+  useEffect(() => {
+    if (opened) {
+      setHasHandledResponse(false)
+    }
+  }, [opened])
 
   // Handle plan selection and reactivation
   const handleReactivate = async () => {
     setIsProcessing(true)
+    setHasHandledResponse(false)
 
     paymentFetcher.submit(
       {
@@ -80,8 +89,9 @@ export default function ReactivateSubscriptionModal({
 
   // Handle reactivation response
   useEffect(() => {
-    if (paymentFetcher.state === 'idle' && paymentFetcher.data) {
+    if (paymentFetcher.state === 'idle' && paymentFetcher.data && !hasHandledResponse) {
       setIsProcessing(false)
+      setHasHandledResponse(true)
 
       if ('error' in paymentFetcher.data) {
         notifications.show({
@@ -98,7 +108,8 @@ export default function ReactivateSubscriptionModal({
         onClose()
       }
     }
-  }, [paymentFetcher.state, paymentFetcher.data, onSuccess, onClose, t])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentFetcher.state, paymentFetcher.data, hasHandledResponse])
 
   const isLoading = isProcessing || paymentFetcher.state !== 'idle'
 

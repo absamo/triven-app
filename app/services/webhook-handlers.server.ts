@@ -20,6 +20,105 @@ interface PaymentMethodDetails {
 }
 
 /**
+ * Handles canceled subscription reactivation by creating a new subscription
+ */
+export async function handleCanceledSubscriptionReactivation(
+  setupIntent: Stripe.SetupIntent,
+  metadata: Record<string, string | undefined>
+): Promise<void> {
+  const paymentMethodId = setupIntent.payment_method as string
+  const customerId = setupIntent.customer as string
+  
+  console.log(`🔄 [WEBHOOK-HANDLER] Creating new subscription for canceled reactivation`)
+  console.log(`🔄 [WEBHOOK-HANDLER] SetupIntent: ${setupIntent.id}`)
+  console.log(`🔄 [WEBHOOK-HANDLER] Customer: ${customerId}`)
+  console.log(`🔄 [WEBHOOK-HANDLER] Price: ${metadata.priceId}`)
+  console.log(`🔄 [WEBHOOK-HANDLER] Payment method: ${paymentMethodId}`)
+  console.log(`🔄 [WEBHOOK-HANDLER] Old subscription: ${metadata.oldSubscriptionId}`)
+  console.log(`🔄 [WEBHOOK-HANDLER] Plan: ${metadata.planId}, Interval: ${metadata.interval}`)
+  
+  try {
+    // Create new subscription with the payment method
+    const newSubscription = await stripe.subscriptions.create({
+      customer: customerId,
+      items: [{ price: metadata.priceId }],
+      default_payment_method: paymentMethodId,
+      expand: ['latest_invoice.payment_intent'],
+    })
+    
+    console.log(`✅ [WEBHOOK-HANDLER] New subscription created: ${newSubscription.id}`)
+    console.log(`✅ [WEBHOOK-HANDLER] Status: ${newSubscription.status}`)
+    console.log(`✅ [WEBHOOK-HANDLER] Current period: ${(newSubscription as any).current_period_start} - ${(newSubscription as any).current_period_end}`)
+    
+    // Update database with new subscription
+    const user = await prisma.user.findUnique({
+      where: { stripeCustomerId: customerId },
+    })
+    
+    if (!user) {
+      console.error('User not found for customer:', customerId)
+      return
+    }
+    
+    // Get plan mapping
+    const dbPrice = await prisma.price.findUnique({
+      where: { id: metadata.priceId },
+      include: { plan: true },
+    })
+    
+    if (!dbPrice) {
+      console.error('Price not found:', metadata.priceId)
+      return
+    }
+    
+    // Extract subscription periods
+    const subscriptionData = newSubscription as any
+    const currentPeriodStart = subscriptionData.current_period_start || Math.floor(Date.now() / 1000)
+    const currentPeriodEnd = subscriptionData.current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
+    
+    const priceId = metadata.priceId || ''
+    
+    // Update database
+    await prisma.subscription.upsert({
+      where: { userId: user.id },
+      update: {
+        id: newSubscription.id,
+        planId: dbPrice.planId,
+        priceId,
+        interval: metadata.interval || 'month',
+        status: newSubscription.status,
+        currentPeriodStart,
+        currentPeriodEnd,
+        trialStart: 0,
+        trialEnd: 0,
+        cancelAtPeriodEnd: false,
+      },
+      create: {
+        id: newSubscription.id,
+        userId: user.id,
+        planId: dbPrice.planId,
+        priceId,
+        interval: metadata.interval || 'month',
+        status: newSubscription.status,
+        currentPeriodStart,
+        currentPeriodEnd,
+        trialStart: 0,
+        trialEnd: 0,
+      },
+    })
+    
+    console.log(`✅ [WEBHOOK-HANDLER] Database updated successfully`)
+    console.log(`✅ [WEBHOOK-HANDLER] User ${user.id} now has subscription ${newSubscription.id}`)
+    console.log(`✅ [WEBHOOK-HANDLER] Plan: ${dbPrice.planId}, Status: ${newSubscription.status}`)
+    console.log(`🎉 [WEBHOOK-HANDLER] Canceled subscription reactivation complete!`)
+    
+  } catch (error) {
+    console.error(`❌ [WEBHOOK-HANDLER] Failed to create subscription:`, error)
+    throw error
+  }
+}
+
+/**
  * Handles standalone PaymentIntent success for subscriptions
  */
 export async function handlePaymentIntentSuccess(

@@ -39,6 +39,7 @@ export interface SubscriptionResult {
   paymentRequired: boolean
   deferredMode?: boolean
   isPausedReactivation?: boolean
+  useSetupMode?: boolean
 }
 
 /**
@@ -384,6 +385,122 @@ export async function handleSubscriptionReactivation(
     } as SubscriptionResult
   }
 
+  // Handle canceled subscriptions - create new subscription
+  if (stripeSubscription.status === 'canceled') {
+    console.log(`🚫 [CANCELED-REACTIVATION] Canceled subscription detected`)
+    console.log(`🚫 [CANCELED-REACTIVATION] Subscription ID: ${existingSubscriptionId}`)
+    console.log(`🚫 [CANCELED-REACTIVATION] Customer: ${ctx.stripeCustomerId}`)
+    console.log(`🚫 [CANCELED-REACTIVATION] Plan: ${ctx.planId}, Price: ${ctx.priceId}`)
+    console.log(`🚫 [CANCELED-REACTIVATION] useExistingPaymentMethod: ${ctx.useExistingPaymentMethod}`)
+    
+    // If using existing payment method, create subscription directly
+    if (ctx.useExistingPaymentMethod === true) {
+      console.log(`💳 [CANCELED-REACTIVATION] Attempting to use existing payment method`)
+      
+      // Get customer and check for payment methods
+      const customer = await stripe.customers.retrieve(ctx.stripeCustomerId, {
+        expand: ['invoice_settings.default_payment_method'],
+      })
+      
+      // Check multiple locations for payment method
+      let paymentMethodId = (customer as any).invoice_settings?.default_payment_method
+      
+      // If no invoice default, check customer default_source
+      if (!paymentMethodId) {
+        paymentMethodId = (customer as any).default_source
+      }
+      
+      // If still no payment method, list payment methods attached to customer
+      if (!paymentMethodId) {
+        console.log(`💳 [CANCELED-REACTIVATION] No default payment method, checking attached payment methods`)
+        const paymentMethods = await stripe.paymentMethods.list({
+          customer: ctx.stripeCustomerId,
+          type: 'card',
+          limit: 1,
+        })
+        
+        if (paymentMethods.data.length > 0) {
+          paymentMethodId = paymentMethods.data[0].id
+          console.log(`💳 [CANCELED-REACTIVATION] Found attached payment method: ${paymentMethodId}`)
+        }
+      }
+      
+      if (!paymentMethodId) {
+        console.log(`⚠️ [CANCELED-REACTIVATION] No payment method found`)
+        console.log(`⚠️ [CANCELED-REACTIVATION] User must enter new payment method`)
+        // No payment method saved - signal frontend to switch to new payment method
+        throw new Error('NO_PAYMENT_METHOD')
+      }
+      
+      console.log(`💳 [CANCELED-REACTIVATION] Using payment method: ${paymentMethodId}`)
+      console.log(`💳 [CANCELED-REACTIVATION] Creating new subscription with existing payment method`)
+      
+      // Create new subscription with existing payment method
+      const newSubscription = await stripe.subscriptions.create({
+        customer: ctx.stripeCustomerId,
+        items: [{ price: ctx.priceId }],
+        default_payment_method: paymentMethodId,
+        expand: ['latest_invoice.payment_intent'],
+      })
+      
+      console.log(`✅ [CANCELED-REACTIVATION] New subscription created: ${newSubscription.id}`)
+      console.log(`✅ [CANCELED-REACTIVATION] Status: ${newSubscription.status}`)
+      
+      return newSubscription
+    }
+    
+    // Check if this is the initial request (deferred mode) or payment submission with new card
+    if (ctx.useExistingPaymentMethod !== false) {
+      console.log(`💳 [CANCELED-REACTIVATION] Returning deferred mode (initial page load)`)
+      console.log(`💳 [CANCELED-REACTIVATION] Client will show payment form in setup mode`)
+      return {
+        subscriptionId: null,
+        clientSecret: null,
+        amount: ctx.amount,
+        currency: ctx.currency.toUpperCase(),
+        planName: PRICING_PLANS[ctx.planId].name,
+        isUpgrade: false,
+        isTrialConversion: false,
+        paymentRequired: true,
+        deferredMode: true,
+        useSetupMode: true,
+      } as SubscriptionResult
+    }
+    
+    // Payment submission with new card - create SetupIntent to collect payment method
+    console.log(`💳 [CANCELED-REACTIVATION] User submitted new payment - creating SetupIntent`)
+    console.log(`💳 [CANCELED-REACTIVATION] Customer: ${ctx.stripeCustomerId}`)
+    const setupIntent = await stripe.setupIntents.create({
+      customer: ctx.stripeCustomerId,
+      automatic_payment_methods: { enabled: true },
+      usage: 'off_session',
+      metadata: {
+        userId: ctx.userId,
+        type: 'canceled_subscription_reactivation',
+        oldSubscriptionId: existingSubscriptionId,
+        planId: ctx.planId,
+        interval: ctx.interval,
+        priceId: ctx.priceId,
+      },
+    })
+    
+    console.log(`✅ [CANCELED-REACTIVATION] SetupIntent created: ${setupIntent.id}`)
+    console.log(`✅ [CANCELED-REACTIVATION] Client secret: ${setupIntent.client_secret?.slice(0, 20)}...`)
+    console.log(`✅ [CANCELED-REACTIVATION] Metadata:`, JSON.stringify(setupIntent.metadata, null, 2))
+    console.log(`✅ [CANCELED-REACTIVATION] Waiting for webhook setup_intent.succeeded...`)
+    
+    return {
+      subscriptionId: null,
+      clientSecret: setupIntent.client_secret,
+      amount: ctx.amount,
+      currency: ctx.currency.toUpperCase(),
+      planName: PRICING_PLANS[ctx.planId].name,
+      isUpgrade: false,
+      isTrialConversion: false,
+      paymentRequired: true,
+    } as SubscriptionResult
+  }
+
   if (isCanceledOrExpired) {
     // For incomplete_expired (expired trials), don't cleanup - Stripe already handled it
     // Just create a new subscription
@@ -449,24 +566,46 @@ export async function createPaidSubscription(
   // If no payment_intent was created (because no default payment method),
   // finalize the invoice to create the payment intent
   const invoice = subscription.latest_invoice
+  console.log(`🔍 Checking invoice for payment_intent creation`)
+  console.log(`🔍 Has invoice: ${!!invoice}`)
+  console.log(`🔍 Invoice type: ${typeof invoice}`)
+  
   if (invoice && typeof invoice === 'object') {
     const invoiceData = invoice as any
+    console.log(`🔍 Invoice status: ${invoiceData.status}`)
+    console.log(`🔍 Has payment_intent: ${!!invoiceData.payment_intent}`)
+    console.log(`🔍 Amount due: ${invoiceData.amount_due}`)
     
-    if (!invoiceData.payment_intent && invoiceData.status === 'draft' && invoiceData.amount_due > 0) {
-      console.log(`💳 Finalizing invoice ${invoiceData.id} to create PaymentIntent`)
-      
-      // Finalize the invoice - this will create the payment_intent
-      const finalizedInvoice = await stripe.invoices.finalizeInvoice(invoiceData.id, {
-        auto_advance: false, // Don't auto-charge, wait for user to submit payment
-      })
-      
-      console.log(`✅ Invoice finalized with PaymentIntent`)
-      
-      // Re-fetch subscription with the payment_intent
-      return await stripe.subscriptions.retrieve(subscription.id, {
-        expand: ['latest_invoice.payment_intent'],
-      })
+    // If no payment intent exists and there's an amount due
+    if (!invoiceData.payment_intent && invoiceData.amount_due > 0) {
+      if (invoiceData.status === 'draft') {
+        console.log(`💳 Finalizing draft invoice ${invoiceData.id} to create PaymentIntent`)
+        
+        // Finalize the invoice - this will create the payment_intent
+        const finalizedInvoice = await stripe.invoices.finalizeInvoice(invoiceData.id, {
+          auto_advance: false, // Don't auto-charge, wait for user to submit payment
+        })
+        
+        console.log(`✅ Invoice finalized with PaymentIntent: ${(finalizedInvoice as any).payment_intent}`)
+        
+        // Re-fetch subscription with the payment_intent
+        return await stripe.subscriptions.retrieve(subscription.id, {
+          expand: ['latest_invoice.payment_intent'],
+        })
+      } else if (invoiceData.status === 'open') {
+        // Invoice is already finalized (open) but has no payment_intent
+        // This happens with payment_behavior: 'default_incomplete' and no default payment method
+        console.log(`💳 Open invoice without PaymentIntent detected`)
+        console.log(`💡 This is expected for reactivation without saved payment method`)
+        console.log(`⏭️ Frontend will collect payment and complete subscription`)
+        // Don't do anything - return the subscription as-is
+        // The subscription will remain 'incomplete' until payment is collected via frontend
+      }
+    } else {
+      console.log(`⏭️ Skipping PaymentIntent creation - already exists or amount is 0`)
     }
+  } else {
+    console.log(`⏭️ No invoice object to finalize`)
   }
 
   return subscription

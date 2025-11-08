@@ -300,7 +300,10 @@ export default function UpgradePayment({
               >
                 <Stack gap="md">
                   {/* Existing Payment Method Option */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div 
+                    style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                    onClick={() => setPaymentMethodChoice('existing')}
+                  >
                     <Radio value="existing" />
                     <Group gap="sm" align="center" style={{ flex: 1 }}>
                       <ThemeIcon size="md" radius="md" variant="light" color="gray">
@@ -328,7 +331,10 @@ export default function UpgradePayment({
                   </div>
 
                   {/* New Payment Method Option */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div 
+                    style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                    onClick={() => setPaymentMethodChoice('new')}
+                  >
                     <Radio value="new" />
                     <Text size="sm" fw={500} style={{ flex: 1 }}>
                       {t('payment:useNewCard', 'Use a different payment method')}
@@ -349,6 +355,7 @@ export default function UpgradePayment({
                         planId={planId}
                         interval={interval}
                         isTrialConversion={billing?.planStatus === 'trialing'}
+                        useSetupMode={billing?.planStatus === 'canceled'}
                         onSubmitReady={handleStripeSubmitReady}
                         onSuccess={handlePaymentSuccess}
                         onError={(error) => {
@@ -379,6 +386,7 @@ export default function UpgradePayment({
                 planId={planId}
                 interval={interval}
                 isTrialConversion={billing?.planStatus === 'trialing'}
+                useSetupMode={billing?.planStatus === 'canceled'}
                 onSubmitReady={handleStripeSubmitReady}
                 onSuccess={handlePaymentSuccess}
                 onError={(error) => {

@@ -37,8 +37,10 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     const user = await requireBetterAuthUser(request)
     const body = await request.json()
+    console.log(`📥 [SUBSCRIPTION-CREATE] Request body:`, JSON.stringify(body, null, 2))
     const { planId, interval, currency, confirmPayment, subscriptionId, useExistingPaymentMethod } =
       subscriptionSchema.parse(body)
+    console.log(`📥 [SUBSCRIPTION-CREATE] useExistingPaymentMethod:`, useExistingPaymentMethod, `(type: ${typeof useExistingPaymentMethod})`)
 
     // Handle trial conversion confirmation
     if (confirmPayment && subscriptionId) {
@@ -105,8 +107,8 @@ export async function action({ request }: ActionFunctionArgs) {
     })
 
     // Validate and potentially nullify existing subscription
-    // Exception: Keep paused subscriptions so they can be reactivated
-    if (existingSubscription && existingSubscription.status !== 'paused') {
+    // Exception: Keep paused and canceled subscriptions so they can be reactivated
+    if (existingSubscription && existingSubscription.status !== 'paused' && existingSubscription.status !== 'canceled') {
       const isValid = await validateExistingSubscription(existingSubscription.id)
       if (!isValid) {
         existingSubscription = null
@@ -135,8 +137,9 @@ export async function action({ request }: ActionFunctionArgs) {
     if (existingSubscription && !isUpgrade && existingSubscription.status !== 'trialing') {
       const result = await handleSubscriptionReactivation(ctx, existingSubscription.id)
       
-      // Check if result is a SubscriptionResult (for paused subscriptions)
-      if ('deferredMode' in result || 'isPausedReactivation' in result) {
+      // Check if result is a SubscriptionResult (has these flags or has clientSecret without subscription)
+      if ('deferredMode' in result || 'isPausedReactivation' in result || 
+          ('clientSecret' in result && result.subscriptionId === null)) {
         return Response.json(result)
       }
       
@@ -173,6 +176,22 @@ export async function action({ request }: ActionFunctionArgs) {
     console.log(`📊 [SUBSCRIPTION-CREATE] Subscription ID: ${subscription.id}`)
     console.log(`📊 [SUBSCRIPTION-CREATE] Has client secret: ${!!clientSecret}`)
     
+    // If subscription is incomplete and has no client secret, return deferred mode
+    if (subscription.status === 'incomplete' && !clientSecret) {
+      console.log(`⏸️ [SUBSCRIPTION-CREATE] Incomplete subscription without client secret - returning deferred mode`)
+      return Response.json({
+        subscriptionId: null,
+        clientSecret: null,
+        amount: ctx.amount,
+        currency: ctx.currency.toUpperCase(),
+        planName: dbPrice.plan.name,
+        isUpgrade: false,
+        isTrialConversion: false,
+        paymentRequired: true,
+        deferredMode: true,
+      })
+    }
+    
     if (subscription.status !== 'incomplete') {
       console.log(`✅ [SUBSCRIPTION-CREATE] Storing subscription in database (status: ${subscription.status})`)
       await storeSubscriptionInDatabase(ctx, subscription)
@@ -197,6 +216,15 @@ export async function action({ request }: ActionFunctionArgs) {
     })
   } catch (error) {
     console.error('❌ Subscription error:', error)
+    
+    // Handle special case: no payment method for canceled subscription
+    if (error instanceof Error && error.message === 'NO_PAYMENT_METHOD') {
+      return Response.json({
+        requiresNewSubscription: true,
+        message: 'No payment method found. Please enter payment details to reactivate your subscription.',
+      })
+    }
+    
     return Response.json(
       { error: error instanceof Error ? error.message : 'Failed to process subscription' },
       { status: 500 }
