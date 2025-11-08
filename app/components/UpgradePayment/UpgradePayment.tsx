@@ -288,7 +288,7 @@ export default function UpgradePayment({
       {config?.stripePublicKey ? (
         <Stack gap="lg">
           {/* Payment Method Selection */}
-          {billing?.paymentMethod && !isProcessingPayment &&(
+          {billing?.paymentMethod && billing.planStatus !== 'trialing' && (
             <Card padding="lg" radius="md" withBorder>
               <Text size="lg" fw={600} mb="md">
                 {t('payment:paymentMethod', 'Payment Method')}
