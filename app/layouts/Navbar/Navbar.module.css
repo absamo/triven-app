@@ -3,27 +3,132 @@
   display: flex;
   flex-direction: column;
   padding: 24px 20px 12px 20px;
-  background: light-dark(#ffffff, var(--mantine-color-dark-7));
+  background: light-dark(
+    linear-gradient(180deg, #ffffff 0%, #fafbfc 100%),
+    linear-gradient(180deg, var(--mantine-color-dark-7) 0%, var(--mantine-color-dark-8) 100%)
+  );
   height: 100%;
   position: relative;
+  border-right: 1px solid light-dark(
+    rgba(226, 232, 240, 0.6),
+    rgba(255, 255, 255, 0.05)
+  );
+  box-shadow: light-dark(
+    2px 0 12px rgba(0, 0, 0, 0.03),
+    2px 0 12px rgba(0, 0, 0, 0.2)
+  );
 
+  /* Decorative pattern overlay */
   &::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
+    bottom: 0;
+    background: 
+      light-dark(
+        radial-gradient(circle at 20% 15%, rgba(14, 165, 233, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 20% 15%, rgba(14, 165, 233, 0.15) 0%, transparent 40%)
+      ),
+      light-dark(
+        radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.12) 0%, transparent 45%)
+      ),
+      light-dark(
+        radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.02) 0%, transparent 70%),
+        radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 70%)
+      ),
+      light-dark(
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 100px,
+          rgba(14, 165, 233, 0.01) 100px,
+          rgba(14, 165, 233, 0.01) 101px
+        ),
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 100px,
+          rgba(14, 165, 233, 0.03) 100px,
+          rgba(14, 165, 233, 0.03) 101px
+        )
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Top accent line */
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 1px;
+    background: light-dark(
+      linear-gradient(90deg, transparent 0%, rgba(14, 165, 233, 0.1) 50%, transparent 100%),
+      linear-gradient(90deg, transparent 0%, rgba(14, 165, 233, 0.2) 50%, transparent 100%)
+    );
+    z-index: 1;
+  }
+
+  /* Ensure content is above decorative elements */
+  > * {
+    position: relative;
+    z-index: 1;
   }
 }
 
 .miniNavbar {
   padding: 16px 12px;
-  background: light-dark(#ffffff, var(--mantine-color-dark-7));
-  border-right: 1px solid light-dark(#e2e8f0, var(--mantine-color-dark-4));
+  background: light-dark(
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%),
+    linear-gradient(180deg, var(--mantine-color-dark-7) 0%, var(--mantine-color-dark-8) 100%)
+  );
+  border-right: 1px solid light-dark(
+    rgba(226, 232, 240, 0.8),
+    rgba(255, 255, 255, 0.08)
+  );
+  box-shadow: light-dark(
+    2px 0 16px rgba(0, 0, 0, 0.04),
+    2px 0 16px rgba(0, 0, 0, 0.25)
+  );
   width: 80px;
   min-width: 80px;
   max-width: 80px;
+
+  /* Decorative gradient pattern for mini mode */
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      light-dark(
+        radial-gradient(ellipse at center 20%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at center 20%, rgba(14, 165, 233, 0.18) 0%, transparent 50%)
+      ),
+      light-dark(
+        radial-gradient(ellipse at center 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at center 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%)
+      ),
+      light-dark(
+        linear-gradient(180deg, rgba(14, 165, 233, 0.03) 0%, transparent 30%, transparent 70%, rgba(99, 102, 241, 0.02) 100%),
+        linear-gradient(180deg, rgba(14, 165, 233, 0.08) 0%, transparent 30%, transparent 70%, rgba(99, 102, 241, 0.06) 100%)
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Ensure content is above decorative elements */
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* Mini navbar link styles */
@@ -37,13 +142,24 @@
   color: light-dark(#64748b, var(--mantine-color-gray-4));
   transition:
     color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   margin-bottom: 8px;
+  background: light-dark(transparent, transparent);
 
   &:hover {
     color: var(--mantine-color-teal-6);
-    background-color: light-dark(rgba(14, 165, 233, 0.08), rgba(14, 165, 233, 0.15));
+    background: light-dark(
+      linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(14, 165, 233, 0.12) 100%),
+      linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(14, 165, 233, 0.2) 100%)
+    );
+    transform: translateX(2px);
+    box-shadow: light-dark(
+      0 2px 8px rgba(14, 165, 233, 0.15),
+      0 2px 8px rgba(14, 165, 233, 0.25)
+    );
   }
 
   &::after {
@@ -54,9 +170,10 @@
     transform: translateY(-50%);
     width: 3px;
     height: 0;
-    background-color: var(--mantine-color-teal-6);
+    background: linear-gradient(180deg, var(--mantine-color-teal-5) 0%, var(--mantine-color-teal-7) 100%);
     border-radius: 2px;
     transition: height 0.2s ease;
+    box-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
   }
 }
 
@@ -75,6 +192,10 @@
 
 .active {
   color: light-dark(#1e293b, var(--mantine-color-white));
+  background: light-dark(
+    linear-gradient(135deg, rgba(100, 116, 139, 0.08) 0%, rgba(100, 116, 139, 0.12) 100%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.12) 100%)
+  );
 
   &::after {
     height: 24px;
@@ -83,8 +204,15 @@
 
 .selected {
   color: var(--mantine-color-teal-6) !important;
-  background-color: light-dark(rgba(14, 165, 233, 0.12), rgba(14, 165, 233, 0.2));
+  background: light-dark(
+    linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(14, 165, 233, 0.18) 100%),
+    linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(14, 165, 233, 0.28) 100%)
+  );
   font-weight: 600;
+  box-shadow: light-dark(
+    0 2px 12px rgba(14, 165, 233, 0.2),
+    0 2px 12px rgba(14, 165, 233, 0.35)
+  );
 
   &::after {
     height: 32px;

@@ -653,10 +653,13 @@ export default function Navbar({
                   // Check if this menu has submenus (nested structure)
                   if (menuItem.submenus) {
                     return menuItem.submenus.map((submenu: IMenu) => {
-                      let active = submenu.active
+                      // Check if this submenu is the active one
+                      const isActiveSubmenu = activeMenuItem?.label === submenu.label
+                      
+                      let active = isActiveSubmenu ? activeMenuItem.active : submenu.active
 
                       // Check if any sublink is active
-                      if (!submenu.link) {
+                      if (!submenu.link && !isActiveSubmenu) {
                         active =
                           !selected &&
                           (submenu.sublinks?.some(
@@ -667,14 +670,18 @@ export default function Navbar({
                       return (
                         <Box key={submenu.label} mb={8}>
                           <NavbarLinksGroup
-                            menuItem={{
-                              ...submenu,
-                              active,
-                              sublinks: submenu.sublinks?.map((sublink) => ({
-                                ...sublink,
-                                active: sublink.link.split('/')[1] === locationPath,
-                              })),
-                            }}
+                            menuItem={
+                              isActiveSubmenu
+                                ? activeMenuItem
+                                : {
+                                    ...submenu,
+                                    active,
+                                    sublinks: submenu.sublinks?.map((sublink) => ({
+                                      ...sublink,
+                                      active: sublink.link.split('/')[1] === locationPath,
+                                    })),
+                                  }
+                            }
                             onClick={(currentMenu, selected) =>
                               handleNavbarLinkClick(currentMenu, selected)
                             }
