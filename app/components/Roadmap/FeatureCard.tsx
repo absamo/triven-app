@@ -33,11 +33,6 @@ export function FeatureCard({ feature, isAdmin = false, currentUserId }: Feature
   const [isLoadingComments, setIsLoadingComments] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const truncateDescription = (text: string, maxLength = 150) => {
-    if (text.length <= maxLength) return text
-    return `${text.slice(0, maxLength)}...`
-  }
-
   // User can delete their own feature if it's in TODO status and has no votes
   const canDelete =
     feature.createdById === currentUserId && feature.status === 'TODO' && feature.voteCount === 0
@@ -110,8 +105,15 @@ export function FeatureCard({ feature, isAdmin = false, currentUserId }: Feature
         }}
       >
         <Stack gap="xs" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <Group justify="space-between" align="flex-start">
-            <Text fw={500} size="sm" lineClamp={2} style={{ flex: 1 }}>
+          <Group
+            justify="space-between"
+            align="flex-start"
+            pb="xs"
+            style={{
+              borderBottom: '1px solid var(--mantine-color-default-border)',
+            }}
+          >
+            <Text fw={500} size="sm" lineClamp={1} style={{ flex: 1 }}>
               {feature.title}
             </Text>
 
@@ -132,11 +134,11 @@ export function FeatureCard({ feature, isAdmin = false, currentUserId }: Feature
             <Text
               size="xs"
               c="dimmed"
-              lineClamp={2}
+              lineClamp={3}
               className={classes.cardDescription}
               style={{ flex: 1 }}
             >
-              {truncateDescription(feature.description, 120)}
+              {feature.description}
             </Text>
           )}
         </Stack>

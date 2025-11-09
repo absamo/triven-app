@@ -47,7 +47,7 @@ function NavbarLink({ menu, onClick }: INavbarLinkProps) {
     <>
       {sublinks ? (
         <Menu
-          width={200}
+          width={240}
           shadow="lg"
           trigger="click-hover"
           position="right"
