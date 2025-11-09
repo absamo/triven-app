@@ -26,35 +26,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: 
-      light-dark(
-        radial-gradient(circle at 20% 15%, rgba(14, 165, 233, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 20% 15%, rgba(14, 165, 233, 0.15) 0%, transparent 40%)
-      ),
-      light-dark(
-        radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.06) 0%, transparent 45%),
-        radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.12) 0%, transparent 45%)
-      ),
-      light-dark(
-        radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.02) 0%, transparent 70%),
-        radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 70%)
-      ),
-      light-dark(
-        repeating-linear-gradient(
-          45deg,
-          transparent,
-          transparent 100px,
-          rgba(14, 165, 233, 0.01) 100px,
-          rgba(14, 165, 233, 0.01) 101px
-        ),
-        repeating-linear-gradient(
-          45deg,
-          transparent,
-          transparent 100px,
-          rgba(14, 165, 233, 0.03) 100px,
-          rgba(14, 165, 233, 0.03) 101px
-        )
-      );
     pointer-events: none;
     z-index: 0;
   }
@@ -98,6 +69,8 @@
   width: 80px;
   min-width: 80px;
   max-width: 80px;
+  height: 100%;
+  position: relative;
 
   /* Decorative gradient pattern for mini mode */
   &::before {
@@ -107,19 +80,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: 
-      light-dark(
-        radial-gradient(ellipse at center 20%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
-        radial-gradient(ellipse at center 20%, rgba(14, 165, 233, 0.18) 0%, transparent 50%)
-      ),
-      light-dark(
-        radial-gradient(ellipse at center 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at center 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%)
-      ),
-      light-dark(
-        linear-gradient(180deg, rgba(14, 165, 233, 0.03) 0%, transparent 30%, transparent 70%, rgba(99, 102, 241, 0.02) 100%),
-        linear-gradient(180deg, rgba(14, 165, 233, 0.08) 0%, transparent 30%, transparent 70%, rgba(99, 102, 241, 0.06) 100%)
-      );
     pointer-events: none;
     z-index: 0;
   }

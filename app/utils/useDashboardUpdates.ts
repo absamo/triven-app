@@ -40,10 +40,6 @@ class DashboardStreamManager {
       this.connectionListeners.forEach((listener) => listener(false))
     }
 
-    this.eventSource.addEventListener('connected', () => {
-      console.log('[DashboardStream] Connected')
-    })
-
     this.eventSource.addEventListener('dashboard-updates', (event) => {
       try {
         const data = JSON.parse(event.data)
@@ -64,7 +60,6 @@ class DashboardStreamManager {
       this.eventSource = null
       this.connectionCount = 0
       this.isConnected = false
-      console.log('[DashboardStream] Disconnected')
     }
   }
 

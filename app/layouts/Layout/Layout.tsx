@@ -60,10 +60,6 @@ class SubscriptionStreamManager {
 
     this.eventSource = new EventSource('/api/subscription-stream')
 
-    this.eventSource.addEventListener('connected', () => {
-      console.log('[SubscriptionStream] Connected')
-    })
-
     this.eventSource.addEventListener('subscription', (event) => {
       try {
         const data = JSON.parse(event.data)
@@ -294,23 +290,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     subscriptionStatus.status === 'null' ||
     subscriptionStatus.status === 'undefined'
 
-  // Log when Payment Declined modals open/close
-  useEffect(() => {
-    if (pastDueSubscription) {
-      console.log('🚨 [Layout] Payment Declined modal OPENED (past_due)')
-    } else {
-      console.log('✅ [Layout] Payment Declined modal CLOSED (past_due)')
-    }
-  }, [pastDueSubscription])
-
-  useEffect(() => {
-    if (unpaidSubscription) {
-      console.log('🚨 [Layout] Payment Declined modal OPENED (unpaid)')
-    } else {
-      console.log('✅ [Layout] Payment Declined modal CLOSED (unpaid)')
-    }
-  }, [unpaidSubscription])
-
   // Calculate trial status using new utilities
   const trialStatus = calculateTrialStatus({
     status: subscriptionStatus.status,
@@ -510,8 +489,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
         subscription={user.subscription || undefined}
         onPaymentStart={handlePaymentStart}
       />
-      {trialExpired && console.log('🚪 [Layout] Trial Expired Modal OPENED')}
-      {!trialExpired && console.log('🚪 [Layout] Trial Expired Modal CLOSED')}
 
       {/* Incomplete Subscription Modal - blocks access when subscription is incomplete */}
       <SubscriptionStatusModal
