@@ -62,6 +62,91 @@
   object-fit: cover;
 }
 
+/* Plan Badge Styles with Gradient Glowy Borders */
+.planBadge {
+  position: relative;
+  border: none !important;
+  padding: 6px 12px;
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  transition: all 0.3s ease;
+}
+
+.planBadge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.planBadge::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  opacity: 0;
+  filter: blur(8px);
+  z-index: -1;
+  transition: opacity 0.3s ease;
+}
+
+.planBadge:hover::before {
+  opacity: 1;
+}
+
+.planBadge:hover::after {
+  opacity: 0.5;
+}
+
+/* Standard Plan - Blue Gradient */
+.planBadgeStandard {
+  --gradient-start: #3b82f6;
+  --gradient-end: #06b6d4;
+}
+
+.planBadgeStandard :global(.mantine-Text-root) {
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* Professional Plan - Purple Gradient */
+.planBadgeProfessional {
+  --gradient-start: #8b5cf6;
+  --gradient-end: #ec4899;
+}
+
+.planBadgeProfessional :global(.mantine-Text-root) {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* Premium Plan - Gold Gradient */
+.planBadgePremium {
+  --gradient-start: #f59e0b;
+  --gradient-end: #eab308;
+}
+
+.planBadgePremium :global(.mantine-Text-root) {
+  background: linear-gradient(135deg, #f59e0b, #eab308);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
 /* Tooltip Styles for Dark Mode */
 :global(.mantine-Tooltip-tooltip) {
   background-color: light-dark(var(--mantine-color-dark-7), var(--mantine-color-dark-6));

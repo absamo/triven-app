@@ -133,7 +133,11 @@ export default function Header({ showNotification, user, notifications }: Header
 
         {/* Plan badge */}
         {user.currentPlan && (
-          <Badge variant="outline" c="cyan" mt={-10}>
+          <Badge
+            variant="outline"
+            mt={-10}
+            className={`${classes.planBadge} ${classes[`planBadge${user.currentPlan.charAt(0).toUpperCase() + user.currentPlan.slice(1)}`]}`}
+          >
             <Text size="xs" tt="capitalize" fw={'bold'}>
               <ClientOnly fallback={user.currentPlan}>
                 {`${user.currentPlan}${trialing ? ` ${t('navigation:trial')}` : ''}`}
