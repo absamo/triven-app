@@ -4,29 +4,6 @@ import { render as testingLibraryRender } from '@testing-library/react'
 import type { UserEvent } from '@testing-library/user-event'
 import userEvent from '@testing-library/user-event'
 import { createRoutesStub as reactRouterCreateRoutesStub } from 'react-router'
-import { vi } from 'vitest'
-
-// Mock React Router hooks at the module level to avoid "Cannot redefine property" errors
-// This makes the mocks available to all test files that import from this utils file
-vi.mock('react-router', async () => {
-  const actual = await vi.importActual('react-router')
-  return {
-    ...actual,
-    useNavigate: vi.fn(),
-    useSubmit: vi.fn(),
-  }
-})
-
-// Mock Mantine notifications for testing
-vi.mock('@mantine/notifications', async () => {
-  const actual = await vi.importActual('@mantine/notifications')
-  return {
-    ...actual,
-    notifications: {
-      show: vi.fn(),
-    },
-  }
-})
 
 // Re-export createRoutesStub for convenience
 export const createRoutesStub = reactRouterCreateRoutesStub
@@ -114,6 +91,3 @@ import * as RTL from '@testing-library/react'
 
 const { screen, waitFor } = RTL as any
 export { screen, userEvent, waitFor }
-
-// Re-export vi for test utilities
-export { vi }

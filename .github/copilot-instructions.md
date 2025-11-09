@@ -181,6 +181,8 @@ Remember: This is an inventory management platform focused on real-time updates,
 ## Active Technologies
 - TypeScript 5.8+, Node.js 20+, Bun runtime (001-mastra-assistant-tools)
 - PostgreSQL (existing Prisma schema with Product, Category, Order, Supplier, PurchaseOrder entities) (001-mastra-assistant-tools)
+- TypeScript 5.8+, Node.js 20+, Bun runtime + React 19.1.1, React Router 7.8.2, Mantine UI 8.2.7, react-i18next 15.5.3 (004-navigation-reorganization)
+- N/A (frontend-only, no database changes) (004-navigation-reorganization)
 
 ## Recent Changes
 - 001-mastra-assistant-tools: Added TypeScript 5.8+, Node.js 20+, Bun runtime

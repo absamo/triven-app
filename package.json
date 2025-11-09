@@ -119,6 +119,7 @@
     "autoprefixer": "^10.4.20",
     "babel-plugin-react-compiler": "^19.0.0-beta-bafa41b-20250307",
     "cross-env": "^7.0.3",
+    "happy-dom": "^20.0.10",
     "jsdom": "^26.1.0",
     "mastra": "^0.17.7",
     "playwright": "^1.56.0",

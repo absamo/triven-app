@@ -53,6 +53,13 @@ export default {
   integrations: 'Integrations',
   profile: 'Profile',
 
+  // Administration submenu labels
+  coreSettings: 'Core Settings',
+  teamManagement: 'Team Management',
+  structure: 'Structure',
+  aiInsights: 'AI & Insights',
+  roadmap: 'Roadmap',
+
   // Actions
   create: 'Create',
   edit: 'Edit',

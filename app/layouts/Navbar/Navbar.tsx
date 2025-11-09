@@ -7,6 +7,9 @@ import {
   IconPackage,
   IconReceipt,
   IconTruckDelivery,
+  IconUsers,
+  IconSitemap,
+  IconSparkles,
 } from '@tabler/icons-react'
 import clsx from 'clsx'
 import { useState } from 'react'
@@ -26,6 +29,7 @@ type IMenu = {
     active: boolean
     badge?: { text: string; color?: string; variant?: string }
   }[]
+  submenus?: IMenu[]  // NEW: Support nested submenu structure for Administration
 }
 
 interface INavbarLinkProps {
@@ -346,91 +350,158 @@ export default function Navbar({
     })
   }
 
-  if (canViewAnalytics) {
-    const analyticsSublinks = [
-      {
-        label: t('navigation:inventoryOverview'),
-        link: '/analytics/inventoryOverview',
-        active: false,
-      },
-    ]
+  // Administration Section - Reorganized into Submenus
+  const administrationSubmenus: IMenu[] = []
 
-    menuItems.push({
+  // Admin-only submenus (only added if user has admin permissions)
+  const hasAdminPermissions = canViewSettings || canViewTeams || canViewRoles || canViewAgencies || canViewSites || canViewPlans
+
+  if (hasAdminPermissions) {
+    // Submenu 1: Core Settings (Plans, Settings)
+    if (canViewPlans || canViewSettings) {
+      const coreSettingsSublinks = []
+
+      if (canViewPlans) {
+        coreSettingsSublinks.push({
+          label: t('navigation:plans'),
+          link: '/plans',
+          active: false,
+        })
+      }
+
+      if (canViewSettings) {
+        coreSettingsSublinks.push({
+          label: t('navigation:settings'),
+          link: '/settings',
+          active: false,
+        })
+      }
+
+      administrationSubmenus.push({
+        label: t('navigation:coreSettings'),
+        icon: IconBuilding,
+        active: false,
+        sublinks: coreSettingsSublinks,
+      })
+    }
+
+    // Submenu 2: Team Management (Teams, Roles)
+    if (canViewTeams || canViewRoles) {
+      const teamManagementSublinks = []
+
+      if (canViewTeams) {
+        teamManagementSublinks.push({
+          label: t('navigation:teams'),
+          link: '/teams',
+          active: false,
+        })
+      }
+
+      if (canViewRoles) {
+        teamManagementSublinks.push({
+          label: t('navigation:roles'),
+          link: '/roles',
+          active: false,
+        })
+      }
+
+      administrationSubmenus.push({
+        label: t('navigation:teamManagement'),
+        icon: IconUsers,
+        active: false,
+        sublinks: teamManagementSublinks,
+      })
+    }
+
+    // Submenu 3: Structure (Agencies, Sites)
+    if (canViewAgencies || canViewSites) {
+      const structureSublinks = []
+
+      if (canViewAgencies) {
+        structureSublinks.push({
+          label: t('navigation:agencies'),
+          link: '/agencies',
+          active: false,
+        })
+      }
+
+      if (canViewSites) {
+        structureSublinks.push({
+          label: t('navigation:sites'),
+          link: '/sites',
+          active: false,
+        })
+      }
+
+      administrationSubmenus.push({
+        label: t('navigation:structure'),
+        icon: IconSitemap,
+        active: false,
+        sublinks: structureSublinks,
+      })
+    }
+  }
+
+  // Submenu 4: AI & Insights (AI Agent, Roadmap, Analytics) - Always available to authenticated users
+  const aiInsightsSublinks = []
+
+  // AI Agent - always available
+  aiInsightsSublinks.push({
+    label: t('navigation:assistant'),
+    link: '/ai-agent',
+    active: false,
+    badge: {
+      text: 'NEW',
+      color: 'green',
+      variant: 'outline',
+    },
+  })
+
+  // Roadmap - always available
+  aiInsightsSublinks.push({
+    label: t('navigation:roadmap'),
+    link: '/roadmap',
+    active: false,
+  })
+
+  // Analytics - moved from Operations section (requires permission)
+  if (canViewAnalytics) {
+    aiInsightsSublinks.push({
       label: t('navigation:analytics'),
-      icon: IconChartPie3,
+      link: '/analytics/inventoryOverview',
       active: false,
-      sublinks: analyticsSublinks,
     })
   }
 
-  if (canViewSettings || canViewTeams || canViewRoles || canViewAgencies || canViewSites) {
-    const companySublinks = []
+  administrationSubmenus.push({
+    label: t('navigation:aiInsights'),
+    icon: IconSparkles,
+    active: false,
+    sublinks: aiInsightsSublinks,
+  })
 
-    if (canViewPlans) {
-      companySublinks.push({
-        label: t('navigation:plans'),
-        link: '/plans',
-        active: false,
-      })
-    }
-
-    if (canViewSettings) {
-      companySublinks.push({
-        label: t('navigation:settings'),
-        link: '/settings',
-        active: false,
-      })
-    }
-
-    if (canViewTeams) {
-      companySublinks.push({ label: t('navigation:teams'), link: '/teams', active: false })
-    }
-
-    if (canViewRoles) {
-      companySublinks.push({
-        label: t('navigation:roles'),
-        link: '/roles',
-        active: false,
-      })
-    }
-
-    if (canViewAgencies) {
-      companySublinks.push({
-        label: t('navigation:agencies'),
-        link: '/agencies',
-        active: false,
-      })
-    }
-
-    if (canViewSites) {
-      companySublinks.push({
-        label: t('navigation:sites'),
-        link: '/sites',
-        active: false,
-      })
-    }
-
-    // AI Assistant menu item - always available
-    companySublinks.push({
-      label: t('navigation:assistant'),
-      link: '/ai-agent',
-      active: false,
-      badge: {
-        text: 'NEW',
-        color: 'green',
-        variant: 'outline',
-      },
-    })
-
+  // Add Administration menu with nested submenus only if there are submenus
+  if (administrationSubmenus.length > 0) {
     menuItems.push({
-      label: t('navigation:company'),
+      label: t('navigation:administration'),
       icon: IconBuilding,
       active: false,
-      sublinks: companySublinks,
+      submenus: administrationSubmenus,
     })
   }
 
   const locationPath = useLocation().pathname.split('/')[1]
+
+  // Flatten Administration submenus for mini navbar mode
+  const menuItemsForDisplay = showMiniNavbar
+    ? menuItems.flatMap((item: IMenu) => {
+        // If menu has submenus, replace it with individual submenu items
+        if (item.submenus && item.submenus.length > 0) {
+          return item.submenus
+        }
+        return item
+      })
+    : menuItems
 
   return (
     <nav className={clsx(classes.navbar, { [classes.miniNavbar]: showMiniNavbar })}>
@@ -438,7 +509,7 @@ export default function Navbar({
         <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Box mt={25} style={{ flex: 1 }}>
             <Stack justify="center" gap={0}>
-              {menuItems.map((menuItem: IMenu) => (
+              {menuItemsForDisplay.map((menuItem: IMenu) => (
                 <NavbarLink menu={menuItem} key={menuItem.label} onClick={onClick} />
               ))}
             </Stack>
@@ -579,9 +650,42 @@ export default function Navbar({
                   {t('navigation:administration')}
                 </Text>
                 {menuItems.slice(-1).map((menuItem: IMenu) => {
-                  let active = menuItem.active
+                  // Check if this menu has submenus (nested structure)
+                  if (menuItem.submenus) {
+                    return menuItem.submenus.map((submenu: IMenu) => {
+                      let active = submenu.active
 
-                  // Check if any sublink is active
+                      // Check if any sublink is active
+                      if (!submenu.link) {
+                        active =
+                          !selected &&
+                          (submenu.sublinks?.some(
+                            (sublink) => sublink.link.split('/')[1] === locationPath
+                          ) as boolean)
+                      }
+
+                      return (
+                        <Box key={submenu.label} mb={8}>
+                          <NavbarLinksGroup
+                            menuItem={{
+                              ...submenu,
+                              active,
+                              sublinks: submenu.sublinks?.map((sublink) => ({
+                                ...sublink,
+                                active: sublink.link.split('/')[1] === locationPath,
+                              })),
+                            }}
+                            onClick={(currentMenu, selected) =>
+                              handleNavbarLinkClick(currentMenu, selected)
+                            }
+                          />
+                        </Box>
+                      )
+                    })
+                  }
+
+                  // Fallback: render as regular menu (for backward compatibility)
+                  let active = menuItem.active
                   if (!menuItem.link) {
                     active =
                       !selected &&
@@ -589,8 +693,6 @@ export default function Navbar({
                         (sublink) => sublink.link.split('/')[1] === locationPath
                       ) as boolean)
                   }
-
-                  // Check if main link is active
                   if (menuItem.link?.split('/')[1] === locationPath) {
                     active = true
                   }

@@ -19,7 +19,6 @@ import {
   IconChevronUp,
   IconLogout,
   IconMoon,
-  IconSparkles,
   IconSun,
   IconUserEdit,
 } from '@tabler/icons-react'
@@ -31,7 +30,6 @@ import type { IProfile } from '~/app/common/validations/profileSchema'
 import type { IRole } from '~/app/common/validations/roleSchema'
 import { Logo } from '~/app/components'
 import ClientOnly from '~/app/components/ClientOnly'
-import RoadmapIcon from '~/app/components/Roadmap/RoadmapIcon'
 import FrIcon from '~/app/components/SvgIcons/FrIcon'
 import UsIcon from '~/app/components/SvgIcons/UsIcon'
 import { changeLanguageWithPersistence } from '~/app/utils/i18n.client'
@@ -147,32 +145,8 @@ export default function Header({ showNotification, user, notifications }: Header
 
       {/* Right side content */}
       <Flex align="center" gap="md" h="100%" style={{ marginLeft: 'auto' }}>
-        {/* AI Agent, Roadmap, and Notification Bell */}
+        {/* Notification Bell */}
         <Flex align="center" justify="center" gap="md">
-          <Tooltip label={t('navigation:assistant')} position="bottom" withArrow>
-            <ActionIcon
-              variant="subtle"
-              color="teal"
-              size="lg"
-              radius="xl"
-              component={Link}
-              to="/ai-agent"
-              style={{
-                transition: 'all 0.2s ease',
-                color: 'light-dark(var(--mantine-color-dark-9), var(--mantine-color-gray-3))',
-              }}
-            >
-              <IconSparkles size={22} stroke={1.5} />
-            </ActionIcon>
-          </Tooltip>
-
-          <RoadmapIcon
-            isAdmin={
-              user.role.name.toLowerCase() === 'admin' ||
-              user.role.permissions?.includes('*') === true
-            }
-          />
-
           <Tooltip label="Notifications" position="bottom">
             <Popover
               width={800}
