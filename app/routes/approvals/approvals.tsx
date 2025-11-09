@@ -1,6 +1,5 @@
 import type { LoaderFunctionArgs } from 'react-router'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth.server'
 import ApprovalsPage from '~/app/pages/Approvals'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import { getApprovalRequests } from '~/app/services/workflow.server'
