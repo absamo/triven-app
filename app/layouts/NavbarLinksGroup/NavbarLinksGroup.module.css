@@ -1,7 +1,7 @@
 /* Modern sidebar navigation styles matching the elegant design */
 .control {
   width: 100%;
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-radius: 12px;
   margin-bottom: 4px;
   transition: all 0.2s ease;
@@ -24,7 +24,7 @@
   line-height: 1.4;
   color: light-dark(#64748b, var(--mantine-color-gray-4));
   flex: 1;
-  margin-left: 14px;
+  margin-left: 10px;
   letter-spacing: -0.01em;
 }
 
@@ -42,7 +42,7 @@
   font-size: 14px;
   line-height: 1.4;
   color: light-dark(#94a3b8, var(--mantine-color-gray-5));
-  padding: 10px 16px 10px 52px;
+  padding: 8px 12px 8px 46px;
   margin: 0;
   border-radius: 10px;
   transition: all 0.2s ease;

@@ -2,7 +2,7 @@
 .navbar {
   display: flex;
   flex-direction: column;
-  padding: 24px 20px 12px 20px;
+  padding: 16px 12px 12px 12px;
   background: light-dark(
     linear-gradient(180deg, #ffffff 0%, #fafbfc 100%),
     linear-gradient(180deg, var(--mantine-color-dark-7) 0%, var(--mantine-color-dark-8) 100%)
