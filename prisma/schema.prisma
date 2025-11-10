@@ -86,7 +86,9 @@ model User {
   image                    String?
   bills                    Bill[]
   invoices                 Invoice[]
-  notifications            Notification[]
+  notificationsCreated     Notification[]           @relation("NotificationCreatedBy")
+  notificationsReceived    Notification[]           @relation("NotificationRecipient")
+  emailLogs                EmailLog[]               @relation("EmailLogRecipient")
   productCreatedBy         Product[]                @relation("productCreatedBy")
   productUpdatedBy         Product[]                @relation("productUpdatedBy")
   profile                  Profile?
@@ -204,15 +206,18 @@ model Subscription {
 }
 
 model Profile {
-  id        String    @id @default(cuid())
-  avatar    String?
-  firstName String
-  lastName  String
-  phone     String?
-  userId    String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-  user      User      @relation(fields: [userId], references: [id])
+  id                      String                   @id @default(cuid())
+  avatar                  String?
+  firstName               String
+  lastName                String
+  phone                   String?
+  userId                  String                   @unique
+  emailDeliveryPreference EmailDeliveryPreference  @default(immediate)
+  digestTime              String?
+  locale                  String                   @default("en")
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime?                @updatedAt
+  user                    User                     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
@@ -781,20 +786,27 @@ model Section {
 }
 
 model Notification {
-  id          String             @id @default(cuid())
-  status      NotificationStatus
-  message     String
-  companyId   String
-  productId   String
-  createdById String
-  read        Boolean            @default(false)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime?          @updatedAt
-  company     Company            @relation(fields: [companyId], references: [id])
-  createdBy   User               @relation(fields: [createdById], references: [id])
-  product     Product            @relation(fields: [productId], references: [id])
+  id                String             @id @default(cuid())
+  status            NotificationStatus
+  message           String
+  companyId         String
+  productId         String?
+  approvalRequestId String?
+  notificationType  String?
+  createdById       String
+  recipientId       String?
+  read              Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime?          @updatedAt
+  company           Company            @relation(fields: [companyId], references: [id])
+  createdBy         User               @relation("NotificationCreatedBy", fields: [createdById], references: [id])
+  recipient         User?              @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  product           Product?           @relation(fields: [productId], references: [id])
+  approvalRequest   ApprovalRequest?   @relation(fields: [approvalRequestId], references: [id])
 
   @@index([createdAt])
+  @@index([recipientId, read, createdAt])
+  @@index([approvalRequestId])
 }
 
 model Account {
@@ -1232,6 +1244,7 @@ model WorkflowTemplate {
   name              String
   description       String?
   triggerType       WorkflowTriggerType
+  entityType        WorkflowEntityType
   triggerConditions Json? // Conditions that trigger this workflow
   isActive          Boolean             @default(true)
   companyId         String
@@ -1245,6 +1258,7 @@ model WorkflowTemplate {
   instances WorkflowInstance[]
 
   @@index([companyId, isActive])
+  @@index([entityType, isActive])
 }
 
 model WorkflowStep {
@@ -1347,6 +1361,8 @@ model ApprovalRequest {
   decision           ApprovalDecision?
   decisionReason     String?
   companyId          String
+  orphaned           Boolean             @default(false)
+  orphanedAt         DateTime?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime?           @updatedAt
 
@@ -1357,10 +1373,13 @@ model ApprovalRequest {
   assignedToRole   Role?                  @relation("ApprovalRequestAssignedRole", fields: [assignedRole], references: [id])
   company          Company                @relation(fields: [companyId], references: [id])
   comments         ApprovalComment[]
+  emailLogs        EmailLog[]
+  notifications    Notification[]
 
   @@index([status, assignedTo])
   @@index([entityType, entityId])
   @@index([companyId, requestedAt])
+  @@index([orphaned, status])
 }
 
 model ApprovalComment {
@@ -1824,5 +1843,56 @@ model ToolExecutionLog {
   @@index([success, createdAt])
   @@index([createdAt])
   @@map("tool_execution_logs")
+}
+
+model EmailLog {
+  id                String              @id @default(cuid())
+  approvalRequestId String
+  recipientId       String
+  recipientEmail    String
+  subject           String
+  emailType         EmailType
+  deliveryStatus    EmailDeliveryStatus @default(pending)
+  retryCount        Int                 @default(0)
+  failureReason     String?
+  manualReviewFlag  Boolean             @default(false)
+  reminderThreshold String?
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  failedAt          DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime?           @updatedAt
+
+  approvalRequest ApprovalRequest @relation(fields: [approvalRequestId], references: [id], onDelete: Cascade)
+  recipient       User            @relation("EmailLogRecipient", fields: [recipientId], references: [id])
+
+  @@index([approvalRequestId, emailType])
+  @@index([deliveryStatus, manualReviewFlag])
+  @@index([recipientId, sentAt])
+}
+
+enum EmailType {
+  initial_approval
+  approval_reminder_24h
+  approval_reminder_48h
+  approval_reassigned
+  approval_orphaned
+  approval_completed
+  approval_expired
+}
+
+enum EmailDeliveryStatus {
+  pending
+  sent
+  delivered
+  failed
+  bounced
+  queued_for_digest
+}
+
+enum EmailDeliveryPreference {
+  immediate
+  daily_digest
+  disabled
 }
 

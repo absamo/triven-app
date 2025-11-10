@@ -13,6 +13,7 @@ import {
   PURCHASE_ORDER_PAYMENT_TERMS,
   PURCHASE_ORDER_STATUSES,
   SALES_ORDERS_STATUSES,
+  WORKFLOW_ENTITY_TYPES,
   WORKFLOW_STEP_TYPES,
   WORKFLOW_TRIGGER_TYPES,
 } from '~/app/common/constants'
@@ -2080,6 +2081,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Manual Workflow - On-Demand Process',
       description: 'Manual workflow template for special processes requiring manual trigger',
       triggerType: WORKFLOW_TRIGGER_TYPES.MANUAL,
+      entityType: WORKFLOW_ENTITY_TYPES.CUSTOM,
       triggerConditions: {
         entityType: 'custom',
       },
@@ -2111,6 +2113,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Purchase Order - Standard Validation',
       description: 'Automatic workflow for all new purchase orders',
       triggerType: WORKFLOW_TRIGGER_TYPES.PURCHASE_ORDER_CREATE,
+      entityType: WORKFLOW_ENTITY_TYPES.PURCHASE_ORDER,
       triggerConditions: {
         entityType: 'purchase_order',
       },
@@ -2142,6 +2145,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Purchase Order - High Amount Approval',
       description: 'Approval workflow for purchase orders above €5,000',
       triggerType: WORKFLOW_TRIGGER_TYPES.PURCHASE_ORDER_THRESHOLD,
+      entityType: WORKFLOW_ENTITY_TYPES.PURCHASE_ORDER,
       triggerConditions: {
         threshold: {
           field: 'amount',
@@ -2197,6 +2201,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Sales Order - Standard Process',
       description: 'Automatic workflow for new sales orders',
       triggerType: WORKFLOW_TRIGGER_TYPES.SALES_ORDER_CREATE,
+      entityType: WORKFLOW_ENTITY_TYPES.SALES_ORDER,
       triggerConditions: {
         entityType: 'sales_order',
       },
@@ -2228,6 +2233,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Sales Order - Large Amount',
       description: 'Workflow for high value sales orders (>€10,000)',
       triggerType: WORKFLOW_TRIGGER_TYPES.SALES_ORDER_THRESHOLD,
+      entityType: WORKFLOW_ENTITY_TYPES.SALES_ORDER,
       triggerConditions: {
         threshold: {
           field: 'amount',
@@ -2271,6 +2277,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Invoice - Creation Process',
       description: 'Workflow for new invoice validation',
       triggerType: WORKFLOW_TRIGGER_TYPES.INVOICE_CREATE,
+      entityType: WORKFLOW_ENTITY_TYPES.INVOICE,
       triggerConditions: {
         entityType: 'invoice',
       },
@@ -2302,6 +2309,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Bill - Vendor Bill Processing',
       description: 'Workflow for processing new vendor bills',
       triggerType: WORKFLOW_TRIGGER_TYPES.BILL_CREATE,
+      entityType: WORKFLOW_ENTITY_TYPES.BILL,
       triggerConditions: {
         entityType: 'bill',
         fieldConditions: [
@@ -2340,6 +2348,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Customer - New Customer Onboarding',
       description: 'Workflow for new customer approval and setup',
       triggerType: WORKFLOW_TRIGGER_TYPES.CUSTOMER_CREATE,
+      entityType: WORKFLOW_ENTITY_TYPES.CUSTOMER,
       triggerConditions: {
         entityType: 'customer',
         fieldConditions: [
@@ -2378,6 +2387,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Supplier - New Supplier Approval',
       description: 'Workflow for approving new suppliers',
       triggerType: WORKFLOW_TRIGGER_TYPES.SUPPLIER_CREATE,
+      entityType: WORKFLOW_ENTITY_TYPES.SUPPLIER,
       triggerConditions: {
         entityType: 'supplier',
       },
@@ -2409,6 +2419,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Product - New Product Approval',
       description: 'Workflow for new product approval and setup',
       triggerType: WORKFLOW_TRIGGER_TYPES.PRODUCT_CREATE,
+      entityType: WORKFLOW_ENTITY_TYPES.PRODUCT,
       triggerConditions: {
         entityType: 'product',
         fieldConditions: [
@@ -2447,6 +2458,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Inventory - Low Stock Alert',
       description: 'Workflow triggered when stock falls below minimum level',
       triggerType: WORKFLOW_TRIGGER_TYPES.LOW_STOCK_ALERT,
+      entityType: WORKFLOW_ENTITY_TYPES.PRODUCT,
       triggerConditions: {
         threshold: {
           field: 'quantity',
@@ -2489,6 +2501,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Finance - High Value Transaction',
       description: 'Workflow for transactions exceeding €50,000',
       triggerType: WORKFLOW_TRIGGER_TYPES.HIGH_VALUE_TRANSACTION,
+      entityType: WORKFLOW_ENTITY_TYPES.CUSTOM,
       triggerConditions: {
         threshold: {
           field: 'amount',
@@ -2537,6 +2550,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'System - Bulk Operation Approval',
       description: 'Workflow for approving bulk operations affecting multiple records',
       triggerType: WORKFLOW_TRIGGER_TYPES.BULK_OPERATION,
+      entityType: WORKFLOW_ENTITY_TYPES.CUSTOM,
       triggerConditions: {
         threshold: {
           field: 'recordCount',
@@ -2579,6 +2593,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'System - Scheduled Maintenance',
       description: 'Workflow for scheduled system maintenance tasks',
       triggerType: WORKFLOW_TRIGGER_TYPES.SCHEDULED,
+      entityType: WORKFLOW_ENTITY_TYPES.CUSTOM,
       triggerConditions: {
         schedule: {
           type: 'weekly',
@@ -2622,6 +2637,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Custom - Special Business Rule',
       description: 'Workflow for custom business rule validation',
       triggerType: WORKFLOW_TRIGGER_TYPES.CUSTOM_CONDITION,
+      entityType: WORKFLOW_ENTITY_TYPES.CUSTOM,
       triggerConditions: {
         customRule: {
           name: 'holiday_order_review',
@@ -2666,6 +2682,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Stock Adjustment - Approval Process',
       description: 'Approval workflow for all stock adjustments',
       triggerType: WORKFLOW_TRIGGER_TYPES.STOCK_ADJUSTMENT_CREATE,
+      entityType: WORKFLOW_ENTITY_TYPES.STOCK_ADJUSTMENT,
       triggerConditions: {},
       isActive: true,
       companyId: company.id,
@@ -2695,6 +2712,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'New Customer - Approval Process',
       description: 'Approval workflow for new customers',
       triggerType: WORKFLOW_TRIGGER_TYPES.CUSTOMER_CREATE,
+      entityType: WORKFLOW_ENTITY_TYPES.CUSTOMER,
       triggerConditions: {},
       isActive: true,
       companyId: company.id,
@@ -2724,6 +2742,7 @@ async function createWorkflowTemplatesAndApprovals(
       name: 'Transfer Order - Approval Process',
       description: 'Approval workflow for transfers between sites',
       triggerType: WORKFLOW_TRIGGER_TYPES.TRANSFER_ORDER_CREATE,
+      entityType: WORKFLOW_ENTITY_TYPES.TRANSFER_ORDER,
       triggerConditions: {},
       isActive: true,
       companyId: company.id,
@@ -3062,6 +3081,331 @@ async function createWorkflowTemplatesAndApprovals(
       isInternal: false,
     },
   })
+
+  // Add internal comment showing reassignment
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: stockAdjustmentApproval.id,
+      authorId: users.find((u) => u.email === 'warehouse@flowtech.com')!.id,
+      comment:
+        'Réassigné de warehouse@flowtech.com à quality@flowtech.com - Nécessite une vérification qualité avant approbation.',
+      isInternal: true,
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: stockAdjustmentApproval.id,
+      authorId: users.find((u) => u.email === 'quality@flowtech.com')!.id,
+      comment:
+        "J'ai vérifié les articles endommagés. Les dommages sont confirmés - écran cassé sur les MacBook et défaut batterie sur l'iPhone.",
+      isInternal: false,
+    },
+  })
+
+  // Add comments demonstrating conversation thread
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: purchaseOrderApproval.id,
+      authorId: users.find((u) => u.email === 'accountant@flowtech.com')!.id,
+      comment:
+        'Budget disponible vérifié. Cependant, pourriez-vous confirmer si nous avons négocié un meilleur tarif avec ce fournisseur?',
+      isInternal: false,
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: purchaseOrderApproval.id,
+      authorId: users.find((u) => u.email === 'manager@flowtech.com')!.id,
+      comment:
+        'Oui, nous avons obtenu une réduction de 5% sur cette commande. Le prix indiqué est déjà net.',
+      isInternal: false,
+    },
+  })
+
+  // Create additional approval requests to showcase different scenarios
+  const warehouseUserId = users.find((u) => u.email === 'warehouse@flowtech.com')?.id
+  const managerUserId = users.find((u) => u.email === 'manager@flowtech.com')?.id
+  const salesUserId = users.find((u) => u.email === 'sales@flowtech.com')?.id
+  const adminUserId = users.find((u) => u.email === 'admin@flowtech.com')?.id
+  const qualityUserId = users.find((u) => u.email === 'quality@flowtech.com')?.id
+  const accountantUserId = users.find((u) => u.email === 'accountant@flowtech.com')?.id
+
+  if (!warehouseUserId || !managerUserId || !salesUserId || !adminUserId) {
+    console.log('⚠️  Some required users not found, skipping additional approval requests')
+    return { workflowTemplates, approvalRequests }
+  }
+
+  // 1. Approved Purchase Order (completed workflow)
+  const completedPurchaseOrder = await prisma.approvalRequest.create({
+    data: {
+      entityType: APPROVAL_ENTITY_TYPES.PURCHASE_ORDER,
+      entityId: 'demo-po-002',
+      requestType: APPROVAL_REQUEST_TYPES.THRESHOLD_BREACH,
+      title: 'Purchase Order PO-00002 - €6,200',
+      description: 'Commande de réapprovisionnement standard',
+      data: {
+        amount: 6200,
+        currency: 'EUR',
+        supplier: 'Fashion Forward Supply',
+        items: [
+          { product: 'Nike Air Max 270', quantity: 20, unitPrice: 150 },
+          { product: 'Adidas Ultraboost 22', quantity: 15, unitPrice: 180 },
+        ],
+      },
+      status: APPROVAL_STATUSES.APPROVED,
+      priority: APPROVAL_PRIORITIES.MEDIUM,
+      decision: 'approved',
+      decisionReason: 'Commande approuvée. Niveaux de stock vérifiés - besoin urgent.',
+      requestedBy: warehouseUserId,
+      assignedTo: managerUserId,
+      reviewedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      companyId: company.id,
+      expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: completedPurchaseOrder.id,
+      authorId: managerUserId,
+      comment: 'Commande approuvée. Niveaux de stock vérifiés - besoin urgent.',
+      isInternal: false,
+    },
+  })
+
+  // 2. Rejected Request (with detailed rejection reason)
+  const rejectedRequest = await prisma.approvalRequest.create({
+    data: {
+      entityType: APPROVAL_ENTITY_TYPES.PURCHASE_ORDER,
+      entityId: 'demo-po-003',
+      requestType: APPROVAL_REQUEST_TYPES.THRESHOLD_BREACH,
+      title: 'Purchase Order PO-00003 - €12,500',
+      description: 'Commande de produits premium - hors budget mensuel',
+      data: {
+        amount: 12500,
+        currency: 'EUR',
+        supplier: 'TechSource Electronics',
+        items: [
+          { product: 'Surface Pro 9', quantity: 10, unitPrice: 1199 },
+          { product: 'iPad Pro 12.9"', quantity: 2, unitPrice: 1099 },
+        ],
+      },
+      status: APPROVAL_STATUSES.REJECTED,
+      priority: APPROVAL_PRIORITIES.LOW,
+      decision: 'rejected',
+      decisionReason:
+        'Budget mensuel dépassé. Veuillez soumettre à nouveau le mois prochain ou réduire la quantité.',
+      requestedBy: salesUserId,
+      assignedTo: managerUserId,
+      reviewedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      completedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      companyId: company.id,
+      expiresAt: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: rejectedRequest.id,
+      authorId: managerUserId,
+      comment:
+        'Demande rejetée - Budget mensuel dépassé. Veuillez soumettre à nouveau le mois prochain ou réduire la quantité.',
+      isInternal: false,
+    },
+  })
+
+  // 3. Escalated Critical Request (high priority, approaching deadline)
+  const escalatedRequest = await prisma.approvalRequest.create({
+    data: {
+      entityType: APPROVAL_ENTITY_TYPES.STOCK_ADJUSTMENT,
+      entityId: 'demo-adj-002',
+      requestType: APPROVAL_REQUEST_TYPES.APPROVE,
+      title: 'Stock Adjustment URGENT - Perte de Stock Importante',
+      description: "Ajustement suite à l'inventaire - écart significatif détecté",
+      data: {
+        reason: 'UnaccountedInventory',
+        products: [
+          {
+            sku: 'ELEC005',
+            name: 'Sony WH-1000XM4',
+            adjustedQuantity: -15,
+            reason: 'Non localisé',
+          },
+          {
+            sku: 'CLOTH003',
+            name: 'Adidas Ultraboost 22',
+            adjustedQuantity: -8,
+            reason: 'Manquant',
+          },
+        ],
+        totalValue: 4350,
+      },
+      status: APPROVAL_STATUSES.ESCALATED,
+      priority: APPROVAL_PRIORITIES.CRITICAL,
+      requestedBy: warehouseUserId,
+      assignedTo: adminUserId, // Escalated to admin
+      companyId: company.id,
+      expiresAt: new Date(Date.now() + 6 * 60 * 60 * 1000), // 6 hours from now
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: escalatedRequest.id,
+      authorId: warehouseUserId,
+      comment:
+        'Inventaire complet effectué deux fois. Écart confirmé. Investigation en cours sur la cause.',
+      isInternal: true,
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: escalatedRequest.id,
+      authorId: managerUserId,
+      comment:
+        'Réassigné de manager@flowtech.com à admin@flowtech.com - Montant élevé nécessite approbation administrative.',
+      isInternal: true,
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: escalatedRequest.id,
+      authorId: adminUserId,
+      comment:
+        "En cours de révision. J'ai besoin du rapport d'inventaire complet et des enregistrements de sécurité.",
+      isInternal: false,
+    },
+  })
+
+  // 4. Product Creation Approval (new workflow type)
+  const productApproval = await prisma.approvalRequest.create({
+    data: {
+      entityType: APPROVAL_ENTITY_TYPES.PRODUCT,
+      entityId: 'demo-prod-001',
+      requestType: APPROVAL_REQUEST_TYPES.CREATE,
+      title: 'Nouveau Produit - Samsung Galaxy S25 Ultra',
+      description: "Demande d'ajout de nouveau produit électronique haut de gamme",
+      data: {
+        name: 'Samsung Galaxy S25 Ultra',
+        category: 'Electronics',
+        brand: 'Samsung',
+        costPrice: 950,
+        sellingPrice: 1299,
+        suggestedReorderPoint: 10,
+        supplier: 'TechSource Electronics',
+      },
+      status: APPROVAL_STATUSES.PENDING,
+      priority: APPROVAL_PRIORITIES.MEDIUM,
+      requestedBy: salesUserId,
+      assignedTo: managerUserId,
+      companyId: company.id,
+      expiresAt: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: productApproval.id,
+      authorId: salesUserId,
+      comment:
+        'Forte demande client pour ce nouveau modèle. Concurrent principal propose déjà le produit.',
+      isInternal: false,
+    },
+  })
+
+  // 5. Supplier Creation with Documentation (new workflow)
+  const supplierApproval = await prisma.approvalRequest.create({
+    data: {
+      entityType: APPROVAL_ENTITY_TYPES.SUPPLIER,
+      entityId: 'demo-supp-001',
+      requestType: APPROVAL_REQUEST_TYPES.CREATE,
+      title: 'Nouveau Fournisseur - Nordic Sports Equipment AB',
+      description: "Demande d'ajout nouveau fournisseur équipement sportif scandinave",
+      data: {
+        companyName: 'Nordic Sports Equipment AB',
+        contactName: 'Lars Andersson',
+        email: 'lars@nordicsports.se',
+        phone: '+46 8 123 4567',
+        country: 'Sweden',
+        paymentTerms: 'Net45',
+        categories: ['Sports & Outdoors'],
+        annualVolume: 150000,
+      },
+      status: APPROVAL_STATUSES.IN_REVIEW,
+      priority: APPROVAL_PRIORITIES.MEDIUM,
+      requestedBy: warehouseUserId,
+      assignedTo: managerUserId,
+      companyId: company.id,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: supplierApproval.id,
+      authorId: warehouseUserId,
+      comment:
+        'Fournisseur recommandé par notre partenaire en Allemagne. Prix compétitifs et excellente qualité.',
+      isInternal: false,
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: supplierApproval.id,
+      authorId: managerUserId,
+      comment:
+        "Documents de certification reçus. Vérification des références en cours. Devrais avoir une réponse d'ici 48h.",
+      isInternal: false,
+    },
+  })
+
+  // 6. Expired Approval Request (to test expiration handling)
+  const expiredRequest = await prisma.approvalRequest.create({
+    data: {
+      entityType: APPROVAL_ENTITY_TYPES.TRANSFER_ORDER,
+      entityId: transferOrders[2]?.id || 'demo-to-003',
+      requestType: APPROVAL_REQUEST_TYPES.APPROVE,
+      title: 'Transfert TO-000003 - EXPIRÉ',
+      description: 'Demande de transfert expirée - doit être résoumise',
+      data: {
+        transferOrderReference: transferOrders[2]?.transferOrderReference || 'TO-000003',
+        fromSite: 'Entrepôt Paris Nord',
+        toSite: 'Boutique Champs-Élysées',
+        urgency: 'Low',
+      },
+      status: APPROVAL_STATUSES.EXPIRED,
+      priority: APPROVAL_PRIORITIES.LOW,
+      requestedBy: warehouseUserId,
+      assignedRole: warehouseRole?.id,
+      companyId: company.id,
+      expiresAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // Expired 2 days ago
+    },
+  })
+
+  await prisma.approvalComment.create({
+    data: {
+      approvalRequestId: expiredRequest.id,
+      authorId: warehouseUserId,
+      comment:
+        'Demande expirée automatiquement après 48h sans révision. Veuillez réactiver si nécessaire.',
+      isInternal: true,
+    },
+  })
+
+  approvalRequests.push(
+    completedPurchaseOrder,
+    rejectedRequest,
+    escalatedRequest,
+    productApproval,
+    supplierApproval,
+    expiredRequest
+  )
 
   return { workflowTemplates, approvalRequests }
 }
@@ -3475,7 +3819,7 @@ async function createFeatureRoadmap(users: any[]) {
         {
           user: warehouseUser,
           content:
-            "Yes! And it would be great if we could receive notifications for new orders and low stock alerts directly on our phones.",
+            'Yes! And it would be great if we could receive notifications for new orders and low stock alerts directly on our phones.',
         },
       ],
     },
@@ -3649,8 +3993,7 @@ async function createFeatureRoadmap(users: any[]) {
         },
         {
           user: accountantUser,
-          content:
-            'This is also important for regulatory compliance in certain industries.',
+          content: 'This is also important for regulatory compliance in certain industries.',
         },
       ],
     },
@@ -3665,7 +4008,7 @@ async function createFeatureRoadmap(users: any[]) {
         {
           user: managerUser,
           content:
-            "We sell several bundled products and currently manage them manually. This would ensure our component inventory stays accurate.",
+            'We sell several bundled products and currently manage them manually. This would ensure our component inventory stays accurate.',
         },
       ],
     },
@@ -3994,7 +4337,19 @@ async function seed() {
     console.log('   - Custom condition workflows for special business rules')
     console.log('   - Advanced trigger conditions with thresholds and field validation')
     console.log('   - Multi-step approval chains with role-based assignments')
-    console.log('   - 4 demo approval requests with different statuses')
+    console.log(`   - ${approvalRequests.length} demo approval requests with varied statuses:`)
+    console.log('     • Pending requests (purchase orders, products, suppliers)')
+    console.log('     • In Review requests (customers, suppliers)')
+    console.log('     • Approved requests (completed purchase orders)')
+    console.log('     • Rejected requests (with detailed rejection reasons)')
+    console.log('     • Escalated requests (critical stock adjustments)')
+    console.log('     • Expired requests (demonstrating timeout handling)')
+    console.log('   - Comprehensive comment system demonstrating:')
+    console.log('     • Internal/public comment visibility')
+    console.log('     • Reassignment tracking with automatic comments')
+    console.log('     • Multi-user conversation threads')
+    console.log('     • Decision documentation')
+    console.log('   - Workflow instance tracking with step indicators')
     console.log('   - Automatic timeout and escalation support')
 
     console.log('\n�️ Feature Roadmap:')

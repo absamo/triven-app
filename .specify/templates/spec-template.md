@@ -95,6 +95,22 @@
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
+### Real-Time Requirements (if applicable)
+
+**IMPORTANT**: If this feature requires real-time updates, document them here. Per constitution, SSE (Server-Sent Events) MUST be used instead of WebSockets.
+
+- **RT-001**: System MUST provide real-time notifications for [specific event, e.g., "approval status changes"]
+- **RT-002**: Users MUST receive live updates when [specific condition, e.g., "assigned a new task"]
+- **RT-003**: System MUST broadcast updates to [specific audience, e.g., "all users in the same company"]
+
+**SSE Implementation Requirements** (reference for planning phase):
+- Create `/api/*-stream` endpoint using ReadableStream
+- Use EventSource API on client side
+- Implement connection limits (max 10 per user)
+- Add heartbeat every 30 seconds
+- Filter broadcasts by relevant criteria
+- Require authentication on endpoint
+
 ### Key Entities *(include if feature involves data)*
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]

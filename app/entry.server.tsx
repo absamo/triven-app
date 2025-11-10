@@ -7,8 +7,39 @@ import { I18nextProvider } from 'react-i18next'
 import type { EntryContext, unstable_RouterContextProvider } from 'react-router'
 import { ServerRouter } from 'react-router'
 import { getInstance } from './middleware/i18next'
+import { jobScheduler, shouldRunJobs } from './lib/jobs/scheduler'
+import { processApprovalReminders } from './lib/jobs/approval-reminders'
+import { processEmailDigests } from './lib/jobs/email-digest'
 
 export const streamTimeout = 5_000
+
+// T018: Initialize background jobs
+if (shouldRunJobs()) {
+  console.log('[Jobs] Initializing background job scheduler')
+
+  // Register approval reminders job (runs every hour)
+  jobScheduler.register({
+    name: 'approval-reminders',
+    fn: processApprovalReminders,
+    intervalMs: 60 * 60 * 1000, // 1 hour
+    enabled: true,
+  })
+
+  // Register email digest job (runs every hour, but only sends at digest time)
+  jobScheduler.register({
+    name: 'email-digest',
+    fn: processEmailDigests,
+    intervalMs: 60 * 60 * 1000, // 1 hour
+    enabled: true,
+  })
+
+  // Start all jobs
+  jobScheduler.start()
+
+  console.log('[Jobs] Background job scheduler initialized')
+} else {
+  console.log('[Jobs] Background jobs disabled (set NODE_ENV=production or ENABLE_JOBS=true to enable)')
+}
 
 export default function handleRequest(
   request: Request,

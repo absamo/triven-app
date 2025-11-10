@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { ERRORS } from '~/app/common/errors'
 import { prisma } from '~/app/db.server'
 import { stripe } from '~/app/modules/stripe/stripe.server'
+import { broadcastSubscriptionUpdate } from '~/app/services/subscription-broadcast.server'
 import {
   handleCanceledSubscriptionReactivation,
   handleInvoicePaymentActionRequired,
@@ -15,7 +16,6 @@ import {
   handleSubscriptionUpdate,
   handleTrialSubscriptionSetup,
 } from '~/app/services/webhook-handlers.server'
-import { broadcastSubscriptionUpdate } from './api.subscription-stream'
 
 export const ROUTE_PATH = '/api/webhook' as const
 
@@ -80,7 +80,9 @@ export async function action({ request }: ActionFunctionArgs) {
           console.log(`🔄 [WEBHOOK] Processing canceled subscription reactivation`)
           if (!setupIntent.payment_method || !metadata?.userId || !metadata?.priceId) {
             console.log(`⚠️ [WEBHOOK] Missing required data - skipping`)
-            console.log(`⚠️ [WEBHOOK] payment_method: ${!!setupIntent.payment_method}, userId: ${!!metadata?.userId}, priceId: ${!!metadata?.priceId}`)
+            console.log(
+              `⚠️ [WEBHOOK] payment_method: ${!!setupIntent.payment_method}, userId: ${!!metadata?.userId}, priceId: ${!!metadata?.priceId}`
+            )
             return new Response(null, { status: 200 })
           }
           console.log(`✅ [WEBHOOK] Validation passed - calling handler`)

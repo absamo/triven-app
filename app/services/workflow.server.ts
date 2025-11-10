@@ -633,6 +633,10 @@ export async function getApprovalRequests(
     priority?: string
     currentUserId?: string
     currentUserRoleId?: string
+    search?: string
+    userId?: string
+    limit?: number
+    offset?: number
   } = {}
 ) {
   const where: any = { companyId }
@@ -705,7 +709,49 @@ export async function getApprovalRequests(
     }
   }
 
-  return await prisma.approvalRequest.findMany({
+  // Add search filter for title/description
+  if (filters.search) {
+    const searchCondition = {
+      OR: [
+        { title: { contains: filters.search, mode: 'insensitive' as any } },
+        { description: { contains: filters.search, mode: 'insensitive' as any } },
+      ],
+    }
+
+    if (where.AND) {
+      where.AND.push(searchCondition)
+    } else if (where.OR) {
+      where.AND = [{ OR: where.OR }, searchCondition]
+      delete where.OR
+    } else {
+      where.AND = [searchCondition]
+    }
+  }
+
+  // Add userId filter to show only user's approvals
+  if (filters.userId) {
+    const userCondition = {
+      OR: [
+        { requestedBy: filters.userId },
+        { assignedTo: filters.userId },
+      ],
+    }
+
+    if (where.AND) {
+      where.AND.push(userCondition)
+    } else if (where.OR) {
+      where.AND = [{ OR: where.OR }, userCondition]
+      delete where.OR
+    } else {
+      where.AND = [userCondition]
+    }
+  }
+
+  // Get total count for pagination
+  const total = await prisma.approvalRequest.count({ where })
+
+  // Get paginated results
+  const approvals = await prisma.approvalRequest.findMany({
     where,
     include: {
       requestedByUser: {
@@ -747,7 +793,11 @@ export async function getApprovalRequests(
       },
     },
     orderBy: [{ priority: 'desc' }, { requestedAt: 'desc' }],
+    take: filters.limit || 20,
+    skip: filters.offset || 0,
   })
+
+  return { approvals, total }
 }
 
 export async function approveRequest(

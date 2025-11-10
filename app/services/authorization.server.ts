@@ -135,3 +135,37 @@ export async function checkPermission(
   }
   return { authorized: true }
 }
+
+/**
+ * T020: Check if user has a specific permission by permission string
+ * Used for workflow approvals where permissions are stored as strings
+ * @param userId - The user ID to check
+ * @param permissionString - The permission string to check (e.g., 'create_workflow', 'approve_workflows')
+ * @returns True if user has the permission, false otherwise
+ */
+export async function hasPermission(
+  userId: string,
+  permissionString: string
+): Promise<boolean> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        role: {
+          select: {
+            permissions: true,
+          },
+        },
+      },
+    })
+
+    if (!user?.role?.permissions) {
+      return false
+    }
+
+    return user.role.permissions.includes(permissionString)
+  } catch (error) {
+    console.error('[Authorization] Failed to check permission:', error)
+    return false
+  }
+}

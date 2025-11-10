@@ -61,13 +61,15 @@ Breaks down the implementation plan into executable, ordered development tasks.
 
 Always ensure compliance with the project constitution (`.specify/memory/constitution.md`):
 
-1. **Service-Oriented Architecture**: Implement features as standalone services
+1. **Service-Oriented Architecture**: Implement features as standalone services with clear boundaries
 2. **API-First Development**: Create OpenAPI specs before implementation
-3. **Test-First Development**: Write tests before implementation code
-4. **Real-Time Capabilities**: Use WebSockets for live updates
+3. **Test-First Development**: Write tests before implementation code (NON-NEGOTIABLE)
+4. **Real-Time Capabilities**: Use SSE (Server-Sent Events) for live updates - WebSockets are PROHIBITED
 5. **Data Integrity**: Implement audit trails for business-critical operations
 6. **AI Integration**: Make AI features optional and fault-tolerant
 7. **Performance**: Optimize database queries and implement caching
+
+**Constitution Version**: 1.0.0 | **Last Updated**: 2025-11-10
 
 ## Code Generation Guidelines
 
@@ -129,19 +131,103 @@ import { db } from '~/lib/db.server';
 // Use db.model.operation() for all database operations
 ```
 
-### Real-time Updates
+### Real-time Updates (Server-Sent Events)
 ```typescript
-// Server-side WebSocket handling
-import { WebSocketServer } from 'ws';
+// Server-side SSE endpoint (app/routes/api.*-stream.ts)
+import type { LoaderFunctionArgs } from 'react-router';
 
-// Client-side real-time updates
-useEffect(() => {
-  const ws = new WebSocket(wsUrl);
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    // Handle real-time updates
-  };
-}, []);
+export async function loader({ request }: LoaderFunctionArgs) {
+  const user = await getBetterAuthUser(request);
+  if (!user) return new Response('Unauthorized', { status: 401 });
+
+  const stream = new ReadableStream({
+    start(controller) {
+      // Register controller in clients Map
+      clients.get(user.id)?.add(controller) || clients.set(user.id, new Set([controller]));
+      
+      // Send initial connection event
+      controller.enqueue('event: connected\ndata: {"status":"connected"}\n\n');
+      
+      // Setup heartbeat
+      const heartbeat = setInterval(() => {
+        controller.enqueue(':heartbeat\n\n');
+      }, 30000);
+      
+      // Cleanup on disconnect
+      request.signal.addEventListener('abort', () => {
+        clearInterval(heartbeat);
+        clients.get(user.id)?.delete(controller);
+      });
+    }
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
+}
+
+// Broadcasting updates (app/services/*-sse.server.ts)
+export function broadcastUpdate(update: Update, filterCriteria: FilterCriteria) {
+  const message = `event: ${update.type}\ndata: ${JSON.stringify(update.data)}\n\n`;
+  
+  for (const [userId, controllers] of clients.entries()) {
+    if (shouldReceiveUpdate(userId, filterCriteria)) {
+      for (const controller of controllers) {
+        try {
+          controller.enqueue(message);
+        } catch (error) {
+          console.error('SSE broadcast error:', error);
+          controllers.delete(controller);
+        }
+      }
+    }
+  }
+}
+
+// Client-side SSE consumer (app/hooks/use*SSE.ts)
+import { useEffect, useState } from 'react';
+import { useRevalidator } from 'react-router';
+
+export function useSSE({ onUpdate, autoRevalidate = false }) {
+  const [isConnected, setIsConnected] = useState(false);
+  const revalidator = useRevalidator();
+
+  useEffect(() => {
+    const eventSource = new EventSource('/api/*-stream');
+    
+    eventSource.addEventListener('connected', () => {
+      setIsConnected(true);
+    });
+    
+    eventSource.addEventListener('update', (event) => {
+      const data = JSON.parse(event.data);
+      onUpdate?.(data);
+      if (autoRevalidate) revalidator.revalidate();
+    });
+    
+    eventSource.onerror = () => {
+      setIsConnected(false);
+      eventSource.close();
+    };
+    
+    return () => eventSource.close();
+  }, [onUpdate, autoRevalidate]);
+
+  return { isConnected };
+}
+
+// Component usage
+const { isConnected } = useSSE({
+  onUpdate: (data) => {
+    // Handle update
+    fetchData();
+  },
+  autoRevalidate: false // Set to true for automatic revalidation
+});
 ```
 
 ## Error Handling
@@ -183,6 +269,8 @@ Remember: This is an inventory management platform focused on real-time updates,
 - PostgreSQL (existing Prisma schema with Product, Category, Order, Supplier, PurchaseOrder entities) (001-mastra-assistant-tools)
 - TypeScript 5.8+, Node.js 20+, Bun runtime + React 19.1.1, React Router 7.8.2, Mantine UI 8.2.7, react-i18next 15.5.3 (004-navigation-reorganization)
 - N/A (frontend-only, no database changes) (004-navigation-reorganization)
+- TypeScript 5.8+, Node.js 20+, Bun runtime + React Router 7.8.2, Prisma (PostgreSQL), Better Auth 1.3.3, Resend 6.0.1, Mantine UI 8.2.7, Zod 4.1.0, react-i18next 15.5.3 (005-workflow-approvals)
+- PostgreSQL (existing Prisma schema with WorkflowTemplate, ApprovalRequest, Notification, Role, User, Company entities) (005-workflow-approvals)
 
 ## Recent Changes
 - 001-mastra-assistant-tools: Added TypeScript 5.8+, Node.js 20+, Bun runtime
