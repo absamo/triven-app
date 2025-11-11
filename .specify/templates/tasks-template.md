@@ -183,6 +183,22 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
 
+## Phase N+1: MCP-Based Quality Assurance (if UI implemented)
+
+**Purpose**: Browser-based testing using Chrome DevTools MCP
+
+**Prerequisites**: UI implementation complete, dev server running
+
+- [ ] TXXX Setup Chrome DevTools MCP connection
+- [ ] TXXX Authenticate with test credentials (e.g., admin@flowtech.com / password123)
+- [ ] TXXX Take page snapshots to verify DOM structure and accessibility
+- [ ] TXXX Test user interactions (clicks, form submissions, navigation)
+- [ ] TXXX Verify real-time updates and SSE connections (if applicable)
+- [ ] TXXX Check responsive behavior across different viewport sizes
+- [ ] TXXX Validate component states (loading, error, success)
+- [ ] TXXX Test edge cases and error scenarios
+- [ ] TXXX Document any UI issues discovered and create fix tasks
+
 ---
 
 ## Dependencies & Execution Order

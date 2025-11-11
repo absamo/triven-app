@@ -1,14 +1,17 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: N/A → 1.0.0
-Modified Principles: None (initial version)
-Added Sections: All core principles and governance
+Version Change: 1.0.0 → 1.1.0
+Modified Principles: None
+Added Sections: 
+  - Principle VIII: Development Tooling & Quality Assurance (MCP integration guidance)
+  - MCP usage requirements for Chrome DevTools and Context7
 Removed Sections: None
 Templates Requiring Updates:
-  ✅ plan-template.md - Updated with SSE requirement in Constitution Check
-  ✅ spec-template.md - Updated with real-time requirements guidance
-  ✅ tasks-template.md - Updated with SSE implementation patterns
+  ✅ plan-template.md - Added MCP integration checks
+  ✅ spec-template.md - Already supports tech-agnostic requirements
+  ✅ tasks-template.md - Added MCP tooling tasks guidance
+  ✅ copilot-instructions.md - Added MCP usage patterns
 Follow-up TODOs: None
 -->
 
@@ -132,6 +135,36 @@ Database queries and API responses MUST be optimized for production scale:
 - Page load time: <3s for dashboard views
 
 **Rationale**: Performance directly impacts user experience, operational efficiency, and infrastructure costs. Proactive optimization prevents technical debt and scaling challenges.
+
+### VIII. Development Tooling & Quality Assurance
+
+Modern development tooling MUST be integrated to ensure code quality and accurate implementation:
+
+**Model Context Protocol (MCP) Integration**:
+- **Documentation MCPs**: Use Context7 MCP BEFORE implementation to fetch latest documentation for frameworks and libraries
+  - Query for React Router 7.8+ docs when working with routing
+  - Query for Mantine UI 8.2+ docs when implementing UI components
+  - Query for Prisma, Better Auth, Stripe, or other integration docs as needed
+  - Ensures implementation follows current best practices and latest API patterns
+- **Testing MCPs**: Use Chrome DevTools MCP AFTER UI implementation for comprehensive testing
+  - Take snapshots to verify DOM structure and accessibility
+  - Test user interactions (clicks, form fills, navigation)
+  - Validate real-time updates and SSE connections
+  - Check responsive behavior and component states
+  - Test with actual authentication (e.g., admin@flowtech.com / password123)
+
+**MCP Workflow Requirements**:
+1. **Pre-Implementation**: Query Context7 for latest docs of relevant frameworks/tools
+2. **Implementation**: Build features following fetched documentation patterns
+3. **Post-Implementation**: Use Chrome DevTools MCP to test UI interactions and verify behavior
+4. **Validation**: Ensure tests pass with real user credentials and production-like scenarios
+
+**Integration with Other Principles**:
+- Complements Principle III (Test-First Development) by adding browser-based UI testing
+- Supports Principle II (API-First Development) by ensuring latest API documentation is used
+- Enhances Principle IV (Real-Time Communication) by enabling SSE connection testing
+
+**Rationale**: MCPs provide programmatic access to current documentation and browser automation capabilities, reducing implementation errors caused by outdated docs and enabling comprehensive UI testing that goes beyond unit and integration tests. This ensures code quality, reduces debugging time, and verifies real-world user experiences.
 
 ## Technical Standards
 
@@ -277,4 +310,4 @@ Developers and AI assistants MUST reference `.github/copilot-instructions.md` fo
 - Common pitfalls and solutions
 - Recent constitutional amendments
 
-**Version**: 1.0.0 | **Ratified**: 2025-11-10 | **Last Amended**: 2025-11-10
+**Version**: 1.1.0 | **Ratified**: 2025-11-10 | **Last Amended**: 2025-11-11

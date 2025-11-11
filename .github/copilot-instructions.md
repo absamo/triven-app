@@ -68,8 +68,9 @@ Always ensure compliance with the project constitution (`.specify/memory/constit
 5. **Data Integrity**: Implement audit trails for business-critical operations
 6. **AI Integration**: Make AI features optional and fault-tolerant
 7. **Performance**: Optimize database queries and implement caching
+8. **Development Tooling & QA**: Use MCP tools for documentation and testing
 
-**Constitution Version**: 1.0.0 | **Last Updated**: 2025-11-10
+**Constitution Version**: 1.1.0 | **Last Updated**: 2025-11-11
 
 ## Code Generation Guidelines
 
@@ -257,12 +258,73 @@ Reference these environment variables as needed:
 
 1. Use `/specify` to create feature specifications
 2. Use `/plan` to generate implementation designs
-3. Use `/tasks` to break down work into executable steps
-4. Follow TDD: write tests first, then implementation
-5. Ensure constitutional compliance throughout
-6. Add proper documentation and comments
+3. **Use Context7 MCP** to fetch latest documentation before implementation
+4. Use `/tasks` to break down work into executable steps
+5. Follow TDD: write tests first, then implementation
+6. Ensure constitutional compliance throughout
+7. **Use Chrome DevTools MCP** after UI implementation for comprehensive testing
+8. Add proper documentation and comments
 
 Remember: This is an inventory management platform focused on real-time updates, data integrity, and AI-enhanced capabilities. All features should support the core business operations of tracking inventory, managing orders, and serving customers efficiently.
+
+## MCP Integration Guidelines
+
+### Context7 MCP (Pre-Implementation Documentation)
+
+Use Context7 MCP BEFORE implementing features to ensure you're using the latest APIs and patterns:
+
+```typescript
+// Example: Fetching React Router docs
+mcp_context7_resolve-library-id({ libraryName: "react-router" })
+mcp_context7_get-library-docs({ 
+  context7CompatibleLibraryID: "/remix-run/react-router",
+  topic: "data loading and mutations"
+})
+
+// Example: Fetching Mantine UI docs  
+mcp_context7_resolve-library-id({ libraryName: "mantine" })
+mcp_context7_get-library-docs({
+  context7CompatibleLibraryID: "/mantinedev/mantine",
+  topic: "form validation and hooks"
+})
+```
+
+**When to use Context7**:
+- Starting work on routing features → Query React Router docs
+- Building UI components → Query Mantine UI docs
+- Implementing database operations → Query Prisma docs
+- Adding authentication → Query Better Auth docs
+- Integrating payments → Query Stripe docs
+
+### Chrome DevTools MCP (Post-Implementation Testing)
+
+Use Chrome DevTools MCP AFTER implementing UI features to verify behavior:
+
+**Test credentials**: `admin@flowtech.com` / `password123`
+
+```typescript
+// Example testing workflow
+1. mcp_chromedevtool_navigate_page({ type: "url", url: "http://localhost:3000/login" })
+2. mcp_chromedevtool_take_snapshot() // Verify login page structure
+3. mcp_chromedevtool_fill_form([
+     { uid: "email-input", value: "admin@flowtech.com" },
+     { uid: "password-input", value: "password123" }
+   ])
+4. mcp_chromedevtool_click({ uid: "login-button" })
+5. mcp_chromedevtool_wait_for({ text: "Dashboard" })
+6. mcp_chromedevtool_take_snapshot() // Verify successful login
+7. Test feature-specific interactions
+```
+
+**Testing checklist**:
+- [ ] Authentication flows work with test credentials
+- [ ] Forms validate and submit correctly
+- [ ] Navigation between pages works
+- [ ] Real-time updates appear (SSE connections)
+- [ ] Loading states display appropriately
+- [ ] Error states handle failures gracefully
+- [ ] Responsive behavior on different viewports
+- [ ] Accessibility attributes present (roles, labels, ARIA)
 
 ## Active Technologies
 - TypeScript 5.8+, Node.js 20+, Bun runtime (001-mastra-assistant-tools)

@@ -76,6 +76,13 @@
 - [ ] Caching strategy documented for static/frequently-accessed data
 - [ ] Performance targets documented (<500ms p95 API, <100ms DB queries)
 
+### Development Tooling & Quality Assurance
+- [ ] Context7 MCP used to fetch latest documentation for frameworks/libraries before implementation
+- [ ] Implementation follows patterns from fetched documentation
+- [ ] Chrome DevTools MCP testing plan documented for UI verification
+- [ ] Test credentials documented for authentication testing (if applicable)
+- [ ] MCP workflow integrated: Pre-implementation docs → Implementation → Post-implementation testing
+
 ## Project Structure
 
 ### Documentation (this feature)
