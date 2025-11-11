@@ -4313,16 +4313,6 @@ async function seed() {
     console.log(`   Feature Comments: ${featureCommentCount}`)
     console.log(`   Feature Votes: ${featureVoteCount}`)
 
-    console.log('\n🔑 Demo Login Credentials:')
-    console.log('   Admin: admin@flowtech.com / password123')
-    console.log('   Inventory Manager: manager@flowtech.com / password123')
-    console.log('   Warehouse: warehouse@flowtech.com / password123')
-    console.log('   Sales: sales@flowtech.com / password123')
-    console.log('   Accountant: accountant@flowtech.com / password123')
-    console.log('   Customer Service: customerservice@flowtech.com / password123')
-    console.log('   Quality Control: quality@flowtech.com / password123')
-    console.log('   Store Manager: storemanager@flowtech.com / password123')
-
     console.log('\n⚡ Workflow & Approval System:')
     console.log('   - 15 comprehensive workflow templates covering all trigger types')
     console.log('   - Manual workflows for on-demand processes')
