@@ -393,6 +393,15 @@ function formatToolOutput(toolName: string, output: any, language: string = 'en'
     }
 
     formattedOutput += `\n**Total:** ${output.total || orders.length} orders`
+  } else if (normalizedToolName === 'tool-getTopSellingProductsRecommendation' && output.message) {
+    // This tool already returns a formatted message with table
+    formattedOutput += '\n\n' + output.message
+  } else if (normalizedToolName === 'tool-getReorderRecommendations' && output.message) {
+    // This tool already returns a formatted message with table
+    formattedOutput += '\n\n' + output.message
+  } else if (normalizedToolName === 'tool-getInventoryHealth' && output.message) {
+    // This tool already returns a formatted message
+    formattedOutput += '\n\n' + output.message
   }
 
   return formattedOutput

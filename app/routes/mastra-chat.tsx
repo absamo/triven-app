@@ -543,10 +543,11 @@ function formatToolOutput(
     }
 
     formattedOutput += `\n**${t('inventory:totalItems', 'Total')}:** ${output.total} ${t('inventory:orders', 'orders')}`
-  } else if (normalizedToolName === 'tool-getTopSellingProductsRecommendation') {
-    console.log('🎯 Formatting top selling products:', { hasTopProducts: !!output.topProducts, length: output.topProducts?.length })
-    
-    const products = output.topProducts || []
+  } else if (
+    normalizedToolName === 'tool-getTopSellingProductsRecommendation' &&
+    output.topProducts
+  ) {
+    const products = output.topProducts
     formattedOutput += `\n\n### ${t('inventory:topSellingProducts', 'Top Selling Products')}\n\n`
 
     if (products.length > 0) {
@@ -576,10 +577,8 @@ function formatToolOutput(
         'No sales data available for the specified period.'
       )
     }
-  } else if (normalizedToolName === 'tool-getReorderRecommendations') {
-    console.log('🎯 Formatting reorder recommendations:', { hasRecommendations: !!output.recommendations, length: output.recommendations?.length })
-    
-    const recommendations = output.recommendations || []
+  } else if (normalizedToolName === 'tool-getReorderRecommendations' && output.recommendations) {
+    const recommendations = output.recommendations
     formattedOutput += `\n\n### ${t('inventory:reorderRecommendations', 'Reorder Recommendations')}\n\n`
 
     if (recommendations.length > 0) {

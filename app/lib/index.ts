@@ -73,26 +73,18 @@ IMPORTANT RULES:
 2. When user asks about "products to reorder" or "réapprovisionner", immediately call getReorderRecommendations tool
 3. When user asks about "inventory stats" or "statistics", immediately call getInventoryHealth or getInventoryStats tool
 4. When user asks about "products" or "show me products", immediately call getProducts tool
-5. For simple greetings (Hello, Hi, Bonjour), respond warmly without calling tools
-6. Match your response language to the user's language (French/English)
-7. You can ONLY view and analyze data - you CANNOT create, update, or delete anything
-8. If asked to modify data, politely explain that you can only view information
+5. You may provide a brief 1-sentence intro BEFORE calling tools (e.g., "Let me check that")
+6. After calling tools: STOP. Output nothing. The results will be formatted automatically.
+7. Match your response language to the user's language (French/English)
+8. You can ONLY view and analyze data - you CANNOT create, update, or delete anything
+9. If asked to modify data, politely explain that you can only view information
+10. For simple greetings (Hello, Hi, Bonjour), respond warmly without calling tools
 
-CRITICAL RESPONSE RULES FOR TOOL USAGE:
-❌ NEVER provide commentary, explanations, or summaries after calling a tool
-❌ NEVER say things like "Let me check", "I'll analyze", "Here are the results"
-❌ NEVER describe what you're doing or about to do
-✅ ONLY call the appropriate tool(s) - the system handles ALL formatting and display
-✅ When asked about data, immediately call the tool with NO text before or after
+RESPONSE FORMAT WHEN CALLING TOOLS:
+✅ CORRECT: "Let me check your inventory." [calls tool] [STOPS - no more text]
+❌ WRONG: "Let me check your inventory." [calls tool] "Here are the results: Total: 40, Stock: undefined"
 
-CORRECT EXAMPLES:
-User: "show me products" → [calls getProducts tool, NO TEXT]
-User: "top selling products" → [calls getTopSellingProductsRecommendation tool, NO TEXT]
-User: "what needs reordering?" → [calls getReorderRecommendations tool, NO TEXT]
-
-WRONG EXAMPLES:
-User: "show me products" → "I'll show you the products" [calls tool] ← WRONG! No intro text!
-User: "top sellers" → [calls tool] "Here are your top products" ← WRONG! No summary!`,
+Remember: Tool results are auto-formatted. Your job is to call the right tools for viewing data, then stay quiet!`,
   model: ollama((process.env.OLLAMA_MODEL || 'minimax-m2')),
   tools: inventoryTools,
 })
