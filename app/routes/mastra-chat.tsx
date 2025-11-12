@@ -14,6 +14,7 @@ import {
   Text,
   Textarea,
   UnstyledButton,
+  useMantineColorScheme,
 } from '@mantine/core'
 import { IconRobot, IconSend, IconSparkles } from '@tabler/icons-react'
 import type { CoreMessage } from 'ai'
@@ -605,6 +606,7 @@ function retranslateToolOutput(
 
 export default function MastraChat() {
   const { t } = useTranslation(['assistant', 'inventory'])
+  const { colorScheme } = useMantineColorScheme()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [streamingMessage, setStreamingMessage] = useState<string>('')
@@ -934,14 +936,23 @@ export default function MastraChat() {
                     </Text>
                   )}
 
-                  <Group align="flex-start" gap="md">
-                    <Avatar size="md" radius="xl" color={message.role === 'user' ? 'blue' : 'teal'}>
-                      {message.role === 'user' ? 'U' : <IconSparkles size={16} />}
-                    </Avatar>
+                  {message.role === 'assistant' ? (
+                    <Group align="flex-start" gap="md">
+                      <Avatar size="md" radius="xl" color="teal">
+                        <IconSparkles size={16} />
+                      </Avatar>
 
-                    <Box flex={1} maw="100%">
-                      {message.role === 'assistant' ? (
-                        <Box>
+                      <Box flex={1} maw="100%">
+                        <Box
+                          style={{
+                            backgroundColor:
+                              colorScheme === 'dark'
+                                ? 'var(--mantine-color-dark-6)'
+                                : 'var(--mantine-color-gray-0)',
+                            padding: '10px 16px',
+                            borderRadius: '18px',
+                          }}
+                        >
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={MarkdownComponents}
@@ -962,11 +973,30 @@ export default function MastraChat() {
                             </Stack>
                           )}
                         </Box>
-                      ) : (
+                      </Box>
+                    </Group>
+                  ) : (
+                    <Group justify="flex-end" gap="md">
+                      <Box
+                        style={{
+                          backgroundColor:
+                            colorScheme === 'dark'
+                              ? 'var(--mantine-color-orange-9)'
+                              : 'var(--mantine-color-blue-1)',
+                          color:
+                            colorScheme === 'dark'
+                              ? 'var(--mantine-color-orange-1)'
+                              : 'var(--mantine-color-blue-9)',
+                          padding: '10px 16px',
+                          borderRadius: '18px',
+                          maxWidth: '70%',
+                          wordBreak: 'break-word',
+                        }}
+                      >
                         <Text size="sm">{message.content}</Text>
-                      )}
-                    </Box>
-                  </Group>
+                      </Box>
+                    </Group>
+                  )}
                 </Box>
               )
             })}
@@ -977,9 +1007,20 @@ export default function MastraChat() {
                   <IconSparkles size={16} />
                 </Avatar>
                 <Box flex={1} maw="100%">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
-                    {retranslateToolOutput(streamingMessage, t)}
-                  </ReactMarkdown>
+                  <Box
+                    style={{
+                      backgroundColor:
+                        colorScheme === 'dark'
+                          ? 'var(--mantine-color-dark-6)'
+                          : 'var(--mantine-color-gray-0)',
+                      padding: '10px 16px',
+                      borderRadius: '18px',
+                    }}
+                  >
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
+                      {retranslateToolOutput(streamingMessage, t)}
+                    </ReactMarkdown>
+                  </Box>
                 </Box>
               </Group>
             )}
@@ -990,16 +1031,27 @@ export default function MastraChat() {
                   <IconSparkles size={16} />
                 </Avatar>
                 <Box flex={1}>
-                  <Stack gap="xs">
-                    <Skeleton height={10} radius="xl" animate />
-                    <Skeleton height={10} width="85%" radius="xl" animate />
-                    <Skeleton height={10} width="70%" radius="xl" animate />
-                    <Skeleton height={10} width="60%" radius="xl" animate />
-                    <Box mt="xs">
-                      <Skeleton height={8} width="90%" radius="xl" animate />
-                      <Skeleton height={8} width="75%" radius="xl" mt="xs" animate />
-                    </Box>
-                  </Stack>
+                  <Box
+                    style={{
+                      backgroundColor:
+                        colorScheme === 'dark'
+                          ? 'var(--mantine-color-dark-6)'
+                          : 'var(--mantine-color-gray-0)',
+                      padding: '10px 16px',
+                      borderRadius: '18px',
+                    }}
+                  >
+                    <Stack gap="xs">
+                      <Skeleton height={10} radius="xl" animate />
+                      <Skeleton height={10} width="85%" radius="xl" animate />
+                      <Skeleton height={10} width="70%" radius="xl" animate />
+                      <Skeleton height={10} width="60%" radius="xl" animate />
+                      <Box mt="xs">
+                        <Skeleton height={8} width="90%" radius="xl" animate />
+                        <Skeleton height={8} width="75%" radius="xl" mt="xs" animate />
+                      </Box>
+                    </Stack>
+                  </Box>
                 </Box>
               </Group>
             )}

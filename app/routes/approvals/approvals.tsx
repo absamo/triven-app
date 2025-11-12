@@ -1,15 +1,17 @@
 import type { LoaderFunctionArgs } from 'react-router'
+import { ErrorBoundary as ErrorBoundaryComponent } from '~/app/components/ErrorBoundary'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth.server'
 import ApprovalsPage from '~/app/pages/Approvals'
 import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 import { getApprovalRequests } from '~/app/services/workflow.server'
+
+export { ErrorBoundaryComponent as ErrorBoundary }
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireBetterAuthUser(request, ['read:approvals'])
 
   // Load approval requests for the current user (their requests + assigned to them)
-  const approvalRequests = await getApprovalRequests(user.companyId, {
+  const { approvals } = await getApprovalRequests(user.companyId, {
     currentUserId: user.id,
     currentUserRoleId: user.roleId || undefined,
   })
@@ -22,27 +24,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
     },
   })
 
-  return new Response(
-    JSON.stringify({
-      approvalRequests: approvalRequests,
-      currentUser: {
-        ...user,
-        role: userWithRole?.role || null,
-      },
-      permissions:
-        user?.role?.permissions?.filter(
-          (permission) =>
-            permission === 'create:approvals' ||
-            permission === 'update:approvals' ||
-            permission === 'delete:approvals'
-        ) || [],
-    }),
-    {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  )
+  return {
+    approvalRequests: approvals,
+    currentUser: {
+      ...user,
+      role: userWithRole?.role || null,
+    },
+    permissions:
+      user?.role?.permissions?.filter(
+        (permission) =>
+          permission === 'create:approvals' ||
+          permission === 'update:approvals' ||
+          permission === 'delete:approvals'
+      ) || [],
+  }
 }
 
 export default function ApprovalsRoute() {

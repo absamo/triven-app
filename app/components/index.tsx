@@ -34,8 +34,7 @@ export { LandingTestimonials } from './LandingTestimonials'
 
 export type { OptimizedImageProps } from './OptimizedImage'
 export { Avatar, CardImage, HeroImage, OptimizedImage, Thumbnail } from './OptimizedImage'
-// Skeleton components
-export * from './Skeletons'
+
 // Table components
 export { TableActionsMenu } from './TableActionsMenu'
 

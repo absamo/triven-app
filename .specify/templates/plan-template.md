@@ -31,7 +31,57 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+### Service-Oriented Architecture
+- [ ] Feature implemented as standalone service with clear boundaries
+- [ ] Service has well-defined API interfaces (documented in contracts/)
+- [ ] Service can be tested independently
+
+### API-First Development
+- [ ] OpenAPI 3.0+ specifications created before implementation
+- [ ] Request/response schemas defined with Zod validation
+- [ ] API contracts reviewed and approved
+
+### Test-First Development (NON-NEGOTIABLE)
+- [ ] Test strategy documented (unit, integration, E2E)
+- [ ] Tests will be written BEFORE implementation code
+- [ ] Red-Green-Refactor cycle will be followed
+- [ ] All tests must pass before merge
+
+### Real-Time Communication (if applicable)
+- [ ] If real-time updates needed: SSE (Server-Sent Events) MUST be used
+- [ ] SSE endpoint follows `/api/*-stream` pattern with ReadableStream
+- [ ] Client uses native EventSource API (no WebSocket dependencies)
+- [ ] Connection management with per-user limits (max 10)
+- [ ] Heartbeat implemented (`:heartbeat\n\n` every 30s)
+- [ ] Authentication required on SSE endpoints
+- [ ] Proper cleanup handlers for abort signals
+- [ ] Broadcasting filtered by relevant criteria (companyId, userId, role)
+- [ ] ❌ PROHIBITED: WebSocket implementations, polling, long-polling
+
+### Data Integrity and Audit Trails (if applicable)
+- [ ] Audit logging planned for business-critical operations
+- [ ] Who/What/When captured (userId, action, timestamp)
+- [ ] Change tracking with before/after states
+- [ ] Immutable audit records
+
+### AI Integration (if applicable)
+- [ ] AI features are optional enhancements, not dependencies
+- [ ] Fault tolerance: system functions when AI unavailable
+- [ ] Fallback behavior documented
+- [ ] Local-first approach (Ollama preferred)
+
+### Performance and Caching
+- [ ] Query optimization strategy defined (select, indexes)
+- [ ] Pagination implemented for large result sets (20-100 items)
+- [ ] Caching strategy documented for static/frequently-accessed data
+- [ ] Performance targets documented (<500ms p95 API, <100ms DB queries)
+
+### Development Tooling & Quality Assurance
+- [ ] Context7 MCP used to fetch latest documentation for frameworks/libraries before implementation
+- [ ] Implementation follows patterns from fetched documentation
+- [ ] Chrome DevTools MCP testing plan documented for UI verification
+- [ ] Test credentials documented for authentication testing (if applicable)
+- [ ] MCP workflow integrated: Pre-implementation docs → Implementation → Post-implementation testing
 
 ## Project Structure
 

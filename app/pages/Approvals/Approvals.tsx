@@ -33,12 +33,7 @@ import {
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useLoaderData, useRevalidator } from 'react-router'
-import {
-  ApprovalActionModal,
-  CardsGridSkeleton,
-  FiltersSkeleton,
-  TableSkeleton,
-} from '~/app/components'
+import { ApprovalActionModal } from '~/app/components'
 import ClientOnly from '~/app/components/ClientOnly'
 import { formatLocalizedDate } from '~/app/lib/dayjs'
 import { Title } from '~/app/partials/Title'
@@ -439,15 +434,7 @@ export default function ApprovalsPage() {
   }
 
   return (
-    <ClientOnly
-      fallback={
-        <Container size="xl" py="md" w={'100%'}>
-          <CardsGridSkeleton count={4} />
-          <FiltersSkeleton columns={4} />
-          <TableSkeleton rows={6} />
-        </Container>
-      }
-    >
+    <ClientOnly>
       <Container size="xl" py="md" w={'100%'}>
         {/* Header */}
         <Title

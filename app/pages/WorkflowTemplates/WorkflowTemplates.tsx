@@ -10,7 +10,6 @@ import {
   Modal,
   Paper,
   Select,
-  Skeleton,
   Stack,
   Text,
   TextInput,
@@ -430,29 +429,7 @@ export default function WorkflowTemplatesPage() {
   }
 
   return (
-    <ClientOnly
-      fallback={
-        <Container size="xl" py="md" w={'100%'}>
-          <FiltersSkeleton columns={3} />
-          <Grid gutter="lg" mb="xl">
-            {[...Array(3)].map((_, index) => (
-              <Grid.Col key={index} span={{ base: 12, sm: 6, md: 4 }}>
-                <Card withBorder padding="lg" radius="md" style={{ height: '120px' }}>
-                  <Stack gap="xs">
-                    <Group justify="space-between">
-                      <Skeleton height={12} width={100} />
-                      <Skeleton height={40} width={40} radius="md" />
-                    </Group>
-                    <Skeleton height={24} width={60} />
-                  </Stack>
-                </Card>
-              </Grid.Col>
-            ))}
-          </Grid>
-          <TableSkeleton rows={6} />
-        </Container>
-      }
-    >
+    <ClientOnly>
       <Container size="xl" py="md" w={'100%'}>
         <WorkflowTemplateModal
           opened={modalOpened}

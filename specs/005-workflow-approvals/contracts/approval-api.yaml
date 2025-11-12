@@ -1,0 +1,790 @@
+openapi: 3.1.0
+info:
+  title: Workflow Approval API
+  description: |
+    API for managing workflow approvals, including permission-based workflow creation, 
+    approval request lifecycle, email notifications, and admin oversight.
+  version: 1.0.0
+  contact:
+    name: Triven Development Team
+    email: dev@triven.app
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://app.triven.app/api
+    description: Production server
+
+tags:
+  - name: Workflows
+    description: Workflow template creation and management
+  - name: Approvals
+    description: Approval request lifecycle
+  - name: Notifications
+    description: In-app notification management
+  - name: Admin
+    description: Administrative oversight features
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_session
+      description: Better Auth session cookie
+
+  schemas:
+    ApprovalRequest:
+      type: object
+      required:
+        - id
+        - entityType
+        - entityId
+        - requestType
+        - status
+        - priority
+        - requestedBy
+        - title
+        - companyId
+        - requestedAt
+      properties:
+        id:
+          type: string
+          format: cuid
+          description: Unique identifier
+        workflowInstanceId:
+          type: string
+          format: cuid
+          nullable: true
+        stepExecutionId:
+          type: string
+          format: cuid
+          nullable: true
+        entityType:
+          type: string
+          enum: [purchase_order, sales_order, stock_adjustment, transfer_order, invoice, bill, customer, supplier, product]
+        entityId:
+          type: string
+          format: cuid
+        requestType:
+          type: string
+          enum: [approval, review, sign_off, verification]
+        status:
+          type: string
+          enum: [Pending, Approved, Rejected, Cancelled, Expired]
+        priority:
+          type: string
+          enum: [Low, Medium, High, Critical]
+          default: Medium
+        requestedBy:
+          type: string
+          format: cuid
+          description: User ID who created the request
+        assignedTo:
+          type: string
+          format: cuid
+          nullable: true
+          description: Specific user assigned to review
+        assignedRole:
+          type: string
+          format: cuid
+          nullable: true
+          description: Role assigned to review
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+        data:
+          type: object
+          description: Entity data snapshot and reassignment metadata
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        orphaned:
+          type: boolean
+          default: false
+          description: True if assigned to role with no active members
+        orphanedAt:
+          type: string
+          format: date-time
+          nullable: true
+        decision:
+          type: string
+          enum: [Approve, Reject, RequestChanges]
+          nullable: true
+        decisionReason:
+          type: string
+          nullable: true
+        requestedAt:
+          type: string
+          format: date-time
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateApprovalRequest:
+      type: object
+      required:
+        - entityType
+        - entityId
+        - requestType
+        - title
+      properties:
+        entityType:
+          type: string
+          enum: [purchase_order, sales_order, stock_adjustment, transfer_order, invoice, bill, customer, supplier, product]
+        entityId:
+          type: string
+          format: cuid
+        requestType:
+          type: string
+          enum: [approval, review, sign_off, verification]
+        priority:
+          type: string
+          enum: [Low, Medium, High, Critical]
+          default: Medium
+        assignedTo:
+          type: string
+          format: cuid
+          description: Specific user to assign (mutually exclusive with assignedRole)
+        assignedRole:
+          type: string
+          format: cuid
+          description: Role to assign (mutually exclusive with assignedTo)
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        data:
+          type: object
+          description: Entity data requiring approval
+        expiresAt:
+          type: string
+          format: date-time
+          description: Optional deadline for approval
+
+    ReviewApprovalRequest:
+      type: object
+      required:
+        - decision
+      properties:
+        decision:
+          type: string
+          enum: [Approve, Reject, RequestChanges]
+        decisionReason:
+          type: string
+          description: Required for Reject and RequestChanges
+        notes:
+          type: string
+
+    WorkflowTemplate:
+      type: object
+      required:
+        - id
+        - name
+        - triggerType
+        - isActive
+        - companyId
+        - createdById
+      properties:
+        id:
+          type: string
+          format: cuid
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+        triggerType:
+          type: string
+          enum: [manual, purchase_order_create, sales_order_create, stock_adjustment_create, low_stock_alert]
+        triggerConditions:
+          type: object
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+        companyId:
+          type: string
+          format: cuid
+        createdById:
+          type: string
+          format: cuid
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateWorkflowTemplate:
+      type: object
+      required:
+        - name
+        - triggerType
+        - steps
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        triggerType:
+          type: string
+          enum: [manual, purchase_order_create, sales_order_create, stock_adjustment_create, low_stock_alert]
+        triggerConditions:
+          type: object
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowStepInput'
+          minItems: 1
+
+    WorkflowStepInput:
+      type: object
+      required:
+        - stepNumber
+        - name
+        - stepType
+        - assigneeType
+      properties:
+        stepNumber:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        stepType:
+          type: string
+          enum: [approval, notification, data_validation, automatic_action]
+        assigneeType:
+          type: string
+          enum: [user, role, automatic]
+        assigneeRoleId:
+          type: string
+          format: cuid
+          description: Required if assigneeType is 'role'
+        assigneeUserId:
+          type: string
+          format: cuid
+          description: Required if assigneeType is 'user'
+        timeoutHours:
+          type: integer
+          minimum: 1
+          description: Auto-approve after timeout
+
+    Notification:
+      type: object
+      required:
+        - id
+        - status
+        - message
+        - companyId
+        - createdById
+        - recipientId
+        - read
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: cuid
+        status:
+          type: string
+          enum: [info, success, warning, error]
+        message:
+          type: string
+        approvalRequestId:
+          type: string
+          format: cuid
+          nullable: true
+        notificationType:
+          type: string
+          enum: [approval_request, approval_reminder, approval_urgent, approval_reassigned, approval_orphaned, approval_approved, approval_rejected]
+          nullable: true
+        read:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+          format: date-time
+
+    OrphanedApproval:
+      type: object
+      required:
+        - approval
+        - assignedRoleName
+        - workflowName
+      properties:
+        approval:
+          $ref: '#/components/schemas/ApprovalRequest'
+        assignedRoleName:
+          type: string
+        workflowName:
+          type: string
+          nullable: true
+        requesterName:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+security:
+  - cookieAuth: []
+
+paths:
+  /workflows/create:
+    post:
+      tags:
+        - Workflows
+      summary: Create new workflow template
+      description: |
+        Creates a new workflow template with approval steps. 
+        Requires 'create_workflow' permission. Validates assignees have appropriate permissions.
+      operationId: createWorkflowTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkflowTemplate'
+      responses:
+        '201':
+          description: Workflow template created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowTemplate'
+        '400':
+          description: Invalid input or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidStep:
+                  value:
+                    error: VALIDATION_ERROR
+                    message: Step 2 assignee lacks 'approve_workflows' permission
+        '403':
+          description: Missing 'create_workflow' permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: FORBIDDEN
+                message: User lacks 'create_workflow' permission
+
+  /workflows/{id}/deactivate:
+    post:
+      tags:
+        - Workflows
+      summary: Deactivate workflow template
+      description: Prevents new instances, existing instances continue
+      operationId: deactivateWorkflowTemplate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: cuid
+      responses:
+        '200':
+          description: Workflow template deactivated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowTemplate'
+        '404':
+          description: Workflow template not found
+
+  /approvals/create:
+    post:
+      tags:
+        - Approvals
+      summary: Create approval request
+      description: |
+        Creates a new approval request. Automatically sends email notifications 
+        to assigned users/role members and creates in-app notifications.
+      operationId: createApprovalRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApprovalRequest'
+      responses:
+        '201':
+          description: Approval request created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                bothAssignees:
+                  value:
+                    error: VALIDATION_ERROR
+                    message: Cannot specify both assignedTo and assignedRole
+                roleEmpty:
+                  value:
+                    error: ORPHANED_APPROVAL
+                    message: Assigned role has no active members
+                    details:
+                      orphaned: true
+                      roleId: cuid_role_123
+
+  /approvals/{id}/review:
+    post:
+      tags:
+        - Approvals
+      summary: Review approval request
+      description: |
+        Approve, reject, or request changes on an approval request.
+        Only assigned user or role members can review.
+      operationId: reviewApprovalRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: cuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewApprovalRequest'
+      responses:
+        '200':
+          description: Review submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+        '400':
+          description: Invalid decision or missing required reason
+        '403':
+          description: User not authorized to review this approval
+        '404':
+          description: Approval request not found
+        '409':
+          description: Approval request already completed
+
+  /approvals/list:
+    get:
+      tags:
+        - Approvals
+      summary: List user's pending approvals
+      description: Returns all pending approval requests assigned to current user or their roles
+      operationId: listPendingApprovals
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Pending, Approved, Rejected, all]
+            default: Pending
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [Low, Medium, High, Critical]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of approval requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  approvals:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApprovalRequest'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      pages:
+                        type: integer
+
+  /approvals/{id}:
+    get:
+      tags:
+        - Approvals
+      summary: Get approval request details
+      description: Returns full details of specific approval request
+      operationId: getApprovalRequest
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: cuid
+      responses:
+        '200':
+          description: Approval request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+        '404':
+          description: Approval request not found
+
+  /notifications/list:
+    get:
+      tags:
+        - Notifications
+      summary: List user's notifications
+      description: Returns in-app notifications for current user
+      operationId: listNotifications
+      parameters:
+        - name: read
+          in: query
+          schema:
+            type: boolean
+          description: Filter by read status
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: Filter by notification type prefix (e.g., 'approval_')
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+
+  /notifications/{id}/mark-read:
+    post:
+      tags:
+        - Notifications
+      summary: Mark notification as read
+      description: Updates notification read status
+      operationId: markNotificationRead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: cuid
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '404':
+          description: Notification not found
+
+  /admin/orphaned-approvals:
+    get:
+      tags:
+        - Admin
+      summary: List orphaned approval requests
+      description: |
+        Returns approval requests assigned to roles with no active members.
+        Requires 'admin_orphaned_approvals' permission.
+      operationId: listOrphanedApprovals
+      responses:
+        '200':
+          description: List of orphaned approvals
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orphanedApprovals:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OrphanedApproval'
+        '403':
+          description: Missing admin permission
+
+  /admin/orphaned-approvals/{id}/reassign:
+    post:
+      tags:
+        - Admin
+      summary: Manually reassign orphaned approval
+      description: Assigns orphaned approval to specific user or role
+      operationId: reassignOrphanedApproval
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: cuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                assignedTo:
+                  type: string
+                  format: cuid
+                assignedRole:
+                  type: string
+                  format: cuid
+              oneOf:
+                - required: [assignedTo]
+                - required: [assignedRole]
+      responses:
+        '200':
+          description: Approval reassigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+        '400':
+          description: Invalid assignee or role
+        '404':
+          description: Approval not found
+
+  /admin/failed-emails:
+    get:
+      tags:
+        - Admin
+      summary: List failed email notifications
+      description: |
+        Returns email notifications that failed after retry exhaustion.
+        Requires admin permission.
+      operationId: listFailedEmails
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of failed email logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failedEmails:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        recipientEmail:
+                          type: string
+                        subject:
+                          type: string
+                        emailType:
+                          type: string
+                        failureReason:
+                          type: string
+                        retryCount:
+                          type: integer
+                        failedAt:
+                          type: string
+                          format: date-time
+                        approvalRequest:
+                          $ref: '#/components/schemas/ApprovalRequest'
+                  pagination:
+                    type: object
+
+  /admin/failed-emails/{id}/retry:
+    post:
+      tags:
+        - Admin
+      summary: Manually retry failed email
+      description: Attempts to resend a failed email notification
+      operationId: retryFailedEmail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: cuid
+      responses:
+        '200':
+          description: Email retry queued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email retry queued successfully
+        '404':
+          description: Email log not found

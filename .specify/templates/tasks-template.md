@@ -69,6 +69,32 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T008 Configure error handling and logging infrastructure
 - [ ] T009 Setup environment configuration management
 
+**Real-Time Infrastructure** (only if feature requires real-time updates):
+- [ ] T010 [P] Create SSE manager service at app/services/*-sse.server.ts
+  - Implement clients Map<userId, Set<ReadableStreamDefaultController>>
+  - Create broadcastUpdate(update, filterCriteria) function
+  - Create sendToUser(userId, update) function
+  - Add connection count tracking per company/user
+- [ ] T011 [P] Create SSE endpoint at app/routes/api.*-stream.ts
+  - Implement GET endpoint with authentication check
+  - Initialize ReadableStream with start(controller)
+  - Register controller in clients Map
+  - Send initial connection event
+  - Setup heartbeat interval (30 seconds)
+  - Add abort signal cleanup handler
+  - Set SSE response headers (text/event-stream, no-cache, keep-alive)
+  - Implement max connections per user (10)
+- [ ] T012 [P] Create SSE React hook at app/hooks/use*SSE.ts
+  - Initialize EventSource('/api/*-stream')
+  - Handle 'connected' and update events
+  - Manage isConnected state
+  - Optional auto-revalidation with useRevalidator
+  - Cleanup eventSource on unmount
+- [ ] T013 Update relevant API endpoints to broadcast SSE updates
+  - Import broadcastUpdate or sendToUser from SSE manager
+  - Call after state-changing operations
+  - Filter to relevant users/roles
+
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---
@@ -156,6 +182,22 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
+
+## Phase N+1: MCP-Based Quality Assurance (if UI implemented)
+
+**Purpose**: Browser-based testing using Chrome DevTools MCP
+
+**Prerequisites**: UI implementation complete, dev server running
+
+- [ ] TXXX Setup Chrome DevTools MCP connection
+- [ ] TXXX Authenticate with test credentials (e.g., admin@flowtech.com / password123)
+- [ ] TXXX Take page snapshots to verify DOM structure and accessibility
+- [ ] TXXX Test user interactions (clicks, form submissions, navigation)
+- [ ] TXXX Verify real-time updates and SSE connections (if applicable)
+- [ ] TXXX Check responsive behavior across different viewport sizes
+- [ ] TXXX Validate component states (loading, error, success)
+- [ ] TXXX Test edge cases and error scenarios
+- [ ] TXXX Document any UI issues discovered and create fix tasks
 
 ---
 

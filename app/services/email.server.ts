@@ -366,3 +366,162 @@ export async function sendDemoRequestNotification(demoRequest: DemoRequest): Pro
     throw error
   }
 }
+
+// ========== T008: Workflow Approval Email Functions ==========
+
+import { prisma } from '~/app/db.server'
+import type { EmailData } from '~/app/types/workflow-approvals'
+
+/**
+ * T008: Send email with retry logic and exponential backoff
+ */
+export async function sendEmailWithRetry(
+  emailData: EmailData,
+  maxRetries: number = 3
+): Promise<void> {
+  const delays = [1000, 2000, 4000] // 1s, 2s, 4s
+  let lastError: Error | null = null
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      await sendApprovalRequestEmail(emailData)
+
+      // Log success
+      await prisma.emailLog.create({
+        data: {
+          approvalRequestId: emailData.approvalId,
+          recipientId: emailData.recipientId!,
+          recipientEmail: emailData.to,
+          subject: `Approval request: ${emailData.approvalTitle}`,
+          emailType: emailData.type,
+          deliveryStatus: 'sent',
+          retryCount: attempt,
+          sentAt: new Date(),
+        },
+      })
+
+      return
+    } catch (error) {
+      lastError = error as Error
+
+      if (attempt === maxRetries) {
+        // Final failure - log and queue for manual review
+        await prisma.emailLog.create({
+          data: {
+            approvalRequestId: emailData.approvalId,
+            recipientId: emailData.recipientId!,
+            recipientEmail: emailData.to,
+            subject: `Approval request: ${emailData.approvalTitle}`,
+            emailType: emailData.type,
+            deliveryStatus: 'failed',
+            retryCount: attempt,
+            failureReason: lastError.message,
+            manualReviewFlag: true,
+            failedAt: new Date(),
+          },
+        })
+        throw lastError
+      }
+
+      // Wait before retry
+      await new Promise((resolve) => setTimeout(resolve, delays[attempt]))
+    }
+  }
+}
+
+/**
+ * T035: Send approval request email
+ */
+async function sendApprovalRequestEmail(emailData: EmailData): Promise<void> {
+  const { to, approvalTitle, approvalDescription, requesterName, priority, expiresAt, reviewUrl, locale = 'en' } = emailData
+
+  const subject = locale === 'fr' 
+    ? `Nouvelle demande d'approbation: ${approvalTitle}`
+    : `New approval request: ${approvalTitle}`
+
+  await resend.emails.send({
+    from: process.env.FROM_EMAIL || 'Triven <notifications@triven.app>',
+    to,
+    subject,
+    html: `
+      <h2>${locale === 'fr' ? 'Nouvelle demande d\'approbation' : 'New Approval Request'}</h2>
+      <p><strong>${locale === 'fr' ? 'Titre' : 'Title'}:</strong> ${approvalTitle}</p>
+      ${approvalDescription ? `<p><strong>${locale === 'fr' ? 'Description' : 'Description'}:</strong> ${approvalDescription}</p>` : ''}
+      <p><strong>${locale === 'fr' ? 'Demandeur' : 'Requested by'}:</strong> ${requesterName}</p>
+      <p><strong>${locale === 'fr' ? 'Priorité' : 'Priority'}:</strong> ${priority}</p>
+      ${expiresAt ? `<p><strong>${locale === 'fr' ? 'Expire le' : 'Expires at'}:</strong> ${new Date(expiresAt).toLocaleString()}</p>` : ''}
+      <p><a href="${reviewUrl || `${process.env.BASE_URL}/approvals/${emailData.approvalId}`}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 16px;">
+        ${locale === 'fr' ? 'Examiner la demande' : 'Review Request'}
+      </a></p>
+    `,
+  })
+
+  console.log(`✅ Approval request email sent to ${to}`)
+}
+
+/**
+ * T033: Queue approval notification for daily digest
+ */
+export async function queueForDigest(userId: string, approvalId: string): Promise<void> {
+  await prisma.emailLog.create({
+    data: {
+      approvalRequestId: approvalId,
+      recipientId: userId,
+      recipientEmail: '', // Will be filled during digest processing
+      subject: 'Approval Digest',
+      emailType: 'initial_approval',
+      deliveryStatus: 'queued_for_digest',
+      retryCount: 0,
+    },
+  })
+}
+
+/**
+ * T067: Retry failed email delivery
+ */
+export async function retryFailedEmail(emailLogId: string): Promise<void> {
+  const emailLog = await prisma.emailLog.findUnique({
+    where: { id: emailLogId },
+    include: {
+      approvalRequest: {
+        include: { requestedByUser: true },
+      },
+      recipient: { include: { profile: true } },
+    },
+  })
+
+  if (!emailLog) {
+    throw new Error('Email log not found')
+  }
+
+  // Reset log entry
+  await prisma.emailLog.update({
+    where: { id: emailLogId },
+    data: {
+      deliveryStatus: 'pending',
+      manualReviewFlag: false,
+      failureReason: null,
+      failedAt: null,
+    },
+  })
+
+  // Attempt resend
+  try {
+    await sendEmailWithRetry({
+      to: emailLog.recipientEmail,
+      approvalId: emailLog.approvalRequestId,
+      approvalTitle: emailLog.approvalRequest.title,
+      approvalDescription: emailLog.approvalRequest.description || undefined,
+      requesterName: emailLog.approvalRequest.requestedByUser?.name || 'Unknown',
+      priority: emailLog.approvalRequest.priority,
+      type: emailLog.emailType as any,
+      locale: emailLog.recipient.profile?.locale as 'en' | 'fr' || 'en',
+      recipientId: emailLog.recipientId,
+    })
+
+    console.log(`✅ Successfully retried failed email ${emailLogId}`)
+  } catch (error) {
+    console.error(`❌ Retry failed for email ${emailLogId}:`, error)
+    throw error
+  }
+}

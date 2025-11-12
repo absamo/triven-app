@@ -19,6 +19,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const assignedRole = url.searchParams.get('assignedRole')
   const entityType = url.searchParams.get('entityType')
   const priority = url.searchParams.get('priority')
+  const search = url.searchParams.get('search')
+  const userId = url.searchParams.get('userId')
+  const limit = parseInt(url.searchParams.get('limit') || '20', 10)
+  const offset = parseInt(url.searchParams.get('offset') || '0', 10)
 
   const filters = {
     ...(status && { status }),
@@ -26,15 +30,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ...(assignedRole && { assignedRole }),
     ...(entityType && { entityType }),
     ...(priority && { priority }),
+    ...(search && { search }),
+    ...(userId && { userId }),
     currentUserId: session.user.id,
     ...(session.user.roleId && { currentUserRoleId: session.user.roleId }),
+    limit,
+    offset,
   }
 
-  const approvalRequests = await getApprovalRequests(session.user.companyId, filters)
+  const result = await getApprovalRequests(session.user.companyId, filters)
 
-  return new Response(JSON.stringify({ approvalRequests }), {
-    headers: { 'Content-Type': 'application/json' },
-  })
+  return new Response(
+    JSON.stringify({
+      approvals: result.approvals || result,
+      total: result.total || (result.approvals || result).length,
+    }),
+    {
+      headers: { 'Content-Type': 'application/json' },
+    }
+  )
 }
 
 export async function action({ request }: ActionFunctionArgs) {

@@ -2,12 +2,12 @@ import {
   ActionIcon,
   AppShell,
   Burger,
-  Center,
   Container,
   Flex,
-  LoadingOverlay,
   Overlay,
   ScrollArea,
+  Skeleton,
+  Stack,
   useMantineTheme,
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
@@ -140,7 +140,8 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
   // Initialize subscription status from user prop, then update via SSE
   const [subscriptionStatus, setSubscriptionStatus] = useState(() => {
     // Use trialEnd from database if available, otherwise calculate from trialPeriodDays
-    const trialEnd = user.trialEnd || 
+    const trialEnd =
+      user.trialEnd ||
       (user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING && user.trialPeriodDays > 0
         ? Math.floor(dayjs().add(user.trialPeriodDays, 'days').valueOf() / 1000)
         : 0)
@@ -159,7 +160,8 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
     }
 
     // Use trialEnd from database if available, otherwise calculate from trialPeriodDays
-    const trialEnd = user.trialEnd || 
+    const trialEnd =
+      user.trialEnd ||
       (user.planStatus === STRIPE_SUBSCRIPTION_STATUSES.TRIALING && user.trialPeriodDays > 0
         ? Math.floor(dayjs().add(user.trialPeriodDays, 'days').valueOf() / 1000)
         : 0)
@@ -272,16 +274,32 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
   // Suppress other modals when trial is expired to prevent modal switching during payment
   const incompleteSubscription =
-    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE && !isPendingPayment && !trialExpired
-  const cancelledSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.CANCELED && !isPendingPayment && !trialExpired
-  const pastDueSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE && !isPendingPayment && !trialExpired
-  const unpaidSubscription = subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.UNPAID && !isPendingPayment && !trialExpired
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE &&
+    !isPendingPayment &&
+    !trialExpired
+  const cancelledSubscription =
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.CANCELED &&
+    !isPendingPayment &&
+    !trialExpired
+  const pastDueSubscription =
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAST_DUE &&
+    !isPendingPayment &&
+    !trialExpired
+  const unpaidSubscription =
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.UNPAID &&
+    !isPendingPayment &&
+    !trialExpired
   const incompleteExpiredSubscription =
-    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED && !isPendingPayment && !trialExpired
-  
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.INCOMPLETE_EXPIRED &&
+    !isPendingPayment &&
+    !trialExpired
+
   // Only show paused modal if it's NOT from an expired trial and NOT pending payment
   const pausedSubscription =
-    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAUSED && !isPausedFromExpiredTrial && !isPendingPayment && !trialExpired
+    subscriptionStatus.status === STRIPE_SUBSCRIPTION_STATUSES.PAUSED &&
+    !isPausedFromExpiredTrial &&
+    !isPendingPayment &&
+    !trialExpired
 
   // Handle users with no active subscription (inactive, null, undefined, etc.)
   const noActiveSubscription =
@@ -375,17 +393,67 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
                 color={theme.colors.blue[6]}
               />
             </Flex>
-            <Header
-              showNotification={handleShowNotification}
-              user={{
-                ...user,
-                profile: {
-                  ...user.profile,
-                  avatar: user.profile.avatar ?? undefined,
-                },
-              }}
-              notifications={notifications}
-            />
+            {!isHydrated ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flex: 1,
+                  height: '100%',
+                  paddingLeft: 'var(--mantine-spacing-lg)',
+                  paddingRight: 'var(--mantine-spacing-lg)',
+                }}
+              >
+                {/* Logo - absolute positioned left */}
+                <Flex align="center" h="100%" style={{ position: 'absolute', left: 20 }}>
+                  <Skeleton height={36} width={140} radius="md" animate />
+                </Flex>
+
+                {/* Right side content */}
+                <Flex align="center" gap="md" h="100%" style={{ marginLeft: 'auto' }}>
+                  {/* Notification bell */}
+                  <Skeleton height={24} width={24} radius="xl" animate />
+
+                  {/* Divider */}
+                  <Skeleton
+                    height={30}
+                    width={1}
+                    radius={0}
+                    animate
+                    style={{ marginLeft: 16, marginRight: 16 }}
+                  />
+
+                  {/* User dropdown: Avatar + Name + Chevron */}
+                  <Flex
+                    align="center"
+                    gap="sm"
+                    style={{
+                      border:
+                        '1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4))',
+                      borderRadius: '10px',
+                      padding: '8px 12px',
+                    }}
+                  >
+                    <Skeleton height={32} width={32} radius="xl" animate />
+                    <Skeleton height={20} width={80} radius="md" animate />
+                    <Skeleton height={18} width={18} radius="sm" animate />
+                  </Flex>
+                </Flex>
+              </div>
+            ) : (
+              <Header
+                showNotification={handleShowNotification}
+                user={{
+                  ...user,
+                  profile: {
+                    ...user.profile,
+                    avatar: user.profile.avatar ?? undefined,
+                  },
+                }}
+                notifications={notifications}
+              />
+            )}
           </Flex>
         </AppShell.Header>
 
@@ -395,22 +463,42 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
           })}
           suppressHydrationWarning
         >
-          <AppShell.Section component={ScrollArea} type="scroll" h={'100%'}>
-            <Navbar
-              permissions={user.role?.permissions || []}
-              showMiniNavbar={showMiniNavbar}
-              activeMenuItem={activeMenuItem}
-              onClick={(item) => setActiveMenuItem(item)}
-              onToggle={handleToggleNavbar}
-            />
-          </AppShell.Section>
+          {!isHydrated ? (
+            <AppShell.Section component={ScrollArea} type="scroll" h={'100%'} p="md">
+              <Stack gap="md">
+                {/* Logo skeleton */}
+                <Skeleton height={40} width={showMiniNavbar ? 40 : 120} radius="md" animate />
+
+                {/* Menu items skeleton */}
+                {[...Array(12)].map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    height={40}
+                    width={showMiniNavbar ? 40 : '100%'}
+                    radius="md"
+                    animate
+                  />
+                ))}
+              </Stack>
+            </AppShell.Section>
+          ) : (
+            <AppShell.Section component={ScrollArea} type="scroll" h={'100%'}>
+              <Navbar
+                permissions={user.role?.permissions || []}
+                showMiniNavbar={showMiniNavbar}
+                activeMenuItem={activeMenuItem}
+                onClick={(item) => setActiveMenuItem(item)}
+                onToggle={handleToggleNavbar}
+              />
+            </AppShell.Section>
+          )}
 
           {/* Toggle button positioned at the bottom of navbar */}
           <ActionIcon
             size="lg"
             onClick={handleToggleNavbar}
             className={classes.toggleButton}
-            disabled={!isHydrated}
+            disabled={!isHydrated || currentState === 'loading'}
           >
             {showMiniNavbar ? (
               <IconChevronRight size={20} stroke={2.5} className={classes.toggleIcon} />
@@ -438,21 +526,39 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
             />
           )}
 
-          {loadingTime > 1000 && currentState === 'loading' ? (
-            <Center>
-              <LoadingOverlay
-                visible
-                zIndex={2}
-                overlayProps={{ radius: 'sm', blur: 2 }}
-                ml={260}
-              />
-            </Center>
+          {!isHydrated ? (
+            <Container
+              fluid
+              className={classes.container}
+              style={{ flex: 1, overflow: 'hidden' }}
+              p="xl"
+            >
+              <Stack gap="lg">
+                {/* Header skeleton */}
+                <Stack gap="sm">
+                  <Skeleton height={32} width="30%" radius="md" animate />
+                  <Skeleton height={20} width="50%" radius="md" animate />
+                </Stack>
+
+                {/* Table/Grid skeleton */}
+                <Stack gap="xs">
+                  <Skeleton height={40} radius="md" animate />
+                  <Skeleton height={60} radius="md" animate />
+                  <Skeleton height={60} radius="md" animate />
+                  <Skeleton height={60} radius="md" animate />
+                  <Skeleton height={60} radius="md" animate />
+                  <Skeleton height={60} radius="md" animate />
+                  <Skeleton height={60} radius="md" animate />
+                  <Skeleton height={60} radius="md" animate />
+                  <Skeleton height={60} radius="md" animate />
+            
+                </Stack>
+              </Stack>
+            </Container>
           ) : (
-            <>
-              <Container fluid className={classes.container} style={{ flex: 1 }}>
-                <Outlet />
-              </Container>
-            </>
+            <Container fluid className={classes.container} style={{ flex: 1 }}>
+              <Outlet />
+            </Container>
           )}
         </AppShell.Main>
         <FooterWrapper />

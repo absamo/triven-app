@@ -51,3 +51,79 @@ export async function updateNotification(notifications: INotification[], redirec
 
   return redirect(redirectTo || '/')
 }
+
+// ========== T009: Workflow Approvals Notification Functions ==========
+
+interface CreateNotificationData {
+  recipientId: string
+  companyId: string
+  approvalRequestId?: string
+  notificationType?: string
+  message: string
+  status: 'info' | 'warning' | 'error' | 'success'
+  createdById: string
+}
+
+/**
+ * T009: Create an in-app notification
+ */
+export async function createNotification(data: CreateNotificationData) {
+  return prisma.notification.create({
+    data: {
+      recipientId: data.recipientId,
+      companyId: data.companyId,
+      approvalRequestId: data.approvalRequestId,
+      notificationType: data.notificationType,
+      message: data.message,
+      status: data.status,
+      createdById: data.createdById,
+      read: false,
+    },
+  })
+}
+
+/**
+ * T009: Mark notification as read
+ */
+export async function markNotificationRead(notificationId: string) {
+  return prisma.notification.update({
+    where: { id: notificationId },
+    data: { read: true },
+  })
+}
+
+/**
+ * T048: Update notification status when approval changes
+ */
+export async function updateNotificationStatus(
+  approvalRequestId: string,
+  newMessage: string,
+): Promise<void> {
+  await prisma.notification.updateMany({
+    where: {
+      approvalRequestId,
+      read: false,
+    },
+    data: {
+      message: newMessage,
+    },
+  })
+}
+
+/**
+ * Get unread notifications for a user
+ */
+export async function getUnreadNotifications(userId: string, limit: number = 50) {
+  return prisma.notification.findMany({
+    where: {
+      recipientId: userId,
+      read: false,
+    },
+    include: {
+      approvalRequest: true,
+      product: true,
+    },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+  })
+}

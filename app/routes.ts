@@ -66,7 +66,15 @@ export default [
     route('/api/stock-adjustments-search', 'routes/api/stockAdjustmentSearch.ts'),
     route('api/locales/:lng/:ns', 'routes/locales.ts'),
     route('api/approvals', 'routes/api.approvals.ts'),
+    route('api/approvals/create', 'routes/api/approvals.create.ts'),
+    route('api/approvals/:id/review', 'routes/api/approvals.$id.review.ts'),
+    route('api/approvals/:id/comments', 'routes/api/approvals.$id.comments.ts'),
+    route('api/approvals/:id/reassign', 'routes/api/approvals.$id.reassign.ts'),
+    route('api/approvals/metrics', 'routes/api/approvals.metrics.ts'),
+    route('api/approval-stream', 'routes/api.approval-stream.ts'),
     route('api/workflows', 'routes/api.workflows.ts'),
+    route('api/workflows/create', 'routes/api/workflows.create.ts'),
+    route('api/workflows/:id/deactivate', 'routes/api/workflows.$id.deactivate.ts'),
     route('api/workflow-templates', 'routes/api/workflow-templates.ts'),
     route('api/workflow-step-execution', 'routes/api/workflow-step-execution.ts'),
     route('api/workflow-trigger', 'routes/api/workflow-trigger.ts'),
@@ -184,13 +192,13 @@ export default [
 
     //workflows and approvals
     route('approvals', 'routes/approvals/approvals.tsx'),
+    route('approvals/:id', 'routes/approvals.$id.tsx'),
     route('workflow-templates', 'routes/workflow-templates/workflow-templates.tsx'),
     route('workflow-templates/create', 'routes/workflow-templates/workflow-templates.create.tsx'),
     route('workflow-templates/:id', 'routes/workflow-templates/workflow-templates.edit.tsx'),
     route('workflow-instances', 'routes/workflow-instances/workflow-instances.tsx'),
     route('workflow-instances/:instanceId/step', 'routes/workflow-instances/$instanceId.step.tsx'),
     route('workflow-history', 'routes/workflows/workflow-history.tsx'),
-
 
     // Mastra AI chat
     route('ai-agent', 'routes/mastra-chat.tsx'),

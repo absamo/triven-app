@@ -10,6 +10,7 @@ import {
   sendPaymentMethodUpdateEmail,
   sendPaymentSuccessEmail,
 } from '~/app/services/email.server'
+import { broadcastSubscriptionUpdate } from './subscription-broadcast.server'
 
 interface PaymentMethodDetails {
   paymentMethodId: string
@@ -28,7 +29,7 @@ export async function handleCanceledSubscriptionReactivation(
 ): Promise<void> {
   const paymentMethodId = setupIntent.payment_method as string
   const customerId = setupIntent.customer as string
-  
+
   console.log(`🔄 [WEBHOOK-HANDLER] Creating new subscription for canceled reactivation`)
   console.log(`🔄 [WEBHOOK-HANDLER] SetupIntent: ${setupIntent.id}`)
   console.log(`🔄 [WEBHOOK-HANDLER] Customer: ${customerId}`)
@@ -36,7 +37,7 @@ export async function handleCanceledSubscriptionReactivation(
   console.log(`🔄 [WEBHOOK-HANDLER] Payment method: ${paymentMethodId}`)
   console.log(`🔄 [WEBHOOK-HANDLER] Old subscription: ${metadata.oldSubscriptionId}`)
   console.log(`🔄 [WEBHOOK-HANDLER] Plan: ${metadata.planId}, Interval: ${metadata.interval}`)
-  
+
   try {
     // Create new subscription with the payment method
     const newSubscription = await stripe.subscriptions.create({
@@ -45,39 +46,44 @@ export async function handleCanceledSubscriptionReactivation(
       default_payment_method: paymentMethodId,
       expand: ['latest_invoice.payment_intent'],
     })
-    
+
     console.log(`✅ [WEBHOOK-HANDLER] New subscription created: ${newSubscription.id}`)
     console.log(`✅ [WEBHOOK-HANDLER] Status: ${newSubscription.status}`)
-    console.log(`✅ [WEBHOOK-HANDLER] Current period: ${(newSubscription as any).current_period_start} - ${(newSubscription as any).current_period_end}`)
-    
+    console.log(
+      `✅ [WEBHOOK-HANDLER] Current period: ${(newSubscription as any).current_period_start} - ${(newSubscription as any).current_period_end}`
+    )
+
     // Update database with new subscription
     const user = await prisma.user.findUnique({
       where: { stripeCustomerId: customerId },
     })
-    
+
     if (!user) {
       console.error('User not found for customer:', customerId)
       return
     }
-    
+
     // Get plan mapping
     const dbPrice = await prisma.price.findUnique({
       where: { id: metadata.priceId },
       include: { plan: true },
     })
-    
+
     if (!dbPrice) {
       console.error('Price not found:', metadata.priceId)
       return
     }
-    
+
     // Extract subscription periods
     const subscriptionData = newSubscription as any
-    const currentPeriodStart = subscriptionData.current_period_start || Math.floor(Date.now() / 1000)
-    const currentPeriodEnd = subscriptionData.current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
-    
+    const currentPeriodStart =
+      subscriptionData.current_period_start || Math.floor(Date.now() / 1000)
+    const currentPeriodEnd =
+      subscriptionData.current_period_end ||
+      Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
+
     const priceId = metadata.priceId || ''
-    
+
     // Update database
     await prisma.subscription.upsert({
       where: { userId: user.id },
@@ -106,12 +112,11 @@ export async function handleCanceledSubscriptionReactivation(
         trialEnd: 0,
       },
     })
-    
+
     console.log(`✅ [WEBHOOK-HANDLER] Database updated successfully`)
     console.log(`✅ [WEBHOOK-HANDLER] User ${user.id} now has subscription ${newSubscription.id}`)
     console.log(`✅ [WEBHOOK-HANDLER] Plan: ${dbPrice.planId}, Status: ${newSubscription.status}`)
     console.log(`🎉 [WEBHOOK-HANDLER] Canceled subscription reactivation complete!`)
-    
   } catch (error) {
     console.error(`❌ [WEBHOOK-HANDLER] Failed to create subscription:`, error)
     throw error
@@ -224,44 +229,46 @@ export async function handleTrialSubscriptionSetup(
   // Handle paused subscription reactivation
   if (metadata.type === 'paused_subscription_reactivation') {
     console.log(`🔄 Resuming paused subscription ${subscriptionId} after payment method setup`)
-    
+
     try {
       // Resume the paused subscription - this creates an invoice
       const resumedSubscription = await stripe.subscriptions.resume(subscriptionId, {
         billing_cycle_anchor: 'now',
         proration_behavior: 'create_prorations',
       })
-      
+
       console.log(`✅ Subscription resumed, status: ${resumedSubscription.status}`)
-      
+
       // If subscription is still paused, we need to pay the generated invoice
       if (resumedSubscription.status === 'paused') {
         const latestInvoice = resumedSubscription.latest_invoice
-        
+
         if (latestInvoice && typeof latestInvoice === 'string') {
           console.log(`💳 Paying resumption invoice ${latestInvoice}`)
-          
+
           // Retrieve the invoice
           const invoice = await stripe.invoices.retrieve(latestInvoice, {
             expand: ['payment_intent'],
           })
-          
+
           const invoiceData = invoice as any
-          console.log(`📋 Invoice status: ${invoice.status}, has PaymentIntent: ${!!invoiceData.payment_intent}`)
-          
+          console.log(
+            `📋 Invoice status: ${invoice.status}, has PaymentIntent: ${!!invoiceData.payment_intent}`
+          )
+
           if (invoice.status === 'draft') {
             console.log(`📝 Finalizing draft invoice ${latestInvoice}`)
             // Finalize the draft invoice to create PaymentIntent
             await stripe.invoices.finalizeInvoice(latestInvoice, {
               auto_advance: false,
             })
-            
+
             // Pay the invoice with the payment method
             console.log(`💳 Paying finalized invoice with payment method ${paymentMethodId}`)
             await stripe.invoices.pay(latestInvoice, {
               payment_method: paymentMethodId,
             })
-            
+
             console.log(`✅ Resumption invoice paid, subscription should activate`)
           } else if (invoice.status === 'open') {
             // Invoice is open - pay it directly
@@ -269,7 +276,7 @@ export async function handleTrialSubscriptionSetup(
             await stripe.invoices.pay(latestInvoice, {
               payment_method: paymentMethodId,
             })
-            
+
             console.log(`✅ Resumption invoice paid, subscription should activate`)
           } else {
             console.log(`ℹ️ Invoice status: ${invoice.status} - skipping payment`)
@@ -282,7 +289,7 @@ export async function handleTrialSubscriptionSetup(
       console.error(`❌ Failed to resume paused subscription ${subscriptionId}:`, error)
       throw error
     }
-    
+
     return
   }
 
@@ -321,7 +328,8 @@ export async function handleInvoicePaymentSuccess(
   const subscriptionData = stripeSubscription as any
   const currentPeriodStart = subscriptionData.current_period_start || Math.floor(Date.now() / 1000)
   const currentPeriodEnd =
-    subscriptionData.current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
+    subscriptionData.current_period_end ||
+    Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
   const trialStart = subscriptionData.trial_start || 0
 
   // Get payment method details
@@ -331,8 +339,12 @@ export async function handleInvoicePaymentSuccess(
   const isActualPayment = invoice.amount_paid > 0 && !invoice.starting_balance
   const shouldEndTrial = isActualPayment && stripeSubscription.status === 'active'
 
-  console.log(`💰 [WEBHOOK-INVOICE-PAID] Invoice payment success for subscription ${subscriptionId}`)
-  console.log(`💰 [WEBHOOK-INVOICE-PAID] Subscription status from Stripe: ${stripeSubscription.status}`)
+  console.log(
+    `💰 [WEBHOOK-INVOICE-PAID] Invoice payment success for subscription ${subscriptionId}`
+  )
+  console.log(
+    `💰 [WEBHOOK-INVOICE-PAID] Subscription status from Stripe: ${stripeSubscription.status}`
+  )
   console.log(`💰 [WEBHOOK-INVOICE-PAID] Amount paid: ${invoice.amount_paid}`)
   console.log(`💰 [WEBHOOK-INVOICE-PAID] Is actual payment: ${isActualPayment}`)
   console.log(`💰 [WEBHOOK-INVOICE-PAID] Should end trial: ${shouldEndTrial}`)
@@ -377,18 +389,21 @@ export async function handleInvoicePaymentSuccess(
     },
   })
 
-  console.log(`✅ [WEBHOOK-INVOICE-PAID] Database updated with status: ${stripeSubscription.status}`)
+  console.log(
+    `✅ [WEBHOOK-INVOICE-PAID] Database updated with status: ${stripeSubscription.status}`
+  )
 
   // Send payment success email
   if (isActualPayment && invoice.amount_paid > 0) {
     await sendPaymentSuccessEmailNotification(user, dbPlanId, invoice)
   }
 
-  console.log(`✅ [WEBHOOK-INVOICE-PAID] Invoice payment processed for subscription ${subscriptionId}`)
+  console.log(
+    `✅ [WEBHOOK-INVOICE-PAID] Invoice payment processed for subscription ${subscriptionId}`
+  )
 
   // Broadcast to SSE clients when invoice is paid and subscription is active
   if (stripeSubscription.status === 'active') {
-    const { broadcastSubscriptionUpdate } = await import('../routes/api.subscription-stream')
     broadcastSubscriptionUpdate({
       userId: user.id,
       status: stripeSubscription.status,
@@ -396,7 +411,9 @@ export async function handleInvoicePaymentSuccess(
       trialEnd: shouldEndTrial ? 0 : subscriptionData.trial_end || 0,
       confirmed: true,
     })
-    console.log(`📡 [WEBHOOK-INVOICE-PAID] Broadcasted confirmed active subscription to SSE clients`)
+    console.log(
+      `📡 [WEBHOOK-INVOICE-PAID] Broadcasted confirmed active subscription to SSE clients`
+    )
   }
 }
 
@@ -493,7 +510,8 @@ export async function handleSubscriptionUpdate(
   const updateCurrentPeriodStart =
     subscriptionData.current_period_start || Math.floor(Date.now() / 1000)
   const updateCurrentPeriodEnd =
-    subscriptionData.current_period_end || Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
+    subscriptionData.current_period_end ||
+    Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
 
   // Get payment method details
   const updatePaymentMethodDetails = await getPaymentMethodDetails(latestSubscription.id)
@@ -508,10 +526,16 @@ export async function handleSubscriptionUpdate(
 
   console.log(`📋 [WEBHOOK-SUB-UPDATE] Subscription update for user ${user.id}`)
   console.log(`📋 [WEBHOOK-SUB-UPDATE] Subscription ID: ${latestSubscription.id}`)
-  console.log(`📋 [WEBHOOK-SUB-UPDATE] Previous DB status: ${existingSubscription?.status || 'none'}`)
+  console.log(
+    `📋 [WEBHOOK-SUB-UPDATE] Previous DB status: ${existingSubscription?.status || 'none'}`
+  )
   console.log(`📋 [WEBHOOK-SUB-UPDATE] New Stripe status: ${latestSubscription.status}`)
-  console.log(`📋 [WEBHOOK-SUB-UPDATE] Cancel at period end: ${subscriptionData.cancel_at_period_end}`)
-  console.log(`📋 [WEBHOOK-SUB-UPDATE] Has payment method: ${!!latestSubscription.default_payment_method}`)
+  console.log(
+    `📋 [WEBHOOK-SUB-UPDATE] Cancel at period end: ${subscriptionData.cancel_at_period_end}`
+  )
+  console.log(
+    `📋 [WEBHOOK-SUB-UPDATE] Has payment method: ${!!latestSubscription.default_payment_method}`
+  )
   if (isReactivation) {
     console.log(`📋 [WEBHOOK-SUB-UPDATE] ✅ Reactivation detected - clearing cancellation fields`)
   }
@@ -610,9 +634,7 @@ export async function handleSubscriptionDeletion(
 
   // Send cancellation email
   try {
-    const { handleSubscriptionCancellation } = await import(
-      '~/app/services/email-scheduler.server'
-    )
+    const { handleSubscriptionCancellation } = await import('~/app/services/email-scheduler.server')
     await handleSubscriptionCancellation(
       subscription.id,
       subscription.cancellation_details?.reason || 'Subscription cancelled'
@@ -831,11 +853,10 @@ async function cleanupDuplicateSubscriptions(
     const bothActivelyCharging =
       (latestSubscription.status === 'active' || latestSubscription.status === 'past_due') &&
       (extraSub.status === 'active' || extraSub.status === 'past_due')
-    
+
     // Or if there's an older duplicate that was created first
     const isOlderDuplicate =
-      extraSub.created < latestSubscription.created &&
-      extraSub.status !== 'incomplete_expired'
+      extraSub.created < latestSubscription.created && extraSub.status !== 'incomplete_expired'
 
     if (bothActivelyCharging || isOlderDuplicate) {
       console.log(`🗑️ Canceling duplicate subscription ${extraSub.id} (${extraSub.status})`)
