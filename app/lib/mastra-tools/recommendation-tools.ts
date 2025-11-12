@@ -243,19 +243,36 @@ export const getInventoryHealth = {
 
       return {
         success: true,
-        message: `Inventory Health Report (${days}-day period)\n\n${formatKeyValue({
-          'Turnover Rate': `${formatNumber(turnoverRate, 2)}x`,
-          Assessment: turnoverAssessment,
-          'Products Needing Reorder': lowStockProducts.length.toString(),
-          'Urgent (< 7 days)': urgentReorders.toString(),
-          'Soon (7-14 days)': soonReorders.toString(),
-        })}\n\n**Turnover Rate Benchmarks:**\n• < 2x = Poor (overstocking)\n• 2-4x = Fair\n• 4-8x = Good\n• > 8x = Excellent (fast-moving)\n\n💡 **Recommendation:** ${
-          urgentReorders > 0
-            ? `Take immediate action on ${urgentReorders} product(s) with urgent reorder needs.`
-            : lowStockProducts.length > 0
-              ? `Monitor ${lowStockProducts.length} product(s) approaching reorder points.`
-              : 'Inventory levels are healthy across the board.'
-        }`,
+        message: `📊 **Inventory Health Report** (${days}-day period)
+
+### Key Metrics
+
+| Metric | Value |
+|--------|-------|
+| **Turnover Rate** | ${formatNumber(turnoverRate, 2)}x |
+| **Assessment** | ${turnoverAssessment} |
+| **Products Needing Reorder** | ${lowStockProducts.length} |
+| **Urgent (< 7 days)** | ${urgentReorders} |
+| **Soon (7-14 days)** | ${soonReorders} |
+
+### Turnover Rate Benchmarks
+
+| Range | Rating | Description |
+|-------|--------|-------------|
+| < 2x | 🔴 Poor | Overstocking - Inventory moving too slowly |
+| 2-4x | 🟠 Fair | Room for improvement |
+| 4-8x | 🟡 Good | Healthy inventory movement |
+| > 8x | 🟢 Excellent | Fast-moving inventory |
+
+### 💡 Recommendation
+
+${
+  urgentReorders > 0
+    ? `⚠️ **Take immediate action** on ${urgentReorders} product(s) with urgent reorder needs (< 7 days until stockout).`
+    : lowStockProducts.length > 0
+      ? `👀 **Monitor closely:** ${lowStockProducts.length} product(s) approaching reorder points.`
+      : '✅ **All good!** Inventory levels are healthy across the board.'
+}`,
         metrics: {
           turnoverRate,
           productsNeedingReorder: lowStockProducts.length,
