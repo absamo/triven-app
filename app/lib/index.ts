@@ -7,7 +7,7 @@ import { productTools } from './mastra-tools/product-tools'
 import { recommendationTools } from './mastra-tools/recommendation-tools'
 import { supplierTools } from './mastra-tools/supplier-tools'
 
-// Configure Ollama with cloud endpoint
+// Configure Ollama for remote model
 const ollama = createOllama({
   baseURL: process.env.OLLAMA_BASE_URL || 'https://ollama.com',
   headers: {
@@ -78,13 +78,14 @@ IMPORTANT RULES:
 7. Match your response language to the user's language (French/English)
 8. You can ONLY view and analyze data - you CANNOT create, update, or delete anything
 9. If asked to modify data, politely explain that you can only view information
+10. For simple greetings (Hello, Hi, Bonjour), respond warmly without calling tools
 
 RESPONSE FORMAT WHEN CALLING TOOLS:
 ✅ CORRECT: "Let me check your inventory." [calls tool] [STOPS - no more text]
 ❌ WRONG: "Let me check your inventory." [calls tool] "Here are the results: Total: 40, Stock: undefined"
 
 Remember: Tool results are auto-formatted. Your job is to call the right tools for viewing data, then stay quiet!`,
-  model: ollama(process.env.OLLAMA_MODEL || 'minimax-m2:cloud'),
+  model: ollama((process.env.OLLAMA_MODEL || 'minimax-m2')),
   tools: inventoryTools,
 })
 
