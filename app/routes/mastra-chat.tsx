@@ -543,6 +543,80 @@ function formatToolOutput(
     }
 
     formattedOutput += `\n**${t('inventory:totalItems', 'Total')}:** ${output.total} ${t('inventory:orders', 'orders')}`
+  } else if (normalizedToolName === 'tool-getTopSellingProductsRecommendation') {
+    console.log('🎯 Formatting top selling products:', { hasTopProducts: !!output.topProducts, length: output.topProducts?.length })
+    
+    const products = output.topProducts || []
+    formattedOutput += `\n\n### ${t('inventory:topSellingProducts', 'Top Selling Products')}\n\n`
+
+    if (products.length > 0) {
+      formattedOutput += `| ${t('inventory:rank', 'Rank')} | ${t('inventory:nameHeader', 'Product')} | SKU | ${t('inventory:unitsSold', 'Units Sold')} | ${t('inventory:velocity', 'Velocity')} | ${t('inventory:revenue', 'Revenue')} |\n`
+      formattedOutput += '|------|---------|-----|-----------|----------|----------|\n'
+
+      for (const product of products) {
+        const velocity = product.velocity ? `${product.velocity.toFixed(1)}/day` : 'N/A'
+        const revenue = product.revenue ? `$${product.revenue.toFixed(2)}` : 'N/A'
+        formattedOutput += `| ${product.rank} | ${product.name} | ${product.sku || 'N/A'} | ${product.unitsSold} | ${velocity} | ${revenue} |\n`
+      }
+
+      const totalRevenue = products.reduce(
+        (sum: number, p: { revenue?: number }) => sum + (p.revenue || 0),
+        0
+      )
+      const totalUnits = products.reduce(
+        (sum: number, p: { unitsSold?: number }) => sum + (p.unitsSold || 0),
+        0
+      )
+
+      formattedOutput += `\n**${t('inventory:totalRevenue', 'Total Revenue')}:** $${totalRevenue.toFixed(2)}`
+      formattedOutput += `\n**${t('inventory:totalUnitsSold', 'Total Units Sold')}:** ${totalUnits}`
+    } else {
+      formattedOutput += t(
+        'inventory:noSalesData',
+        'No sales data available for the specified period.'
+      )
+    }
+  } else if (normalizedToolName === 'tool-getReorderRecommendations') {
+    console.log('🎯 Formatting reorder recommendations:', { hasRecommendations: !!output.recommendations, length: output.recommendations?.length })
+    
+    const recommendations = output.recommendations || []
+    formattedOutput += `\n\n### ${t('inventory:reorderRecommendations', 'Reorder Recommendations')}\n\n`
+
+    if (recommendations.length > 0) {
+      formattedOutput += `| ${t('inventory:nameHeader', 'Product')} | SKU | ${t('inventory:currentStock', 'Current Stock')} | ${t('inventory:suggestedOrder', 'Suggested Order')} | ${t('inventory:reason', 'Reason')} |\n`
+      formattedOutput += '|---------|-----|---------------|-----------------|--------|\n'
+
+      for (const rec of recommendations) {
+        formattedOutput += `| ${rec.productName} | ${rec.sku || 'N/A'} | ${rec.currentStock} | ${rec.suggestedQuantity} | ${rec.reason || 'Low stock'} |\n`
+      }
+
+      formattedOutput += `\n**${t('inventory:totalItems', 'Total Items to Reorder')}:** ${recommendations.length}`
+    } else {
+      formattedOutput += t('inventory:noReorderNeeded', 'No products need reordering at this time.')
+    }
+  } else if (normalizedToolName === 'tool-getInventoryHealth') {
+    formattedOutput += `\n\n### ${t('inventory:inventoryHealth', 'Inventory Health Report')}\n\n`
+
+    if (output.overview) {
+      formattedOutput += `#### ${t('inventory:overview', 'Overview')}\n\n`
+      formattedOutput += `- **${t('inventory:healthScore', 'Health Score')}:** ${output.overview.healthScore || 'N/A'}\n`
+      formattedOutput += `- **${t('inventory:totalProducts', 'Total Products')}:** ${output.overview.totalProducts || 0}\n`
+      formattedOutput += `- **${t('inventory:totalValue', 'Total Value')}:** ${output.overview.totalValue || '$0.00'}\n`
+    }
+
+    if (output.stockLevels) {
+      formattedOutput += `\n#### ${t('inventory:stockLevels', 'Stock Levels')}\n\n`
+      formattedOutput += `- **${t('inventory:inStock', 'In Stock')}:** ${output.stockLevels.inStock || 0}\n`
+      formattedOutput += `- **${t('inventory:lowStock', 'Low Stock')}:** ${output.stockLevels.lowStock || 0}\n`
+      formattedOutput += `- **${t('inventory:outOfStock', 'Out of Stock')}:** ${output.stockLevels.outOfStock || 0}\n`
+    }
+
+    if (output.insights && output.insights.length > 0) {
+      formattedOutput += `\n#### ${t('inventory:insights', 'Key Insights')}\n\n`
+      for (const insight of output.insights) {
+        formattedOutput += `- ${insight}\n`
+      }
+    }
   }
 
   return formattedOutput
