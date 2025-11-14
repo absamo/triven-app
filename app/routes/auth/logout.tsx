@@ -9,7 +9,7 @@ export const action: ActionFunction = async ({ request }) => {
     console.error('❌ Better Auth signOut failed:', error)
     // Continue with redirect even if signOut fails
   }
-  return redirect('/')
+  return redirect('/login')
 }
 
-export const loader = () => redirect('/')
+export const loader = () => redirect('/login')
