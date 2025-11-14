@@ -5,6 +5,14 @@
 **Status**: Draft  
 **Input**: User description: "audit with timeline for the products. Action button should be visible on the /products page. showdrawer on the right. I want to all changes (modified, deleted. when and by who) happening on the products. Later on we will add the audit for other pages. think generic when designing this feature. just show which field has been changed.. store the value.. if multiple fields have beend changed.. propose a delightful design with awesome UX for showing it"
 
+## Clarifications
+
+### Session 2025-11-14
+
+- Q: Pagination Strategy → A: Load first 20 events, lazy load more on scroll
+- Q: Audit Logging for System Observability → A: Log audit write operations only
+- Q: Product Creation Event Tracking → A: Track creation as audit event with summary only (e.g., "Product A created by X"), not all initial field values
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - View Product Change History (Priority: P1)
@@ -89,20 +97,22 @@ An analyst needs to understand exactly what changed in a product update. They ex
 
 ### Functional Requirements
 
-- **FR-001**: System MUST capture all product modification events including field name, old value, new value, timestamp, and user identifier
-- **FR-002**: System MUST capture product deletion events including timestamp, user identifier, and product state at time of deletion
-- **FR-003**: System MUST provide an audit history button/icon on the products list page for each product
-- **FR-004**: System MUST display audit history in a right-side drawer overlay that doesn't navigate away from the products page
-- **FR-005**: System MUST show audit events in reverse chronological order (newest first)
-- **FR-006**: System MUST display for each audit event: timestamp (date and time), user who made the change, and list of fields that changed
-- **FR-007**: System MUST visually distinguish different event types (creation, modification, deletion) using icons and/or colors
-- **FR-008**: System MUST support expanding audit events to show detailed field-by-field comparisons with old and new values
-- **FR-009**: System MUST handle display of multiple field changes within a single event in a scannable, organized layout
-- **FR-010**: System MUST persist audit data permanently and independently of the product lifecycle (audit survives product deletion)
-- **FR-011**: System MUST be designed generically to support future audit tracking for other entities (orders, customers, suppliers)
-- **FR-012**: System MUST handle large audit histories with pagination or infinite scroll to maintain performance
-- **FR-013**: System MUST require authentication to view audit history
-- **FR-014**: System MUST allow closing the audit drawer to return to the products list view
+- **FR-001**: System MUST capture product creation events with product name, timestamp, and user identifier (no field details, summary only)
+- **FR-002**: System MUST capture all product modification events including field name, old value, new value, timestamp, and user identifier
+- **FR-003**: System MUST capture product deletion events including timestamp, user identifier, and product state at time of deletion
+- **FR-004**: System MUST provide an audit history button/icon on the products list page for each product
+- **FR-005**: System MUST display audit history in a right-side drawer overlay that doesn't navigate away from the products page
+- **FR-006**: System MUST show audit events in reverse chronological order (newest first)
+- **FR-007**: System MUST display for each audit event: timestamp (date and time), user who made the change, and event description (for creation: summary format "Product [Name] created by [User]"; for modification: list of fields changed; for deletion: deletion notice)
+- **FR-008**: System MUST visually distinguish different event types (creation, modification, deletion) using icons and/or colors
+- **FR-009**: System MUST support expanding modification events to show detailed field-by-field comparisons with old and new values (creation events show summary only, not expandable)
+- **FR-010**: System MUST handle display of multiple field changes within a single modification event in a scannable, organized layout
+- **FR-011**: System MUST persist audit data permanently and independently of the product lifecycle (audit survives product deletion)
+- **FR-012**: System MUST be designed generically to support future audit tracking for other entities (orders, customers, suppliers)
+- **FR-013**: System MUST initially load the first 20 audit events and lazy load additional events automatically as user scrolls to maintain performance with large audit histories
+- **FR-014**: System MUST require authentication to view audit history
+- **FR-015**: System MUST allow closing the audit drawer to return to the products list view
+- **FR-016**: System MUST log all audit event write operations (create, update, delete captures) for observability and debugging purposes
 
 ### Real-Time Requirements
 
@@ -110,7 +120,7 @@ An analyst needs to understand exactly what changed in a product update. They ex
 
 ### Key Entities
 
-- **Audit Event**: Represents a single change action on a product. Contains: event type (create, update, delete), timestamp, user identifier, entity type (product), entity identifier (product ID), and collection of field changes.
+- **Audit Event**: Represents a single change action on a product. Contains: event type (create, update, delete), timestamp, user identifier, entity type (product), entity identifier (product ID), and either a summary description (for creation events) or collection of field changes (for modification/deletion events).
 
 - **Field Change**: Represents a single field modification within an audit event. Contains: field name, old value, new value, field data type for proper display formatting.
 
