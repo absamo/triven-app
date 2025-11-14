@@ -1,21 +1,15 @@
 import { Center, Paper, Stack, Text, Title, Box } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
 
 import { AuthIconBadge, BackButton, Logo } from '~/app/components'
 
 export default function InactiveUserPage() {
   const { t } = useTranslation(['auth', 'common'])
-  const navigate = useNavigate()
 
   const handleBackToLogin = () => {
-    navigate('/login')
-  }
-
-  const handleContactSupport = () => {
-    // You can customize this with your support email or contact method
-    window.location.href = 'mailto:support@triven.com?subject=Account Reactivation Request'
+    // Sign out first, then redirect to login
+    window.location.href = '/auth/sign-out'
   }
 
   return (
@@ -34,7 +28,7 @@ export default function InactiveUserPage() {
     >
       {/* Back Button */}
       <BackButton
-        to="/login"
+        onClick={handleBackToLogin}
         position="top-left"
         style={{ fontSize: '14px' }}
       >
