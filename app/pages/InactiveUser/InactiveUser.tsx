@@ -1,4 +1,4 @@
-import { Center, Paper, Stack, Text, Title } from '@mantine/core'
+import { Center, Paper, Stack, Text, Title, useMantineColorScheme } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -8,6 +8,8 @@ import { AuthIconBadge, BackButton, Logo } from '~/app/components'
 export default function InactiveUserPage() {
   const { t } = useTranslation(['auth', 'common'])
   const navigate = useNavigate()
+  const { colorScheme } = useMantineColorScheme()
+  const isDark = colorScheme === 'dark'
 
   const handleBackToLogin = () => {
     navigate('/login')
@@ -26,14 +28,21 @@ export default function InactiveUserPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 50%,rgb(207, 227, 234) 100%)',
+        background: isDark
+          ? 'linear-gradient(135deg, #1a1b1e 0%, #25262b 50%, #2c2e33 100%)'
+          : 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 50%,rgb(207, 227, 234) 100%)',
         padding: '20px',
         boxSizing: 'border-box',
         position: 'relative',
       }}
     >
       {/* Back Button */}
-      <BackButton to="/login" position="top-left" color="#000000" style={{ fontSize: '14px' }}>
+      <BackButton
+        to="/login"
+        position="top-left"
+        color={isDark ? '#ffffff' : '#000000'}
+        style={{ fontSize: '14px' }}
+      >
         Back to Login
       </BackButton>
 
@@ -43,21 +52,12 @@ export default function InactiveUserPage() {
           <Logo mb={-15} />
         </Center>
 
-        <Paper
-          withBorder
-          shadow="xl"
-          p={40}
-          radius="lg"
-          style={{
-            width: '100%',
-            background: 'white',
-          }}
-        >
+        <Paper withBorder shadow="xl" p={40} radius="lg" style={{ width: '100%' }}>
           {/* Header */}
           <Stack align="center" gap="sm" mb={32}>
             <AuthIconBadge icon={IconAlertCircle} theme="orange" />
 
-            <Title order={2} size="h2" fw={600} c="#374151" ta="center">
+            <Title order={2} size="h2" fw={600} ta="center">
               {t('auth:accountDeactivated', 'Account Deactivated')}
             </Title>
 
