@@ -42,6 +42,7 @@ interface SubscriptionStatusModalProps {
     currency: string
   }
   onPaymentStart?: () => void
+  userRole?: string
 }
 
 interface PaymentData {
@@ -61,6 +62,7 @@ export default function SubscriptionStatusModal({
   mode,
   subscription,
   onPaymentStart,
+  userRole,
 }: SubscriptionStatusModalProps) {
   const { colorScheme } = useMantineColorScheme()
   const { t } = useTranslation(['payment', 'common'])
@@ -154,6 +156,20 @@ export default function SubscriptionStatusModal({
           gradient: { from: 'blue', to: 'gray' },
         }
       case SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION:
+        // Show different message for non-admin users
+        if (userRole !== 'Admin') {
+          return {
+            title: t('payment:noActiveSubscription', 'No Active Subscription'),
+            message: t('payment:cannotAccessTriven'),
+            description: t(
+              'payment:noSubscriptionNonAdminMessage',
+              'Your company needs an active subscription to access Triven. Please contact your administrator to set up a subscription plan.'
+            ),
+            buttonText: '', // No button for non-admin users
+            icon: <IconLock size={40} />,
+            gradient: { from: 'red', to: 'orange' },
+          }
+        }
         return {
           title: t('payment:noActiveSubscription', 'No Active Subscription'),
           message: t('payment:cannotAccessTriven'),
@@ -412,27 +428,29 @@ export default function SubscriptionStatusModal({
               </Text>
 
               {/* Action Buttons */}
-              <Stack gap="md" mt="xl">
-                <Button
-                  size="lg"
-                  fullWidth
-                  onClick={handleUpgrade}
-                  gradient={{ from: 'teal', to: 'blue' }}
-                  variant="gradient"
-                  className={classes.upgradeButton}
-                  leftSection={<IconCrown size={20} />}
-                  loading={isButtonLoading || isLoadingPayment}
-                  disabled={isButtonLoading || isLoadingPayment}
-                >
-                  {isButtonLoading || isLoadingPayment
-                    ? t('payment:setupPayment')
-                    : modalContent.buttonText}
-                </Button>
+              {modalContent.buttonText && modalContent.buttonText.trim() !== '' && (
+                <Stack gap="md" mt="xl">
+                  <Button
+                    size="lg"
+                    fullWidth
+                    onClick={handleUpgrade}
+                    gradient={{ from: 'teal', to: 'blue' }}
+                    variant="gradient"
+                    className={classes.upgradeButton}
+                    leftSection={<IconCrown size={20} />}
+                    loading={isButtonLoading || isLoadingPayment}
+                    disabled={isButtonLoading || isLoadingPayment}
+                  >
+                    {isButtonLoading || isLoadingPayment
+                      ? t('payment:setupPayment')
+                      : modalContent.buttonText}
+                  </Button>
 
-                <Text ta="center" size="xs" c="dimmed">
-                  {t('payment:flexiblePricing')}
-                </Text>
-              </Stack>
+                  <Text ta="center" size="xs" c="dimmed">
+                    {t('payment:flexiblePricing')}
+                  </Text>
+                </Stack>
+              )}
             </>
           ) : (
             // Stripe payment form

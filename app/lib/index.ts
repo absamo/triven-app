@@ -31,7 +31,7 @@ const inventoryAgent = new Agent({
 
 CRITICAL LANGUAGE RULE: 
 - ALWAYS detect and respond in the user's language (French, English, etc.)
-- Tool outputs are in English by default - if user is speaking French (or another language), you MUST translate the tool results in your response
+- Tool outputs SHOULD support multilingual responses natively and return results in the user's language when possible. If a tool does not support the user's language and returns results in English, you MUST translate the tool results in your response.
 - When translating tool results, keep the structure (tables, formatting) but translate headers, labels, and text
 
 RESPONSE BEHAVIOR:

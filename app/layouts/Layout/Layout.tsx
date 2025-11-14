@@ -551,7 +551,6 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
                   <Skeleton height={60} radius="md" animate />
                   <Skeleton height={60} radius="md" animate />
                   <Skeleton height={60} radius="md" animate />
-            
                 </Stack>
               </Stack>
             </Container>
@@ -585,6 +584,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
         opened={noActiveSubscription && !isPendingPayment}
         currentPlan={user.currentPlan}
         mode={SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION}
+        userRole={user.role.name}
       />
 
       {/* Trial Expiration Modal - blocks access when trial has expired */}
@@ -642,6 +642,7 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
         opened={pausedSubscription}
         currentPlan={user.currentPlan}
         mode={SUBSCRIPTION_MODAL_MODES.PAUSED}
+        userRole={user.role.name}
       />
 
       {/* Upgrade Payment Modal */}

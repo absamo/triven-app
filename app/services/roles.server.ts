@@ -78,16 +78,6 @@ export async function updateRole(request: Request, role: IRole) {
   }
 
   try {
-    if (!(role as unknown as IRole)?.editable) {
-      return {
-        notification: {
-          message: 'Dafault roles cannot be edited',
-          status: 'Error',
-          autoClose: false,
-        },
-      }
-    }
-
     await prisma.role.update({
       where: { id: role.id },
       data: {

@@ -48,6 +48,7 @@ model Company {
   smartAlerts           SmartAlert[]
   revenueOpportunities  RevenueOpportunity[]
   toolExecutionLogs     ToolExecutionLog[]
+  subscriptions         Subscription[]
 }
 
 model Currency {
@@ -172,6 +173,7 @@ model Price {
 model Subscription {
   id                 String  @id @unique
   userId             String  @unique
+  companyId          String? // Company that this subscription covers
   planId             String
   priceId            String
   interval           String
@@ -200,9 +202,12 @@ model Subscription {
   updatedAt DateTime @updatedAt
 
   // Relations
-  plan  Plan  @relation(fields: [planId], references: [id])
-  price Price @relation(fields: [priceId], references: [id])
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan    Plan     @relation(fields: [planId], references: [id])
+  price   Price    @relation(fields: [priceId], references: [id])
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company? @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, status])
 }
 
 model Profile {

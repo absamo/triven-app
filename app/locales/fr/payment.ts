@@ -67,6 +67,8 @@ export default {
     'Votre abonnement est actuellement en pause. Veuillez reprendre votre abonnement pour continuer à utiliser Triven.',
   noSubscriptionMessage:
     "Vous avez besoin d'un abonnement actif pour accéder à Triven. Veuillez choisir un plan pour continuer.",
+  noSubscriptionNonAdminMessage:
+    "Votre entreprise a besoin d'un abonnement actif pour accéder à Triven. Veuillez contacter votre administrateur pour configurer un plan d'abonnement.",
 
   // Action buttons
   reactivateSubscription: "Réactiver l'Abonnement",

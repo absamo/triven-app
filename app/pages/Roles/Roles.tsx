@@ -20,8 +20,11 @@ export default function RolePage({ roles = [], permissions = [] }: RoleProps) {
   const navigate = useNavigate()
 
   const handleRoleClick = (role: IRole) => {
-    if (canUpdate || !role.editable) {
-      // Navigate to edit for custom roles with update permission, or any role with read permission
+    if (canUpdate) {
+      // Navigate to edit if user has update permission (allows editing all roles including built-in)
+      navigate(`/roles/${role.id}/edit`)
+    } else {
+      // Navigate to view-only mode if user only has read permission
       navigate(`/roles/${role.id}/edit`)
     }
   }

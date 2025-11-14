@@ -89,6 +89,31 @@ export async function getBetterAuthUser(request: Request): Promise<BetterAuthUse
       },
     })
 
+    let effectiveSubscription = account?.user?.subscriptions
+
+    // If user doesn't have a subscription but belongs to a company,
+    // check if any user in the company has an active subscription
+    // (only admins can create/manage subscriptions, so this will be the company owner's subscription)
+    if (!effectiveSubscription && account?.user?.companyId) {
+      const companyUserWithSubscription = await prisma.user.findFirst({
+        where: {
+          companyId: account.user.companyId,
+          subscriptions: {
+            status: { in: ['active', 'trialing'] },
+          },
+        },
+        include: {
+          subscriptions: {
+            include: {
+              price: true,
+            },
+          },
+        },
+      })
+
+      effectiveSubscription = companyUserWithSubscription?.subscriptions || null
+    }
+
     const user = account?.user
 
     // Check if user is active (not deactivated)
@@ -139,14 +164,14 @@ export async function getBetterAuthUser(request: Request): Promise<BetterAuthUse
               name: user?.site.name,
             }
           : null,
-        subscriptions: user?.subscriptions
+        subscriptions: effectiveSubscription
           ? {
-              id: user.subscriptions.id,
-              planId: user.subscriptions.planId,
-              status: user.subscriptions.status,
-              trialEnd: user.subscriptions.trialEnd,
-              currentPeriodStart: user.subscriptions.currentPeriodStart,
-              currentPeriodEnd: user.subscriptions.currentPeriodEnd,
+              id: effectiveSubscription.id,
+              planId: effectiveSubscription.planId,
+              status: effectiveSubscription.status,
+              trialEnd: effectiveSubscription.trialEnd,
+              currentPeriodStart: effectiveSubscription.currentPeriodStart,
+              currentPeriodEnd: effectiveSubscription.currentPeriodEnd,
             }
           : null,
         status: user?.status || 'INCOMPLETE_SETUP',
@@ -193,14 +218,14 @@ export async function getBetterAuthUser(request: Request): Promise<BetterAuthUse
             name: user.site.name,
           }
         : null,
-      subscriptions: user.subscriptions
+      subscriptions: effectiveSubscription
         ? {
-            id: user.subscriptions.id,
-            planId: user.subscriptions.planId,
-            status: user.subscriptions.status,
-            trialEnd: user.subscriptions.trialEnd,
-            currentPeriodStart: user.subscriptions.currentPeriodStart,
-            currentPeriodEnd: user.subscriptions.currentPeriodEnd,
+            id: effectiveSubscription.id,
+            planId: effectiveSubscription.planId,
+            status: effectiveSubscription.status,
+            trialEnd: effectiveSubscription.trialEnd,
+            currentPeriodStart: effectiveSubscription.currentPeriodStart,
+            currentPeriodEnd: effectiveSubscription.currentPeriodEnd,
           }
         : null,
       status: user.status,
@@ -303,6 +328,31 @@ export async function getUserByEmail(email: string) {
     return null
   }
 
+  let effectiveSubscription = user.subscriptions
+
+  // If user doesn't have a subscription but belongs to a company,
+  // check if any user in the company has an active subscription
+  // (only admins can create/manage subscriptions, so this will be the company owner's subscription)
+  if (!effectiveSubscription && user.companyId) {
+    const companyUserWithSubscription = await prisma.user.findFirst({
+      where: {
+        companyId: user.companyId,
+        subscriptions: {
+          status: { in: ['active', 'trialing'] },
+        },
+      },
+      include: {
+        subscriptions: {
+          include: {
+            price: true,
+          },
+        },
+      },
+    })
+
+    effectiveSubscription = companyUserWithSubscription?.subscriptions || null
+  }
+
   return {
     id: user.id,
     email: user.email,
@@ -342,14 +392,14 @@ export async function getUserByEmail(email: string) {
           name: user.site.name,
         }
       : null,
-    subscriptions: user.subscriptions
+    subscriptions: effectiveSubscription
       ? {
-          id: user.subscriptions.id,
-          planId: user.subscriptions.planId,
-          status: user.subscriptions.status,
-          trialEnd: user.subscriptions.trialEnd,
-          currentPeriodStart: user.subscriptions.currentPeriodStart,
-          currentPeriodEnd: user.subscriptions.currentPeriodEnd,
+          id: effectiveSubscription.id,
+          planId: effectiveSubscription.planId,
+          status: effectiveSubscription.status,
+          trialEnd: effectiveSubscription.trialEnd,
+          currentPeriodStart: effectiveSubscription.currentPeriodStart,
+          currentPeriodEnd: effectiveSubscription.currentPeriodEnd,
         }
       : null,
     status: user.status,

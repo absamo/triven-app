@@ -13,7 +13,7 @@ import type { Route } from './+types/roles.edit'
 
 export const loader: LoaderFunction = async ({ params, request }: LoaderFunctionArgs) => {
   // Checks if the user has the required permissions otherwise requireUser throws an error
-  // Allow both read and update permissions - we'll control the form based on role.editable
+  // Admins can edit all roles including built-in ones
   const user = await requireBetterAuthUser(request, ['read:roles'])
 
   const role = (await getRole(params.id)) as IRole

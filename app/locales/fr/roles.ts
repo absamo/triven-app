@@ -49,6 +49,11 @@ export const roles = {
     "Configurer les plans, paramètres, rôles, membres de l'équipe, agences et sites",
   selectSettingsPermissions: 'Sélectionner les permissions pour les paramètres',
 
+  aiInsights: 'IA & Insights',
+  aiInsightsDescription:
+    "Accéder à l'assistant IA, aux fonctionnalités de feuille de route et aux insights avancés",
+  selectAiInsightsPermissions: "Sélectionner les permissions pour l'IA et les insights",
+
   // Permission types
   permissions: {
     fullAccess: 'Accès complet',
@@ -84,6 +89,8 @@ export const roles = {
     agencies: 'Agences',
     sites: 'Sites',
     subscriptions: 'Abonnements',
+    aiAgent: 'Agent IA',
+    roadmap: 'Feuille de route',
   },
 }
 

@@ -18,7 +18,7 @@ interface roleFormProps {
 export default function RoleForm({ role, errors }: roleFormProps) {
   const { t } = useTranslation(['roles', 'common'])
 
-  const isReadOnly = role.editable === false
+  const isReadOnly = false // Allow admins to edit all roles including built-in ones
   const [accordionValue, setAccordionValue] = useState<string[]>([])
 
   const form = useForm({
@@ -44,14 +44,22 @@ export default function RoleForm({ role, errors }: roleFormProps) {
   }
 
   const toggleAll = () => {
-    if (accordionValue.length === 6) {
+    if (accordionValue.length === 7) {
       setAccordionValue([])
     } else {
-      setAccordionValue(['inventory', 'workflows', 'purchases', 'sales', 'reports', 'settings'])
+      setAccordionValue([
+        'inventory',
+        'workflows',
+        'purchases',
+        'sales',
+        'reports',
+        'settings',
+        'aiInsights',
+      ])
     }
   }
 
-  const isExpanded = accordionValue.length === 6
+  const isExpanded = accordionValue.length === 7
 
   return (
     <Grid>
@@ -363,6 +371,37 @@ export default function RoleForm({ role, errors }: roleFormProps) {
                     onChange={handlePermissionsChange}
                     label={t('roles:modules.subscriptions')}
                     name="subscriptions"
+                    disabled={isReadOnly}
+                    isLast={true}
+                  />
+                </Accordion.Panel>
+              </Accordion.Item>
+
+              <Accordion.Item value="aiInsights">
+                <Accordion.Control>
+                  <Box>
+                    <Text fw={500}>{t('roles:aiInsights')}</Text>
+                    <Text size="xs" c="dimmed">
+                      {t(
+                        'roles:aiInsightsDescription',
+                        'Access AI assistant, roadmap features, and advanced insights'
+                      )}
+                    </Text>
+                  </Box>
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.aiAgent')}
+                    name="aiAgent"
+                    disabled={isReadOnly}
+                  />
+                  <RolesPermission
+                    permissions={form.values.permissions || []}
+                    onChange={handlePermissionsChange}
+                    label={t('roles:modules.roadmap')}
+                    name="roadmap"
                     disabled={isReadOnly}
                     isLast={true}
                   />

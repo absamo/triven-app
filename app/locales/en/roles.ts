@@ -48,6 +48,10 @@ export const roles = {
   settingsDescription: 'Configure plans, settings, roles, team members, agencies, and sites',
   selectSettingsPermissions: 'Select permissions for settings',
 
+  aiInsights: 'AI & Insights',
+  aiInsightsDescription: 'Access AI assistant, roadmap features, and advanced insights',
+  selectAiInsightsPermissions: 'Select permissions for AI and insights features',
+
   // Permission types
   permissions: {
     fullAccess: 'Full access',
@@ -83,6 +87,8 @@ export const roles = {
     agencies: 'Agencies',
     sites: 'Sites',
     subscriptions: 'Subscriptions',
+    aiAgent: 'AI Agent',
+    roadmap: 'Roadmap',
   },
 }
 

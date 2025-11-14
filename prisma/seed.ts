@@ -688,6 +688,18 @@ async function createRoles(companyId: string) {
           'create:approvals',
           'update:approvals',
           'delete:approvals',
+          'read:subscriptions',
+          'create:subscriptions',
+          'update:subscriptions',
+          'delete:subscriptions',
+          'read:aiAgent',
+          'create:aiAgent',
+          'update:aiAgent',
+          'delete:aiAgent',
+          'read:roadmap',
+          'create:roadmap',
+          'update:roadmap',
+          'delete:roadmap',
         ],
       },
       {
@@ -782,6 +794,10 @@ async function createRoles(companyId: string) {
           'read:approvals',
           'create:approvals',
           'update:approvals',
+
+          // AI & Insights Access
+          'read:aiAgent',
+          'read:roadmap',
         ],
       },
       {

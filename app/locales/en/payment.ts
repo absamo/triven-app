@@ -160,6 +160,8 @@ export default {
     'Your subscription is currently paused. Please resume your subscription to continue using Triven.',
   noSubscriptionMessage:
     'You need an active subscription to access Triven. Please choose a plan to continue.',
+  noSubscriptionNonAdminMessage:
+    'Your company needs an active subscription to access Triven. Please contact your administrator to set up a subscription plan.',
 
   // Action buttons
   reactivateSubscription: 'Reactivate Subscription',
