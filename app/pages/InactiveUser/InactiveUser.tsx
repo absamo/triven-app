@@ -1,4 +1,4 @@
-import { Center, Paper, Stack, Text, Title, Box } from '@mantine/core'
+import { Box, Center, Paper, Stack, Text, Title } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 
@@ -27,15 +27,12 @@ export default function InactiveUserPage() {
         padding: '20px',
         boxSizing: 'border-box',
         position: 'relative',
-        background: 'light-dark(linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 50%, rgb(207, 227, 234) 100%), linear-gradient(135deg, #1a1b1e 0%, #25262b 50%, #2c2e33 100%))',
+        background:
+          'light-dark(linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 50%, rgb(207, 227, 234) 100%), linear-gradient(135deg, #1a1b1e 0%, #25262b 50%, #2c2e33 100%))',
       }}
     >
       {/* Back Button */}
-      <BackButton
-        onClick={handleBackToLogin}
-        position="top-left"
-        style={{ fontSize: '14px' }}
-      >
+      <BackButton onClick={handleBackToLogin} position="top-left" style={{ fontSize: '14px' }}>
         Back to Login
       </BackButton>
 
