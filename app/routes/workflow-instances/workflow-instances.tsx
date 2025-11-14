@@ -1,26 +1,16 @@
 import type { LoaderFunctionArgs } from 'react-router'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth.server'
 import WorkflowInstancesPage from '~/app/pages/WorkflowInstances/WorkflowInstances'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  })
-
-  if (!session) {
-    throw new Response('Unauthorized', { status: 401 })
-  }
-
-  if (!session.user.companyId) {
-    throw new Response('No company found', { status: 400 })
-  }
+  const user = await requireBetterAuthUser(request, ['read:workflows'])
 
   // Load workflow instances for the user's company
   const workflowInstances = await prisma.workflowInstance.findMany({
     where: {
       workflowTemplate: {
-        companyId: session.user.companyId,
+        companyId: user.companyId,
       },
     },
     include: {

@@ -23,15 +23,12 @@ import type { LoaderFunctionArgs } from 'react-router'
 import { Link, useLoaderData } from 'react-router'
 import { ErrorBoundary as ErrorBoundaryComponent } from '~/app/components/ErrorBoundary'
 import { prisma } from '~/app/db.server'
-import { getBetterAuthUser } from '~/app/services/better-auth.server'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 export { ErrorBoundaryComponent as ErrorBoundary }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await getBetterAuthUser(request)
-  if (!user) {
-    throw new Response('Unauthorized', { status: 401 })
-  }
+  const user = await requireBetterAuthUser(request, ['read:workflows'])
 
   // Get user's role to check if admin
   const userWithRole = await prisma.user.findUnique({

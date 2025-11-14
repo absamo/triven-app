@@ -3,11 +3,28 @@ import type { LoaderFunctionArgs } from 'react-router'
 import { PRODUCT_STATUSES } from '~/app/common/constants'
 import { getInventoryAgent } from '~/app/lib'
 
+/**
+ * Detect language from message content
+ * Simple heuristic: check for common French words/patterns
+ */
+function detectLanguage(text: string): 'fr' | 'en' {
+  const frenchIndicators = [
+    /\b(je|tu|il|elle|nous|vous|ils|elles)\b/i,
+    /\b(mon|ma|mes|ton|ta|tes|son|sa|ses|notre|votre|leur)\b/i,
+    /\b(est|sont|avoir|être|faire|aller|venir|voir|savoir|pouvoir|vouloir)\b/i,
+    /\b(le|la|les|un|une|des|du|de|au|aux)\b/i,
+    /\b(bonjour|merci|s'il vous plaît|oui|non|avec|pour|dans|sur)\b/i,
+  ]
+
+  const frenchMatches = frenchIndicators.filter((pattern) => pattern.test(text)).length
+  return frenchMatches >= 2 ? 'fr' : 'en'
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const message = url.searchParams.get('message')
   const historyJson = url.searchParams.get('history')
-  const language = url.searchParams.get('lng') || 'en' // Get language from URL parameter
+  const urlLanguage = url.searchParams.get('lng')
 
   if (!message?.trim()) {
     return new Response(JSON.stringify({ error: 'Message is required' }), {
@@ -16,7 +33,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     })
   }
 
-  console.log('🌐 Using language:', language)
+  // Detect language from message if not provided in URL
+  const detectedLang = detectLanguage(message)
+  const language = urlLanguage || detectedLang
+
+  console.log('🌐 URL language:', urlLanguage, '| Detected:', detectedLang, '| Using:', language)
 
   try {
     const agent = getInventoryAgent()
@@ -120,6 +141,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
           const finalResult = await streamResult.response
           console.log('✅ Stream completed')
           console.log('🔍 Final result keys:', Object.keys(finalResult))
+          console.log('🌐 Language param:', language)
+
+          // Log messages to see if language is detectable
+          if (finalResult.messages && Array.isArray(finalResult.messages)) {
+            console.log('📨 Messages in result:', finalResult.messages.length)
+            const lastMessage = finalResult.messages[finalResult.messages.length - 1]
+            if (lastMessage?.content) {
+              console.log(
+                '📝 Last message content sample:',
+                typeof lastMessage.content === 'string'
+                  ? lastMessage.content.substring(0, 100)
+                  : 'non-string'
+              )
+            }
+          }
 
           // Try to access tool results from different possible locations
           const possibleToolPaths = ['toolCalls', 'toolResults', 'steps', 'tools', 'invocations']

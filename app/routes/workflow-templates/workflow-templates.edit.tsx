@@ -1,21 +1,10 @@
 import type { LoaderFunctionArgs } from 'react-router'
-import { redirect } from 'react-router'
 import { prisma } from '~/app/db.server'
-import { auth } from '~/app/lib/auth.server'
 import WorkflowTemplateFormPage from '~/app/pages/WorkflowTemplateForm/WorkflowTemplateForm'
+import { requireBetterAuthUser } from '~/app/services/better-auth.server'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  })
-
-  if (!session) {
-    throw redirect('/login')
-  }
-
-  if (!session.user.companyId) {
-    throw new Response('No company found', { status: 400 })
-  }
+  const user = await requireBetterAuthUser(request, ['update:workflows'])
 
   const templateId = params.id
   if (!templateId) {
@@ -27,7 +16,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const workflowTemplate = await prisma.workflowTemplate.findUnique({
       where: {
         id: templateId,
-        companyId: session.user.companyId, // Ensure user can only edit templates from their company
+        companyId: user.companyId, // Ensure user can only edit templates from their company
       },
       include: {
         steps: {
@@ -57,7 +46,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const [users, roles] = await Promise.all([
       prisma.user.findMany({
         where: {
-          companyId: session.user.companyId,
+          companyId: user.companyId,
         },
         include: {
           profile: true,
@@ -65,14 +54,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         orderBy: [{ profile: { firstName: 'asc' } }, { email: 'asc' }],
       }),
       prisma.role.findMany({
-        where: { companyId: session.user.companyId },
+        where: { companyId: user.companyId },
         orderBy: { name: 'asc' },
       }),
     ])
 
     // Get current user's role information
     const userWithRole = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: user.id },
       include: {
         role: true,
       },
@@ -150,7 +139,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       JSON.stringify({
         workflowTemplate: transformedTemplate,
         currentUser: {
-          ...session.user,
+          ...user,
           role: userWithRole?.role || null,
         },
         users: userOptions,

@@ -14,7 +14,17 @@ export async function action({ request }: { request: Request }) {
       return data({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { isOnline } = await request.json()
+    let body: { isOnline?: boolean } | null = null
+    let isOnline = true
+
+    try {
+      const clonedRequest = request.clone()
+      body = await clonedRequest.json()
+      isOnline = body.isOnline !== undefined ? body.isOnline : true
+    } catch (parseError) {
+      // Default to online if parsing fails
+      isOnline = true
+    }
 
     // Update user's online status
     await prisma.user.update({

@@ -101,7 +101,7 @@ For FRENCH (or other language) users:
 ❌ WRONG: "Je vais vérifier." [calls tool] [leaves English output untranslated]
 
 Remember: For English users, tool results are auto-formatted - stay quiet. For non-English users, translate the tool output naturally!`,
-  model: ollama((process.env.OLLAMA_MODEL || 'minimax-m2')),
+  model: ollama(process.env.OLLAMA_MODEL || 'minimax-m2'),
   tools: inventoryTools,
 })
 
