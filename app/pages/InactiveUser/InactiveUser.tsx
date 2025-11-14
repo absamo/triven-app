@@ -1,4 +1,4 @@
-import { Center, Paper, Stack, Text, Title, useMantineColorScheme } from '@mantine/core'
+import { Center, Paper, Stack, Text, Title, Box } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -8,8 +8,6 @@ import { AuthIconBadge, BackButton, Logo } from '~/app/components'
 export default function InactiveUserPage() {
   const { t } = useTranslation(['auth', 'common'])
   const navigate = useNavigate()
-  const { colorScheme } = useMantineColorScheme()
-  const isDark = colorScheme === 'dark'
 
   const handleBackToLogin = () => {
     navigate('/login')
@@ -21,26 +19,23 @@ export default function InactiveUserPage() {
   }
 
   return (
-    <div
+    <Box
       style={{
         minHeight: '100vh',
         width: '100vw',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: isDark
-          ? 'linear-gradient(135deg, #1a1b1e 0%, #25262b 50%, #2c2e33 100%)'
-          : 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 50%,rgb(207, 227, 234) 100%)',
         padding: '20px',
         boxSizing: 'border-box',
         position: 'relative',
+        background: 'light-dark(linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 50%, rgb(207, 227, 234) 100%), linear-gradient(135deg, #1a1b1e 0%, #25262b 50%, #2c2e33 100%))',
       }}
     >
       {/* Back Button */}
       <BackButton
         to="/login"
         position="top-left"
-        color={isDark ? '#ffffff' : '#000000'}
         style={{ fontSize: '14px' }}
       >
         Back to Login
@@ -85,6 +80,6 @@ export default function InactiveUserPage() {
           </Stack>
         </Paper>
       </div>
-    </div>
+    </Box>
   )
 }
