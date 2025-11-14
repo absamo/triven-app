@@ -162,6 +162,10 @@ export default {
     'You need an active subscription to access Triven. Please choose a plan to continue.',
   noSubscriptionNonAdminMessage:
     'Your company needs an active subscription to access Triven. Please contact your administrator to set up a subscription plan.',
+  accountDeactivated: 'Account Deactivated',
+  accountInactive: 'Your account is not active',
+  inactiveUserMessage:
+    'Your account has been deactivated. Please contact your administrator or support team for assistance.',
 
   // Action buttons
   reactivateSubscription: 'Reactivate Subscription',

@@ -415,5 +415,6 @@ export const STRIPE_SUBSCRIPTION_STATUSES = {
 export const SUBSCRIPTION_MODAL_MODES = {
   TRIAL_EXPIRED: 'trial-expired',
   NO_SUBSCRIPTION: 'no-subscription',
+  INACTIVE_USER: 'inactive-user',
   ...STRIPE_SUBSCRIPTION_STATUSES,
 } as const

@@ -181,6 +181,18 @@ export default function SubscriptionStatusModal({
           icon: <IconLock size={40} />,
           gradient: { from: 'red', to: 'orange' },
         }
+      case SUBSCRIPTION_MODAL_MODES.INACTIVE_USER:
+        return {
+          title: t('payment:accountDeactivated', 'Account Deactivated'),
+          message: t('payment:accountInactive'),
+          description: t(
+            'payment:inactiveUserMessage',
+            'Your account has been deactivated. Please contact your administrator or support team for assistance.'
+          ),
+          buttonText: t('common:signOut', 'Sign Out'),
+          icon: <IconLock size={40} />,
+          gradient: { from: 'red', to: 'gray' },
+        }
       default: // trial-expired (covers trialing status with expired trial)
         return {
           title: t('payment:trialPeriodExpired'),
@@ -204,6 +216,12 @@ export default function SubscriptionStatusModal({
 
   // Handle subscription creation using fetcher
   const handleUpgrade = async () => {
+    // Handle inactive user - sign them out
+    if (mode === SUBSCRIPTION_MODAL_MODES.INACTIVE_USER) {
+      handleSignOut()
+      return
+    }
+
     setIsButtonLoading(true)
 
     // For trial expired, redirect to billing page with stripe payment
@@ -287,6 +305,11 @@ export default function SubscriptionStatusModal({
     },
     []
   )
+
+  // Handle sign out for inactive users
+  const handleSignOut = () => {
+    window.location.href = '/auth/sign-out'
+  }
 
   // Handle Pay button click
   const handlePayClick = async () => {

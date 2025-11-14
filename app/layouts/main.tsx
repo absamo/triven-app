@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import { redirect } from 'react-router'
 import { USER_STATUSES } from '~/app/common/constants'
 import type { INotification } from '~/app/common/validations/notificationSchema'
+import { auth } from '~/app/lib/auth.server'
 import { prisma } from '~/app/db.server'
 import { getBetterAuthUser } from '~/app/services/better-auth.server'
 import { getNotifications } from '~/app/services/notifications.server'
@@ -17,6 +18,7 @@ type LoaderData = {
     currentPlan: string
     planStatus: string
     trialPeriodDays: number
+    isInactive?: boolean
     paymentMethod?: {
       last4: string
       brand: string
@@ -38,7 +40,47 @@ export async function loader({ request }: Route.LoaderArgs) {
   // Get better-auth user with linked business data
   const user = await getBetterAuthUser(request)
 
+  // Check if there's a session but user is null (inactive user case)
   if (!user) {
+    const session = await auth.api.getSession({ headers: request.headers })
+    
+    // If there's a session but no user data, user is inactive
+    if (session?.user) {
+      // Find the account to get basic user info
+      const account = await prisma.account.findFirst({
+        where: { userId: session.user.id },
+        include: {
+          user: {
+            include: {
+              role: true,
+              profile: true,
+            },
+          },
+        },
+      })
+      
+      if (account?.user && account.user.active === false) {
+        // Return minimal data for inactive user to show modal
+        return {
+          user: {
+            email: account.user.email,
+            role: { name: account.user.role?.name || 'User', permissions: [] },
+            profile: {
+              firstName: account.user.profile?.firstName || '',
+              lastName: account.user.profile?.lastName || '',
+            },
+            currentPlan: 'inactive',
+            planStatus: 'inactive',
+            trialPeriodDays: 0,
+            isInactive: true,
+            paymentMethod: null,
+            subscription: null,
+          },
+          notifications: [],
+        }
+      }
+    }
+    
     return redirect('/')
   }
 

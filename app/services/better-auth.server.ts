@@ -118,8 +118,9 @@ export async function getBetterAuthUser(request: Request): Promise<BetterAuthUse
 
     // Check if user is active (not deactivated)
     if (user?.active === false) {
-      // Create a custom error that will be handled by the auth error handler
-      throw new Error('INACTIVE_USER')
+      // Return null for inactive users - let the layout handle this gracefully
+      console.log('[getBetterAuthUser] User account is inactive')
+      return null
     }
 
     // Handle users without business setup (new flow)
@@ -234,10 +235,6 @@ export async function getBetterAuthUser(request: Request): Promise<BetterAuthUse
     }
   } catch (error) {
     console.error('[getBetterAuthUser] Error during authentication:', error)
-    if (error instanceof Error && error.message === 'INACTIVE_USER') {
-      throw error // Re-throw specific errors
-    }
-    console.error('[getBetterAuthUser] Unexpected error:', error)
     return null
   }
 }

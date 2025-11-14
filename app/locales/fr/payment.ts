@@ -69,6 +69,10 @@ export default {
     "Vous avez besoin d'un abonnement actif pour accéder à Triven. Veuillez choisir un plan pour continuer.",
   noSubscriptionNonAdminMessage:
     "Votre entreprise a besoin d'un abonnement actif pour accéder à Triven. Veuillez contacter votre administrateur pour configurer un plan d'abonnement.",
+  accountDeactivated: 'Compte Désactivé',
+  accountInactive: "Votre compte n'est pas actif",
+  inactiveUserMessage:
+    "Votre compte a été désactivé. Veuillez contacter votre administrateur ou l'équipe d'assistance pour obtenir de l'aide.",
 
   // Action buttons
   reactivateSubscription: "Réactiver l'Abonnement",
