@@ -579,17 +579,9 @@ function LayoutContent({ user, notifications }: LayoutPageProps) {
 
       {isOverlayOpened && <Overlay backgroundOpacity={0.2} fixed />}
 
-      {/* Inactive User Modal - blocks access when account is deactivated */}
-      <SubscriptionStatusModal
-        opened={user.isInactive === true}
-        currentPlan={user.currentPlan}
-        mode={SUBSCRIPTION_MODAL_MODES.INACTIVE_USER}
-        userRole={user.role.name}
-      />
-
       {/* No Active Subscription Modal - blocks access when no subscription exists */}
       <SubscriptionStatusModal
-        opened={noActiveSubscription && !isPendingPayment && !user.isInactive}
+        opened={noActiveSubscription && !isPendingPayment}
         currentPlan={user.currentPlan}
         mode={SUBSCRIPTION_MODAL_MODES.NO_SUBSCRIPTION}
         userRole={user.role.name}
@@ -680,7 +672,6 @@ type LayoutPageProps = {
     trialPeriodDays: number
     trialEnd: number // Add trialEnd timestamp
     currentPlan: string
-    isInactive?: boolean // Flag for deactivated accounts
     paymentMethod?: {
       last4: string
       brand: string
