@@ -8,8 +8,12 @@ export default function InactiveUserPage() {
   const { t } = useTranslation(['auth', 'common'])
 
   const handleBackToLogin = () => {
-    // Sign out first, then redirect to login
-    window.location.href = '/auth/sign-out'
+    // Sign out first by posting to logout, then redirect to login
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = '/logout'
+    document.body.appendChild(form)
+    form.submit()
   }
 
   return (
