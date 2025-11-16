@@ -2,6 +2,7 @@ import type { Resource } from 'i18next'
 import agencies from './agencies'
 import approvals from './approvals'
 import assistant from './assistant'
+import audit from './audit'
 import auth from './auth'
 import backorders from './backorders'
 import common from './common'
@@ -34,6 +35,7 @@ export default {
   dashboard,
   navigation,
   auth,
+  audit,
   common,
   inventory,
   teams,

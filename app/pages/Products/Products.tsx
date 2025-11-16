@@ -3,6 +3,7 @@ import { useDisclosure } from '@mantine/hooks'
 import {
   IconChevronDown,
   IconChevronUp,
+  IconClock,
   IconDownload,
   IconSelector,
   IconUpload,
@@ -17,6 +18,7 @@ import type { ICategory } from '~/app/common/validations/categorySchema'
 import type { IProduct } from '~/app/common/validations/productSchema'
 import type { ISite } from '~/app/common/validations/siteSchema'
 import { Notification, TableActionsMenu } from '~/app/components'
+import { ProductAuditDrawer } from '~/app/components/ProductAuditDrawer'
 import ProductImportModal from '~/app/components/ProductImportModal'
 import ProductFilters from '~/app/partials/ProductFilters/ProductFilters'
 import { Title } from '~/app/partials/Title'
@@ -58,6 +60,12 @@ export default function Products({
   const [isExporting, setIsExporting] = useState(false)
   const [importModalOpened, { open: openImportModal, close: closeImportModal }] =
     useDisclosure(false)
+  const [auditDrawerOpened, { open: openAuditDrawer, close: closeAuditDrawer }] =
+    useDisclosure(false)
+  const [selectedProductForAudit, setSelectedProductForAudit] = useState<{
+    id: string
+    name: string
+  } | null>(null)
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null)
   // Sorting state
@@ -590,6 +598,16 @@ export default function Products({
                 {t('duplicate')}
               </Menu.Item>
               <Menu.Item
+                leftSection={<IconClock size={14} />}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedProductForAudit({ id: id!, name: name || '' })
+                  openAuditDrawer()
+                }}
+              >
+                {t('viewHistory', 'View History')}
+              </Menu.Item>
+              <Menu.Item
                 color="red"
                 type="submit"
                 onClick={(e) => {
@@ -786,6 +804,13 @@ export default function Products({
         opened={importModalOpened}
         onClose={closeImportModal}
         onImport={handleImportProducts}
+      />
+
+      <ProductAuditDrawer
+        opened={auditDrawerOpened}
+        onClose={closeAuditDrawer}
+        productId={selectedProductForAudit?.id || ''}
+        productName={selectedProductForAudit?.name}
       />
 
       {/* Handle notifications from fetcher data */}

@@ -122,6 +122,9 @@ model User {
   featureAuditLog FeatureAuditLog[] @relation("FeatureAuditLogs")
   featureComments FeatureComment[]  @relation("FeatureComments")
 
+  // Product Audit Timeline Relations
+  auditEvents AuditEvent[] @relation("AuditEventUser")
+
   @@map("user")
 }
 
@@ -1899,5 +1902,29 @@ enum EmailDeliveryPreference {
   immediate
   daily_digest
   disabled
+}
+
+// Product Audit Timeline Models
+
+model AuditEvent {
+  id              String   @id @default(cuid())
+  entityType      String   // 'product', 'order', 'customer', etc.
+  entityId        String   // CUID of the entity
+  eventType       String   // 'create', 'update', 'delete'
+  userId          String   // User who performed the action
+  userName        String   // User's name at time of action (denormalized)
+  timestamp       DateTime @default(now())
+  changedFields   String[] @default([]) // Field names that changed
+  beforeSnapshot  Json?    // Full entity state before change
+  afterSnapshot   Json?    // Full entity state after change
+  createdAt       DateTime @default(now())
+
+  // Soft reference to User (no FK constraint to allow user deletion)
+  user User @relation("AuditEventUser", fields: [userId], references: [id], onDelete: NoAction)
+
+  @@index([entityType, entityId, timestamp(sort: Desc)])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("audit_events")
 }
 

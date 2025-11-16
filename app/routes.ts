@@ -61,6 +61,7 @@ export default [
     route('/api/products', 'routes/api/products.ts'),
     route('/api/products-export', 'routes/api/productsExport.tsx'),
     route('/api/productsImport', 'routes/api/productsImport.tsx'),
+    route('/api/audit/products/:productId', 'routes/api/audit.products.$productId.ts'),
     route('/api/categories', 'routes/api/categories.ts'),
     route('/api/categoriesImport', 'routes/api/categoriesImport.tsx'),
     route('/api/stock-adjustments-search', 'routes/api/stockAdjustmentSearch.ts'),

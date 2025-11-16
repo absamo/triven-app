@@ -654,7 +654,7 @@ export default function ProductForm({
         <Grid.Col>
           <Title backTo={'/products'}>{product.id ? t('editProduct') : t('addProduct')}</Title>
 
-          <Form onSubmit={form.onSubmit(handleSubmit)} showSubmitButton={false}>
+          <Form onSubmit={form.onSubmit(handleSubmit)} showSubmitButton={true}>
             <Grid.Col>
               <Tabs defaultValue="details" keepMounted={false}>
                 {product.id && (

@@ -10,6 +10,7 @@ import { getStockNotificationMessage, getStockStatus } from '~/app/common/helper
 import type { IAgency } from '~/app/common/validations/agencySchema'
 import type { IProduct } from '~/app/common/validations/productSchema'
 import { prisma } from '~/app/db.server'
+import { auditService } from '~/app/services/audit.server'
 import { getBetterAuthUser } from '~/app/services/better-auth.server'
 import { emitter } from '~/app/utils/emitter.server'
 
@@ -774,6 +775,19 @@ export async function createProduct(
       companyId: user.companyId,
     })
 
+    // Log audit event (don't block on failure)
+    try {
+      await auditService.logCreate({
+        entityType: 'product',
+        entityId: createdProduct.id,
+        userId: user.id,
+        userName: `${user.profile.firstName} ${user.profile.lastName}`.trim() || user.email,
+        afterSnapshot: createdProduct,
+      })
+    } catch (error) {
+      console.error('[createProduct] Failed to log audit event:', error)
+    }
+
     if (returnProduct) {
       return createdProduct
     }
@@ -806,9 +820,14 @@ export async function updateProduct(
       return null
     }
 
-    const foundProduct: IProduct = (await prisma.product.findFirst({
+    const foundProduct = await prisma.product.findFirst({
       where: { companyId: user.companyId, id: product.id },
-    })) as IProduct
+      include: {
+        category: { select: { name: true } },
+        agency: { select: { name: true } },
+        site: { select: { name: true } },
+      },
+    })
 
     if (!foundProduct) {
       return {
@@ -817,6 +836,9 @@ export async function updateProduct(
         },
       }
     }
+
+    // Capture before state for audit log with related entity names
+    const beforeSnapshot = { ...foundProduct }
 
     const status = getStockStatus(product)
 
@@ -886,6 +908,16 @@ export async function updateProduct(
       },
     })
 
+    // Fetch the updated product with all fields and related entity names for audit log
+    const updatedProduct = await prisma.product.findUnique({
+      where: { id: product.id },
+      include: {
+        category: { select: { name: true } },
+        agency: { select: { name: true } },
+        site: { select: { name: true } },
+      },
+    })
+
     // Emit notification with stock alert data
     if (
       status === PRODUCT_STATUSES.LOWSTOCK ||
@@ -913,6 +945,22 @@ export async function updateProduct(
       timestamp: Date.now(),
       companyId: user.companyId,
     })
+
+    // Log audit event (don't block on failure)
+    try {
+      if (updatedProduct) {
+        await auditService.logUpdate(
+          'product',
+          updatedProduct.id,
+          user.id,
+          `${user.profile.firstName} ${user.profile.lastName}`.trim() || user.email,
+          beforeSnapshot,
+          updatedProduct
+        )
+      }
+    } catch (error) {
+      console.error('[updateProduct] Failed to log audit event:', error)
+    }
 
     return {
       notification: {
@@ -967,14 +1015,11 @@ export async function deleteProduct(request: Request, id?: string) {
     }
   }
   try {
-    // First, get the product to retrieve its name
+    // First, get the full product data for audit log
     const product = await prisma.product.findUnique({
       where: {
         id: id,
         companyId: user.companyId,
-      },
-      select: {
-        name: true,
       },
     })
 
@@ -988,6 +1033,9 @@ export async function deleteProduct(request: Request, id?: string) {
       }
     }
 
+    // Capture before state for audit log
+    const beforeSnapshot = { ...product }
+
     // Delete the product
     await prisma.product.delete({
       where: {
@@ -995,6 +1043,19 @@ export async function deleteProduct(request: Request, id?: string) {
         companyId: user.companyId,
       },
     })
+
+    // Log audit event (don't block on failure)
+    try {
+      await auditService.logDelete({
+        entityType: 'product',
+        entityId: id,
+        userId: user.id,
+        userName: `${user.profile.firstName} ${user.profile.lastName}`.trim() || user.email,
+        beforeSnapshot,
+      })
+    } catch (error) {
+      console.error('[deleteProduct] Failed to log audit event:', error)
+    }
 
     return {
       notification: {

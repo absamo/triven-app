@@ -335,6 +335,8 @@ Use Chrome DevTools MCP AFTER implementing UI features to verify behavior:
 - PostgreSQL (existing Prisma schema with WorkflowTemplate, ApprovalRequest, Notification, Role, User, Company entities) (005-workflow-approvals)
 - TypeScript 5.8+, Node.js 20+, Bun runtime + React 19.1.1, React Router 7.8.2, Mantine UI 8.2.7, Better Auth 1.3.3, Prisma (PostgreSQL), Zod 4.1.0, react-i18next 15.5.3 (006-workflow-template-admin-ui)
 - PostgreSQL (existing Prisma schema with WorkflowTemplate, WorkflowInstance, Role, User entities) (006-workflow-template-admin-ui)
+- TypeScript 5.8+, Node.js 20+, Bun runtime + React 19.1.1, React Router 7.8.2, Mantine UI 8.2.7, Prisma ORM, Better Auth 1.3.3, Zod 4.1.0, react-i18next 15.5.3 (007-product-audit-timeline)
+- PostgreSQL (existing Prisma schema with Product, User entities) (007-product-audit-timeline)
 
 ## Recent Changes
 - 001-mastra-assistant-tools: Added TypeScript 5.8+, Node.js 20+, Bun runtime

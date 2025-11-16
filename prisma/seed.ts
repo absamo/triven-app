@@ -20,6 +20,7 @@ import {
 import { createEan13 } from '~/app/common/helpers/inventories'
 import { auth } from '~/app/lib/auth.server'
 import { PRICING_PLANS } from '~/app/modules/stripe/plans'
+import { auditService } from '~/app/services/audit.server'
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -1338,6 +1339,122 @@ async function createProducts(
   console.log(
     `   - Oldest (30-60 days): ${Math.floor(products.length / 4)} products (half out of stock for backorders)`
   )
+
+  // Create audit events for products
+  console.log('📝 Creating audit events for products...')
+
+  // Fetch users with profiles for audit events
+  const auditUsers = await prisma.user.findMany({
+    where: {
+      id: { in: users.filter((u) => u && u.id).map((u) => u.id) },
+    },
+    include: {
+      profile: true,
+    },
+  })
+
+  let auditEventsCreated = 0
+
+  for (const product of products) {
+    // Fetch product with relations for audit snapshot
+    const productWithRelations = await prisma.product.findUnique({
+      where: { id: product.id },
+      include: {
+        category: { select: { name: true } },
+        agency: { select: { name: true } },
+        site: { select: { name: true } },
+      },
+    })
+
+    if (!productWithRelations) continue
+
+    // Create initial creation audit event using audit service
+    const creationUser = faker.helpers.arrayElement(auditUsers)
+    const creationUserName = creationUser.profile
+      ? `${creationUser.profile.firstName} ${creationUser.profile.lastName}`.trim()
+      : creationUser.email
+
+    await auditService.logCreate(
+      'product',
+      product.id,
+      creationUser.id,
+      creationUserName,
+      productWithRelations as unknown as Record<string, unknown>
+    )
+    auditEventsCreated++
+
+    // Create 1-3 update events for some products (70% chance)
+    if (Math.random() < 0.7) {
+      const updateCount = faker.number.int({ min: 1, max: 3 })
+
+      for (let i = 0; i < updateCount; i++) {
+        const updateUser = faker.helpers.arrayElement(auditUsers)
+        const daysAgo = faker.number.int({ min: 1, max: 20 })
+
+        // Simulate different types of updates with realistic changes
+        const updateTypes = [
+          {
+            fields: ['sellingPrice'],
+            changes: { sellingPrice: productWithRelations.sellingPrice * 1.05 },
+          },
+          {
+            fields: ['physicalStockOnHand'],
+            changes: {
+              physicalStockOnHand: Math.max(0, productWithRelations.physicalStockOnHand - 5),
+            },
+          },
+          {
+            fields: ['description'],
+            changes: { description: productWithRelations.description + ' (Updated)' },
+          },
+          {
+            fields: ['reorderPoint', 'safetyStockLevel'],
+            changes: {
+              reorderPoint: (productWithRelations.reorderPoint || 10) + 5,
+              safetyStockLevel: (productWithRelations.safetyStockLevel || 5) + 3,
+            },
+          },
+          {
+            fields: ['sellingPrice', 'costPrice'],
+            changes: {
+              sellingPrice: productWithRelations.sellingPrice * 1.05,
+              costPrice: productWithRelations.costPrice * 1.03,
+            },
+          },
+        ]
+        const updateType = faker.helpers.arrayElement(updateTypes)
+
+        // Create before snapshot (current state)
+        const beforeSnapshot = { ...productWithRelations } as Record<string, unknown>
+
+        // Create after snapshot with changes
+        const afterSnapshot = {
+          ...productWithRelations,
+          ...updateType.changes,
+        } as Record<string, unknown>
+
+        // Use audit service to log update
+        const updateUserName = updateUser.profile
+          ? `${updateUser.profile.firstName} ${updateUser.profile.lastName}`.trim()
+          : updateUser.email
+
+        const auditEvent = await auditService.logUpdate(
+          'product',
+          product.id,
+          updateUser.id,
+          updateUserName,
+          beforeSnapshot,
+          afterSnapshot
+        )
+
+        if (auditEvent) {
+          auditEventsCreated++
+        }
+      }
+    }
+  }
+
+  console.log(`✅ Created ${auditEventsCreated} audit events for ${products.length} products`)
 
   return products
 }
