@@ -992,8 +992,12 @@ export async function duplicateProduct(request: Request, id?: string) {
   if (!product) {
     throw new Error('Product not found')
   }
-  // Remove id and set a new name (e.g., 'Copy of ...')
-  await prisma.product.create({
+
+  // Capture original product data for audit log
+  const originalSnapshot = { ...product }
+
+  // Create the duplicate product
+  const duplicatedProduct = await prisma.product.create({
     data: {
       ...product,
       id: undefined,
@@ -1001,6 +1005,24 @@ export async function duplicateProduct(request: Request, id?: string) {
       createdAt: new Date(),
     },
   })
+
+  // Capture duplicated product data for audit log
+  const duplicatedSnapshot = { ...duplicatedProduct }
+
+  // Log duplicate audit event for the NEW product (don't block on failure)
+  try {
+    await auditService.logDuplicate(
+      'product',
+      duplicatedProduct.id, // Log to the NEW product's audit history
+      user.id,
+      `${user.profile.firstName} ${user.profile.lastName}`.trim() || user.email,
+      originalSnapshot,
+      duplicatedSnapshot
+    )
+  } catch (auditError) {
+    console.error('[duplicateProduct] Failed to log audit event:', auditError)
+  }
+
   return redirect(`/products`)
 }
 export async function deleteProduct(request: Request, id?: string) {

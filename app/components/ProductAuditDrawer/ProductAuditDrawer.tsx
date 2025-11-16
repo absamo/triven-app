@@ -11,7 +11,7 @@ import {
   Timeline,
 } from '@mantine/core'
 import type { AuditEvent } from '@prisma/client'
-import { IconClock, IconEdit, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
+import { IconClock, IconCopy, IconEdit, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuditHistory } from '~/app/hooks/useAuditHistory'
@@ -64,8 +64,10 @@ export function ProductAuditDrawer({
         return <IconEdit size={16} />
       case 'delete':
         return <IconTrash size={16} />
+      case 'duplicate':
+        return <IconCopy size={16} />
       default:
-        return <IconClock size={16} />
+        return null
     }
   }
 
@@ -77,6 +79,8 @@ export function ProductAuditDrawer({
         return 'blue'
       case 'delete':
         return 'red'
+      case 'duplicate':
+        return 'violet'
       default:
         return 'gray'
     }

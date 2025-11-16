@@ -14,7 +14,7 @@ import { z } from 'zod'
 /**
  * Event types supported by the audit system
  */
-export const EventTypeSchema = z.enum(['create', 'update', 'delete'])
+export const EventTypeSchema = z.enum(['create', 'update', 'delete', 'duplicate'])
 export type EventType = z.infer<typeof EventTypeSchema>
 
 /**

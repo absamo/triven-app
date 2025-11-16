@@ -20,13 +20,26 @@ export function FieldComparison({
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
 
-  // Only show for update events with changed fields
-  if (eventType !== 'update' || !changedFields || changedFields.length === 0) {
+  const before = beforeSnapshot as Record<string, unknown>
+  const after = afterSnapshot as Record<string, unknown>
+
+  // Show for update events with changed fields
+  if (eventType === 'update' && (!changedFields || changedFields.length === 0)) {
     return null
   }
 
-  const before = beforeSnapshot as Record<string, unknown>
-  const after = afterSnapshot as Record<string, unknown>
+  // Don't show for create, delete, or duplicate events
+  if (eventType === 'create' || eventType === 'delete' || eventType === 'duplicate') {
+    return null
+  }
+
+  // For duplicate events, show key fields that changed (name, SKU, ID)
+  const fieldsToShow: string[] =
+    eventType === 'duplicate' ? ['name', 'sku', 'id'] : changedFields || []
+
+  if (fieldsToShow.length === 0) {
+    return null
+  }
 
   const formatFieldName = (field: string): string => {
     // Map IDs to human-readable names
@@ -138,7 +151,9 @@ export function FieldComparison({
         <Group gap="xs" wrap="nowrap">
           {expanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
           <Text size="xs" fw={500}>
-            {t('audit.comparison.viewChanges', 'View field changes')}
+            {eventType === 'duplicate'
+              ? t('audit.comparison.viewDuplicateDetails', 'View duplicate details')
+              : t('audit.comparison.viewChanges', 'View field changes')}
           </Text>
         </Group>
       </Paper>
@@ -146,7 +161,7 @@ export function FieldComparison({
       <Collapse in={expanded}>
         <Divider my="sm" />
         <Stack gap="md">
-          {sortFieldsByImportance(changedFields).map((field) => {
+          {sortFieldsByImportance(fieldsToShow).map((field) => {
             const oldValue = before?.[field]
             const newValue = after?.[field]
             const delta = getDelta(oldValue, newValue)
@@ -161,7 +176,9 @@ export function FieldComparison({
                   <Group gap="md" align="start">
                     <Box style={{ flex: 1 }}>
                       <Text size="xs" c="dimmed" mb={2}>
-                        {t('audit.comparison.before', 'Before')}
+                        {eventType === 'duplicate'
+                          ? t('audit.comparison.original', 'Original')
+                          : t('audit.comparison.before', 'Before')}
                       </Text>
                       <Text size="sm" style={{ textDecoration: 'line-through', opacity: 0.7 }}>
                         {formatValue(oldValue, field, before)}
@@ -169,18 +186,20 @@ export function FieldComparison({
                     </Box>
 
                     <Text size="lg" c="dimmed" style={{ alignSelf: 'center' }}>
-                      →
+                      {eventType === 'duplicate' ? '⤇' : '→'}
                     </Text>
 
                     <Box style={{ flex: 1 }}>
                       <Text size="xs" c="dimmed" mb={2}>
-                        {t('audit.comparison.after', 'After')}
+                        {eventType === 'duplicate'
+                          ? t('audit.comparison.duplicate', 'Duplicate')
+                          : t('audit.comparison.after', 'After')}
                       </Text>
                       <Group gap="xs">
                         <Text size="sm" fw={500}>
                           {formatValue(newValue, field, after)}
                         </Text>
-                        {delta && (
+                        {delta && eventType !== 'duplicate' && (
                           <Text size="xs" c={delta.startsWith('+') ? 'green' : 'red'} fw={600}>
                             ({delta})
                           </Text>

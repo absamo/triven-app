@@ -1452,9 +1452,37 @@ async function createProducts(
         }
       }
     }
+
+    // Create duplicate events for some products (20% chance)
+    if (Math.random() < 0.2) {
+      const duplicateUser = faker.helpers.arrayElement(auditUsers)
+      const duplicateUserName = duplicateUser.profile
+        ? `${duplicateUser.profile.firstName} ${duplicateUser.profile.lastName}`.trim()
+        : duplicateUser.email
+
+      // Simulate a duplicated product with modified SKU and name
+      const originalSnapshot = { ...productWithRelations } as Record<string, unknown>
+      const duplicatedSnapshot = {
+        ...productWithRelations,
+        id: faker.string.uuid(), // New ID for duplicate
+        name: `${productWithRelations.name} (Copy)`,
+        sku: faker.string.alphanumeric(8).toUpperCase(),
+      } as Record<string, unknown>
+
+      await auditService.logDuplicate(
+        'product',
+        product.id,
+        duplicateUser.id,
+        duplicateUserName,
+        originalSnapshot,
+        duplicatedSnapshot
+      )
+      auditEventsCreated++
+    }
   }
 
   console.log(`✅ Created ${auditEventsCreated} audit events for ${products.length} products`)
+  console.log(`   - Including creation, update, and duplicate events`)
 
   return products
 }

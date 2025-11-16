@@ -11,10 +11,12 @@ export default {
   totalEvents: '{{count}} event',
   totalEvents_other: '{{count}} events',
 
-  eventType: {
+  eventTypes: {
     create: 'Created',
     update: 'Updated',
     delete: 'Deleted',
+    duplicate: 'Duplicated',
+    all: 'All Events',
   },
 
   eventDesc: {

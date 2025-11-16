@@ -9,7 +9,7 @@ interface GetAuditHistoryOptions {
   startDate?: Date
   endDate?: Date
   userId?: string
-  eventType?: 'create' | 'update' | 'delete'
+  eventType?: 'create' | 'update' | 'delete' | 'duplicate'
 }
 
 interface AuditHistoryResult {

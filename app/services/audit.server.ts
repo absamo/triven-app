@@ -1,7 +1,7 @@
 import type { AuditEvent, Prisma } from '@prisma/client'
 import { prisma } from '../db.server'
 
-export type EventType = 'create' | 'update' | 'delete'
+export type EventType = 'create' | 'update' | 'delete' | 'duplicate'
 export type EntityType = 'product' // Extend with 'order', 'customer', etc.
 
 interface CreateAuditOptions {
@@ -95,6 +95,29 @@ export const auditService = {
       eventType: 'delete',
       beforeSnapshot,
       afterSnapshot: null,
+      changedFields: [],
+    })
+  },
+
+  /**
+   * Log a duplication event
+   */
+  async logDuplicate(
+    entityType: EntityType,
+    entityId: string,
+    userId: string,
+    userName: string,
+    originalSnapshot: Record<string, unknown>,
+    duplicatedSnapshot: Record<string, unknown>
+  ): Promise<AuditEvent> {
+    return this.createAuditEvent({
+      entityType,
+      entityId,
+      userId,
+      userName,
+      eventType: 'duplicate',
+      beforeSnapshot: originalSnapshot,
+      afterSnapshot: duplicatedSnapshot,
       changedFields: [],
     })
   },

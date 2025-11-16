@@ -10,7 +10,7 @@ interface AuditFilterPanelProps {
 }
 
 export interface AuditFilters {
-  eventType?: 'create' | 'update' | 'delete'
+  eventType?: 'create' | 'update' | 'delete' | 'duplicate'
   startDate?: Date
   endDate?: Date
 }
@@ -27,7 +27,7 @@ export function AuditFilterPanel({ onFilterChange }: AuditFilterPanelProps) {
     const filters: AuditFilters = {}
 
     if (eventType) {
-      filters.eventType = eventType as 'create' | 'update' | 'delete'
+      filters.eventType = eventType as 'create' | 'update' | 'delete' | 'duplicate'
     }
     // Only apply date filters if both dates are selected or both are null
     if (dateRange[0] && dateRange[1]) {
@@ -81,6 +81,10 @@ export function AuditFilterPanel({ onFilterChange }: AuditFilterPanelProps) {
               {
                 value: 'delete',
                 label: t('audit.eventType.delete', 'Deleted'),
+              },
+              {
+                value: 'duplicate',
+                label: t('audit.eventType.duplicate', 'Duplicated'),
               },
             ]}
             value={eventType}
